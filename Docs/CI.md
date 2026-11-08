@@ -16,7 +16,7 @@ has executed. Review actual artifacts before changing support claims.
 
 [Offline validation](../.github/workflows/ci.yml) runs on push, pull request and
 manual dispatch with read-only repository permissions and no Discord secrets.
-The desktop matrix includes macOS 26 and Ubuntu 24.04 jobs. Both use Swift 6.4.1,
+Separate desktop jobs cover macOS 26 and Ubuntu 24.04. Both use Swift 6.4.1,
 build/test the root, test independent tooling/load packages and Python helpers,
 run browser-bridge tests, validate documentation/inventory/generation/parity,
 audit manifest/import isolation, validate release records and build independent
@@ -29,11 +29,21 @@ build/test commands, public API comparisons and DocC conversion. Fixture helpers
 enforce committed dependency pins on both hosts; their optional job limit is
 applied explicitly only by the Ubuntu runner.
 
-The Ubuntu job runs directly on the hosted `ubuntu-24.04` runner. The Swift
-container replacement failed before validation because it lacked `python3`;
-restoring the hosted runner retains its normal tooling, and an explicit apt step
-installs Python and the native build/runtime dependencies. Node 24 is installed
-separately, and `setup-swift@v3` installs exactly Swift 6.4.1.
+The Ubuntu job uses a dedicated GitHub-hosted larger runner, `linux-x64-4`,
+with the Ubuntu 24.04 x64 image, 4 CPUs, 16 GiB RAM and 150 GB disk. The
+`DiscordKit-Native` runner group grants selected-repository access only to
+`Aurum-Studios/DiscordKit`, with public-repository access enabled. The runner
+has a maximum count of one and static IP allocation is disabled. The workflow
+selects both `group: DiscordKit-Native` and `labels: linux-x64-4`; the ordinary
+`ubuntu-24.04` label remains in use for the separate maintenance job.
+An explicit apt step installs Python and the native build/runtime dependencies.
+Node 24 is installed separately, and `setup-swift@v3` installs exactly Swift 6.4.1.
+
+A `Ready` inventory state confirms configured scheduling availability. Hosted
+compilation qualification remains pending until the committed workflow executes
+successfully on this runner and its Linux host, command and artifact evidence is
+reviewed. Inventory, a queued job and workflow configuration alone do not establish
+a completed Ubuntu build.
 
 Earlier installer failures included `gpg: no valid OpenPGP data found` and a
 missing Swiftly signing key. Before invoking `setup-swift`, the workflow downloads
@@ -48,8 +58,9 @@ check stops setup before compilation.
 
 [The Ubuntu runner](../Tools/ci/linux_ci.py) checks Ubuntu 24.04, the exact Swift
 version, a native Linux target and required executables, recording compiler,
-target, memory and disk evidence. Every Swift build/test/run uses two compiler
-jobs and `--force-resolved-versions`, including separate authoring/tooling graphs,
+target, memory and disk evidence. The workflow passes `--jobs 4` to every Linux
+stage. Every Swift build/test/run uses that compiler limit and
+`--force-resolved-versions`, including separate authoring/tooling graphs,
 consumers, external fixtures and optimized builds. Missing or stale committed
 resolution fails instead of silently updating dependencies. Root, authoring,
 tooling, benchmarks, audit, consumers and release stages execute sequentially;
@@ -73,16 +84,18 @@ Once those prerequisites are installed and on `PATH`, run from the repository
 root:
 
 ```sh
-python3 Tools/ci/linux_ci.py --stage preflight
-python3 Tools/ci/linux_ci.py
+python3 Tools/ci/linux_ci.py --jobs 4 --stage preflight
+python3 Tools/ci/linux_ci.py --jobs 4
 ```
 
 The default runner executes every stage, including optimized compilation, and
 leaves source packaging to the workflow. Logs remain under `.build/linux-ci`.
-Select one gate with, for example, `--stage authoring`; set `--jobs 1` to lower
-compiler concurrency. Every selected stage still performs preflight. Cold runs
-need network access to install prerequisites and fetch the committed SwiftPM
-dependencies; offline refers to the Discord workload, not an air-gapped dependency
+Select one gate with, for example, `--jobs 4 --stage authoring`; set `--jobs 1` to
+lower compiler concurrency. Without an explicit `--jobs` argument, the helper
+retains its conservative two-job local default. Every selected stage still
+performs preflight. Cold runs need network access to install prerequisites and
+fetch the committed SwiftPM dependencies; offline refers to the Discord workload,
+not an air-gapped dependency
 bootstrap. Local helper checks on the macOS editing host do not establish a
 completed Ubuntu build. Review a successful native Linux run and its artifacts
 before changing platform claims.

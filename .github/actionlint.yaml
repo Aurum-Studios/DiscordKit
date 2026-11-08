@@ -1,0 +1,9 @@
+# File: .github/actionlint.yaml
+# Created by Carson Rau.
+# Copyright (c) 2026 Aurum Studios.
+# https://aurum-studios.com
+
+# Organization-hosted runner labels use actionlint's custom runner registry.
+self-hosted-runner:
+  labels:
+    - linux-x64-4
