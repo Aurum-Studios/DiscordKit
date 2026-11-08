@@ -115,6 +115,7 @@ private final class HTTPTestHandler: ChannelInboundHandler {
         case .head(let head): path = head.uri; method = head.method; body = Data(); requests.withLockedValue { $0 += 1 }
         case .body(let bytes): body.append(contentsOf: bytes.readableBytesView)
         case .end:
+            if path.hasPrefix("/closed/") { writeClosedResponse(context: context); return }
             if path == "/hold" {
                 if !arrivalCompleted.withLockedValue({ old in let previous = old; old = true; return previous }) { arrived.succeed(()) }; return
             }
@@ -136,10 +137,98 @@ private final class HTTPTestHandler: ChannelInboundHandler {
             context.writeAndFlush(wrapOutboundOut(.end(nil)), promise: nil)
         }
     }
+
+    /// Flushes a bounded backlog and closes before releasing the test's consumption barrier.
+    /// - Parameter context: Owning event loop; length and EOF routes use identical body bytes.
+    /// The overflow suffix adds exactly one byte, and completion/teardown resolve the barrier once.
+    private func writeClosedResponse(context: ChannelHandlerContext) {
+        let count = 262_144 + (path.hasSuffix("/overflow") ? 1 : 0)
+        var headers = HTTPHeaders([("Connection", "close")])
+        if path.contains("/length/") { headers.add(name: "Content-Length", value: String(count)) }
+        context.write(wrapOutboundOut(.head(HTTPResponseHead(version: .http1_1, status: .ok, headers: headers))), promise: nil)
+        let bytes = context.channel.allocator.buffer(bytes: Data(repeating: 165, count: count))
+        context.write(wrapOutboundOut(.body(.byteBuffer(bytes))), promise: nil)
+        let channel = context.channel
+        let completion = context.eventLoop.makePromise(of: Void.self)
+        let arrived = self.arrived, arrivalCompleted = self.arrivalCompleted
+        completion.futureResult.whenComplete { _ in
+            channel.close(promise: nil)
+            channel.closeFuture.whenComplete { _ in
+                if !arrivalCompleted.withLockedValue({ old in let previous = old; old = true; return previous }) {
+                    arrived.succeed(())
+                }
+            }
+        }
+        context.writeAndFlush(wrapOutboundOut(.end(nil)), promise: completion)
+    }
 }
 
 /// HTTP/1.1 adapter conformance with real loopback sockets and injected deadlines.
 @Suite struct HTTPAdapterTests {
+    /// A peer may close with its entire bounded response still unread by the caller.
+    /// - Parameter framing: Explicit Content-Length or EOF-delimited HTTP response framing.
+    /// - Throws: Loopback setup, unexpected parser overflow or body mismatch.
+    /// Consumption begins only after server close, with no scheduling sleeps or larger read chunks.
+    @Test(arguments: ["length", "eof"])
+    func closedResponseRetainsExactAggregateLimit(_ framing: String) async throws {
+        let peer = try await HTTPTestPeer.open()
+        let transport = try NIOHTTPTransport(configuration: .init(maximumResponseBytes: 262_144, chunkBytes: 8_192))
+        let clock = ContinuousClock()
+        do {
+            let response = try await transport.execute(HTTPRequest(method: "GET", url: peer.url("/closed/\(framing)/exact")),
+                context: .init(clock: clock, deadline: clock.now.advanced(by: .seconds(10))))
+            #expect(response.status == 200)
+            #expect(response.headers.first { $0.name.lowercased() == "content-length" }?.value == (framing == "length" ? "262144" : nil))
+            #expect(!response.headers.contains { $0.name.lowercased() == "transfer-encoding" })
+            #expect(response.headers.first { $0.name.lowercased() == "connection" }?.value == "close")
+            try await peer.arrived.futureResult.get()
+            #expect(try await collect(response, bound: 8_192) == Data(repeating: 165, count: 262_144))
+            let counts = await transport.connectionCounts()
+            #expect(counts.active == 0 && counts.idle == 0)
+            #expect(peer.requests.withLockedValue { $0 } == 1)
+        } catch { await transport.close(); await peer.close(); throw error }
+        await transport.close(); await peer.close()
+    }
+
+    /// Advertised and unadvertised responses exceeding the same aggregate budget by one byte fail closed.
+    /// - Parameter framing: Explicit Content-Length rejects at headers; EOF framing rejects while reading.
+    /// - Throws: Loopback setup or unexpected response/cleanup failure.
+    @Test(arguments: ["length", "eof"])
+    func closedResponseRejectsOneByteOverAggregateLimit(_ framing: String) async throws {
+        let peer = try await HTTPTestPeer.open()
+        let transport = try NIOHTTPTransport(configuration: .init(maximumResponseBytes: 262_144, chunkBytes: 8_192))
+        let clock = ContinuousClock()
+        await #expect(throws: NIOAdapterFailure.responseTooLarge) {
+            let response = try await transport.execute(HTTPRequest(method: "GET", url: peer.url("/closed/\(framing)/overflow")),
+                context: .init(clock: clock, deadline: clock.now.advanced(by: .seconds(10))))
+            #expect(!response.headers.contains { ["content-length", "transfer-encoding"].contains($0.name.lowercased()) })
+            try await peer.arrived.futureResult.get()
+            _ = try await collect(response, bound: 8_192)
+        }
+        let counts = await transport.connectionCounts()
+        #expect(counts.active == 0 && counts.idle == 0)
+        #expect(peer.requests.withLockedValue { $0 } == 1)
+        await transport.close(); await peer.close()
+    }
+
+    /// Closing a caller-owned unread EOF backlog releases its lease without consuming or reusing the socket.
+    /// - Throws: Local setup or unexpected ownership-transfer failure.
+    @Test func closeUnreadClosedResponseReleasesLease() async throws {
+        let peer = try await HTTPTestPeer.open()
+        let transport = try NIOHTTPTransport(configuration: .init(maximumResponseBytes: 262_144, chunkBytes: 8_192))
+        let clock = ContinuousClock()
+        do {
+            let response = try await transport.execute(HTTPRequest(method: "GET", url: peer.url("/closed/eof/exact")),
+                context: .init(clock: clock, deadline: clock.now.advanced(by: .seconds(10))))
+            try await peer.arrived.futureResult.get()
+            await response.body?.close(); await response.body?.close()
+            let counts = await transport.connectionCounts()
+            #expect(counts.active == 0 && counts.idle == 0)
+            #expect(peer.requests.withLockedValue { $0 } == 1)
+        } catch { await transport.close(); await peer.close(); throw error }
+        await transport.close(); await peer.close()
+    }
+
     /// Consumes a caller-owned body and verifies every emitted chunk fits its budget.
     /// - Parameters:
     ///   - response: Response whose body ownership transfers into this helper.

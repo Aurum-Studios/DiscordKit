@@ -30,6 +30,7 @@ public struct NIOHTTPConfiguration: Sendable {
     ///   - maximumRequestBytes: Nonnegative upload cap; default 8 MiB. Uploads are
     ///     collected within this bound before sending, so producer errors send nothing.
     ///   - maximumResponseBytes: Nonnegative cumulative response-body cap; default 8 MiB.
+    ///     Also bounds retained unread payload; peer EOF may drain the entire response before consumption.
     ///   - maximumHeaderBytes: Positive request/response field-byte budget; default 32 KiB.
     ///   - chunkBytes: Positive socket read and emitted body chunk bound, default 16 KiB;
     ///     restricted to 1 MiB to keep per-read buffering predictable.
@@ -52,9 +53,10 @@ public struct NIOHTTPConfiguration: Sendable {
     }
 }
 
-/// Bounded HTTP/1.1 pooling with a dedicated event loop. Pull bodies stop socket
-/// reads until requested. Each instance owns its budgets; deployments must share
-/// an instance to impose a common aggregate transport limit. Close it explicitly.
+/// Bounded HTTP/1.1 pooling with a dedicated event loop. Ordinary socket reads
+/// follow body demand; peer EOF may synchronously retain all unread response bytes
+/// within `maximumResponseBytes`. Each instance owns its budgets; deployments must
+/// share an instance to impose a common aggregate transport limit. Close it explicitly.
 /// Rate coordination, authentication, caching and retries belong above this layer.
 public actor NIOHTTPTransport: HTTPTransport, TransportResource {
     private struct Origin: Hashable, Sendable { let host: String; let port: Int; let secure: Bool }
@@ -518,15 +520,15 @@ private struct HTTPWire: Sendable {
     }
 }
 
-/// Bounded event-loop-confined response state. At most one socket read (chunkBytes)
-/// is outstanding. Header parsing is capped independently by NIO's decoder.
+/// Bounded event-loop-confined response state. Ordinary demand arms one socket read;
+/// peer EOF can drain all remaining bytes synchronously. The cumulative response cap
+/// bounds retained payload in both cases. Header parsing has its own decoder limits.
 private final class HTTPWireHandler: ChannelInboundHandler {
     typealias InboundIn = HTTPClientResponsePart
     private let configuration: NIOHTTPConfiguration
     private var headers: EventLoopPromise<HTTPResponse>?
     private var reader: EventLoopPromise<Data?>?
     private var chunks: [Data] = []
-    private var queuedBytes = 0
     private var receivedBytes = 0
     private var ended = false
     private var keepAlive = false
@@ -555,7 +557,7 @@ private final class HTTPWireHandler: ChannelInboundHandler {
     func read(_ promise: EventLoopPromise<Data?>, channel: any Channel) {
         if let failure { promise.fail(failure) }
         else if reader != nil { promise.fail(TransportFailure.concurrentRead) }
-        else if !chunks.isEmpty { let value = chunks.removeFirst(); queuedBytes -= value.count; promise.succeed(value) }
+        else if !chunks.isEmpty { promise.succeed(chunks.removeFirst()) }
         else if ended { promise.succeed(nil) }
         else { reader = promise; channel.read() }
     }
@@ -564,7 +566,7 @@ private final class HTTPWireHandler: ChannelInboundHandler {
     /// - Returns: True only after valid final-response framing with keep-alive.
     func finish() -> Bool {
         let reuse = ended && failure == nil && keepAlive
-        chunks.removeAll(); queuedBytes = 0
+        chunks.removeAll()
         reader?.succeed(nil); reader = nil
         return reuse
     }
@@ -593,16 +595,14 @@ private final class HTTPWireHandler: ChannelInboundHandler {
                 fail(NIOAdapterFailure.responseTooLarge, context: context); return
             }
             receivedBytes += buffer.readableBytes
-            // TLS may emit a plaintext record larger than the socket read allocator;
-            // split output and bound the queued record to 64 KiB plus one read.
-            guard buffer.readableBytes <= 65_536 + configuration.chunkBytes - queuedBytes else {
-                fail(NIOAdapterFailure.responseTooLarge, context: context); return
-            }
+            // EOF may synchronously drain many reads before the async consumer resumes.
+            // The cumulative guard above bounds all retained payload, including this backlog;
+            // a smaller queue cap would reject otherwise valid close-delimited responses.
             let bytes = Data(buffer.readableBytesView)
             for offset in stride(from: 0, to: bytes.count, by: configuration.chunkBytes) {
                 let chunk = bytes.subdata(in: offset..<min(bytes.count, offset + configuration.chunkBytes))
                 if let reader { self.reader = nil; reader.succeed(chunk) }
-                else { chunks.append(chunk); queuedBytes += chunk.count }
+                else { chunks.append(chunk) }
             }
         case .end:
             if hasHead { ended = true; reader?.succeed(nil); reader = nil }
@@ -638,6 +638,6 @@ private final class HTTPWireHandler: ChannelInboundHandler {
     private func fail(_ error: any Error, context: ChannelHandlerContext) {
         guard failure == nil else { return }
         failure = error; headers?.fail(error); headers = nil; reader?.fail(error); reader = nil
-        chunks.removeAll(); queuedBytes = 0; context.close(promise: nil)
+        chunks.removeAll(); context.close(promise: nil)
     }
 }

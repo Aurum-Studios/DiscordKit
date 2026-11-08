@@ -72,10 +72,15 @@ transparent request replay or socket migration.
 | `FoundationHTTPTransport` | Ephemeral URLSession, bounded upload collection and native byte pulls, no redirects/cookies/cache/credential persistence | 32 admitted operations including owned bodies, 8 MiB request/consumed response, 16 KiB emitted chunks |
 | `FoundationWebSocketTransport` | Apple URLSession WebSocket, native complete-message framing and explicit cancellation/close | Shared admission settings, 1 MiB message cap, bounded writer reservations; ordinary watchOS use rejected |
 
-NIO's HTTP response parser bounds headers separately from body bytes. Socket
-reads are demand-driven and fixed-size; TLS may emit a larger plaintext record,
-so HTTP queues allow at most 64 KiB plus the configured read chunk. Bodies split
-that bounded record into the configured emitted chunk size. HTTP uploads are
+NIO's HTTP response parser bounds headers separately from body bytes. Ordinary
+socket reads follow body demand and use the configured fixed read size. When a
+peer closes, SwiftNIO may synchronously drain all remaining response bytes before
+the asynchronous body consumer resumes. Retained unread payload is bounded by
+the existing cumulative `maximumResponseBytes` limit in either case, and emitted
+chunks retain their configured size. Callers budgeting memory must account for
+up to that response ceiling per admitted exchange, including unread closed-peer
+responses. Explicit body/transport close discards retained payload and joins
+owned reads. HTTP uploads are
 collected within the configured cap before transmission; these adapters do not
 provide streaming uploads. NIO does not implement automatic decompression,
 HTTP/2, proxies, cookies, client TLS identities or TLS verification bypasses.

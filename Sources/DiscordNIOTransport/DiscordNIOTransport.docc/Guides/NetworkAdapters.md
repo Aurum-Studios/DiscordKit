@@ -29,6 +29,8 @@ func makeHTTPTransport() throws -> NIOHTTPTransport {
 
 HTTP uploads are collected within the configured request bound before sending. A producer failure therefore sends no upload. Responses preserve duplicate headers and expose a single-use pull body. Consume that body to EOF or explicitly close it on every exit; an abandoned body retains its pool slot. Cancellation or expiration during body reading discards the connection. The deadline supplied to execution covers both the exchange and later response reads.
 
+Ordinary HTTP socket reads follow body demand and emit chunks no larger than `chunkBytes`. When a peer closes, SwiftNIO may synchronously drain all remaining socket bytes before the asynchronous consumer resumes. The transport can therefore retain the whole unread response, bounded by `maximumResponseBytes`, rather than a fixed number of read chunks. This same cumulative cap applies to Content-Length and EOF-delimited responses, and an excess byte fails the response before retention. Choose response and connection limits together to bound aggregate retained payload; per-chunk limits do not establish a smaller response-memory ceiling. Explicit body or transport closure discards retained bytes and joins native cleanup.
+
 Redirect responses are returned to the caller. There is no automatic redirect, decompression, cookie jar, proxy configuration or retry. Higher-level code decides whether an operation is safe to repeat after a transport failure, especially when the server may have applied a mutation.
 
 ### Keep WebSocket control independent of consumers
