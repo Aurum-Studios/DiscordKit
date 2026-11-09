@@ -6,13 +6,15 @@ import Testing
 
 /// Direct virtual-time regressions for alias discovery, elapsed windows and nonrefundable rate ownership.
 /// No scheduler, network, wall clock, background task or production credential participates in these tests.
-@available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
 @Suite struct MC29RateAccountingTests {
     /// One explicitly controlled monotonic time domain, shared by every call within a scenario.
+    @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
     private typealias Instant = ManualClock.Instant
     /// Actual in-process authority rather than a model or forwarding implementation.
+    @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
     private typealias Store = InProcessRateLimitStore<Instant>
     /// Exact ownership returned by the authority, retained until one completion or release.
+    @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
     private typealias Reservation = RateLimitReservation<Instant>
 
     /// Three independently admitted cold routes learn one bucket without importing their depleted startup guards.
@@ -20,6 +22,7 @@ import Testing
     /// - Parameter order: A deterministic completion permutation for the same three server observations.
     /// - Throws: Unexpected authority errors or a missing required admission.
     @Test(arguments: [[0, 1, 2], [2, 1, 0], [1, 0, 2]])
+    @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
     func positiveHeadroomSurvivesABCDiscovery(order: [Int]) async throws {
         let store = makeStore(), now = Instant(), identity = RateLimitIdentity()
         let requests = (0..<3).map { request(identity, route: "GET /alias/\($0)") }
@@ -38,6 +41,7 @@ import Testing
     /// Pending known-bucket sends and reversed responses cannot refund an already debited allowance.
     /// A lower late observation may conservatively reduce headroom because external sends cannot be excluded.
     /// - Throws: Unexpected authority errors or a missing required admission.
+    @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
     @Test func overlappingReversedCompletionsRetainEveryDebit() async throws {
         let store = makeStore(), now = Instant(), item = request(.init(), route: "GET /overlap")
         let prime = try await admit(store, item, at: now)
@@ -55,6 +59,7 @@ import Testing
     /// A hash migration transfers all aliases and unknown sends, retaining both learned allowance floors.
     /// Releasing the other outstanding send clears ownership without refunding its transferred debit.
     /// - Throws: Unexpected authority errors or a missing required admission.
+    @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
     @Test func migrationMovesAliasesAndUnrepresentedSendOnce() async throws {
         let store = makeStore(), now = Instant(), identity = RateLimitIdentity()
         let a = request(identity, route: "GET /migration/a"), b = request(identity, route: "GET /migration/b")
@@ -80,6 +85,7 @@ import Testing
     /// - Parameter offset: Explicit response time around the one-hundred-millisecond known boundary.
     /// - Throws: Unexpected authority errors or a missing required admission.
     @Test(arguments: [Duration.milliseconds(99), .milliseconds(100), .milliseconds(101)])
+    @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
     func completionCrossingResetRollsBeforeLearning(offset: Duration) async throws {
         let store = makeStore(), now = Instant(), item = request(.init(), route: "GET /cross-reset")
         let first = try await admit(store, item, at: now)
@@ -102,6 +108,7 @@ import Testing
     /// - Parameter remaining: Missing, depleted, plausible or stale-high remaining metadata from the older send.
     /// - Throws: Unexpected authority errors or a missing required admission.
     @Test(arguments: [nil, "0", "4", "99"] as [String?])
+    @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
     func oldResponseAfterNewWindowAdmissionNeverRefunds(remaining: String?) async throws {
         let store = makeStore(), now = Instant(), item = request(.init(), route: "GET /late-old")
         let first = try await admit(store, item, at: now)
@@ -124,6 +131,7 @@ import Testing
     /// - Parameter restrictedFirst: Whether the blocked provisional route or the healthy learned route completes first.
     /// - Throws: Unexpected authority errors or a missing required admission.
     @Test(arguments: [true, false])
+    @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
     func real429SurvivesPositiveAliasMetadata(restrictedFirst: Bool) async throws {
         let store = makeStore(), now = Instant(), identity = RateLimitIdentity()
         let a = request(identity, route: "GET /restricted/a"), b = request(identity, route: "GET /restricted/b")
@@ -147,6 +155,7 @@ import Testing
     /// - Parameter scope: The existing server restriction family exercised without altering coordinator policy.
     /// - Throws: Unexpected authority errors or a missing required admission.
     @Test(arguments: ["route", "global", "shared", "egress-global", "invalid-egress"])
+    @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
     func independentRestrictionScopesRemainClosed(scope: String) async throws {
         let store = makeStore(invalidThreshold: scope == "invalid-egress" ? 1 : 9_000)
         let now = Instant(), identity = RateLimitIdentity(), egress = UUID()
@@ -184,6 +193,7 @@ import Testing
     /// - Parameter invalid: Nonfinite, negative, oversized or malformed wire metadata.
     /// - Throws: Unexpected authority errors or a missing required admission.
     @Test(arguments: ["NaN", "inf", "-1", "9999999999999999999999", "invalid"])
+    @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
     func malformedMetadataDoesNotManufactureAllowance(invalid: String) async throws {
         for status in [200, 429] {
             let store = makeStore(), now = Instant(), item = request(.init(), route: "GET /malformed")
@@ -200,6 +210,7 @@ import Testing
 
     /// A response with no remaining count retains the exact possible-send debit rather than acknowledging another owner.
     /// - Throws: Unexpected authority errors or a missing required admission.
+    @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
     @Test func missingMetadataRetainsStartupDebit() async throws {
         for metadata in [[HTTPHeader](), [.init(name: "X-RateLimit-Bucket", value: "common")]] {
             let store = makeStore(), now = Instant(), item = request(.init(), route: "GET /missing")
@@ -213,6 +224,7 @@ import Testing
     /// - Parameter notSent: Chooses explicit not-sent or uncertain cleanup under the same no-refund contract.
     /// - Throws: Unexpected authority errors or a missing required admission.
     @Test(arguments: [true, false])
+    @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
     func releaseAndOverlappingResponseNeverRefund(notSent: Bool) async throws {
         let store = makeStore(), now = Instant(), item = request(.init(), route: "GET /release")
         let first = try await admit(store, item, at: now)
@@ -226,6 +238,7 @@ import Testing
 
     /// Inclusive lease expiry rejects stale learning, clears concurrency and preserves its consumed live-window debit.
     /// - Throws: Unexpected authority errors or a missing required admission.
+    @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
     @Test func expiredCompletionCannotLearnOrRefund() async throws {
         let store = makeStore(lifetime: .milliseconds(100)), now = Instant()
         let item = request(.init(), route: "GET /expired")
@@ -242,6 +255,7 @@ import Testing
 
     /// Alias learning fits its exact budget/alias ceiling and cannot evict learned state to admit new identities.
     /// - Throws: Unexpected authority errors or a missing required admission.
+    @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
     @Test func aliasMetadataRemainsBounded() async throws {
         let store = makeStore(metadata: 2), now = Instant(), identity = RateLimitIdentity()
         let item = request(identity, route: "GET /bounded")
@@ -260,6 +274,7 @@ import Testing
     ///   - lifetime: Inclusive reservation expiry in the same virtual time domain.
     ///   - invalidThreshold: Outbound-IP invalid-response threshold; one isolates the protection-scope case.
     /// - Returns: Empty production authority with no tasks or external dependencies.
+    @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
     private func makeStore(metadata: Int = 4_096, lifetime: Duration = .seconds(60), invalidThreshold: Int = 9_000) -> Store {
         Store(policy: .init(maximumConcurrentRequestsPerIdentity: 32, maximumMetadata: metadata,
             reservationLifetime: lifetime, provisionalWindow: .seconds(10),
@@ -271,6 +286,7 @@ import Testing
     ///   - identity: Shared opaque credential identity for the scenario.
     ///   - route: Fixed synthetic canonical route, never a real URL or credential.
     /// - Returns: An interaction-exempt direct rate-store input.
+    @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
     private func request(_ identity: RateLimitIdentity, route: String) -> RateLimitRequest {
         .init(identity: identity, route: route, usesGlobalLimit: false)
     }
@@ -282,6 +298,7 @@ import Testing
     ///   - remaining: Nonnegative observed allowance or nil for an unacknowledged possible-send debit.
     ///   - reset: Relative server window spelling or nil for missing reset evidence.
     /// - Returns: Ordered wire headers consumed by the real parser.
+    @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
     private func headers(bucket: String? = "common", limit: Int? = 10, remaining: Int?, reset: String? = "10") -> [HTTPHeader] {
         var result: [HTTPHeader] = []
         if let bucket { result.append(.init(name: "X-RateLimit-Bucket", value: bucket)) }
@@ -298,6 +315,7 @@ import Testing
     ///   - now: Explicit ManualClock instant.
     /// - Returns: Owned single-use reservation.
     /// - Throws: Authority failures or a recorded missing-admission requirement.
+    @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
     private func admit(_ store: Store, _ item: RateLimitRequest, at now: Instant) async throws -> Reservation {
         let result = try await store.reserve(item, now: now)
         guard case .admitted(let token) = result else {
@@ -314,6 +332,7 @@ import Testing
     ///   - count: Exact expected finite immediate admission count.
     ///   - now: Unchanged virtual instant, so no replenishment can hide over-admission.
     /// - Throws: Authority failures or any unexpectedly missing permission.
+    @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
     private func consume(_ store: Store, _ item: RateLimitRequest, count: Int, at now: Instant) async throws {
         for _ in 0..<count {
             let token = try await admit(store, item, at: now)
@@ -328,6 +347,7 @@ import Testing
     ///   - now: Explicit attempted admission instant.
     ///   - minimum: Earliest safe retry established by policy or server evidence.
     /// - Throws: Unexpected authority/cleanup failures.
+    @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
     private func blocked(_ store: Store, _ item: RateLimitRequest, at now: Instant, until minimum: Instant) async throws {
         switch try await store.reserve(item, now: now) {
         case .retry(let retry): #expect(retry >= minimum && retry > now)
