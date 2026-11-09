@@ -6,8 +6,8 @@
 
 ### Creating a value
 
-- ``DiscordBotDSL/GatewayInteractionAdapter/init(applicationID:commands:services:clock:admission:guildID:configuration:authority:maximumPendingInteractions:maximumPendingBytes:maximumConcurrentHandlers:maximumDefinitionBytes:limits:failurePolicy:failureObserver:)``
-- ``DiscordBotDSL/GatewayInteractionAdapter/init(applicationID:commands:services:clock:admission:guildID:configuration:authority:maximumPendingInteractions:maximumPendingBytes:maximumConcurrentHandlers:maximumDefinitionBytes:limits:serializesPerShard:failurePolicy:failureObserver:)``
+- ``DiscordBotDSL/GatewayInteractionAdapter/init(applicationID:commands:services:clock:admission:guildID:configuration:authority:maximumPendingInteractions:maximumPendingBytes:maximumConcurrentHandlers:maximumDefinitionBytes:limits:failurePolicy:failureObserver:timing:)``
+- ``DiscordBotDSL/GatewayInteractionAdapter/init(applicationID:commands:services:clock:admission:guildID:configuration:authority:maximumPendingInteractions:maximumPendingBytes:maximumConcurrentHandlers:maximumDefinitionBytes:limits:serializesPerShard:failurePolicy:failureObserver:timing:)``
 
 ### Instance methods
 

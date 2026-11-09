@@ -6,7 +6,7 @@
 
 ### Creating a value
 
-- ``DiscordHTTP/RESTClient/init(credential:identity:transport:coordinator:clock:cache:coalescer:retryPolicy:maximumResponseBytes:maximumExchangeDuration:egress:userAgent:)``
+- ``DiscordHTTP/RESTClient/init(credential:identity:transport:coordinator:clock:cache:coalescer:retryPolicy:maximumResponseBytes:maximumExchangeDuration:egress:userAgent:timing:)``
 
 ### Instance properties
 

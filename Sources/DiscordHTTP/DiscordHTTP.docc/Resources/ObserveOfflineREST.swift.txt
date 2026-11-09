@@ -1,0 +1,49 @@
+import DiscordHTTP
+import DiscordTransport
+import Foundation
+
+/// Counts fixed observations without retaining a request or an unbounded sample list.
+private final class ObservationCount: @unchecked Sendable {
+    /// Protects the scalar count shared by concurrent synchronous callbacks.
+    private let lock = NSLock()
+    /// Number of observations admitted by this example's single execution.
+    private var count = 0
+    /// Counts one detached observation without retaining its value.
+    func record(_ sample: OperationTimingSample) { lock.withLock { count += 1 } }
+    /// Copies the scalar after the owning REST call has joined.
+    func snapshot() -> Int { lock.withLock { count } }
+}
+
+/// Injected peer completes one response without opening a socket or consuming credentials.
+private struct OfflinePeer: HTTPTransport {
+    /// Checks cancellation/deadline and confirms an empty synthetic response without I/O.
+    func execute<C: Clock>(_ request: HTTPRequest, context: TransportContext<C>) async throws -> HTTPResponse
+        where C.Duration == Duration {
+        try context.check()
+        return HTTPResponse(status: 204)
+    }
+}
+
+/// Reproducible opt-in timing composition with explicitly joined authority ownership.
+@main struct ObserveOfflineREST {
+    /// Executes one offline descriptor and verifies four independent ownership observations.
+    static func main() async throws {
+        let count = ObservationCount()
+        let timing = OperationTiming(sink: count.record)
+        let clock = ContinuousClock()
+        let coordinator = RateLimitCoordinator(clock: clock)
+        let client = RESTClient(credential: .none, identity: RateLimitIdentity(), transport: OfflinePeer(),
+            coordinator: coordinator, clock: clock, timing: timing)
+        do {
+            let endpoint = try Endpoint(method: "GET", path: ["timing-fixture"], authentication: .none,
+                successStatuses: [204], retrySafety: .safe, decode: { $0 })
+            let bytes = try await client.execute(endpoint)
+            precondition(bytes.isEmpty && count.snapshot() == 4)
+        } catch {
+            await coordinator.close()
+            throw error
+        }
+        await coordinator.close()
+        print("Observed admission, headers, body cleanup and joined execution offline.")
+    }
+}

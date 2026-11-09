@@ -39,6 +39,11 @@ Browse the public types and operations provided by DiscordTransport.
 - ``DiscordTransport/TransportFailure``
 - ``DiscordTransport/TransportResource``
 
+### Operation Timing
+
+- ``DiscordTransport/OperationTiming``
+- ``DiscordTransport/OperationTimingSample``
+
 ### Shard Ownership
 
 - ``DiscordTransport/InProcessShardLeaseStore``

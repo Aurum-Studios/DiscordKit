@@ -1,0 +1,8 @@
+@Tutorials(name: "REST ownership timing") {
+    @Intro(title: "Learn bounded REST observations") {
+        Start with an injected offline peer, then apply the same observer to existing owned clients.
+    }
+    @Chapter(name: "Measure confirmed boundaries") {
+        @TutorialReference(tutorial: "doc:ObserveRESTTiming")
+    }
+}

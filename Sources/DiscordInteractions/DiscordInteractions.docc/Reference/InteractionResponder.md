@@ -6,7 +6,7 @@
 
 ### Creating a value
 
-- ``DiscordInteractions/InteractionResponder/init(interaction:deliveryMode:clock:sink:admission:receivedAt:)``
+- ``DiscordInteractions/InteractionResponder/init(interaction:deliveryMode:clock:sink:admission:receivedAt:timing:)``
 
 ### Instance properties
 
