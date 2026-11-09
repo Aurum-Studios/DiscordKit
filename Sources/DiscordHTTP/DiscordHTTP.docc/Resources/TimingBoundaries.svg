@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="260" viewBox="0 0 1120 260" role="img" aria-label="Admission, headers, body cleanup and joined result are separate ownership observations">
+<rect width="1120" height="260" rx="24" fill="#142333"/>
+<g fill="#e8f4fa" font-family="system-ui, sans-serif" text-anchor="middle">
+<text x="560" y="54" font-size="28">Observe each owned boundary</text>
+<g font-size="22"><text x="150" y="139">Admission</text><text x="420" y="139">Headers</text><text x="690" y="139">Body / close</text><text x="960" y="139">Result / join</text></g>
+<text x="560" y="216" font-size="19">Headers alone do not establish API success</text>
+</g><g fill="none" stroke="#78c7e8" stroke-width="3"><rect x="40" y="92" width="220" height="78" rx="12"/><rect x="310" y="92" width="220" height="78" rx="12"/><rect x="580" y="92" width="220" height="78" rx="12"/><rect x="850" y="92" width="220" height="78" rx="12"/></g>
+</svg>

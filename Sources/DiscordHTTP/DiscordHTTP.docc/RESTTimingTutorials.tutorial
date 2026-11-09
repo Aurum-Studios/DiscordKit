@@ -3,6 +3,7 @@
         Start with an injected offline peer, then apply the same observer to existing owned clients.
     }
     @Chapter(name: "Measure confirmed boundaries") {
+        @Image(source: "TimingBoundaries.svg", alt: "Separate admission, headers, body cleanup and joined-result observations")
         @TutorialReference(tutorial: "doc:ObserveRESTTiming")
     }
 }
