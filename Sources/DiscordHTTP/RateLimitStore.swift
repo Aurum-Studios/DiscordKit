@@ -444,13 +444,26 @@ private struct RateLimitObservation: Sendable {
 
 /// One fixed actor-owned identity/resource partition. Metadata is never unbounded.
 private actor RateLimitPartition<Instant: InstantProtocol> where Instant.Duration == Duration {
+    /// One finite allowance floor; startup depletion is distinct from observed quota and explicit 429 restrictions.
     private struct Budget: Sendable {
+        /// Maximum allowance used only when the current bounded window has provably elapsed.
         var limit: Int
+        /// Conservative available allowance, including debits made after the last accepted observation.
         var remaining: Int
+        /// Monotonic upper bound retained before the next local replenishment.
         var reset: Instant
+        /// Conservative interval used to advance an elapsed window without wall-clock conversion.
         var window: Duration
+        /// Owned sends still capable of completing; carried into a replenished window without refunding them.
         var inFlight: Int = 0
+        /// Possible sends not acknowledged by their own valid remaining header in this window.
+        /// Completed uncertain/missing-header sends remain counted until a proven reset; no per-send registry is added.
+        var unrepresented: Int = 0
+        /// Whether an observed remaining header, rather than the one-token startup guard, established this floor.
         var learned: Bool = false
+        /// Whether an explicit 429 must survive positive or missing metadata until its retained reset.
+        var blocked: Bool = false
+        /// Invalid responses retained by the independent outbound-IP quiet-window protection.
         var invalid: Int = 0
     }
     private let policy: SchedulingPolicy
@@ -496,6 +509,7 @@ private actor RateLimitPartition<Instant: InstantProtocol> where Instant.Duratio
         for budgetKey in required {
             budgets[budgetKey]?.remaining -= 1
             budgets[budgetKey]?.inFlight += 1
+            budgets[budgetKey]?.unrepresented += 1
         }
         return nil
     }
@@ -521,6 +535,7 @@ private actor RateLimitPartition<Instant: InstantProtocol> where Instant.Duratio
         }
         budgets[key]?.remaining -= 1
         budgets[key]?.inFlight += 1
+        budgets[key]?.unrepresented += 1
         return nil
     }
 
@@ -549,8 +564,9 @@ private actor RateLimitPartition<Instant: InstantProtocol> where Instant.Duratio
         }
     }
 
-    /// Merges provisional routes into learned bucket identities while retaining
-    /// major resources and subtracting other in-flight observations conservatively.
+    /// Merges exact bucket scopes without treating a consumed startup token as learned exhaustion.
+    /// Proven elapsed windows roll before response learning. A valid remaining header acknowledges
+    /// only its own send; other uncertain debits remain charged across aliases and window changes.
     /// - Parameters:
     ///   - request: Original admitted request.
     ///   - observation: Parsed server metadata.
@@ -560,18 +576,22 @@ private actor RateLimitPartition<Instant: InstantProtocol> where Instant.Duratio
         defer { release(request) }
         let route = RateLimitKey.route(request.identity, request.route, request.majorResource)
         var key = aliases[route] ?? route
+        refresh(key, now: now)
+        if observation.remaining != nil, var budget = budgets[key] {
+            // Ownership admits this completion once. Its own header represents this send, never another pending send.
+            budget.unrepresented = max(0, budget.unrepresented - 1)
+            budgets[key] = budget
+        }
         if let hash = observation.bucket {
             let learnedKey = RateLimitKey.bucket(request.identity, hash, request.majorResource)
             if key != learnedKey {
+                refresh(learnedKey, now: now)
                 // Replacing a provisional budget needs one extra alias slot. Never drop an exhausted budget.
                 let added = (budgets[learnedKey] == nil ? 1 : 0) + (aliases[route] == nil ? 1 : 0)
                 try makeRoom(for: max(0, added - (budgets[key] == nil ? 0 : 1)), now: now)
                 if let previous = budgets.removeValue(forKey: key) {
-                    if var merged = budgets[learnedKey] {
-                        merged.remaining = min(merged.remaining, previous.remaining)
-                        merged.reset = max(merged.reset, previous.reset)
-                        merged.inFlight += previous.inFlight
-                        budgets[learnedKey] = merged
+                    if let existing = budgets[learnedKey] {
+                        budgets[learnedKey] = merge(existing, previous)
                     } else { budgets[learnedKey] = previous }
                     // Existing aliases can still point at an older learned bucket after a hash change.
                     for alias in aliases.keys where aliases[alias] == key { aliases[alias] = learnedKey }
@@ -581,27 +601,59 @@ private actor RateLimitPartition<Instant: InstantProtocol> where Instant.Duratio
             }
         }
         if var budget = budgets[key] {
-            let previouslyLearned = budget.learned
+            let authoritative = budget.learned || budget.blocked
             if let limit = observation.limit { budget.limit = limit }
             if let reset = observation.resetAfter {
                 budget.window = max(reset, policy.fairnessInterval)
-                budget.reset = budget.learned ? max(budget.reset, now.advanced(by: reset)) : now.advanced(by: reset)
+                budget.reset = authoritative ? max(budget.reset, now.advanced(by: reset)) : now.advanced(by: reset)
             }
             if let remaining = observation.remaining {
-                let candidate = max(0, remaining - max(0, budget.inFlight - 1))
-                budget.remaining = budget.learned ? min(budget.remaining, candidate) : candidate
+                let candidate = max(0, remaining - budget.unrepresented)
+                budget.remaining = authoritative ? min(budget.remaining, candidate) : candidate
                 budget.learned = true
             }
             if observation.status == 429 {
                 budget.remaining = 0
                 let retry = now.advanced(by: observation.retryAfter ?? policy.provisionalWindow)
-                budget.reset = previouslyLearned ? max(budget.reset, retry) : retry
+                budget.reset = authoritative || observation.resetAfter != nil ? max(budget.reset, retry) : retry
+                budget.blocked = true
             }
             budgets[key] = budget
         }
         if request.usesGlobalLimit, !request.usesEgressGlobalLimit, observation.status == 429, observation.global {
             try block(.global(request.identity), delay: observation.retryAfter ?? policy.provisionalWindow, now: now)
         }
+    }
+
+    /// Combines two newly discovered aliases while charging each source's unrepresented debits once.
+    /// A provisional startup floor supplies no server exhaustion/reset evidence. Two authoritative
+    /// floors retain their conservative minimum and latest reset; uncertain releases never refund quota.
+    /// - Parameters:
+    ///   - existing: Current destination bucket, already refreshed at the observation instant.
+    ///   - incoming: Removed source bucket, whose aliases and ownership move to the destination together.
+    /// - Returns: A finite merged allowance retaining every outstanding owner and unrepresented debit.
+    private func merge(_ existing: Budget, _ incoming: Budget) -> Budget {
+        let existingAuthority = existing.learned || existing.blocked
+        let incomingAuthority = incoming.learned || incoming.blocked
+        var merged = existing
+        if (!existing.learned && incoming.learned) || (!existingAuthority && incomingAuthority) { merged = incoming }
+        if existingAuthority && incomingAuthority {
+            merged.remaining = min(max(0, existing.remaining - incoming.unrepresented),
+                                   max(0, incoming.remaining - existing.unrepresented))
+            merged.reset = max(existing.reset, incoming.reset)
+        } else if existingAuthority {
+            merged.remaining = max(0, existing.remaining - incoming.unrepresented)
+        } else if incomingAuthority {
+            merged.remaining = max(0, incoming.remaining - existing.unrepresented)
+        } else {
+            merged.remaining = min(existing.remaining, incoming.remaining)
+            merged.reset = max(existing.reset, incoming.reset)
+        }
+        merged.inFlight = existing.inFlight + incoming.inFlight
+        merged.unrepresented = existing.unrepresented + incoming.unrepresented
+        merged.learned = existing.learned || incoming.learned
+        merged.blocked = existing.blocked || incoming.blocked
+        return merged
     }
 
     /// Frees route/global concurrency without refunding uncertainty or rate debits.
@@ -641,6 +693,7 @@ private actor RateLimitPartition<Instant: InstantProtocol> where Instant.Duratio
         var budget = budgets[key] ?? Budget(limit: 1, remaining: 0, reset: now, window: policy.provisionalWindow)
         budget.remaining = 0
         budget.reset = max(budget.reset, now.advanced(by: delay))
+        budget.blocked = true
         budgets[key] = budget
     }
 
@@ -678,6 +731,8 @@ private actor RateLimitPartition<Instant: InstantProtocol> where Instant.Duratio
     private func refresh(_ key: RateLimitKey, now: Instant) {
         guard var budget = budgets[key], budget.reset <= now else { return }
         budget.remaining = max(0, budget.limit - budget.inFlight)
+        budget.unrepresented = budget.inFlight
+        budget.blocked = false
         budget.reset = now.advanced(by: budget.window)
         budgets[key] = budget
     }
