@@ -7,6 +7,7 @@ import DiscordLogging
 import DiscordCore
 import DiscordHTTP
 import DiscordModels
+import DiscordTransport
 import Foundation
 
 /// Public response ownership state. In-flight acknowledgement reserves the single initial slot before
@@ -49,6 +50,14 @@ public actor InteractionResponder: CustomStringConvertible, CustomDebugStringCon
     private let clock: InteractionClock
     private let sink: InteractionResponseSink
     private let admission: InteractionAcknowledgementAdmission
+    /// Explicit content-free observer; nil performs no instrumentation clock reads.
+    private let timing: OperationTiming?
+    /// Package-installed socket receipt observation; public receipt offsets never create this trust.
+    private var gatewayReceiptAge: (@Sendable () -> Duration?)?
+    /// Actual dispatcher admission offset in the enabled observer's clock domain.
+    private var gatewayAdmittedAt: Duration?
+    /// Confirmed initial completion offset, retained only when timing is explicitly enabled.
+    private var acknowledgedAt: Duration?
     private let receivedAt: Duration
     private let acknowledgementDeadline: Duration
     private let tokenDeadline: Duration
@@ -74,13 +83,26 @@ public actor InteractionResponder: CustomStringConvertible, CustomDebugStringCon
     ///   - admission: Shared bounded initial-only authority, independently owned from ordinary REST admission.
     ///   - receivedAt: Receipt offset in `clock`'s domain; nil captures now. Pass actual receipt time after slow ingress.
     ///     Future values are rejected on first operation rather than granting a later deadline.
+    ///   - timing: Optional synchronous content-free observer. Public receipt values do not authorize
+    ///     trusted Gateway receive samples; only the package-owned adapter installs that provenance.
     public init(interaction: Interaction, deliveryMode: InteractionDeliveryMode, clock: InteractionClock,
-        sink: InteractionResponseSink, admission: InteractionAcknowledgementAdmission, receivedAt: Duration? = nil) {
+        sink: InteractionResponseSink, admission: InteractionAcknowledgementAdmission, receivedAt: Duration? = nil,
+        timing: OperationTiming? = nil) {
         self.interaction = interaction; self.deliveryMode = deliveryMode; self.clock = clock
-        self.sink = sink; self.admission = admission
+        self.sink = sink; self.admission = admission; self.timing = timing
         let receipt = receivedAt ?? clock.now
         self.receivedAt = receipt; acknowledgementDeadline = receipt + .seconds(3)
         tokenDeadline = receipt + .seconds(900)
+    }
+
+    /// Installs trusted socket age after package-owned admission and before invoking the handler.
+    /// Public replay, delivery-mode selection and public receipt offsets cannot call this package boundary.
+    /// - Parameters:
+    ///   - receiptAge: Existing trusted Gateway observation, read only after a confirmed sink success.
+    ///   - admittedAt: Actual dispatcher admission in this responder's enabled timing clock domain.
+    package func installGatewayTiming(receiptAge: @escaping @Sendable () -> Duration?, admittedAt: Duration) {
+        guard timing != nil, deliveryMode == .gateway, state == .pending else { return }
+        gatewayReceiptAge = receiptAge; gatewayAdmittedAt = admittedAt
     }
 
     /// Checks that a normalized context cannot accidentally use another interaction's continuation authority.
@@ -109,6 +131,7 @@ public actor InteractionResponder: CustomStringConvertible, CustomDebugStringCon
     ///   Discord error 10062 closes the expired token; 40060 retains unknown remote acknowledgement ownership.
     ///   At the exact three-second boundary a pending callback fails locally and its token is treated as expired.
     public func respond(_ response: InteractionResponse) async throws {
+        let responseStarted = timing?.instant()
         DiscordLog.makeLogger("interactions.response").debug("Initial response processing started", metadata: ["dk.event": "interactions.response.started", "dk.callback_type": .stringConvertible(response.type.rawValue)])
         do {
             try Task.checkCancellation()
@@ -156,10 +179,21 @@ public actor InteractionResponder: CustomStringConvertible, CustomDebugStringCon
                     }
                 }
                 state = .acknowledged(response.type)
+                if let timing {
+                    let confirmedAt = timing.instant()
+                    acknowledgedAt = confirmedAt
+                    if let gatewayAdmittedAt {
+                        timing.record(.gatewayAdmissionToAcknowledgement, elapsed: confirmedAt - gatewayAdmittedAt)
+                    }
+                    if let age = gatewayReceiptAge?(), age >= .zero {
+                        timing.record(.gatewayReceiveToAcknowledgement, elapsed: age)
+                    }
+                }
                 DiscordLog.makeLogger("interactions.response").debug("Initial interaction response acknowledged", metadata: ["dk.event": "interactions.response.acknowledged", "dk.callback_type": .stringConvertible(response.type.rawValue)])
                 await admission.release(reservation)
                 DiscordLog.makeLogger("interactions.response").trace("Acknowledgement admission released", metadata: ["dk.event": "interactions.response.admission_released"])
                 await InteractionFailureScope.clear()
+                if let timing, let responseStarted { timing.record(.interactionInitialResponse, since: responseStarted) }
             } catch {
                 state = stateAfterInitialFailure(error)
                 DiscordLog.makeLogger("interactions.response").debug("Initial interaction response failed", metadata: ["dk.event": "interactions.response.failed"])
@@ -174,6 +208,10 @@ public actor InteractionResponder: CustomStringConvertible, CustomDebugStringCon
         } catch {
             DiscordLog.makeLogger("interactions.response").debug("Initial response processing stopped", metadata: ["dk.event": "interactions.response.stopped"])
             await InteractionFailureScope.record(error, at: .acknowledgement)
+            if let timing, let responseStarted {
+                timing.record(.interactionInitialResponse, since: responseStarted,
+                    outcome: state == .indeterminate ? .uncertain : OperationTiming.outcome(for: error))
+            }
             throw error
         }
     }
@@ -199,6 +237,7 @@ public actor InteractionResponder: CustomStringConvertible, CustomDebugStringCon
     ///   cancellation or REST failure. Cancellation/deadline after adapter entry remains an explicit unknown mutation
     ///   outcome. Ambiguous edits propagate without changing the confirmed initial state or completing a defer locally.
     public func editOriginal(_ request: InteractionMessageEdit) async throws -> Message {
+        let editStarted = timing?.instant()
         DiscordLog.makeLogger("interactions.response").debug("Original response edit started", metadata: ["dk.event": "interactions.response.edit_started"])
         do {
             let kind = try reserveContinuation(requireOriginal: true)
@@ -213,12 +252,21 @@ public actor InteractionResponder: CustomStringConvertible, CustomDebugStringCon
             DiscordLog.makeLogger("interactions.response").trace("Original response edit validated", metadata: ["dk.event": "interactions.response.edit_validated"])
             let timeout = tokenDeadline - clock.now
             let result = try await performContinuation { try await self.sink.edit(request, timeout) }
+            if let timing {
+                if !deferredCompleted, let acknowledgedAt {
+                    timing.record(.interactionAcknowledgementToOriginalEdit, since: acknowledgedAt)
+                }
+                if let editStarted { timing.record(.interactionOriginalEdit, since: editStarted) }
+            }
             deferredCompleted = true
             DiscordLog.makeLogger("interactions.response").debug("Original response edit completed", metadata: ["dk.event": "interactions.response.edit_completed"])
             await InteractionFailureScope.clear()
             return result
         } catch {
             await InteractionFailureScope.record(error, at: .continuation)
+            if let timing, let editStarted {
+                timing.record(.interactionOriginalEdit, since: editStarted, outcome: Self.timingOutcome(for: error))
+            }
             throw error
         }
     }
@@ -424,6 +472,14 @@ public actor InteractionResponder: CustomStringConvertible, CustomDebugStringCon
             }
             throw DiscordError.unknownMutationOutcome(.connectionLostAfterSubmission)
         }
+    }
+
+    /// Preserves interaction-specific uncertainty alongside the shared closed transport classification.
+    /// - Parameter error: Existing continuation failure; no formatting or arbitrary details are inspected.
+    /// - Returns: Uncertain for explicit delivery ambiguity, otherwise the shared finite outcome.
+    private nonisolated static func timingOutcome(for error: any Error) -> OperationTimingSample.Outcome {
+        if (error as? InteractionDeliveryError) == .indeterminate { return .uncertain }
+        return OperationTiming.outcome(for: error)
     }
 
     /// Classifies positive rejection evidence while retaining known remote acknowledgement/expiry signals.

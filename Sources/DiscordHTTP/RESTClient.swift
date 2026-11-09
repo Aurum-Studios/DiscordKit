@@ -27,6 +27,8 @@ public final class RESTClient<C: Clock>: Sendable, CustomStringConvertible, Cust
     private let maximumExchangeDuration: Duration
     private let userAgent: String
     private let egress: UUID?
+    /// Explicit content-free observer; nil reads no instrumentation clock and retains no timing history.
+    private let timing: OperationTiming?
 
     /// Conceals credentials and injected owners from ordinary diagnostic formatting.
     public var description: String { "RESTClient(redacted)" }
@@ -54,18 +56,22 @@ public final class RESTClient<C: Clock>: Sendable, CustomStringConvertible, Cust
     ///     and header-free IP-global admission. Required for globally limited webhook-token operations;
     ///     every client sharing the outbound IP must supply the same value, independently of token identity.
     ///   - userAgent: DiscordBot library identification; validated before transmission.
+    ///   - timing: Optional prompt synchronous observer. Actual exchanges and coalesced subscriber waits
+    ///     are separate fixed phases; cache hits emit no exchange phases. Nil performs no timing work.
     /// - Precondition: Response byte and exchange-duration limits are positive.
     public init(credential: Credential, identity: RateLimitIdentity, transport: any HTTPTransport,
                 coordinator: RateLimitCoordinator<C>, clock: C, cache: ReadCache<C>? = nil,
                 coalescer: RequestCoalescer? = nil, retryPolicy: RetryPolicy = .init(),
                 maximumResponseBytes: Int = 8 * 1_024 * 1_024,
                 maximumExchangeDuration: Duration = .seconds(30),
-                egress: UUID? = nil, userAgent: String = "DiscordBot (https://github.com/CarsonAurum/DiscordKit, 0.19.0)") {
+                egress: UUID? = nil, userAgent: String = "DiscordBot (https://github.com/CarsonAurum/DiscordKit, 0.19.0)",
+                timing: OperationTiming? = nil) {
         precondition(maximumResponseBytes > 0 && maximumExchangeDuration > .zero)
         self.credential = credential; self.identity = identity; self.transport = transport
         self.coordinator = coordinator; self.clock = clock; self.cache = cache; self.coalescer = coalescer
         self.retryPolicy = retryPolicy; self.maximumResponseBytes = maximumResponseBytes
         self.maximumExchangeDuration = maximumExchangeDuration; self.userAgent = userAgent; self.egress = egress
+        self.timing = timing
     }
 
     /// Executes a typed or raw descriptor through authentication, admission and bounded decoding.
@@ -79,6 +85,26 @@ public final class RESTClient<C: Clock>: Sendable, CustomStringConvertible, Cust
     ///   or indeterminate mutation outcome when an unsafe send may already have succeeded.
     ///   Decoder errors are replaced with a safe invalid-response category.
     public func execute<Response: Sendable>(_ endpoint: Endpoint<Response>, deadline: C.Instant? = nil) async throws -> Response {
+        let executionStarted = timing?.instant()
+        do {
+            let result = try await executeObserved(endpoint, deadline: deadline)
+            if let timing, let executionStarted { timing.record(.httpExecutionJoined, since: executionStarted) }
+            return result
+        } catch {
+            if let timing, let executionStarted {
+                timing.record(.httpExecutionJoined, since: executionStarted, outcome: OperationTiming.outcome(for: error))
+            }
+            throw error
+        }
+    }
+
+    /// Preserves the original REST pipeline while the public wrapper observes only its joined result.
+    /// - Parameters:
+    ///   - endpoint: Descriptor whose existing authentication, reuse and replay contracts remain authoritative.
+    ///   - deadline: Original caller deadline, unchanged by instrumentation.
+    /// - Returns: Decoded complete result after existing structured cleanup.
+    /// - Throws: The same normalized failures as the unobserved pipeline; no error is swallowed or retried here.
+    private func executeObserved<Response: Sendable>(_ endpoint: Endpoint<Response>, deadline: C.Instant?) async throws -> Response {
         return try await DiscordLog.withOperation("http.execution", event: "http.operation") {
             DiscordLog.makeLogger("http.execution").debug("REST execution started", metadata: ["dk.event": "http.execute.started"])
             let context = TransportContext(clock: clock, deadline: deadline)
@@ -119,7 +145,19 @@ public final class RESTClient<C: Clock>: Sendable, CustomStringConvertible, Cust
                     let data: Data
                     if endpoint.readPolicy?.coalescing == true, let coalescer = self.coalescer {
                         DiscordLog.makeLogger("http.coalescing").trace("REST read entering shared flight admission", metadata: ["dk.event": "http.coalescing.admission"])
-                        data = try await coalescer.run(key: key, operation: operation)
+                        let subscriberStarted = self.timing?.instant()
+                        do {
+                            data = try await coalescer.run(key: key, operation: operation)
+                            if let timing = self.timing, let subscriberStarted {
+                                timing.record(.httpCoalescedSubscriber, since: subscriberStarted)
+                            }
+                        } catch {
+                            if let timing = self.timing, let subscriberStarted {
+                                timing.record(.httpCoalescedSubscriber, since: subscriberStarted,
+                                    outcome: OperationTiming.outcome(for: error))
+                            }
+                            throw error
+                        }
                     } else { data = try await operation() }
                     try context.check()
                     return try self.decode(endpoint, data: data)
@@ -219,7 +257,17 @@ public final class RESTClient<C: Clock>: Sendable, CustomStringConvertible, Cust
     private func send<Response: Sendable>(_ endpoint: Endpoint<Response>, context: TransportContext<C>, evidence: HTTPSubmissionEvidence) async throws -> WireReply {
         try context.check()
         DiscordLog.makeLogger("http.execution").trace("REST attempt requesting rate admission", metadata: ["dk.event": "http.request.admission"])
-        let reservation = try await coordinator.acquire(rateRequest(endpoint), deadline: context.deadline)
+        let admissionStarted = timing?.instant()
+        let reservation: RateLimitReservation<C.Instant>
+        do {
+            reservation = try await coordinator.acquire(rateRequest(endpoint), deadline: context.deadline)
+            if let timing, let admissionStarted { timing.record(.httpAdmission, since: admissionStarted) }
+        } catch {
+            if let timing, let admissionStarted {
+                timing.record(.httpAdmission, since: admissionStarted, outcome: OperationTiming.outcome(for: error))
+            }
+            throw error
+        }
         let request: HTTPRequest
         do {
             request = try endpoint.makeRequest(credential: credential, userAgent: userAgent)
@@ -238,28 +286,41 @@ public final class RESTClient<C: Clock>: Sendable, CustomStringConvertible, Cust
             throw error
         }
         let response: HTTPResponse
+        var headersStarted: Duration?
         do {
             await evidence.markSubmitted()
             try context.check()
             DiscordLog.makeLogger("http.execution").trace("REST request submitted to transport", metadata: ["dk.event": "http.request.submitted"])
+            headersStarted = timing?.instant()
             response = try await transport.execute(request, context: context)
+            if let timing, let headersStarted { timing.record(.httpHeaders, since: headersStarted) }
         }
         catch {
             await request.body?.close()
             do { try await coordinator.release(reservation, outcome: .uncertain) }
             catch { await recordOwnerFailure(error) }
             await recordOwnerFailure(error)
-            throw submissionFailure(error, safety: endpoint.retrySafety)
+            let failure = submissionFailure(error, safety: endpoint.retrySafety)
+            if let timing, let headersStarted {
+                timing.record(.httpHeaders, since: headersStarted, outcome: OperationTiming.outcome(for: failure))
+            }
+            throw failure
         }
         await request.body?.close()
         DiscordLog.makeLogger("http.execution").trace("REST response received", metadata: ["dk.event": "http.response.received", "dk.status": .stringConvertible(response.status)])
         let data: Data
+        let bodyStarted = timing?.instant()
         do {
             DiscordLog.makeLogger("http.execution").trace("REST response body collection started", metadata: ["dk.event": "http.response.body.started", "dk.maximum_bytes": .stringConvertible(maximumResponseBytes)])
             data = try await ResponseBody.collect(response.body, maximumBytes: maximumResponseBytes)
+            if let timing, let bodyStarted { timing.record(.httpBody, since: bodyStarted) }
             DiscordLog.makeLogger("http.execution").trace("REST response body collection completed", metadata: ["dk.event": "http.response.body.completed", "dk.bytes": .stringConvertible(data.count)])
         }
         catch {
+            let failure = submissionFailure(error, safety: endpoint.retrySafety)
+            if let timing, let bodyStarted {
+                timing.record(.httpBody, since: bodyStarted, outcome: OperationTiming.outcome(for: failure))
+            }
             do { try await coordinator.complete(reservation, status: response.status, headers: response.headers) }
             catch { await recordOwnerFailure(error) }
             await recordOwnerFailure(error)

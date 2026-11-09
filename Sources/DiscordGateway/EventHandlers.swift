@@ -120,6 +120,8 @@ public struct GatewayEventHandlerDispatcher: Sendable {
 
     private let configuration: GatewayEventHandlerConfiguration
     private let authority: GatewayHandlerAuthority?
+    /// Explicit observer; nil bypasses all timing reads and invocation-local timing scope.
+    private let timing: OperationTiming?
     /// True preserves subscription order within each complete shard identity.
     private let serializesPerShard: Bool
 
@@ -127,8 +129,10 @@ public struct GatewayEventHandlerDispatcher: Sendable {
     /// - Parameters:
     ///   - configuration: Validated local task, retained count and retained byte limits.
     ///   - authority: Optional shared process callback limit.
-    public init(configuration: GatewayEventHandlerConfiguration, authority: GatewayHandlerAuthority? = nil) {
-        self.init(configuration: configuration, authority: authority, serializesPerShard: true)
+    ///   - timing: Optional prompt content-free observer; nil performs no timing work.
+    public init(configuration: GatewayEventHandlerConfiguration, authority: GatewayHandlerAuthority? = nil,
+                timing: OperationTiming? = nil) {
+        self.init(configuration: configuration, authority: authority, serializesPerShard: true, timing: timing)
     }
 
     /// Stores explicit scheduling bounds and an optional shared aggregate callback authority.
@@ -137,11 +141,13 @@ public struct GatewayEventHandlerDispatcher: Sendable {
     ///   - authority: Optional shared process limit; nil applies only the local concurrency cap.
     ///   - serializesPerShard: True by default; false permits independent same-shard callbacks to overlap
     ///     without changing task, retained-event, retained-byte or shared authority limits.
+    ///   - timing: Optional synchronous observer; enabled callbacks retain only numeric clock offsets.
     public init(configuration: GatewayEventHandlerConfiguration, authority: GatewayHandlerAuthority? = nil,
-                serializesPerShard: Bool) {
+                serializesPerShard: Bool, timing: OperationTiming? = nil) {
         self.configuration = configuration
         self.authority = authority
         self.serializesPerShard = serializesPerShard
+        self.timing = timing
     }
 
     /// Consumes one owned subscription until completion, cancellation, admission failure, or user error.
@@ -158,11 +164,14 @@ public struct GatewayEventHandlerDispatcher: Sendable {
     ///   or the original callback error. After an error, concurrently completed side effects are not undone.
     public func run(subscription: GatewayEventSubscription,
                     handler: @escaping @Sendable (GatewayEvent) async throws -> Void) async throws {
+        let runStarted = timing?.instant()
         DiscordLog.makeLogger("gateway.handlers").info("Gateway handler dispatcher started", metadata: ["dk.event": "gateway.handlers.started"])
         do {
             try Task.checkCancellation()
             try await withThrowingTaskGroup(of: Completion.self) { group in
                 var pending: [GatewayEvent] = []
+                // Allocate offsets only for explicitly enabled observation, under the same event bound.
+                var pendingTiming: [Duration]? = timing.map { _ in [] }
                 var active: [ShardIdentity: Int] = [:]
                 var activeCount = 0
                 var retainedEvents = 0
@@ -175,6 +184,9 @@ public struct GatewayEventHandlerDispatcher: Sendable {
                     while activeCount < configuration.maximumConcurrentHandlers,
                           let index = pending.firstIndex(where: { !serializesPerShard || active[$0.shard] == nil }) {
                         let event = pending.remove(at: index)
+                        if let timing, let enqueuedAt = pendingTiming?.remove(at: index) {
+                            timing.record(.gatewayLocalQueue, since: enqueuedAt)
+                        }
                         active[event.shard, default: 0] += 1
                         activeCount += 1
                         group.addTask {
@@ -202,6 +214,7 @@ public struct GatewayEventHandlerDispatcher: Sendable {
                         retainedEvents += 1
                         retainedBytes += event.retainedByteCount
                         pending.append(event)
+                        if let timing { pendingTiming?.append(timing.instant()) }
                     case .handled(let shard, let bytes):
                         let remaining = active[shard, default: 1] - 1
                         if remaining == 0 { active.removeValue(forKey: shard) }
@@ -214,6 +227,9 @@ public struct GatewayEventHandlerDispatcher: Sendable {
             }
         } catch {
             await subscription.cancel()
+            if let timing, let runStarted {
+                timing.record(.gatewayRunJoined, since: runStarted, outcome: OperationTiming.outcome(for: error))
+            }
             if error is CancellationError {
                 DiscordLog.makeLogger("gateway.handlers").debug("Gateway handler dispatcher cancelled", metadata: ["dk.event": "gateway.handlers.cancelled"])
             } else {
@@ -222,6 +238,7 @@ public struct GatewayEventHandlerDispatcher: Sendable {
             throw error
         }
         await subscription.cancel()
+        if let timing, let runStarted { timing.record(.gatewayRunJoined, since: runStarted) }
         DiscordLog.makeLogger("gateway.handlers").info("Gateway handler dispatcher stopped", metadata: ["dk.event": "gateway.handlers.stopped"])
     }
 
@@ -235,17 +252,26 @@ public struct GatewayEventHandlerDispatcher: Sendable {
         DiscordLog.makeLogger("gateway.handlers").trace("Gateway event handler requesting admission", metadata: ["dk.event": "gateway.handler.admission", "dk.shared_authority": .stringConvertible(authority != nil)])
         if let authority {
             let id = UUID()
-            try await withTaskCancellationHandler {
-                try await authority.acquire(id)
-            } onCancel: {
-                // A cancellation callback cannot await; the short actor hop resolves its parked
-                // continuation. Successful admission remains owned here and is always released below.
-                Task { await authority.cancel(id) }
+            let admissionStarted = timing?.instant()
+            do {
+                try await withTaskCancellationHandler {
+                    try await authority.acquire(id)
+                } onCancel: {
+                    // A cancellation callback cannot await; the short actor hop resolves its parked
+                    // continuation. Successful admission remains owned here and is always released below.
+                    Task { await authority.cancel(id) }
+                }
+            } catch {
+                if let timing, let admissionStarted {
+                    timing.record(.gatewaySharedAdmission, since: admissionStarted, outcome: OperationTiming.outcome(for: error))
+                }
+                throw error
             }
+            if let timing, let admissionStarted { timing.record(.gatewaySharedAdmission, since: admissionStarted) }
             do {
                 try Task.checkCancellation()
                 DiscordLog.makeLogger("gateway.handlers").trace("Gateway event handler invoked", metadata: ["dk.event": "gateway.handler.invoked"])
-                try await handler(event)
+                try await admittedHandler(event, handler: handler)
             } catch {
                 await authority.release()
                 DiscordLog.makeLogger("gateway.handlers").trace("Gateway event handler failed after releasing admission", metadata: ["dk.event": "gateway.handler.failed"])
@@ -256,8 +282,22 @@ public struct GatewayEventHandlerDispatcher: Sendable {
         } else {
             try Task.checkCancellation()
             DiscordLog.makeLogger("gateway.handlers").trace("Gateway event handler invoked", metadata: ["dk.event": "gateway.handler.invoked"])
-            try await handler(event)
+            try await admittedHandler(event, handler: handler)
             DiscordLog.makeLogger("gateway.handlers").trace("Gateway event handler completed", metadata: ["dk.event": "gateway.handler.completed"])
         }
+    }
+
+    /// Installs the numeric admission origin only for enabled callbacks; disabled callbacks run directly.
+    /// - Parameters:
+    ///   - event: Existing retained event, without any change to its receipt provenance.
+    ///   - handler: Exactly-once callback after local and shared admission.
+    /// - Throws: Original callback error or cancellation, unchanged.
+    private func admittedHandler(_ event: GatewayEvent,
+                                 handler: @Sendable (GatewayEvent) async throws -> Void) async throws {
+        if let timing {
+            try await OperationTimingScope.$gatewayAdmission.withValue(timing.instant()) {
+                try await handler(event)
+            }
+        } else { try await handler(event) }
     }
 }
