@@ -46,3 +46,14 @@ The shard bounds received envelopes, queued bytes, pending requests and sends. H
 Cancellation must stop discovery/connect/read/write work, close the active connection and release leases before handoff. Inspect the run task's failure after shutdown, because cancellation of a sibling does not make another cleanup failure irrelevant. Sessions and credentials can be sensitive; snapshots and ordinary error descriptions avoid exposing them.
 
 Use [GatewayBot](https://github.com/CarsonAurum/DiscordKit/tree/main/Examples/GatewayBot) for complete host composition, and the [Gateway contract](https://github.com/CarsonAurum/DiscordKit/blob/main/Docs/Gateway.md) for protocol bounds and recovery behavior. Local scripted peers validate state ownership; they do not establish live Discord or fleet qualification.
+
+## Observe admission and joined shutdown
+
+Pass an optional DiscordTransport `OperationTiming` to the dispatcher to separate
+local retained-queue residence from shared-authority admission. Local queue timing
+excludes earlier private-hub residence. Enabled timing retains only numeric offsets
+under the existing event bound; nil keeps the original pending-event storage and
+adds no timing-clock read, task or scope. The whole-run joined sample is emitted
+after children and the subscription close; a cancelled outcome proves that milestone
+and does not isolate cancellation overhead. FIFO, shard ordering, concurrency,
+backpressure and cancellation ownership remain unchanged.

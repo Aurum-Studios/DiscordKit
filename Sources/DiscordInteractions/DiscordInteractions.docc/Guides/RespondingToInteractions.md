@@ -50,3 +50,14 @@ Inline HTTP responses and external callback endpoints have different original-re
 Unknown initial adapter failures leave an indeterminate owner and block another callback. Only positive not-submitted evidence or a complete rejection can reopen the slot. Continuation cancellation or transport loss after adapter entry can mean the write succeeded. Preserve acknowledged progress and reconcile before repeating a possibly applied operation.
 
 Test concurrent initial calls, exact deadlines, fast/slow handlers, defer/manual races, unsupported triggers, original deletion, continuation overlap, explicit rejection, uncertain submission and cancellation joining children. Virtual clocks and barriers make those races deterministic.
+
+## Observe confirmed response boundaries
+
+An optional DiscordTransport `OperationTiming` observer records confirmed initial
+sink completion, original-edit completion and acknowledgement-to-first-successful-
+original-edit. Failed or uncertain delivery never emits a successful acknowledgement
+or final-edit interval. These samples preserve the existing three-second initial
+window, fifteen-minute continuation window, sole initial owner and joined cleanup.
+Public `receivedAt` values retain deadline behavior but do not create trusted
+Gateway receipt provenance; only the package-owned Gateway adapter installs that
+observation. No timing sink is installed by default, and sinks retain no inputs.

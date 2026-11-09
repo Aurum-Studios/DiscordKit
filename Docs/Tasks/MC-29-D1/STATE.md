@@ -2,8 +2,11 @@
 
 Local sibling task associated with MiniCarson MC-29; no configured DiscordKit
 tracker issue is fabricated. Explicit Air scope authorization is verified.
-Rate slice: Testing. Candidate source `414b2f59`, test availability repair `724b1ce5`.
-Timing slice: isolated Implementation, not yet integrated or tested.
+Combined rate/timing slice: Testing. Rate source `414b2f59`, test availability
+repair `724b1ce5`, timing integration `81bc17a6`. All 31 rate/coordinator/store-
+contract methods pass in three suites at `a61dcbf` (0.012 seconds execution).
+The exact original-store comparison executes both named failing regressions.
+Timing methods and existing consuming suites now require combined validation.
 Starting revision: f469253d6dcdc654afb6756e915579b942548038.
 Branch: implement/MC-29-D1. Root owns records/integration/docs and all validation.
 Shared DiscordKit main remains clean at the starting revision.
