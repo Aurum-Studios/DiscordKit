@@ -1,0 +1,22 @@
+@Tutorial(time: 10) {
+    @Intro(title: "Observe an offline REST call") {
+        Learn the difference between admission, headers, body cleanup and joined execution without a network or credential.
+    }
+    @Section(title: "Prepare the peer and observer") {
+        @ContentAndMedia {
+            Use Swift 6.4 and the DiscordHTTP and DiscordTransport products. Save the complete listing as an executable target. The injected peer returns 204 without opening a socket; no bot token is needed.
+        }
+        @Steps {
+            @Step {
+                Create the bounded scalar destination and optional observer. Its synchronous callback may run concurrently and must return promptly. Omit timing to disable instrumentation clock reads and observer work.
+                @Code(name: "ObserveOfflineREST.swift", file: "ObserveOfflineREST.swift.txt")
+            }
+            @Step {
+                Construct a shared rate authority and pass the observer explicitly to the REST client. The endpoint uses the injected peer and performs no provider or Discord request.
+            }
+            @Step {
+                Run the executable. It verifies an empty response and four observations, closes the authority on success or failure, and prints the expected offline ownership result. Successful headers alone do not prove API success; this sample checks the complete execution.
+            }
+        }
+    }
+}

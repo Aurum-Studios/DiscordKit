@@ -59,6 +59,8 @@ public actor GatewayInteractionAdapter<C: Clock> where C.Duration == Duration {
     private let dispatcher: GatewayEventHandlerDispatcher
     private let failurePolicy: GatewayInvocationFailurePolicy
     private let failureObserver: BotFailureObserver?
+    /// Explicit observer shared with dispatcher and responders; nil bypasses timing work.
+    private let timing: OperationTiming?
     private var subscription: GatewayEventSubscription?
     private var prepared = false
     private var started = false
@@ -82,6 +84,7 @@ public actor GatewayInteractionAdapter<C: Clock> where C.Duration == Duration {
     ///   - limits: Existing interaction model decoding bounds.
     ///   - failurePolicy: Explicit fail-fast or isolated invocation handling.
     ///   - failureObserver: Finite synchronous redacted failure observer.
+    ///   - timing: Optional prompt content-free observer; only trusted receipt input supplies receive samples.
     /// - Throws: Existing catalog, router, queue-bound or registration validation errors.
     public init(applicationID: ApplicationID, commands: CompiledCommands, services: BotServiceAdapter<C>,
         clock: C, admission: InteractionAcknowledgementAdmission, guildID: GuildID? = nil,
@@ -89,7 +92,7 @@ public actor GatewayInteractionAdapter<C: Clock> where C.Duration == Duration {
         maximumPendingInteractions: Int = 256, maximumPendingBytes: Int = 8 * 1_024 * 1_024,
         maximumConcurrentHandlers: Int = 64, maximumDefinitionBytes: Int = 1_048_576,
         limits: JSONLimits = .default, failurePolicy: GatewayInvocationFailurePolicy = .failFast,
-        failureObserver: BotFailureObserver? = nil) throws {
+        failureObserver: BotFailureObserver? = nil, timing: OperationTiming? = nil) throws {
         self.applicationID = applicationID
         self.services = services
         self.clock = InteractionClock(clock)
@@ -97,13 +100,14 @@ public actor GatewayInteractionAdapter<C: Clock> where C.Duration == Duration {
         self.limits = limits
         self.failurePolicy = failurePolicy
         self.failureObserver = failureObserver
+        self.timing = timing
         router = try commands.makeRouter(maximumConcurrentHandlers: maximumConcurrentHandlers)
         reconciler = try CommandReconciler(applicationID: applicationID, guildID: guildID,
             definitions: commands.definitions, maximumDefinitionBytes: maximumDefinitionBytes)
         hub = GatewayEventHub(configuration: try .init(maximumSubscriptions: 1,
             maximumBufferedEvents: maximumPendingInteractions, maximumBufferedBytes: maximumPendingBytes,
             maximumEventsPerSubscription: maximumPendingInteractions, maximumBytesPerSubscription: maximumPendingBytes))
-        dispatcher = GatewayEventHandlerDispatcher(configuration: configuration, authority: authority)
+        dispatcher = GatewayEventHandlerDispatcher(configuration: configuration, authority: authority, timing: timing)
     }
 
     /// Validates a finite command host and stores shared authorities without invoking injected work.
@@ -133,6 +137,8 @@ public actor GatewayInteractionAdapter<C: Clock> where C.Duration == Duration {
     ///   - failureObserver: Optional synchronous nonthrowing safe diagnostic callback. It runs inline once
     ///     per failed invocation, may run concurrently across shards, and must return promptly. No original
     ///     error or interaction is passed, and the adapter retains no diagnostic history or observer tasks.
+    ///   - timing: Optional synchronous content-free observer shared with dispatcher and responders.
+    ///     Nil performs no timing-clock reads or timing-scope work; protocol deadline reads are unchanged.
     /// - Throws: Existing router/catalog/reconciler or nonpositive queue-bound validation errors.
     /// No application auto-defer timer exists; typed deferred handlers retain their explicit ownership.
     public init(applicationID: ApplicationID, commands: CompiledCommands, services: BotServiceAdapter<C>,
@@ -141,7 +147,7 @@ public actor GatewayInteractionAdapter<C: Clock> where C.Duration == Duration {
         maximumPendingInteractions: Int = 256, maximumPendingBytes: Int = 8 * 1_024 * 1_024,
         maximumConcurrentHandlers: Int = 64, maximumDefinitionBytes: Int = 1_048_576,
         limits: JSONLimits = .default, serializesPerShard: Bool, failurePolicy: GatewayInvocationFailurePolicy = .failFast,
-        failureObserver: BotFailureObserver? = nil) throws {
+        failureObserver: BotFailureObserver? = nil, timing: OperationTiming? = nil) throws {
         self.applicationID = applicationID
         self.services = services
         self.clock = InteractionClock(clock)
@@ -149,6 +155,7 @@ public actor GatewayInteractionAdapter<C: Clock> where C.Duration == Duration {
         self.limits = limits
         self.failurePolicy = failurePolicy
         self.failureObserver = failureObserver
+        self.timing = timing
         router = try commands.makeRouter(maximumConcurrentHandlers: maximumConcurrentHandlers)
         reconciler = try CommandReconciler(applicationID: applicationID, guildID: guildID,
             definitions: commands.definitions, maximumDefinitionBytes: maximumDefinitionBytes)
@@ -156,7 +163,7 @@ public actor GatewayInteractionAdapter<C: Clock> where C.Duration == Duration {
             maximumBufferedEvents: maximumPendingInteractions, maximumBufferedBytes: maximumPendingBytes,
             maximumEventsPerSubscription: maximumPendingInteractions, maximumBytesPerSubscription: maximumPendingBytes))
         dispatcher = GatewayEventHandlerDispatcher(configuration: configuration, authority: authority,
-            serializesPerShard: serializesPerShard)
+            serializesPerShard: serializesPerShard, timing: timing)
     }
 
     /// Explicitly reconciles this catalog through the existing bot REST service and managed-name owner.
@@ -229,7 +236,7 @@ public actor GatewayInteractionAdapter<C: Clock> where C.Duration == Duration {
             guard !stopped else { throw CancellationError() }
             let dispatcher = self.dispatcher, applicationID = self.applicationID, services = self.services
             let clock = self.clock, admission = self.admission, router = self.router, limits = self.limits
-            let policy = failurePolicy, observer = failureObserver
+            let policy = failurePolicy, observer = failureObserver, timing = self.timing
             let task = Task {
                 try await dispatcher.run(subscription: subscription) { event in
                     do {
@@ -239,6 +246,7 @@ public actor GatewayInteractionAdapter<C: Clock> where C.Duration == Duration {
                             throw GatewayInteractionFailure.untrustedEvent
                         }
                         let receivedAt = responseNow - age
+                        if let timing { timing.record(.gatewayReceiveToAdmission, elapsed: age) }
                         guard let dispatch = try event.decodeDispatch(limits: limits),
                               case .interactionCreate(let interaction) = dispatch else {
                             throw GatewayInteractionFailure.untrustedEvent
@@ -250,7 +258,10 @@ public actor GatewayInteractionAdapter<C: Clock> where C.Duration == Duration {
                         DiscordLog.makeLogger("bot.interactions").trace("Trusted interaction provenance and application validated", metadata: ["dk.event": "bot_dsl.interactions.validated"])
                         let responder = InteractionResponder(interaction: interaction, deliveryMode: .gateway,
                             clock: clock, sink: services.responseSink(for: interaction), admission: admission,
-                            receivedAt: receivedAt)
+                            receivedAt: receivedAt, timing: timing)
+                        if timing != nil, let admittedAt = OperationTimingScope.gatewayAdmission {
+                            await responder.installGatewayTiming(receiptAge: { clock.now - receivedAt }, admittedAt: admittedAt)
+                        }
                         let context = try InteractionContext(interaction: interaction, deliveryMode: .gateway, responder: responder)
                         DiscordLog.makeLogger("bot.interactions").trace("Gateway response ownership normalized for routing", metadata: ["dk.event": "bot_dsl.interactions.normalized"])
                         do {

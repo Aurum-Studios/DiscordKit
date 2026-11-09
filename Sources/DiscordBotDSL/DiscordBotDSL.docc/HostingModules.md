@@ -72,3 +72,15 @@ and [bot lifetime guide](https://github.com/CarsonAurum/DiscordKit/blob/main/Doc
 give the full host, response and deployment contracts. This selected product
 composes Client/CommandDSL while shared and command-only products keep independent
 graphs. Concrete adapters, macros, Voice, Social and OAuth remain application choices.
+
+## Measure trusted interaction delivery
+
+`GatewayInteractionAdapter` accepts an optional DiscordTransport `OperationTiming`
+and shares it with its dispatcher/responders. Existing socket receipt provenance
+allows separate receive-to-admission, receive-to-confirmed-acknowledgement and
+admission-to-confirmed-acknowledgement observations. Public replay cannot supply
+that provenance. Pass the same observer separately to response REST clients when
+HTTP admission/header/body intervals are also needed. The observer supplies fixed
+phases, outcomes and durations only; it has no identifiers, history or registry.
+Keep its synchronous sink prompt and bounded. None of these samples authorizes
+registration, replay, a fallback response or a larger dispatcher capacity.

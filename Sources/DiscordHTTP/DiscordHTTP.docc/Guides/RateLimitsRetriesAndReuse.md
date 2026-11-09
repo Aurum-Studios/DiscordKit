@@ -35,3 +35,26 @@ Successful local writes invalidate declared tags. Explicitly invalidate when per
 ### Test request reduction and failure boundaries
 
 Use injected peers and clocks to assert one send for concurrent equivalent reads, independent cancellation, expiry, invalidation racing completion, finite retry counts, fractional reset handling, blocked unrelated identities and fail-closed outages. Assert actual send counts and released body ownership rather than merely observing a returned value.
+
+### Retain learned headroom without refunding sends
+
+A consumed provisional startup token is distinct from learned exhaustion and an
+explicit 429 restriction. Discovering another route alias does not import its
+startup zero into an existing bucket. Every possible send not acknowledged by its
+own valid remaining header stays charged across alias migration, including
+uncertain or not-sent release under the existing no-refund contract. The bounded
+store uses scalar counters, not a new send-history registry. Proven elapsed
+windows roll before completion metadata is merged. Admission time cannot prove
+the server window of a delayed response; ambiguous or out-of-order observations
+may conservatively lower allowance or retain a later reset. Existing credential,
+major-resource, shared-resource and egress protections and metadata ceilings apply.
+
+### Observe exchange and subscriber ownership
+
+The optional `OperationTiming` observer from DiscordTransport separates rate
+admission, headers, body EOF/close, coalesced subscriber wait and joined execution.
+A successful headers sample says nothing about final API success. Shared flights
+emit one set of wire samples; individual subscribers have independent waits.
+Omitting the observer adds no timing-clock reads, tasks or registry. A sink must
+be prompt, thread safe and bounded; only fixed categories and numeric durations
+are supplied. Timing never changes retry, deadline or single-send policy.

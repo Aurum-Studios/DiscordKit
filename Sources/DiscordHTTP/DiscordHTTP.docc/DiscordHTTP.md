@@ -25,6 +25,10 @@ Start with <doc:RESTClientSetup>, then read <doc:RateLimitsRetriesAndReuse>. The
 - <doc:DiscoveryAndApplications>
 - <doc:WebhooksCommerceAndLobbies>
 
+### Practical learning path
+
+- <doc:RESTTimingTutorials>
+
 ### API reference
 
 - <doc:APIReference>

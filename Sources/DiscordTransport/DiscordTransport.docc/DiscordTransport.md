@@ -16,6 +16,7 @@ Start with <doc:TransportOwnership>, then use <doc:ImplementingAdapters> when su
 
 - <doc:TransportOwnership>
 - <doc:ImplementingAdapters>
+- <doc:MeasuringOwnedOperations>
 
 ### API reference
 
