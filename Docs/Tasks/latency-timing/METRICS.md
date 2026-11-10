@@ -1,0 +1,196 @@
+<!--
+File: Docs/Tasks/latency-timing/METRICS.md
+Created by Carson Rau.
+Copyright (c) 2026 Aurum Studios.
+https://aurum-studios.com
+-->
+
+# Timing metric catalog
+
+Catalog identifier: **discordkit.timing**, revision **1**, frozen 2026-11-10 at
+`c8d842f7ce51e9adc69ff9997e2c0f374dc2ee68`. Every metric below has semantic
+version **1**. The identity is `(catalog, metric ID, metric version)`; changing
+endpoints, population, units or aggregation creates a new metric version.
+This catalog is a contract, not a new report schema or an implementation claim.
+See [ownership inventory](INVENTORY.md) and [compatibility decisions](CONTRACTS.md).
+
+## Shared interpretation
+
+All duration rows use **integer nanoseconds** in future portable reports, with
+checked conversion from monotonic elapsed time. Existing scalar APIs retain
+`Duration`; existing legacy report units/formats remain unchanged. Each detailed
+interval uses one explicit run clock domain and relative monotonic origin. Injected
+virtual clocks establish semantics only. No cross-process clock subtraction is
+permitted. Wall-clock dates and signature timestamps are never elapsed-time clocks.
+
+Aggregation **H** means a bounded full-population histogram per finite outcome,
+with counts, precision, censored/lost mass and supported p50/p95/p99/max. Stage 1
+implements H; the current scalar API supplies observations only and retains none.
+Use separate counts for success, failure, cancellation, timeout, rejection and
+uncertainty where observable. The harness may refine a known typed timeout or
+rejection; the existing public scalar outcomes remain `succeeded`, `failed`,
+`cancelled`, `uncertain`. Unknown errors remain failure. An uncertain send never
+counts as confirmed acknowledgement. A boundary that was never reached has no
+duration observation; attempted/offered/refused counts still account for it.
+
+**L** population means only observations currently emitted by the legacy owner,
+partitioned by its four outcomes; it does not promise a sample for every invocation.
+**S** means successful milestone only. **A** means every invocation reaching the
+specified start, partitioned by observable outcome. A success-only milestone also
+requires all-outcome workflow counters so failed work cannot vanish from a report.
+**B** means a synchronous batch including expected successful or rejected cases,
+with exact counts and a minimal observable checksum/result consumed inside the
+timer; its overhead is included. Full expected-value assertions run after the
+timer. Normalized batch cost is not per-call p99. Every duration row uses H, with
+B histogrammed at batch granularity.
+
+Parent/overlap relationships describe ownership only. Nested, parallel and
+subscriber/exchange intervals overlap. Measure whole workflows directly; never
+sum phase percentiles or subtract unrelated samples to construct a waterfall.
+Owner-entry timings exclude preceding caller actor residence unless specified.
+Ending timestamps precede the observation callback; earlier synchronous callbacks
+may remain inside subsequent/enclosing intervals.
+
+## Existing scalar observations
+
+The following IDs map one-to-one to
+[OperationTimingSample.Phase](../../../Sources/DiscordTransport/OperationTiming.swift).
+They freeze actual behavior, not an idealized decomposition. Existing duration
+regressions clamp to zero; future detailed invalid-clock flags do not change that.
+
+| Metric ID (phase name) | Owner and start → stop, inclusions/exclusions | Population | Relationship |
+| --- | --- | --- | --- |
+| `gatewayLocalQueue` | GatewayEventHandlerDispatcher pending retention → removal for runnable callback, before child creation; excludes private hub/subscription residence and shared authority wait; discarded pending events have no queue sample | S | Inside dispatcher run; precedes shared admission |
+| `gatewaySharedAdmission` | Dispatcher before shared authority acquire → acquire return/throw with existing cancellation handling; absent without authority; excludes callback/release | L | Inside run; after local queue |
+| `gatewayReceiveToAdmission` | GatewayShard trusted receive age → admitted adapter callback before envelope decode/validation; includes parse/publication/hub/local/shared waits | S | Trusted age only; includes the two admission stages but is not their sum |
+| `gatewayReceiveToAcknowledgement` | Same trusted receipt → initial sink confirmation/state transition; age is read after admission-to-ack observer; excludes admission release | S | Overlaps receive-to-admission and admission-to-ack; includes earlier observer cost |
+| `gatewayAdmissionToAcknowledgement` | Dispatcher stamp immediately before admitted handler → initial sink confirmation/state transition timestamp; excludes admission release | S | Inside receive-to-ack; may include handler/provider wait |
+| `gatewayRunJoined` | Dispatcher run entry → task-group children joined and subscription cancelled; before terminal diagnostic; cancellation is a whole-run milestone | L | Encloses dispatch work; not cancellation-only overhead |
+| `interactionInitialResponse` | Responder actor entry before validation → sink confirmation, admission release and failure-scope clear; failure after normalization/release/failure recording | L | Excludes caller actor wait; overlaps Gateway acknowledgement milestones |
+| `interactionOriginalEdit` | Responder edit actor entry → successful continuation return, before final state/log/failure-scope clear/deferred continuation release; failure after existing owned cleanup/failure record | L | Excludes caller actor wait; not whole caller-visible execution |
+| `interactionAcknowledgementToOriginalEdit` | Stored confirmed initial-ack timestamp → first successful original edit observation; includes time between calls and initial release | S | Ends before original-edit sample; includes idle/application wait |
+| `httpAdmission` | REST attempt before coordinator acquire → acquire return/throw; excludes construction and later lease release | L | Once per exchange attempt; inside logical execution |
+| `httpHeaders` | Immediately before transport execute → headers return on success, before request-body close; failure after request-body close, uncertain lease release and failure mapping/diagnostics | L | Once per exchange attempt; headers success is not API success |
+| `httpBody` | Before collection-start diagnostic → ResponseBody.collect return/throw with joined stream close, before rate-coordinator completion | L | Only when collection is reached; inside exchange/logical execution |
+| `httpCoalescedSubscriber` | Before coalescer.run → its return/throw, before final context check/endpoint decode | L | Once per subscriber; overlaps shared exchange; never multiplies exchange counts |
+| `httpExecutionJoined` | Nonactor public REST execute entry → executeObserved return/throw after decoding, structured joins and diagnostic scope terminal logging | L | Whole logical caller operation, including cache/retry/ordering; fresh hit has no exchange phases |
+
+Gateway trusted receipt is the timestamp captured immediately after
+`socket.receive()` returns in `GatewayShard.receiveLoop`, before generation
+validation and parsing. It is not a kernel/transport arrival timestamp and cannot
+measure earlier actor residence. Replayed/public events do not gain receipt trust.
+Only cooperating owners using the same timing clock may compute the admission
+milestones. The signed HTTP path currently has no adapter receipt timestamp or
+scalar timing injection; application entry is a different boundary.
+
+## Planned primary-workflow durations
+
+These IDs reserve later intervals; none is emitted by Stage 0. Population A and
+H apply unless a row explicitly specifies S or B. One logical operation may have
+many attempt intervals. All child work retains its owning workflow's outcome
+counts and independent terminal result.
+
+| Metric ID | Owner and start → stop, inclusions/exclusions | Relationship / implementing stage |
+| --- | --- | --- |
+| `transport.request` | Harness caller immediately before adapter invocation → full validated body completion and awaited owned close; excludes fixture setup/diagnostic snapshots/report writes | Direct whole request; Stage 5; corrected identity distinct from historical LoadRunner |
+| `transport.poolWait` | Adapter before pool acquire → lease or refusal/cancel completion; excludes body service | Child of transport request, may overlap HTTP headers; Stage 5 |
+| `transport.upload` | Adapter begins consuming upload → final write completion or joined failure; excludes pool wait; unavailable if adapter exposes no honest boundary | Child of request/headers; Stage 5 |
+| `transport.bodyClose` | Caller/owner requests response close → owned body cleanup completes | Child of whole request; may be included in legacy httpBody; Stage 5 |
+| `rest.request` | Harness caller immediately before RESTClient.execute → result/error, before correctness assertions and coordinator/cache snapshots | Direct whole request; overlaps legacy execution; Stage 5 |
+| `rest.construct` | Request builder entry → encoded request descriptor or typed error | Child of logical request; per attempt if rebuilt; Stage 5 |
+| `rest.orderWait` | Before ordering authority acquire → admitted/refused/cancelled acquire result | Child of logical request; Stage 5 |
+| `rest.cacheLookup` | Caller before cache lookup → fresh/miss/expired result; includes cache actor wait | Child of logical request; Stage 5 |
+| `rest.decode` | Endpoint response decoder entry → decoded value or thrown error; excludes body I/O | Synchronous child of logical request; Stage 5 |
+| `rest.retryWait` | Retry policy accepts a retry and starts wait → wake/cancel; excludes next attempt | Child of logical request; per retry; Stage 5 |
+| `arrival.scheduledResponse` | Scheduled arrival offset → joined terminal outcome, including driver lateness/admission/service | Direct scheduled-arrival workflow; Stage 5 |
+| `arrival.submittedResponse` | Actual submission before any owner hop → joined terminal outcome | Direct actual-submission workflow; overlaps scheduled-response; Stage 5 |
+| `arrival.lateness` | Scheduled arrival offset → actual submission; missed arrivals have counts, not fabricated latency | Precedes service; Stage 5 |
+| `gateway.decode` | Shard begins parsing received supported JSON → decoded payload or rejection | Child of receipt-to-dispatch; Stage 6 |
+| `gateway.hubResidence` | Private hub retains event → dispatcher removes event for its local queue | Precedes legacy local queue; Stage 6; only with actual owner hooks |
+| `gateway.handler` | Admitted callback invocation → callback completion and existing owned cleanup | Child of dispatcher run; Stage 6 |
+| `gateway.heartbeatAck` | Heartbeat write confirmation → matching ACK handled or deadline/cancel outcome | Independent control lane; includes peer/scheduling wait; Stage 6 |
+| `gateway.reconnect` | Owner begins reconnect → new session identified/resumed and locally usable, or joined failure | Lifecycle interval, may overlap handlers; Stage 6; no live READY claim |
+| `ingress.applicationResponse` | InteractionHTTPApplication.handle entry → first confirmed HTTP response sink completion, or joined failure before any confirmation | Direct application response; later handler failure belongs to interaction.workflow; excludes earlier adapter/socket wait; Stage 6 |
+| `ingress.trustedResponse` | Future trusted adapter receipt hook → first confirmed response sink completion, or joined failure before any confirmation | Direct trusted response; later handler failure belongs to interaction.workflow; unavailable until real receipt provenance exists; Stage 6 |
+| `ingress.bodyRead` | Bounded request-body read entry → EOF/error and existing close | Child of application workflow; Stage 6 |
+| `ingress.signature` | Verification entry with exact bytes → verified/rejected signature result | Synchronous child; excludes body read; Stage 6 |
+| `ingress.admission` | Before duplicate/durable authority acquire → admission/refusal/error | Child; injected durable-store wait included, never authorization inferred from timing; Stage 6 |
+| `command.route` | CommandRouter.route caller entry → route result/error and owned cleanup | Child of interaction workflow; Stage 6 |
+| `command.arguments` | Typed argument preparation starts → prepared arguments or validation failure | Synchronous/owned route child; Stage 6 |
+| `command.policy` | Policy/middleware invocation → result/error and joined middleware work | Route child; may include application code; Stage 6 |
+| `interaction.handler` | Admitted application handler invocation → its joined return/error | Child of workflow; includes injected provider waits; Stage 6 |
+| `interaction.providerWait` | Explicit fixture/application provider call → provider result/error/cleanup | Child of handler only when composition exposes it; no subtraction; Stage 6 |
+| `interaction.workflow` | Trusted adapter receipt, or separately labeled synthetic caller entry → handler plus response ownership/cleanup joined | Direct full workflow; may outlive acknowledgement; Stage 6 |
+| `cache.call` | Caller before selected cache operation actor hop → result/error | Per fixed operation class: lookup/merge/project/permission/expire/evict/invalidate/refresh; Stage 7 |
+| `cache.owner` | Same selected operation's owner entry → owner result including owned suspensions | Nested in caller interval; do not infer queue time by subtracting histograms; Stage 7 |
+| `cache.loader` | Explicit loader invocation → value/error/owned cleanup | Child of refresh; single-flight loaders count once, callers independently; Stage 7 |
+| `client.start` | Caller before local startup → documented local-ready milestone or joined failure | Discovery/ingestion included; construction separately; Stage 7 |
+| `client.shutdown` | Caller requests stop → all owned runtime tasks/subscriptions/transports joined | Direct lifecycle interval; Stage 7 |
+| `dsl.definition` | Definition compile/lower invocation → validated lowered definitions/error | Separate from runtime/compiler process costs; Stage 7 |
+| `dsl.invoke` | Synthetic direct/DSL route invocation → equivalent response validation and joined responder cleanup | Whole synthetic call; bypasses trusted ingress; Stage 7 |
+| `compiler.clean` | Driver starts consumer build subprocess → process exit and reap | Manual/macro consumer build, prepared dependencies excluded; Stage 7; compiler configuration explicit |
+| `compiler.incremental` | Driver starts build after a declared fixture edit → exit and reap | Separate process cost, excludes fixture mutation; Stage 7 |
+
+`interaction.workflow` profiles must fix their origin kind; synthetic caller and
+trusted Gateway/HTTP origin are incompatible profiles. For cache queue attribution,
+add explicit paired submission/admission hooks before claiming residence. Do not
+subtract aggregate caller and owner distributions. Expiry/eviction are currently
+side effects of cache calls; profiles select the triggering public operation and
+state that setup, rather than inventing public expiry/eviction methods.
+
+## Planned pure, optional-product and instrumentation durations
+
+| Metric ID | Owner and start → stop, inclusions/exclusions | Population / relationship / stage |
+| --- | --- | --- |
+| `pure.batch` | External wrapper before fixed batch → minimal observable result/checksum consumed; fixture preparation and full correctness assertions excluded | B; fixed operation class JSON/model/field/identifier/bitset/builder/permission/RPC-frame; Stage 4 |
+| `oauth.lookup` | Caller token lookup → returned token/error and existing joins | A; whole local orchestration; Stage 8 |
+| `oauth.storage` | Injected load/CAS/revoke call → backend result/error | A; fixed storage operation class, child of token operation; Stage 8 |
+| `oauth.refresh` | Refresh owner accepts flight → refresh I/O/CAS completion and joined cleanup | A; once per flight, subscribers independently counted; Stage 8 |
+| `rpc.request` | Caller before request admission → correlated reply/error and pending ownership release | A; child writes/reply waits require real hooks; Stage 8 |
+| `activities.request` | Caller before protocol request → correlated reply/error and pending ownership release | A; injected bridge vs actual browser are incompatible profiles; Stage 8 |
+| `service.operation` | Caller before implemented Social/GameServices/Commerce/CertifiedDevices operation → result/error and existing joins | A; fixed operation class; overlaps underlying REST/RPC, not additive; Stage 8 |
+| `voice.join` | Caller before manager join/move → installed session result/error and cleanup | A; installation is not secure/media readiness; Stage 9 |
+| `voice.secureReady` | Installed session begins handshake → confirmed selected transport/DAVE secure-ready milestone or joined failure | A; network/credential/epoch waits included; Stage 9 |
+| `media.batch` | External wrapper before DSP/codec/jitter/RTP/AEAD/DAVE batch → minimal observable result/checksum consumed; full correctness assertions excluded | B; fixed component class, no sample-loop logs; Stage 9 |
+| `mls.transition` | Group create/join/rekey/epoch operation starts → result/error and owned cleanup | A; separate transition class, not steady tick; Stage 9 |
+| `voice.tick` | Warmed duplex tick begins → both sends/receives/authentication/PCM decode complete | A; direct integrated tick excludes explicit main pacing wait; Stage 9 |
+| `voice.pacingLate` | Profile's scheduled tick → actual tick start | A for started ticks; missed ticks counted separately; Stage 9 |
+| `audio.deviceOperation` | Explicit device permission/enumeration/open/route/close call → actual adapter completion/error | A; hardware-only qualification, no acoustic latency inference; Stage 9 |
+| `instrumentation.batch` | External wrapper before selected observation batch → batch consumption complete | B; mode/destination/concurrency fixed; includes synchronous callback/formatting cost; Stage 3 |
+| `instrumentation.flush` | Application requests output flush/close → awaited completion/error | A; separate from foreground workflow, bounded output; Stage 3 |
+
+Each fixed operation/component class is an explicitly enumerated profile field;
+do not derive it from a method name, raw route, persistent identity or error text.
+Device render/acoustic measurements require a later reviewed physical procedure
+and separate metric; no software interval above stands in for them.
+
+## Counts, throughput and gauges
+
+These metric IDs share semantic version 1 and are planned report fields. Counts
+use checked nonnegative integers and exact sums, never histogram percentiles.
+
+| Metric ID | Unit and population | Boundary / aggregation |
+| --- | --- | --- |
+| `work.offered` | operations; complete selected run | Count scheduled/offered logical work, including later refusal/miss |
+| `work.admitted` | operations; complete selected run | Count successful admission; distinguish exchanges, subscribers and handlers by finite owner class |
+| `work.terminal` | operations; per outcome | Exactly one terminal category per logical operation; refused/missed-before-admission separate from admitted completions |
+| `work.deadlineMiss` | operations or ticks, fixed profile unit | Count at documented deadline boundary, including observer-induced misses; record uncertain terminal result independently |
+| `work.throughput` | completed operations/second, per outcome | All admitted operations reach terminal outcome; divide complete counts by first measured offer/submission through last measured terminal, including drain and excluding warmup/report writes; no successful-prefix denominator |
+| `collection.loss` | observations, per cause/metric | Exact dropped/overwritten/censored/overflow counts, with unknown counts explicitly invalid; no silent loss |
+| `process.cpu` | CPU nanoseconds, runner process | Monotonic process CPU delta across measured run; unsupported/failed gauge unavailable |
+| `process.resident` | bytes, runner process | Bounded sampled RSS with cadence and sample count; max is sampled maximum only |
+| `process.peakRSS` | bytes, process lifetime | OS high-water mark; never attributed to an individual row in a reused process |
+| `owner.retained` | count or bytes, fixed owner/resource class | Snapshots outside operation timers; exact versus sampled high-water scope recorded |
+| `cleanup.remaining` | count or bytes, fixed owner/resource class | After awaited shutdown; compare exact resource/sleeper/task gauges to documented baseline |
+
+Reject arbitrary labels, raw URLs/routes, payloads, credentials, file paths,
+persistent user/guild/session IDs, cryptographic values and free-form errors.
+For arrival-rate profiles, the throughput interval starts at the first scheduled
+arrival; otherwise it starts at the first submission. Record the offered window,
+drain duration and post-window completions separately. A fixed-window throughput
+variant would need a separate metric version. Cancellation/timeouts still drain
+existing owned work before the terminal measurement; forced process termination
+retains partial status and cannot produce a complete throughput qualification.
+
+Report provenance can contain approved build/artifact paths; they never become
+metric keys. No existing diagnostic UUID is an aggregate dimension.

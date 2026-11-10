@@ -7,9 +7,15 @@ https://aurum-studios.com
 
 # Latency instrumentation and timing suites
 
-Status: proposed implementation plan; no runtime implementation or performance
-qualification is implied. Prepared 2026-11-10 against source revision
-`27cd73f335b2b3058dfa317677c71991292706b8`.
+Status: Stage 0 contracts and inventory implemented; stages 1–11 remain proposed.
+No runtime instrumentation or performance qualification is implied. The original
+plan was prepared 2026-11-10 against source revision
+`27cd73f335b2b3058dfa317677c71991292706b8`; the Stage 0 checkpoint uses
+`c8d842f7ce51e9adc69ff9997e2c0f374dc2ee68`.
+
+Stage 0 artifacts: [workload and file inventory](INVENTORY.md),
+[versioned metric catalog](METRICS.md), [compatibility and ownership decisions](CONTRACTS.md),
+and [validation/reference-host procedure](VALIDATION.md).
 
 ## Outcome and scope
 
@@ -120,6 +126,11 @@ Deliverables:
 
 Exit gate: reviewed metric/ownership catalog, stage-specific file inventory and
 compatibility decision. No placeholder targets or new runtime dependencies.
+
+Stage 0 implementation: see the linked artifacts above for the frozen contracts,
+priorities, actual source boundaries, later-stage file map and local validation.
+The separate detailed interval model is assigned to the existing DiscordLogging
+foundation; `OperationTimingSample` remains unchanged.
 
 ## Stage 1 — Shared development harness, statistics and report schema
 
@@ -521,7 +532,8 @@ Use the existing harnesses as the default. Evaluate
 [Swift's benchmark introduction](https://www.swift.org/blog/benchmarks/) and the
 [Benchmark package](https://github.com/ordo-one/benchmark) during stage 1 if CPU,
 allocation or histogram support avoids substantial maintenance. Its documented
-macOS/Linux support must be reconciled with DiscordKit's Windows certification;
+macOS/Linux support must be checked against the selected native hosts; current
+CI certifies macOS ARM64 and Ubuntu x64 and excludes Windows;
 it would remain a pinned development-only dependency with portable report adapters.
 It is not a reason to replace working policy/load/voice suites or grow the runtime
 dependency graph. Decide from a small prototype and verified native support.
