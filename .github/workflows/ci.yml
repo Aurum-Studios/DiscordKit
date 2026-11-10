@@ -24,17 +24,6 @@ env:
 jobs:
   # Separate callers give each platform its own group in GitHub's job viewer.
   # No platform depends on another platform's pipeline.
-  native-windows:
-    name: Windows x64
-    uses: ./.github/workflows/native-platform.yml
-    with:
-      platform: windows-x64
-      runner-group: Windows-x64-8
-      jobs: 8
-      build-group: Windows-x64-64
-      build-jobs: 64
-      shell: pwsh
-
   native-linux:
     name: Linux x64
     uses: ./.github/workflows/native-platform.yml
@@ -108,7 +97,7 @@ jobs:
   complete:
     name: Offline certification passed
     if: always()
-    needs: [native-windows, native-linux, native-macos, helpers, maintenance]
+    needs: [native-linux, native-macos, helpers, maintenance]
     runs-on:
       group: Linux-x64-8
     timeout-minutes: 5
@@ -127,7 +116,7 @@ jobs:
       - name: Record qualification scope
         run: |
           cat >> "$GITHUB_STEP_SUMMARY" <<'REPORT'
-          Windows x64, Linux x64 and macOS ARM64 each run their own platform check, builds, suites, validation and source export. A failed or unfinished platform cannot block another platform. Builds use the large Linux/Windows pools and the available macOS ARM pool. Independent suites reuse this run's compiled artifacts on small pools; compiler fixtures retain large runners. Shared helper and maintenance checks remain required for complete certification.
+          Linux x64 and macOS ARM64 each run their own platform check, builds, suites, validation and source export. A failed or unfinished platform cannot block another platform. Builds use the large Linux pools and the available macOS ARM pool. Independent suites reuse this run's compiled artifacts on small pools; compiler fixtures retain large runners. Shared helper and maintenance checks remain required for complete certification.
 
           Apple device/simulator jobs compile selected modules only. Android, physical devices, native routing, minimum-OS runtime, authorized Discord, independent crypto review and fleet capacity remain separate gates. Live REST smoke is manual and read-only. No job receives Discord credentials.
           REPORT

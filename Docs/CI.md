@@ -19,7 +19,8 @@ has executed. Review actual artifacts before changing support claims.
 [Offline validation](../.github/workflows/ci.yml) runs on push, pull request and
 manual dispatch with read-only repository permissions and no Discord secrets.
 The workflow calls [the native-platform pipeline](../.github/workflows/native-platform.yml)
-through three explicit jobs: **Windows x64**, **Linux x64** and **macOS ARM64**.
+through two explicit jobs: **Linux x64** and **macOS ARM64**.
+Windows CI is excluded because SwiftNIO does not support Windows.
 Separate callers give each platform its own group in GitHub's job viewer, with
 its own build, runtime-suite and compiler-fixture matrices. Each call owns its
 platform check, plan, builds, runtime suites, compiler fixtures, validation and
@@ -27,14 +28,11 @@ source export. No platform waits for another platform's checks or builds:
 
 ```mermaid
 flowchart LR
-    W[Windows check and builds] --> WT[Windows suites, fixtures and audits]
-    WT --> WP[Windows source export]
     L[Linux check and builds] --> LT[Linux suites, fixtures and audits]
     LT --> LP[Linux source export]
     M[macOS check and builds] --> MT[macOS suites, fixtures, audits, API and Apple SDKs]
     MT --> MP[macOS source export]
-    WP --> C[Complete certification]
-    LP --> C
+    LP --> C[Complete certification]
     MP --> C
     H[Shared Python, browser and maintenance checks] --> C
 ```
@@ -42,18 +40,17 @@ flowchart LR
 | Target | Platform and runtime suite group | Build and compiler fixture group |
 | --- | --- | --- |
 | Linux x64 / Ubuntu 24.04 | `Linux-x64-8` | `Linux-x64-64` |
-| Windows x64 | `Windows-x64-8` | `Windows-x64-64` |
 | macOS ARM64 / macOS 26 | `MacOS-26-5` | `MacOS-26-5` |
 
-The `native-windows`, `native-linux` and `native-macos` jobs each call one pipeline.
+The `native-linux` and `native-macos` jobs each call one pipeline.
 Each starts with exactly one check of the actual native OS, architecture,
 Swift 6.4.1 compiler and target, then compiles, links and executes an offline
 Foundation JSON roundtrip. A platform check is never multiplied by build
 components, suites or runner sizes. Only that platform's check must pass before
-its builds start. A failed or unfinished Windows job leaves the Linux and macOS
-pipelines free to build, test, validate and export.
+its builds start. A failed or unfinished platform leaves the other pipeline
+free to build, test, validate and export.
 The macOS ARM pool has five cores and serves both compilation and runtime work.
-Linux and Windows use separate 64-core build and 8-core runtime pools.
+Linux uses separate 64-core build and 8-core runtime pools.
 
 After its platform check, a small native job evaluates the root manifest and plans
 independent builds for the root, macros, extensions, tooling, load tools,
@@ -71,8 +68,7 @@ individual offline consumer examples have separate jobs. Runtime suites use
 `swift test --skip-build --no-parallel`, and executable smoke tests use
 `swift run --skip-build`. The helper compares restored test discovery with the
 producer's nonempty inventory before executing a suite, and anchors root filters
-to the exact module. Windows omits the explicitly Unix-only test target.
-Other platform conditionals retain their existing behavior.
+to the exact module. Platform conditionals retain their existing behavior.
 
 No current runtime suite has evidence requiring a large runner. Compiler fixture
 suites are the exception: their positive and negative cases must invoke the
@@ -88,9 +84,9 @@ The upstream maintenance freshness check remains a separate required job without
 native-build dependencies. These shared checks gate overall certification;
 platform exports depend on their own native validation.
 
-The reusable workflow keeps all `needs` edges within one platform. The three
+The reusable workflow keeps all `needs` edges within one platform. The two
 caller jobs have no dependencies on each other, so a failed pipeline cannot
-cancel its siblings. Their internal matrices retain `fail-fast: false`.
+cancel the other. Their internal matrices retain `fail-fast: false`.
 GitHub groups reusable jobs under their caller; see
 [reusable workflow navigation](https://github.blog/news-insights/product-news/improving-navigation-for-github-actions/)
 and [calling reusable workflows](https://docs.github.com/en/actions/how-tos/reuse-automations/reuse-workflows#calling-a-reusable-workflow).
@@ -100,10 +96,7 @@ Swift 6.4.1, Python 3.12 and Node 24. Linux setup installs the Ubuntu prerequisi
 and imports the official [Swift signing-key bundle](https://www.swift.org/keys/all-keys.asc)
 with `curl --compressed` before invoking `setup-swift@v3`. It verifies the Swiftly
 fingerprint `E813C892820A6FA13755B268F167DF1ACF9CE069`; installer and toolchain
-signature verification remain enabled. Windows enables long paths before
-checkout, enables Developer Mode, requires MSVC x64 tools and Windows SDK
-10.0.22000 or newer, and uses the pinned
-[Swift installer action](https://github.com/compnerd/gha-setup-swift/tree/9ff1ee4c44888c5817fc14d1b257ac8cabb4935f).
+signature verification remain enabled.
 Every consumer job installs its matching compiler/runtime prerequisites too.
 
 [The native job helper](../Tools/ci/native_jobs.py) transports each compilation in
@@ -136,13 +129,13 @@ observed import audit failure. These changes need a fresh hosted run for proof
 on the pinned toolchain.
 
 Build and test commands have finite process timeouts and durable progress logs.
-POSIX execution terminates the child process group on failure or timeout;
-Windows uses regular-file logs and best-effort `taskkill /T /F`. Each job retains
-its own diagnostics even after failure. The final **Offline certification passed**
-job runs with `always()` and requires all three platform pipelines, shared helper
+POSIX execution terminates the child process group on failure or timeout. Each
+job retains its own diagnostics even after failure. The final
+**Offline certification passed** job runs with `always()` and requires both
+platform pipelines, shared helper
 suites and maintenance freshness to pass. Each pipeline has its own final gate
 that rejects failed, cancelled or skipped required jobs; only the explicitly
-macOS-only API/DocC and Apple SDK jobs may be skipped on Linux and Windows.
+macOS-only API/DocC and Apple SDK jobs may be skipped on Linux.
 
 Each successful platform exports the clean source revision on push or manual
 dispatch, even if another platform or a shared certification check fails. The

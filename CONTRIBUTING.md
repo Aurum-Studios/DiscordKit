@@ -115,11 +115,12 @@ when those become part of an implemented feature.
 
 ### Push CI and platform source packages
 
-Every push runs the offline certification workflow. Windows x64, Ubuntu 24.04
-x64 and macOS ARM64 independently check their native toolchains, build, test,
-validate and export source packages using Swift 6.4.1. A failing platform cannot
+Every push runs the offline certification workflow. Ubuntu 24.04 x64 and macOS
+ARM64 independently check their native toolchains, build, test, validate and
+export source packages using Swift 6.4.1. A failing platform cannot
 block another platform's tests or export. Pull requests run certification without
 packaging; a manual workflow run also creates each successful platform's bundle.
+Windows CI is excluded because SwiftNIO does not support Windows.
 
 Each platform requires its own runtime suites, compiler fixtures, inventory,
 documentation, generation, parity and release-record audits and release-mode
@@ -137,7 +138,7 @@ files and Air task data are excluded.
 Verify the download using its `.sha256` file, for example with
 `sha256sum -c *.tar.gz.sha256` on Linux or `shasum -a 256 -c *.tar.gz.sha256` on
 macOS, then extract the `.tar.gz` archive. Linux retains the archive name
-`DiscordKit-<revision>-linux-source.tar.gz`; macOS and Windows use
+`DiscordKit-<revision>-linux-source.tar.gz`; macOS uses
 `DiscordKit-<revision>-<platform>-source.tar.gz`. The extracted `DiscordKit`
 directory works as a local SwiftPM dependency; optional authoring packages remain
 under `Packages` with their relative dependencies intact. Swift and dependency
