@@ -45,8 +45,17 @@ The target may be any commit present in the repository. Before dispatch, the
 exact SHA must already have a completed, successful **Offline
 certification** run of [CI](../.github/workflows/ci.yml), triggered by `push` or
 `workflow_dispatch`. A pull-request run, a run for another SHA, or documentation
-publication does not satisfy this gate. The release workflow checks that existing
-run and packages source without rebuilding or rerunning the test suites.
+publication does not satisfy this gate. The same run attempt must contain one
+completed, successful **Offline certification passed** final job, which requires
+every platform, build, suite, audit and packaging gate. Legacy runs without that
+final job do not qualify. The release workflow checks the existing run and final
+job and packages source without rebuilding or rerunning the Swift test suites.
+Publication rechecks the recorded run attempt and final job before creating a tag;
+a later rerun requires preparing fresh release evidence.
+
+Preparation and publication use the small `Linux-x64-8` runner group with Python
+3.12 and bash. Preparation first runs the offline release/package helper tests.
+Assets passed to publication are scoped to the target commit, run and attempt.
 
 In GitHub, open **Actions > Release > Run workflow**, select the default branch,
 and enter the version and full SHA. With GitHub CLI, replace the placeholder
@@ -127,7 +136,7 @@ runtime products select no compiler plugin, SwiftSyntax or benchmark tooling.
 Emit fresh compiler graphs and compare them to the reviewed root baseline:
 
 ```sh
-swift package dump-symbol-graph --minimum-access-level public
+python3 Tools/ci/emit_symbol_graphs.py --jobs 5
 python3 Tools/DiscordKitTools/scripts/api_baseline.py snapshot \
   --repository . --symbolgraphs .build/out/symbolgraph \
   --version 0.19.0 --output /tmp/discordkit-current-api.json
@@ -148,7 +157,7 @@ the changed API and semantic version. Do not rewrite a baseline to accept drift.
 The macro product has a separate snapshot excluding compiler-plugin internals:
 
 ```sh
-swift package --package-path Packages/DiscordDSLMacros dump-symbol-graph --minimum-access-level public
+python3 Tools/ci/emit_symbol_graphs.py --repository Packages/DiscordDSLMacros --jobs 5
 python3 Tools/DiscordKitTools/scripts/api_baseline.py snapshot \
   --repository . --authoring-package Packages/DiscordDSLMacros \
   --symbolgraphs Packages/DiscordDSLMacros/.build/out/symbolgraph \
@@ -161,7 +170,7 @@ python3 Tools/DiscordKitTools/scripts/api_baseline.py check \
 Extension libraries use the same separate-package mechanism:
 
 ```sh
-swift package --package-path Packages/DiscordDSLExtensions dump-symbol-graph --minimum-access-level public
+python3 Tools/ci/emit_symbol_graphs.py --repository Packages/DiscordDSLExtensions --jobs 5
 python3 Tools/DiscordKitTools/scripts/api_baseline.py snapshot \
   --repository . --authoring-package Packages/DiscordDSLExtensions \
   --symbolgraphs Packages/DiscordDSLExtensions/.build/out/symbolgraph \

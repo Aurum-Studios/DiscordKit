@@ -13,22 +13,45 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: upstream-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHONUNBUFFERED: '1'
+
 jobs:
   collect:
+    name: Collect official upstream evidence / linux-x64
     runs-on:
       group: Linux-x64-8
     timeout-minutes: 15
+    defaults:
+      run:
+        shell: bash
     steps:
       - uses: actions/checkout@v6
         with:
           persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Test upstream baseline selection without network access
+        run: |
+          mkdir -p .build/upstream-review
+          python -m unittest discover -s Tools/ci -p 'test_ci_helpers.py' -k upstream -v 2>&1 | tee .build/upstream-review/helper-tests.log
       - name: Collect read-only official changelog and pinned-spec diffs
-        run: python3 Tools/ci/review_upstream.py
+        run: python Tools/ci/review_upstream.py 2>&1 | tee .build/upstream-review/collection.log
+      - name: Verify source and maintenance dates remain unchanged
+        run: git diff --exit-code
       - name: Publish human review requirement
         run: cat .build/upstream-review/review.md >> "$GITHUB_STEP_SUMMARY"
-      - uses: actions/upload-artifact@v7
+      - name: Retain upstream review evidence and collection diagnostics
+        if: always()
+        uses: actions/upload-artifact@v7
         with:
-          name: official-upstream-review
+          name: official-upstream-review-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: .build/upstream-review
-          if-no-files-found: error
+          if-no-files-found: warn
           include-hidden-files: true
+          retention-days: 14

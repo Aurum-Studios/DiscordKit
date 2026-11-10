@@ -273,6 +273,59 @@ class LinuxExecutionTests(unittest.TestCase):
                     linux_ci.execute(command, repository, repository / "logging.log")
             self.assertIn("offline output", (repository / "logging.log").read_text())
 
+    def test_discovery_stdout_stays_separate_on_success_and_failure_on_both_executors(self):
+        """A warning emitted between partial identifier writes cannot corrupt captured discovery text."""
+        original_popen = subprocess.Popen
+
+        def start(*arguments, **options):
+            """Run the Windows regular-file path on the local host without Windows creation flags."""
+            options.pop("creationflags", None)
+            return original_popen(*arguments, **options)
+
+        for windows in (False, True):
+            for result in (0, 7):
+                with self.subTest(windows=windows, result=result), tempfile.TemporaryDirectory() as temporary, \
+                        redirect_stdout(io.StringIO()) as console:
+                    repository = Path(temporary)
+                    stdout_log, log = repository / "discovery.stdout", repository / "discovery.log"
+                    warning = "warning: native build engine is deprecated\nBogusTests/diagnosticOnly()\n"
+                    code = ("import os, sys; os.write(1, b'DiscordVoiceTests.VoiceMan'); "
+                            f"os.write(2, {warning.encode()!r}); "
+                            "os.write(1, b'agerTests/automaticReplacementSupersedesPendingFactory()\\n'); "
+                            f"sys.exit({result})")
+                    command = linux_ci.Command("discovery", (sys.executable, "-c", code), timeout=5)
+                    with patch.object(linux_ci, "WINDOWS_HOST", windows), \
+                            patch.object(linux_ci.subprocess, "CREATE_NEW_PROCESS_GROUP", 512, create=True), \
+                            patch.object(linux_ci.subprocess, "Popen", side_effect=start):
+                        if result:
+                            with self.assertRaises(subprocess.CalledProcessError) as caught:
+                                linux_ci.execute(command, repository, log, stdout_log=stdout_log)
+                            self.assertEqual(caught.exception.returncode, result)
+                        else:
+                            linux_ci.execute(command, repository, log, stdout_log=stdout_log)
+                    expected = "DiscordVoiceTests.VoiceManagerTests/automaticReplacementSupersedesPendingFactory()\n"
+                    self.assertEqual(stdout_log.read_text(), expected)
+                    diagnostics = log.read_text()
+                    self.assertIn(warning, diagnostics)
+                    self.assertNotIn(expected, diagnostics)
+                    self.assertIn(expected, console.getvalue())
+                    for line in warning.splitlines():
+                        self.assertIn(line + "\n", console.getvalue())
+
+    def test_separate_output_drains_both_full_pipes_without_losing_diagnostics(self):
+        """Simultaneous large stdout and stderr complete within one deadline and retain all output."""
+        with tempfile.TemporaryDirectory() as temporary, redirect_stdout(io.StringIO()):
+            repository = Path(temporary)
+            code = ("import os\n"
+                    "for index in range(64):\n"
+                    "    os.write(1, b'o' * 8191 + b'\\n')\n"
+                    "    os.write(2, b'e' * 8191 + b'\\n')\n")
+            command = linux_ci.Command("streams", (sys.executable, "-c", code), timeout=5)
+            stdout_log, log = repository / "streams.stdout", repository / "streams.log"
+            linux_ci.execute(command, repository, log, stdout_log=stdout_log)
+            self.assertEqual(stdout_log.read_text(), ("o" * 8191 + "\n") * 64)
+            self.assertTrue(log.read_text().endswith(("e" * 8191 + "\n") * 64))
+
     def test_windows_execution_redirects_to_regular_log_and_replays_output(self):
         """Windows avoids an inherited output pipe and retains the completed parent's log."""
         with tempfile.TemporaryDirectory() as temporary, redirect_stdout(io.StringIO()):
@@ -388,21 +441,30 @@ class LinuxExecutionTests(unittest.TestCase):
         """A successful SwiftPM exit cannot pass while its child still owns the command output pipe."""
         self.assert_descendant_timeout(parent_waits=False)
 
-    def assert_descendant_timeout(self, parent_waits):
+    @unittest.skipUnless(os.name == "posix", "process-group cleanup is a POSIX contract")
+    def test_timeout_includes_each_separate_stream_after_successful_parent_exit(self):
+        """Splitting discovery streams cannot hide a descendant retaining only one output pipe."""
+        for stderr in (False, True):
+            with self.subTest(stderr=stderr):
+                self.assert_descendant_timeout(parent_waits=False, capture_stdout=True, descendant_stderr=stderr)
+
+    def assert_descendant_timeout(self, parent_waits, capture_stdout=False, descendant_stderr=False):
         """Run a synthetic child tree with an observable PID and always clean it on assertion failure."""
         with tempfile.TemporaryDirectory() as temporary, redirect_stdout(io.StringIO()):
             repository = Path(temporary)
             pid_file = repository / "descendant.pid"
-            child = ("import os, pathlib, signal, time; signal.signal(signal.SIGTERM, signal.SIG_IGN); "
+            child = ("import os, pathlib, signal, sys, time; signal.signal(signal.SIGTERM, signal.SIG_IGN); "
                      f"pathlib.Path({str(pid_file)!r}).write_text(str(os.getpid())); "
-                     "print('descendant started', flush=True); time.sleep(60)")
-            parent = (f"import subprocess, sys; process = subprocess.Popen([sys.executable, '-c', {child!r}]); "
+                     f"print('descendant started', file=sys.{'stderr' if descendant_stderr else 'stdout'}, flush=True); time.sleep(60)")
+            redirection = (", stdout=subprocess.DEVNULL" if descendant_stderr else ", stderr=subprocess.DEVNULL") if capture_stdout else ""
+            parent = (f"import subprocess, sys; process = subprocess.Popen([sys.executable, '-c', {child!r}]{redirection}); "
                       + ("process.wait()" if parent_waits else "sys.exit(0)"))
             command = linux_ci.Command("timeout", (sys.executable, "-c", parent), timeout=1.5)
             started = time.monotonic()
             try:
                 with self.assertRaises(subprocess.TimeoutExpired):
-                    linux_ci.execute(command, repository, repository / "timeout.log")
+                    linux_ci.execute(command, repository, repository / "timeout.log",
+                                     stdout_log=repository / "timeout.stdout" if capture_stdout else None)
                 self.assertLess(time.monotonic() - started, 8)
                 self.assertTrue(pid_file.is_file(), "the descendant must start to exercise cleanup")
                 pid = int(pid_file.read_text())
@@ -410,7 +472,8 @@ class LinuxExecutionTests(unittest.TestCase):
                 while self.process_is_running(pid) and time.monotonic() < deadline:
                     time.sleep(0.01)
                 self.assertFalse(self.process_is_running(pid), "timed-out descendant is still running")
-                self.assertIn("descendant started", (repository / "timeout.log").read_text())
+                retained = "timeout.stdout" if capture_stdout and not descendant_stderr else "timeout.log"
+                self.assertIn("descendant started", (repository / retained).read_text())
             finally:
                 if pid_file.exists():
                     with suppress(ProcessLookupError):

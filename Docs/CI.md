@@ -218,20 +218,36 @@ recorded as a passed compile.
 ## Documentation website
 
 The independent [Documentation workflow](../.github/workflows/documentation.yml)
-runs on every push, pull request and manual dispatch. Its build job has no
-dependency on the offline certification jobs, so GitHub can schedule both
-workflows at the same time. It uses the `MacOS-26-5` group and Swift 6.4.1 to emit public symbol
-graphs, check curation and tutorial snapshots, and convert all root, macro and
-extension library catalogs with the same strict DocC helper used by CI.
+runs on every push, pull request and manual dispatch, independently of offline
+certification. A macOS ARM64 platform probe checks the host, compiler, linker and
+runtime before three independent root, macro and extension compilation jobs.
+Those jobs use the shared native setup and compile helper on `MacOS-26-5`, with
+Swift 6.4.1, committed dependency pins, the native build engine, source-built
+macro dependencies and a five-job limit capped at the available CPUs. They emit
+normalized public symbol graphs and retain the same sealed compilation receipts
+as offline certification. Compilation includes test executables and discovery;
+the documentation workflow does not execute Swift test suites.
+
+After all three builds pass, Python helper tests run on `Linux-x64-8` with
+Python 3.12 while a macOS conversion job restores the three packages from this
+workflow's exact commit, run and attempt. Restore checks source and payload
+hashes, checkout path, platform and toolchain before accepting the artifacts.
+The conversion job checks curation and tutorial snapshots, then converts the
+root, macro and extension catalogs without emitting graphs or recompiling.
+It uses the same strict DocC helper as offline certification. The workflow
+retains platform, build, helper and conversion diagnostics for 14 days; compiled
+packages expire after two days. Use **Re-run all jobs** for a fresh attempt.
 
 [The site builder](../Tools/ci/build_documentation_site.py) merges those public
 modules into one library navigator and exports static routes with the
 repository name as the hosting base path. The root URL redirects to the merged
 documentation landing page. The site is uploaded using GitHub's Pages artifact
 action, which preserves DocC filenames containing colons inside a tar archive.
-Generated website files remain build outputs and are not committed.
+Generated website files remain build outputs and are not committed. The site
+builder's `--skip-symbol-graphs` mode consumes the verified restored graphs and
+fails if any public module is missing or malformed.
 
-Only a successful documentation build on the default branch can publish
+Only successful conversion and helper checks on the default branch can publish
 [the website](https://aurum-studios.github.io/DiscordKit/). Pull requests and
 other branches build an artifact without replacing the published site. The
 deployment job alone receives `pages: write` and `id-token: write`, and uses the
@@ -244,14 +260,15 @@ In the repository's **Settings > Pages**, the publishing source must be
 required by the workflow. For a local build, run:
 
 ```sh
-python3 Tools/ci/build_documentation_site.py --hosting-base-path /DiscordKit
+python3 Tools/ci/build_documentation_site.py --jobs 5 --hosting-base-path /DiscordKit
 ```
 
 The output is `.build/documentation-site`. Change the base path for a different
 repository name or use an empty base path when serving at a domain root. A
 custom domain also requires updating `DOCUMENTATION_BASE_PATH` in the workflow.
-The documentation job compiles packages to emit symbol graphs; its success does
-not establish that the independent build/test certification has passed.
+Local builds refresh graphs with the native symbol-graph helper by default,
+using the same pins, build engine and bounded compiler jobs. Documentation
+success does not establish that independent build/test certification has passed.
 
 ## Manual GitHub releases
 
@@ -259,11 +276,17 @@ The [Release workflow](../.github/workflows/release.yml) runs only by manual
 dispatch from the default branch. It accepts a chosen `Major.Minor.Build` version
 and a full commit SHA, requires an existing successful **Offline certification**
 run of [CI](../.github/workflows/ci.yml) at that exact commit from a push or manual
-dispatch, then packages source and publishes a versioned tag and GitHub release.
+dispatch, including a successful **Offline certification passed** final gate in
+that exact run attempt, then packages source and publishes a versioned tag and
+GitHub release. Legacy runs without the final gate do not qualify. Publication
+rechecks the recorded attempt and its final gate before creating a tag.
 The target may be any commit present in the repository with that certification.
 The workflow reuses certification evidence without repeating compilation or tests.
 
-The preparation job has `actions: read` and `contents: read`; only publication
+Both release jobs use `Linux-x64-8`, Python 3.12 and bash; preparation runs the
+offline release helper tests before checking certification. Prepared assets are
+named by target commit, workflow run and attempt. The preparation job has
+`actions: read` and `contents: read`; only publication
 receives `contents: write`. Reads use the standard `GITHUB_TOKEN`. For targets
 that add or modify workflow files relative to the default branch, maintainers can
 configure the optional `RELEASE_TOKEN` for publication with Contents and Workflows
@@ -280,6 +303,10 @@ Monday at 14:00 UTC and on manual dispatch. It fetches only the official Discord
 documentation/specification Git repositories, compares their current heads to the
 frozen discovery revisions, collects the current official change log, and publishes
 exact refs, hashes, patches and a human-review reminder as artifacts and job summary.
+It uses `Linux-x64-8`, Python 3.12 and bash, first testing baseline selection
+offline. Collection verifies tracked source remains unchanged. Artifacts are
+named by commit, run and attempt and retained for 14 days, including helper and
+collection logs after failure. A newer run on the same ref cancels an older one.
 Network/fetch failures fail collection. No API account is contacted, no issue/message
 is sent, and no production source or verified-on date is changed automatically.
 

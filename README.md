@@ -68,7 +68,7 @@ or [getting started](Sources/DiscordKit/DiscordKit.docc/GettingStarted.md).
 Build the independent archives and merged library navigator locally:
 
 ```sh
-swift package dump-symbol-graph --minimum-access-level public
+python3 Tools/ci/emit_symbol_graphs.py --jobs 5
 python3 Tools/ci/curate_docc.py --check
 python3 Tools/ci/documentation_examples.py
 python3 Tools/ci/build_docc.py

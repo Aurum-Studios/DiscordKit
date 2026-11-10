@@ -8,7 +8,7 @@
 
 import argparse
 import codecs
-from contextlib import suppress
+from contextlib import ExitStack, suppress
 from dataclasses import dataclass
 import json
 import os
@@ -246,20 +246,25 @@ def stop_process_group(process):
     process.wait()
 
 
-def execute_windows(command, repository, log, environment):
+def execute_windows(command, repository, log, environment, *, stdout_log=None):
     """Bound the Windows parent wait without a pipe held open by descendants.
 
-    Children write directly to the regular log file. Replay its current snapshot
+    Children write directly to regular files, with stdout separated from diagnostic
+    stderr when stdout_log is supplied for machine parsing. Replay each current snapshot
     after the parent completes; later descendant output cannot extend the replay.
     Workflow timeout remains the final boundary for orphaned Windows processes.
     """
     try:
-        with log.open("w", encoding="utf-8") as destination:
+        with ExitStack() as stack:
+            destination = stack.enter_context(log.open("w", encoding="utf-8"))
+            stdout_destination = (stack.enter_context(stdout_log.open("w", encoding="utf-8"))
+                                  if stdout_log is not None else destination)
             destination.write(shlex.join(command.arguments) + "\n")
             destination.flush()
             process = subprocess.Popen(command.arguments, cwd=repository, env=environment,
                                        creationflags=subprocess.CREATE_NEW_PROCESS_GROUP,
-                                       stdout=destination, stderr=subprocess.STDOUT)
+                                       stdout=stdout_destination,
+                                       stderr=destination if stdout_log is not None else subprocess.STDOUT)
             try:
                 result = process.wait(timeout=command.timeout)
             except BaseException:
@@ -271,8 +276,10 @@ def execute_windows(command, repository, log, environment):
     finally:
         # Read no more than the file size at admission, even if an orphan keeps
         # appending. Regular-file reads cannot wait for an inherited pipe's EOF.
-        if log.exists():
-            with log.open("rb") as source:
+        for path in (log, stdout_log) if stdout_log is not None else (log,):
+            if not path.exists():
+                continue
+            with path.open("rb") as source:
                 remaining = os.fstat(source.fileno()).st_size
                 decoder = codecs.getincrementaldecoder("utf-8")(errors="replace")
                 while remaining:
@@ -284,46 +291,63 @@ def execute_windows(command, repository, log, environment):
                 print(decoder.decode(b"", final=True), end="", flush=True)
 
 
-def execute(command, repository, log):
-    """Stream merged output to console and disk; fail on timeout or nonzero exit.
+def execute(command, repository, log, *, stdout_log=None):
+    """Stream output durably; optionally separate stdout for machine parsing.
 
+    Without stdout_log, log contains the command and merged stdout/stderr. With
+    stdout_log, that file contains only child stdout and log contains the command
+    and stderr diagnostics. Both streams still reach the console. Separate pipes
+    prevent diagnostic writes from splitting identifiers in a test inventory.
     POSIX commands own a process group, including compiler/plugin descendants.
-    Windows writes directly to a log and replays it after the bounded parent wait.
+    Windows writes directly to regular files and replays them after the bounded parent wait.
     Failed commands are never retried; Windows tree cleanup is best-effort.
     """
     environment = dict(os.environ, SWIFTNIO_STRICT="1", PYTHONUNBUFFERED="1")
     if WINDOWS_HOST:
-        return execute_windows(command, repository, log, environment)
-    with log.open("w") as destination:
+        return execute_windows(command, repository, log, environment, stdout_log=stdout_log)
+    with ExitStack() as stack:
+        destination = stack.enter_context(log.open("w", encoding="utf-8"))
+        stdout_destination = (stack.enter_context(stdout_log.open("w", encoding="utf-8"))
+                              if stdout_log is not None else destination)
         destination.write(shlex.join(command.arguments) + "\n")
         destination.flush()
         with subprocess.Popen(command.arguments, cwd=repository, env=environment, start_new_session=True,
-                              stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, errors="replace") as process:
-            def forward():
-                """Drain compiler output without retaining the complete log in memory."""
+                              stdout=subprocess.PIPE,
+                              stderr=subprocess.PIPE if stdout_log is not None else subprocess.STDOUT,
+                              text=True, encoding="utf-8", errors="replace") as process:
+            console_lock = threading.Lock()
+
+            def forward(stream, target):
+                """Drain one stream to its own file and serialize complete console lines."""
                 try:
-                    for line in process.stdout:
-                        destination.write(line)
-                        destination.flush()
-                        print(line, end="", flush=True)
+                    for line in stream:
+                        target.write(line)
+                        target.flush()
+                        with console_lock:
+                            print(line, end="", flush=True)
                 except Exception as error:
                     forwarding_errors.append(error)
             forwarding_errors = []
-            worker = threading.Thread(target=forward, daemon=True)
+            workers = [threading.Thread(target=forward, args=(process.stdout, stdout_destination), daemon=True)]
+            if stdout_log is not None:
+                workers.append(threading.Thread(target=forward, args=(process.stderr, destination), daemon=True))
             deadline = time.monotonic() + command.timeout
-            worker.start()
+            for worker in workers:
+                worker.start()
             try:
                 result = process.wait(timeout=command.timeout)
                 # A compiler child can outlive SwiftPM while retaining stdout.
                 # The same deadline covers both parent exit and output draining.
-                worker.join(timeout=max(0, deadline - time.monotonic()))
-                if worker.is_alive():
+                for worker in workers:
+                    worker.join(timeout=max(0, deadline - time.monotonic()))
+                if any(worker.is_alive() for worker in workers):
                     raise subprocess.TimeoutExpired(command.arguments, command.timeout)
                 if forwarding_errors:
                     raise OSError(f"could not preserve command output: {forwarding_errors[0]}")
             except BaseException:
                 stop_process_group(process)
-                worker.join(timeout=5)
+                for worker in workers:
+                    worker.join(timeout=5)
                 raise
             if result:
                 stop_process_group(process)

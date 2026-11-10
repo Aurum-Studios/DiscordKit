@@ -30,6 +30,7 @@ defaults:
     shell: bash
 
 env:
+  PYTHONUNBUFFERED: '1'
   RELEASE_VERSION: ${{ inputs.version }}
   RELEASE_COMMIT: ${{ inputs.commit }}
   RELEASE_DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
@@ -49,17 +50,22 @@ jobs:
           ref: ${{ github.sha }}
           fetch-depth: 0
           persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Check release preparation and publication helpers offline
+        run: python -m unittest discover -s Tools/ci -p 'test_*release.py'
       - name: Validate version, exact CI result and unused release tag
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          python3 Tools/ci/github_release.py prepare \
+          python Tools/ci/github_release.py prepare \
             --repository . --output "$RUNNER_TEMP/release-assets" \
             --version "$RELEASE_VERSION" --commit "$RELEASE_COMMIT"
       - name: Preserve versioned release assets
         uses: actions/upload-artifact@v7
         with:
-          name: release-${{ github.run_id }}-${{ github.run_attempt }}
+          name: release-${{ inputs.commit }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/release-assets/*
           if-no-files-found: error
           compression-level: 0
@@ -82,9 +88,12 @@ jobs:
           ref: ${{ github.sha }}
           fetch-depth: 0
           persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
       - uses: actions/download-artifact@v8
         with:
-          name: release-${{ github.run_id }}-${{ github.run_attempt }}
+          name: release-${{ inputs.commit }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/release-assets
       - name: Verify assets, create exact tag and publish release
         env:
@@ -92,7 +101,7 @@ jobs:
           RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}
           GH_TOKEN: ${{ github.token }}
         run: |
-          python3 Tools/ci/github_release.py publish \
+          python Tools/ci/github_release.py publish \
             --repository . --output "$RUNNER_TEMP/release-assets" \
             --version "$RELEASE_VERSION" --commit "$RELEASE_COMMIT"
       - name: Record published release

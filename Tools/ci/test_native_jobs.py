@@ -27,8 +27,14 @@ class NativePlanTests(unittest.TestCase):
     """Require a complete, nonduplicating suite partition on the intended runner sizes."""
 
     def test_platform_builds_precede_independent_small_suite_jobs(self):
-        """Each compiled graph has one producer; platform-only Unix tests never create empty Windows jobs."""
-        modules = ["DiscordCoreTests", "DiscordUnixPlatformTests", "DiscordApplePlatformTests"]
+        """Each compiled graph has one producer; platform-only targets never create empty suites."""
+        modules = ["DiscordCoreTests", "DiscordUnixPlatformTests", "DiscordApplePlatformTests",
+                   "DiscordFoundationTransportTests"]
+        expected_modules = {
+            "macos-arm64": set(modules),
+            "linux-x64": set(modules) - {"DiscordFoundationTransportTests"},
+            "windows-x64": set(modules) - {"DiscordFoundationTransportTests", "DiscordUnixPlatformTests"},
+        }
         builds, tests = jobs.matrices(modules)
         self.assertEqual(len(builds["include"]), len(jobs.PLATFORMS) * len(jobs.COMPONENTS))
         self.assertEqual(len({(entry["platform"], entry["component"]) for entry in builds["include"]}), len(builds["include"]))
@@ -37,7 +43,7 @@ class NativePlanTests(unittest.TestCase):
             test_entries = [entry for entry in tests["include"] if entry["platform"] == native_platform]
             self.assertEqual({entry["component"] for entry in build_entries}, set(jobs.COMPONENTS))
             self.assertEqual({entry["suite"] for entry in test_entries if entry["component"] == "root"},
-                             set(jobs.active_targets(modules, native_platform)))
+                             expected_modules[native_platform])
             self.assertEqual({entry["suite"] for entry in test_entries if entry["component"] == "consumers"},
                              set(jobs.CONSUMER_TESTS) | set(jobs.CONSUMER_SMOKES))
             self.assertNotIn("release", {entry["component"] for entry in test_entries})
@@ -116,7 +122,7 @@ class NativePlanTests(unittest.TestCase):
         for listing in ("", "OtherCoreTests.Suite/test()", "CoreTests.Suite/test()\nCoreTests.Suite/test()"):
             with self.subTest(listing=listing), self.assertRaises(ValueError):
                 jobs.discovered_tests(listing, ["CoreTests"])
-        with self.assertRaises(ValueError):
+        with self.assertRaisesRegex(ValueError, "MissingTests"):
             jobs.discovered_tests("CoreTests.Suite/test()", ["CoreTests", "MissingTests"])
 
     def test_job_limit_obeys_visible_cpu_affinity(self):
@@ -257,8 +263,8 @@ class NativeArtifactTests(unittest.TestCase):
         """Exercise production orchestration through actual tar transport with a controlled compiler boundary."""
         calls = []
 
-        def compiler(command, repository, log):
-            """Model only Swift's external effects; production planning and transport remain real."""
+        def compiler(command, repository, log, *, stdout_log=None):
+            """Model split diagnostics while production discovery, planning and transport remain real."""
             calls.append(command.arguments)
             if command.arguments[1] == "build":
                 self.binary.parent.mkdir(parents=True, exist_ok=True)
@@ -266,26 +272,57 @@ class NativeArtifactTests(unittest.TestCase):
                 log.write_text("Build complete!\n")
             elif "list" in command.arguments:
                 self.assertTrue(self.binary.is_file())
-                log.write_text("CoreTests.Suite/test()\n")
+                # The hosted warning interrupted a test identifier when streams were merged.
+                log.write_text("CoreTests.Suwarning: --build-system native is deprecated\nite/test()\n")
+                self.assertIsNotNone(stdout_log)
+                stdout_log.write_text("CoreTests.Suite/test()\n")
             else:
                 self.assertEqual(self.binary.read_bytes(), b"fresh compilation")
                 self.assertIn("--skip-build", command.arguments)
                 log.write_text("Test run passed\n")
 
-        with patch.object(jobs, "identity", return_value=self.current), patch.object(jobs, "dump_targets", return_value=["CoreTests"]), patch.object(jobs.linux_ci, "execute", side_effect=compiler), redirect_stdout(io.StringIO()):
-            jobs.compile_component(self.repository, "root", "linux-x64", 8, self.output / "compile", self.archive)
+        with patch.object(jobs, "identity", return_value=self.current), \
+                patch.object(jobs, "dump_targets", return_value=["CoreTests", "DiscordFoundationTransportTests"]), \
+                patch.object(jobs.linux_ci, "execute", side_effect=compiler), redirect_stdout(io.StringIO()):
+            metadata = jobs.compile_component(self.repository, "root", "linux-x64", 8, self.output / "compile", self.archive)
             shutil.rmtree(self.repository / ".build")
             report = jobs.run_tests(self.repository, "root", "CoreTests", "linux-x64", 2, self.output / "test", self.archive)
         self.assertEqual(report["status"], "passed")
+        self.assertEqual(metadata["tests"]["."], {"CoreTests": ["CoreTests.Suite/test()"]})
+        for phase in ("compile", "test"):
+            retained = json.loads((self.output / phase / "commands.json").read_text())
+            discovery = [record for record in retained["commands"] if "list" in record["arguments"]]
+            self.assertEqual(len(discovery), 1)
+            self.assertIn("warning:", (self.output / phase / discovery[0]["log"]).read_text())
+            self.assertEqual((self.output / phase / discovery[0]["stdoutLog"]).read_text(),
+                             "CoreTests.Suite/test()\n")
         self.assertEqual(sum(arguments[1] == "build" for arguments in calls), 1)
         self.assertTrue(all("--skip-build" in arguments for arguments in calls if arguments[1] == "test"))
+
+    def test_discovery_stdout_excludes_warning_written_between_identifier_fragments(self):
+        """A real child's stderr cannot corrupt the inventory parsed from its captured stdout."""
+        script = ("import os; "
+                  "os.write(1, b'CoreTests.Su'); "
+                  "os.write(2, b'warning: --build-system native is deprecated\\n'); "
+                  "os.write(1, b'ite/test()\\n')")
+        command = jobs.linux_ci.Command("discovery", (sys.executable, "-c", script), 10)
+        report = {"status": "running", "commands": []}
+        with redirect_stdout(io.StringIO()):
+            captured = jobs.execute_commands([command], self.repository, self.output, report,
+                                             capture_stdout=True)
+        self.assertEqual(jobs.discovered_tests(captured[0].read_text(), ["CoreTests"]),
+                         {"CoreTests": ["CoreTests.Suite/test()"]})
+        record = report["commands"][0]
+        self.assertEqual(captured, [self.output / record["stdoutLog"]])
+        self.assertIn("warning: --build-system native is deprecated", (self.output / record["log"]).read_text())
+        self.assertNotIn("warning:", captured[0].read_text())
 
     def test_macos_archive_contains_fresh_public_graphs_from_the_build_phase(self):
         """The later API job must receive compiler graphs without needing stripped object files."""
         calls = []
         generated = self.repository / ".build/out/symbolgraph/Library.symbols.json"
 
-        def compiler(command, repository, log):
+        def compiler(command, repository, log, *, stdout_log=None):
             """Produce build outputs and documentation inputs at their actual archive locations."""
             calls.append(command.name)
             if command.name == "public-symbol-graphs":
@@ -293,6 +330,8 @@ class NativeArtifactTests(unittest.TestCase):
                 generated.parent.mkdir(parents=True)
                 generated.write_text(json.dumps({"module": {"name": "Library"}}))
             log.write_text("CoreTests.Suite/test()\n" if "list" in command.arguments else "passed\n")
+            if stdout_log is not None:
+                stdout_log.write_text("CoreTests.Suite/test()\n")
 
         with patch.object(jobs, "identity", return_value=self.current), \
                 patch.object(jobs, "dump_targets", return_value=["CoreTests"]), \

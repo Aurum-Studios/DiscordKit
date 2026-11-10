@@ -36,6 +36,13 @@ def ci_run(**changes):
     return run
 
 
+def ci_gate(**changes):
+    job = {"name": "Offline certification passed", "run_id": 1234,
+           "head_sha": REVISION, "status": "completed", "conclusion": "success"}
+    job.update(changes)
+    return job
+
+
 class FakeAPI:
     """Allow only explicitly configured reads and one atomic tag creation."""
 
@@ -46,6 +53,7 @@ class FakeAPI:
         self.calls = []
         self.responses = {
             "actions/runs/1234": ci_run(),
+            "actions/runs/1234/attempts/2/jobs?per_page=100&page=1": {"jobs": [ci_gate()]},
             "actions/workflows/ci.yml": {"id": 42},
             f"git/ref/tags/v{VERSION}": None,
             "releases?per_page=100&page=1": [],
@@ -109,8 +117,47 @@ class ReleaseGateTests(unittest.TestCase):
         api.responses[prefix + "1"] = {"workflow_runs": [ci_run(event="pull_request")] * 100}
         api.responses[prefix + "2"] = {"workflow_runs": [ci_run()]}
         self.assertEqual(github_release.successful_ci(api, REVISION), ci_run())
-        self.assertEqual([call[0] for call in api.calls], [prefix + "1", prefix + "2"])
+        self.assertEqual([call[0] for call in api.calls], [prefix + "1", prefix + "2",
+                         "actions/runs/1234/attempts/2/jobs?per_page=100&page=1"])
         self.assertEqual(api.mutations, [])
+
+    def test_final_gate_is_required_from_the_exact_attempt(self):
+        invalid = ([], [ci_gate(conclusion="failure")], [ci_gate(conclusion="skipped")],
+                   [ci_gate(conclusion="cancelled")], [ci_gate(status="in_progress")],
+                   [ci_gate(run_id=5678)], [ci_gate(head_sha="0" * 40)],
+                   [ci_gate(), ci_gate()])
+        path = "actions/runs/1234/attempts/2/jobs?per_page=100&page=1"
+        for jobs in invalid:
+            with self.subTest(jobs=jobs):
+                api = FakeAPI()
+                api.responses[path] = {"jobs": jobs}
+                self.assertFalse(github_release.certification_gate_passed(api, ci_run()))
+                self.assertEqual([call[0] for call in api.calls], [path])
+                self.assertEqual(api.mutations, [])
+
+    def test_final_gate_search_paginates_and_does_not_accept_other_successful_jobs(self):
+        api = FakeAPI()
+        prefix = "actions/runs/1234/attempts/2/jobs?per_page=100&page="
+        api.responses[prefix + "1"] = {"jobs": [ci_gate(name="Builds / linux-x64 / root")] * 100}
+        api.responses[prefix + "2"] = {"jobs": [ci_gate()]}
+        self.assertTrue(github_release.certification_gate_passed(api, ci_run()))
+        self.assertEqual([call[0] for call in api.calls], [prefix + "1", prefix + "2"])
+
+    def test_successful_legacy_run_without_final_gate_is_not_certification(self):
+        api = FakeAPI()
+        prefix = f"actions/workflows/ci.yml/runs?head_sha={REVISION}&per_page=100&page=1"
+        api.responses[prefix] = {"workflow_runs": [ci_run()]}
+        api.responses["actions/runs/1234/attempts/2/jobs?per_page=100&page=1"] = {"jobs": []}
+        with self.assertRaisesRegex(ValueError, "final.*Offline certification passed"):
+            github_release.successful_ci(api, REVISION)
+        self.assertEqual(api.mutations, [])
+
+    def test_certification_search_can_use_another_fully_certified_run(self):
+        api = FakeAPI()
+        prefix = f"actions/workflows/ci.yml/runs?head_sha={REVISION}&per_page=100&page=1"
+        api.responses[prefix] = {"workflow_runs": [ci_run(id=5678), ci_run()]}
+        api.responses["actions/runs/5678/attempts/2/jobs?per_page=100&page=1"] = {"jobs": []}
+        self.assertEqual(github_release.successful_ci(api, REVISION), ci_run())
 
     def test_absent_or_failed_certification_never_becomes_a_success(self):
         for runs in ([], [ci_run(conclusion="failure")], [ci_run(head_sha="0" * 40)]):
@@ -301,6 +348,18 @@ class ReleasePublicationTests(unittest.TestCase):
                 self.api.responses["actions/runs/1234"] = ci_run(**changes)
                 with patch.object(github_release.subprocess, "run") as command:
                     with self.assertRaises(ValueError):
+                        self.publish()
+                    command.assert_not_called()
+                self.assertEqual(self.api.mutations, [])
+
+    def test_missing_or_nonpassing_final_gate_never_publishes(self):
+        path = "actions/runs/1234/attempts/2/jobs?per_page=100&page=1"
+        for jobs in ([], [ci_gate(conclusion="failure")], [ci_gate(conclusion="skipped")]):
+            with self.subTest(jobs=jobs):
+                self.api = FakeAPI()
+                self.api.responses[path] = {"jobs": jobs}
+                with patch.object(github_release.subprocess, "run") as command:
+                    with self.assertRaisesRegex(ValueError, "no longer valid"):
                         self.publish()
                     command.assert_not_called()
                 self.assertEqual(self.api.mutations, [])

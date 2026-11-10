@@ -11,13 +11,13 @@ Generate independent product archives and a combined library archive with strict
 Use the Swift 6.4 toolchain and DocC supplied by Xcode or your Swift installation:
 
 ```sh
-swift package dump-symbol-graph --minimum-access-level public
+python3 Tools/ci/emit_symbol_graphs.py --jobs 5
 python3 Tools/ci/curate_docc.py --check
 python3 Tools/ci/documentation_examples.py
 python3 Tools/ci/build_docc.py
 ```
 
-Use the symbol graph directory printed by SwiftPM if it differs from the helper's default. The helper converts each root public library module, preserving its primary and owned extension graphs. It enables warnings as errors, diagnostic analysis and public documentation coverage. The umbrella catalog resolves cross-product contents links against those archives. DocC then merges them into `.build/documentation/DiscordKitLibrary.doccarchive` with one library navigator. The macro and extension packages emit separate graphs and catalogs; validate those packages explicitly as described in the repository release-tooling guide.
+The emission helper uses the native SwiftPM build engine and committed dependency pins, disables experimental prebuilt dependencies, and normalizes graphs into `.build/out/symbolgraph`. The converter handles each root public library module, preserving its primary and owned extension graphs. It enables warnings as errors, diagnostic analysis and public documentation coverage. The umbrella catalog resolves cross-product contents links against those archives. DocC then merges them into `.build/documentation/DiscordKitLibrary.doccarchive` with one library navigator. The macro and extension packages emit separate graphs and catalogs; validate those packages explicitly as described in the repository release-tooling guide.
 
 Open the merged archive in Xcode, or preview the umbrella catalog with the installed DocC command and the appropriate symbol graphs.
 
@@ -25,13 +25,15 @@ Open the merged archive in Xcode, or preview the umbrella catalog with the insta
 
 Browse the [hosted documentation](https://aurum-studios.github.io/DiscordKit/). The independent Documentation workflow builds on every push and pull request alongside CI, then publishes successful default-branch builds to GitHub Pages. Pull requests and other branches produce a site artifact without publishing.
 
+The workflow checks the macOS ARM64 platform, compiles the three packages independently with a five-job limit, and restores their sealed artifacts for conversion without recompiling. Artifacts must match the commit, workflow run and attempt, checkout path and toolchain. Python helpers run separately on the small Linux pool; publication requires both helper checks and site conversion to pass. A workflow rerun must use **Re-run all jobs** to produce matching compilation artifacts.
+
 To reproduce the website build locally:
 
 ```sh
-python3 Tools/ci/build_documentation_site.py --hosting-base-path /DiscordKit
+python3 Tools/ci/build_documentation_site.py --jobs 5 --hosting-base-path /DiscordKit
 ```
 
-The helper emits public symbol graphs for the root, macro and extension packages, validates curation and tutorial snapshots, converts the catalogs with strict diagnostics, and merges all public modules into one navigator. It exports `.build/documentation-site` using DocC's static-hosting transformation, including direct article and symbol routes and a root redirect to the library landing page. The local command generates files; the GitHub workflow handles publication. Use an empty hosting base path to serve at a domain root.
+The helper emits public symbol graphs for the root, macro and extension packages with the native emission helper and bounded compiler jobs, validates curation and tutorial snapshots, converts the catalogs with strict diagnostics, and merges all public modules into one navigator. CI uses `--skip-symbol-graphs` after verifying and restoring compiled artifacts; this mode requires valid graphs for every public module. It exports `.build/documentation-site` using DocC's static-hosting transformation, including direct article and symbol routes and a root redirect to the library landing page. The local command generates files; the GitHub workflow handles publication. Use an empty hosting base path to serve at a domain root.
 
 ### Documentation layout
 

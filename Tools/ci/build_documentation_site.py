@@ -8,7 +8,8 @@
 
 This entry point owns its marked output directory. Failed builds leave no site
 to upload; conversion and static transformation take place in temporary staging.
-SwiftPM compiler caches are reused, while public symbol graphs are refreshed.
+SwiftPM compiler caches are reused, while public symbol graphs are refreshed
+unless the caller selects graphs restored from sealed native build artifacts.
 """
 
 import argparse
@@ -21,6 +22,8 @@ import sys
 import tempfile
 
 import build_docc
+import emit_symbol_graphs
+import native_jobs
 
 
 PACKAGES = (".", "Packages/DiscordDSLMacros", "Packages/DiscordDSLExtensions")
@@ -55,9 +58,10 @@ def prepare_output(output):
     shutil.rmtree(output)
 
 
-def build_site(repository, output, docc, hosting_base_path):
-    """Refresh, check, convert and merge all public modules before static export."""
+def build_site(repository, output, docc, hosting_base_path, jobs=5, skip_symbol_graphs=False):
+    """Check, convert and merge public modules, optionally reusing compiled graphs."""
     repository = repository.resolve()
+    jobs = native_jobs.bounded_jobs(jobs)
     # Keep a final-component symlink visible to the output ownership check.
     output = output.absolute()
     if (hosting_base_path and not hosting_base_path.startswith("/")) or any(
@@ -72,13 +76,18 @@ def build_site(repository, output, docc, hosting_base_path):
         for number, relative in enumerate(PACKAGES):
             package = repository / relative
             graphs = package / ".build/out/symbolgraph"
-            if graphs.is_symlink():
-                raise ValueError(f"Symbol graph output must not be a symbolic link: {graphs}")
-            # Remove only generated graph files, retaining SwiftPM's build cache.
-            for graph in graphs.glob("*.symbols.json"):
-                graph.unlink()
-            run(["swift", "package", "--package-path", package, "--force-resolved-versions",
-                 "dump-symbol-graph", "--minimum-access-level", "public"], repository)
+            if skip_symbol_graphs:
+                # The workflow restores and verifies native artifact receipts first.
+                # Missing or malformed inputs must fail rather than trigger a rebuild.
+                emit_symbol_graphs.validate_directory(graphs, package / ".build")
+                modules = build_docc.public_modules(package)
+                if not modules:
+                    raise ValueError(f"No public modules to document: {package}")
+                for module in modules:
+                    build_docc.module_graphs(graphs, module)
+            else:
+                run([sys.executable, scripts / "emit_symbol_graphs.py", "--repository", package,
+                     "--jobs", jobs], repository)
             run([sys.executable, scripts / "curate_docc.py", "--repository", package,
                  "--symbolgraphs", graphs, "--check"], repository)
             if number == 0:
@@ -117,12 +126,17 @@ def main():
     parser.add_argument("--output", type=Path, default=Path(".build/documentation-site"))
     parser.add_argument("--hosting-base-path", default="/DiscordKit")
     parser.add_argument("--docc", default=shutil.which("docc"))
+    parser.add_argument("--jobs", type=int, default=5,
+                        help="maximum compiler jobs for fresh symbol graphs (default: 5)")
+    parser.add_argument("--skip-symbol-graphs", action="store_true",
+                        help="validate and reuse existing graphs without compiling; CI restores sealed artifacts first")
     arguments = parser.parse_args()
     if not arguments.docc and shutil.which("xcrun"):
         arguments.docc = subprocess.check_output(["xcrun", "--find", "docc"], text=True).strip()
     if not arguments.docc:
         parser.error("docc is not installed; select a Swift toolchain with DocC")
-    build_site(arguments.repository, arguments.output, arguments.docc, arguments.hosting_base_path)
+    build_site(arguments.repository, arguments.output, arguments.docc, arguments.hosting_base_path,
+               jobs=arguments.jobs, skip_symbol_graphs=arguments.skip_symbol_graphs)
 
 
 if __name__ == "__main__":

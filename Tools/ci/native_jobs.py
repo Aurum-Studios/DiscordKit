@@ -63,9 +63,10 @@ def dump_targets(repository, package="."):
 
 
 def active_targets(targets, native_platform):
-    """Omit the explicitly Unix-only target on Windows; all other modules must discover tests."""
+    """Omit targets whose entire test sources are unavailable on the selected platform."""
     return [target for target in targets
-            if not (native_platform == "windows-x64" and target == "DiscordUnixPlatformTests")]
+            if not (native_platform == "windows-x64" and target == "DiscordUnixPlatformTests")
+            and not (native_platform != "macos-arm64" and target == "DiscordFoundationTransportTests")]
 
 
 def runner_entry(native_platform, large):
@@ -244,25 +245,33 @@ def discovered_tests(output, expected_modules):
             raise ValueError("discovered a duplicate test identifier")
         seen.add(test)
         tests[module].append(test)
-    if not tests or any(not names for names in tests.values()):
-        raise ValueError("every scheduled test module must discover at least one test")
+    missing = sorted(module for module, names in tests.items() if not names)
+    if not tests or missing:
+        detail = ": " + ", ".join(missing) if missing else " (no modules scheduled)"
+        raise ValueError("every scheduled test module must discover at least one test" + detail)
     return {module: sorted(names) for module, names in sorted(tests.items())}
 
 
-def execute_commands(commands, repository, output, report):
-    """Persist each command before execution and retain a failed report when a child fails."""
+def execute_commands(commands, repository, output, report, *, capture_stdout=False):
+    """Retain diagnostics and optionally separate machine-readable stdout from child warnings."""
     output.mkdir(parents=True, exist_ok=True)
     report_path = output / "commands.json"
     for command in commands:
         index = len(report.setdefault("commands", []))
         log = output / f"{index:02d}-{command.name}.log"
         record = {"name": command.name, "arguments": list(command.arguments), "status": "running", "log": log.name}
+        if capture_stdout:
+            stdout_log = log.with_suffix(".stdout")
+            record["stdoutLog"] = stdout_log.name
         report["commands"].append(record)
         write_json(report_path, report)
         print(f"::group::{command.name}\n{shlex.join(command.arguments)}", flush=True)
         started = time.monotonic()
         try:
-            linux_ci.execute(command, repository, log)
+            if capture_stdout:
+                linux_ci.execute(command, repository, log, stdout_log=stdout_log)
+            else:
+                linux_ci.execute(command, repository, log)
         except BaseException as error:
             record.update(status="failed", error=str(error), seconds=round(time.monotonic() - started, 3))
             report["status"] = "failed"
@@ -273,7 +282,8 @@ def execute_commands(commands, repository, output, report):
             write_json(report_path, report)
         finally:
             print("::endgroup::", flush=True)
-    return [output / record["log"] for record in report["commands"][-len(commands):]] if commands else []
+    key = "stdoutLog" if capture_stdout else "log"
+    return [output / record[key] for record in report["commands"][-len(commands):]] if commands else []
 
 
 def member_digest(digest, member, stream=None):
@@ -385,7 +395,7 @@ def compile_component(repository, component, native_platform, jobs, output, arch
     for index, package in enumerate(package_tests(component)):
         expected = active_targets(dump_targets(repository, package), native_platform)
         command = swift_command(f"discovery-{index}", "test", package, jobs, "list", "--skip-build")
-        log = execute_commands([command], repository, output, report)[0]
+        log = execute_commands([command], repository, output, report, capture_stdout=True)[0]
         inventories[package] = discovered_tests(log.read_text(errors="replace"), expected)
     if identity(repository, native_platform) != original:
         raise ValueError("source or compiler identity changed during compilation")
@@ -439,7 +449,7 @@ def run_tests(repository, component, suite, native_platform, jobs, output, archi
     if suite != "audit" and (component != "consumers" or suite in CONSUMER_TESTS):
         package = f"Examples/{suite}" if component == "consumers" else PACKAGES[component]
         discovery = swift_command("verify-discovery", "test", package, jobs, "list", "--skip-build")
-        log = execute_commands([discovery], repository, output, report)[0]
+        log = execute_commands([discovery], repository, output, report, capture_stdout=True)[0]
         inventory = metadata["tests"][package]
         if discovered_tests(log.read_text(errors="replace"), sorted(inventory)) != inventory:
             raise ValueError("restored tests differ from the compiled test inventory")

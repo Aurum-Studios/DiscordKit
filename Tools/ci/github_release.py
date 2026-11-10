@@ -72,16 +72,41 @@ def certified_run(run, repository, revision):
             and (run.get("head_repository") or {}).get("full_name", "").lower() == repository.lower())
 
 
+def certification_gate_passed(api, run):
+    """Require the final barrier from the same attempt as the run's evidence.
+
+    A successful legacy run without the independent-build/suite barrier cannot
+    certify the current workflow. Attempt-scoped jobs also prevent a previous
+    attempt's successful barrier from qualifying a later partial rerun.
+    """
+    gates = []
+    page = 1
+    while True:
+        jobs = api.request(
+            f"actions/runs/{int(run['id'])}/attempts/{int(run['run_attempt'])}/jobs"
+            f"?per_page=100&page={page}")["jobs"]
+        gates.extend(job for job in jobs if job.get("name") == "Offline certification passed")
+        if len(jobs) < 100:
+            break
+        page += 1
+    return (len(gates) == 1
+            and gates[0].get("run_id") == run["id"]
+            and gates[0].get("head_sha") == run["head_sha"]
+            and gates[0].get("status") == "completed"
+            and gates[0].get("conclusion") == "success")
+
+
 def successful_ci(api, revision):
     """Find existing successful offline certification without rebuilding the source."""
     for page in range(1, 11):
         runs = api.request(f"actions/workflows/ci.yml/runs?head_sha={revision}&per_page=100&page={page}")["workflow_runs"]
         for run in runs:
-            if certified_run(run, api.repository, revision):
+            if certified_run(run, api.repository, revision) and certification_gate_passed(api, run):
                 return run
         if len(runs) < 100:
             break
-    raise ValueError("No successful Offline certification (ci.yml) push/manual run for this exact commit; run CI first")
+    raise ValueError("No successful Offline certification (ci.yml) push/manual run with its final "
+                     "'Offline certification passed' gate for this exact commit; run CI first")
 
 
 def require_unused_version(api, version):
@@ -140,7 +165,8 @@ def publish(repository, output, version, revision, api):
     workflow = api.request("actions/workflows/ci.yml")
     if (not certified_run(run, api.repository, revision)
             or run["workflow_id"] != workflow["id"]
-            or any(run[key] != evidence[key] for key in ("id", "run_attempt", "html_url", "head_sha"))):
+            or any(run[key] != evidence[key] for key in ("id", "run_attempt", "html_url", "head_sha"))
+            or not certification_gate_passed(api, run)):
         raise ValueError("Recorded CI certification is no longer valid; prepare a new release run")
     require_unused_version(api, version)
     tag = f"v{version}"
