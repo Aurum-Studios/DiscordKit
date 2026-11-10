@@ -327,3 +327,76 @@ not a controlled-host noise floor, numerical baseline, budget, hosted CI, Linux 
 device runtime, live Discord delivery, publication or deployment. Allocation-event
 counts and an Instruments recording remain unavailable. Existing `withOperation`
 correlation and visible failure behavior are unchanged.
+
+## Phase 4 validation
+
+Completed 2026-11-10 on macOS arm64, Apple Swift 6.4
+(`swiftlang-6.4.0.34.1`, target `arm64-apple-macosx27.0.0`), from Phase 3 revision
+`7912304d` plus the release receipt's explicit dirty-source fingerprint.
+The [implementation record](PHASE-4.md) and [CPU suite guide](../../../Tools/DiscordFoundationBenchmarks/README.md)
+define actual timed operations, input dimensions and batch/call semantics.
+
+| Check | Completed result |
+| --- | --- |
+| Root `swift build --jobs 4` and `SWIFTNIO_STRICT=1 swift test --jobs 4` | Passed: 2,583 tests across 34 executable summaries |
+| `swift test --package-path Tools/DiscordFoundationBenchmarks --jobs 4 --force-resolved-versions` | Passed: 18 tests in four suites; all 77 cases and four variants, independent oracles, exact boundaries, warmup, bad checksums, output aliases and between-batch cancellation |
+| `swift test --package-path Tools/DiscordBenchmarkSupport --jobs 2` | Passed: 37 tests in five suites; catalog revision 4 and `pure.batch` gating preserve earlier readers |
+| Existing overhead executable tests with forced pins | Passed: six tests including 16 portable mode parameter cases |
+| `swift test --package-path Tools/DiscordKitTools --jobs 4` | Passed: 106 tests in eight suites |
+| Offline tool Python validators | Passed: 230 tests |
+| Shared process-supervisor Python tests | Passed: 29 tests |
+| CPU wrapper Python tests | Passed: three tests; SIGTERM forwarding/awaited reaping, no launch after cancellation, timeout reaping |
+| Inventory validation, generation byte check and parity check | Passed: 18,245 entries, 290 sources, 951 reviewed definitions, 255 mapped endpoints; five generated artifacts byte-identical |
+| Scoped root dependency/import audit | Passed: 33 products/33 runtime targets, 361 source files, 834 imports and eight resolved packages; runtime/root manifest changes are absent |
+| Consumer graph/import audits | All 13 example consumers passed. The broad audit retains the existing Stage 1 DSL benchmark policy mismatch described above; its manifest, policy and validator are unchanged from `7912304d` |
+| New callable documentation and independent review | Passed: 87 explicit Swift functions/initializers/tests documented; semantic/measurement review covered all families, output aliases, cancellation, finite fixture retention and catalog compatibility |
+| Final local Markdown/whitespace audit | Passed: nine changed/new Markdown files, 280 local links/anchors, no failures; `git diff --check` clean |
+| Optimized whole-matrix capture | Passed: 77 fresh serial processes, 2,464 measured batches / 19,712 calls, 4,096 expected rejected calls, 2,464 separate warmup calls; exact checksum and histogram accounting, completed supervisors and zero remaining native owners |
+| Capture loss, tails and size index | No underflow/overflow/drop/counter-overflow observations. All P99 estimates remain insufficient-tail-data. Compact scaling index contains all 77 cases with full report paths |
+
+The initial compile identified a missing explicit development dependency on
+`DiscordCommandDSL`; the manifest was corrected before the passing tests and
+release receipt. Review fixes reject standardized/symlink-aliased report paths,
+forward wrapper cancellation and await teardown, retain only the selected case
+during measurement, and perform full semantic verification after measurement.
+
+The exact release/capture commands were:
+
+```sh
+python3 Tools/DiscordBenchmarkSupport/scripts/run_benchmarks.py build \
+  --repository . --package Tools/DiscordFoundationBenchmarks \
+  --product DiscordFoundationBenchmarks --receipt .build/timing-phase4/final-release.json
+python3 Tools/DiscordFoundationBenchmarks/scripts/run_cases.py \
+  --executable Tools/DiscordFoundationBenchmarks/.build/release/DiscordFoundationBenchmarks \
+  --receipt .build/timing-phase4/final-release.json --output-dir .build/timing-phase4/cases \
+  --batches 32 --batch-size 8 --warmup-batches 4
+```
+
+Ignored local artifacts retain the release receipt, each case's `orchestration.json`,
+native/common reports and bounded logs, plus the compact 125,116-byte
+`scaling.json`. The acceptance audit checks all reports against checksums, exact
+batch/call/rejection counts, catalog identity, loss/tail evidence, zero native
+owners and completed supervisors. Its summary is `.build/phase4-acceptance.json`.
+All 1,422 non-Markdown executable/test/tool/pin input hashes were retained and
+verified unchanged after capture. Final validation-record edits are documentation
+only; these captures identify a dirty source snapshot rather than a published
+release or an invented clean commit receipt.
+
+Representative point observations below are **gross normalized batch mean in
+microseconds per call**, from one smoke process per row. They establish that
+size dimensions reach the reports; they do not isolate width from depth, establish
+a scaling law, qualify a baseline or describe individual-call percentiles.
+
+| Workload | Small | Medium | Large |
+| --- | ---: | ---: | ---: |
+| ASCII JSON parse, 1/16/256 KiB with paired depth/width | 5.245 | 58.079 | 630.121 |
+| ASCII JSON serialize, same dimensions | 5.232 | 63.158 | 770.691 |
+| Permission allow, 1/16/128 roles/overwrites and 64/256/4096 bits | 0.773 | 4.641 | 60.589 |
+| RPC decode, 1/16/256 KiB with 256-byte fragments | 0.985 | 8.645 | 110.460 |
+
+This local CPU slice establishes semantics, whole-population batch accounting,
+size-scaling artifacts and bounded process cleanup. It does not establish a
+controlled-host noise floor, regression threshold, individual-call P99, hosted CI,
+Linux/other-platform performance, actual desktop IPC, live Discord behavior or
+later roadmap stages. Process CPU/current RSS/lifetime peak RSS retain documented
+scopes; allocation-event counts and exact retained heap are not measured.

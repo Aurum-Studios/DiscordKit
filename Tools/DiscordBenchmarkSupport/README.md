@@ -31,7 +31,7 @@ remain explicitly unqualified; missing provenance, outcome accounting, gauges an
 cleanup evidence are unavailable. Runtime timing enums are unchanged.
 
 The adopted collector uses 100-microsecond buckets over 0...1 second and a finite
-workload/outcome registry below 5 MiB. Longer stalls are censored, never clamped.
+workload/outcome registry below 6 MiB. Longer stalls are censored, never clamped.
 Transport and HTTP-policy observations retain their diagnostic-inclusive timers;
 moving those boundaries belongs to Stage 5. DSL observations include responder
 construction and validation. Voice observations retain integrated validated ticks
@@ -56,6 +56,12 @@ Resource gauges must retain matching names, units, collection methods, scopes an
 availability; their measured values may differ.
 
 ## Release preparation and fresh processes
+
+The [foundation CPU suite](../DiscordFoundationBenchmarks/README.md) directly
+emits common version-1 reports with catalog revision 4 and `pure.batch` version 1.
+Common counts/distributions are batches; its native report separately records
+calls/rejections and gross normalized mean. Catalogs 2/3 remain readable and
+cannot claim the new metric. Runtime products still do not select this package.
 
 Run from the repository root with Python 3.10+ and Swift 6.4+. Keep receipts and
 outputs in ignored build directories. Finish source edits before preparation:

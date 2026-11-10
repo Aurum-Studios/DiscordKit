@@ -379,3 +379,9 @@ and transport products. It adds no external package. The optional output product
 accepts logging's numeric interval/scalar values; Transport supplies the scalar
 conversion without importing or selecting output adapters. Pure runtime products
 and the umbrella gain no output, benchmark or subprocess dependency.
+
+The separate [foundation CPU executable](../Tools/DiscordFoundationBenchmarks/README.md)
+selects existing Bits, Core, Models, DSL/CommandDSL, Cache and RPC products plus
+shared development support. It explicitly selects the existing swift-crypto
+package for prepared-fixture SHA-256. No new external dependency or runtime
+manifest/import edge is introduced; shared support stays dependency-free.

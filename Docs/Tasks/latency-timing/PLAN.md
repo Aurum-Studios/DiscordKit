@@ -7,7 +7,7 @@ https://aurum-studios.com
 
 # Latency instrumentation and timing suites
 
-Status: Stages 0–3 implemented; stages 4–11 remain proposed.
+Status: Stages 0–4 implemented; stages 5–11 remain proposed.
 Runtime owner hooks are opt-in; no performance qualification is implied. The original
 plan was prepared 2026-11-10 against source revision
 `27cd73f335b2b3058dfa317677c71991292706b8`; the Stage 0 checkpoint uses
@@ -19,6 +19,7 @@ and [validation/reference-host procedure](VALIDATION.md).
 Stage 1 implementation: [shared harness and integration record](PHASE-1.md).
 Stage 2 implementation: [runtime intervals and semantic coverage](PHASE-2.md).
 Stage 3 implementation: [bounded outputs and observer overhead](PHASE-3.md).
+Stage 4 implementation: [foundation/model/permission CPU suites](PHASE-4.md).
 
 ## Outcome and scope
 
@@ -285,6 +286,13 @@ Deliverables:
 
 Exit gate: stable release-mode cases with semantic assertions and size-scaling
 reports. Pure modules gain no logging/transport dependencies or per-access logs.
+
+Stage 4 implementation: the separate [CPU executable](../../../Tools/DiscordFoundationBenchmarks/README.md)
+provides 77 representative cases with four prepared variants, independent oracles
+and exact rejections. Catalog-revision-4 `pure.batch` reports batch distributions
+and separately labeled normalized mean through shared statistics/process support.
+See the [implementation record](PHASE-4.md) and [local validation](VALIDATION.md#phase-4-validation).
+Numerical baselines and other-platform qualification retain separate gates.
 
 ## Stage 5 — Transport and REST timing suites
 

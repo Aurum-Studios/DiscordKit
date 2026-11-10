@@ -7,7 +7,7 @@ https://aurum-studios.com
 
 # Timing metric catalog
 
-Catalog identifier: **discordkit.timing**, revision **3**. Revision 1 was frozen 2026-11-10 at
+Catalog identifier: **discordkit.timing**, revision **4**. Revision 1 was frozen 2026-11-10 at
 `c8d842f7ce51e9adc69ff9997e2c0f374dc2ee68`. Every metric below has semantic
 version **1**. The identity is `(catalog, metric ID, metric version)`; changing
 endpoints, population, units or aggregation creates a new metric version.
@@ -140,9 +140,19 @@ state that setup, rather than inventing public expiry/eviction methods.
 
 ## Planned pure, optional-product and instrumentation durations
 
+`pure.batch` is implemented in Stage 4. The remaining optional-product rows in
+this section retain their planned status. The CPU executable uses one finite case
+per process, four prepared variants, 1,000 ns histogram buckets over 0...100 ms,
+and exact success/rejected **batch** counts. Calls/rejections and normalized batch
+mean remain separate native fields; throughput is calls per wall second. Fixture
+preparation and full semantic assertions are excluded. Minimal result consumption
+and batch-loop work are included. P99 population requirements apply to batches.
+See the [CPU suite guide](../../../Tools/DiscordFoundationBenchmarks/README.md)
+for size dimensions, cap/cancellation boundaries and unavailable qualifications.
+
 | Metric ID | Owner and start → stop, inclusions/exclusions | Population / relationship / stage |
 | --- | --- | --- |
-| `pure.batch` | External wrapper before fixed batch → minimal observable result/checksum consumed; fixture preparation and full correctness assertions excluded | B; fixed operation class JSON/model/field/identifier/bitset/builder/permission/RPC-frame; Stage 4 |
+| `pure.batch` | External wrapper before fixed batch → minimal observable result/checksum consumed; fixture preparation and full correctness assertions excluded | B; fixed operation class JSON/model/field/identifier/bitset/builder/permission/RPC-frame; Stage 4 implemented in catalog revision 4 |
 | `oauth.lookup` | Caller token lookup → returned token/error and existing joins | A; whole local orchestration; Stage 8 |
 | `oauth.storage` | Injected load/CAS/revoke call → backend result/error | A; fixed storage operation class, child of token operation; Stage 8 |
 | `oauth.refresh` | Refresh owner accepts flight → refresh I/O/CAS completion and joined cleanup | A; once per flight, subscribers independently counted; Stage 8 |

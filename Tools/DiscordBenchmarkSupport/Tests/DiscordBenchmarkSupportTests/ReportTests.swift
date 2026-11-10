@@ -51,8 +51,20 @@ import Testing
         oldCatalog.identity.catalogVersion = 2
         oldCatalog.metrics[0].id = BenchmarkWorkload.transport.rawValue
         #expect(!report.comparison(with: oldCatalog).isCompatible)
-        report.identity.catalogVersion = 4
+        report.identity.catalogVersion = 5
         #expect(throws: BenchmarkReportError.invalidIdentity) { try report.validate() }
+    }
+
+    /// Pure batch metrics have a new catalog revision while earlier report semantics remain readable.
+    @Test func pureBatchCatalogIsExplicit() throws {
+        var report = try completeReport()
+        report.metrics[0].id = BenchmarkWorkload.pureBatch.rawValue
+        for version: UInt32 in [2, 3] {
+            report.identity.catalogVersion = version
+            #expect(throws: BenchmarkReportError.unsupportedMetric) { try report.validate() }
+        }
+        report.identity.catalogVersion = 4
+        #expect(try DiscordBenchmarkReport.decode(report.validatedData()) == report)
     }
 
     /// Ensures stable common-envelope round trips preserve complete explicit evidence.

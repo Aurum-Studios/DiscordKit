@@ -403,7 +403,7 @@ public struct DiscordBenchmarkReport: Codable, Equatable, Sendable {
     public func validate() throws {
         guard format == Self.formatIdentifier else { throw BenchmarkReportError.invalidFormat }
         guard schemaVersion == 1 else { throw BenchmarkReportError.invalidVersion }
-        guard identity.catalog == "discordkit.timing", [2, 3].contains(identity.catalogVersion),
+        guard identity.catalog == "discordkit.timing", [2, 3, 4].contains(identity.catalogVersion),
             identity.profileVersion > 0, !identity.scenario.isEmpty, !identity.profile.isEmpty,
             !identity.instrumentation.isEmpty, !identity.scheduler.isEmpty, !adapter.isEmpty,
             identity.concurrency != 0, identity.repetitions != 0 else { throw BenchmarkReportError.invalidIdentity }
@@ -425,6 +425,7 @@ public struct DiscordBenchmarkReport: Codable, Equatable, Sendable {
         for metric in metrics {
             guard supported.contains(metric.id), metric.version == 1,
                 metric.id != BenchmarkWorkload.instrumentation.rawValue || identity.catalogVersion >= 3,
+                metric.id != BenchmarkWorkload.pureBatch.rawValue || identity.catalogVersion >= 4,
                 keys.insert(metric.id + ":" + metric.outcome.rawValue).inserted else { throw BenchmarkReportError.unsupportedMetric }
             guard let clockDomain, !clockDomain.isEmpty, metric.clockDomain == clockDomain else {
                 throw BenchmarkReportError.mixedClockDomains

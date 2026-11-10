@@ -9,6 +9,15 @@ https://aurum-studios.com
 
 ## Unreleased
 
+### Foundation CPU timing suites — 2026-11-10
+
+- Add 77 development-only JSON, identifier/bitset, model, builder, permission and
+  RPC-framing cases with prepared fixtures, independent semantic checks and exact
+  expected rejection counts.
+- Reuse shared release supervision and versioned reports for batch distributions,
+  normalized mean and size-scaling evidence. Preserve prior report catalogs and
+  runtime dependencies. See the [Phase 4 record](Docs/Tasks/latency-timing/PHASE-4.md).
+
 ### Timing outputs and observer overhead — 2026-11-10
 
 - Add optional bounded numeric aggregation, safe SwiftLog timing records, sampled

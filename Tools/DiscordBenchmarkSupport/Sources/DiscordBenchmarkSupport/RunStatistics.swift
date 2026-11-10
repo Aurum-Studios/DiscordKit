@@ -18,6 +18,8 @@ public enum BenchmarkWorkload: String, CaseIterable, Sendable {
     case voice = "legacy.voice.duplexTick.wholePopulation"
     /// One complete instrumentation fixture call, including synchronous observer work.
     case instrumentation = "instrumentation.operation.gross"
+    /// External synchronous batch including minimal checksum consumption, never a call percentile.
+    case pureBatch = "pure.batch"
 
     /// Selects a declared DSL population without accepting arbitrary metric labels.
     /// - Parameters:
@@ -33,7 +35,7 @@ public enum BenchmarkWorkload: String, CaseIterable, Sendable {
 ///
 /// Initialization allocates every finite population before work. Each 100-microsecond
 /// bucket covers durations in 0...1 second; longer observations remain censored.
-/// Six outcome histograms per workload use less than 5 MiB across the entire enum.
+/// Six outcome histograms per workload use less than 6 MiB across the entire enum.
 /// A lock protects concurrent DSL workers. It never calls application code or does
 /// I/O, and completed timestamps are captured before entering it. Collection cost
 /// can still perturb scheduling and enclosing throughput measurements.
