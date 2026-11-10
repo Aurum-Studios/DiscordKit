@@ -230,3 +230,100 @@ This evidence establishes local semantics, integrity and cleanup. It does not
 establish detailed trusted socket-receipt begins, per-event Gateway waterfalls,
 broader Stage 5/6 catalog attribution, observer overhead, a numerical baseline,
 hosted CI, Linux/device runtime, live Discord behavior, publication or deployment.
+
+## Phase 3 validation
+
+Executed 2026-11-10 from Phase 2 revision `bcf989ef` on the local macOS ARM64
+candidate with Apple Swift 6.4. The [implementation record](PHASE-3.md),
+[timing outputs guide](../../../Sources/DiscordLogHandlers/DiscordLogHandlers.docc/Guides/TimingOutputs.md)
+and [development executable](../../../Tools/DiscordTimingBenchmarks/README.md)
+describe the exact observation and output boundaries. Historical results above
+remain unchanged.
+
+| Check | Actual completed result |
+| --- | --- |
+| Root `swift build --jobs 6 --force-resolved-versions` | Passed |
+| Root `SWIFTNIO_STRICT=1 swift test --jobs 6 --force-resolved-versions` | Passed: 2,583 tests across 34 executable summaries; includes 27 new deterministic output tests |
+| Independent logging consumer `swift build --package-path Examples/LoggingApp --jobs 4 --force-resolved-versions` | Passed |
+| `swift test --package-path Tools/DiscordBenchmarkSupport --jobs 4` | Passed: 36 tests in five suites, including revision-2/revision-3 report compatibility and instrumentation identity restrictions |
+| `swift test --package-path Tools/DiscordTimingBenchmarks --jobs 4 --force-resolved-versions` | Passed: six tests, including 16 portable mode parameter cases, fixture known vectors, finite configuration and cancellation cleanup |
+| Shared process driver Python tests | Passed: 29 tests; timeout, cancellation, output/RSS bounds, owned-process teardown, strict receipts and fresh counterbalanced processes |
+| Offline `DiscordKitTools inventory validate --repository .` | Passed: 18,245 entries from 290 sources; 1,081 implemented, 15,475 pending semantic, 951 reviewed definitions and 255 mapped endpoints |
+| Offline generation/parity checks | Passed: five generated artifacts byte-identical; parity evidence structurally valid |
+| `swift test --package-path Tools/DiscordKitTools --jobs 4 --force-resolved-versions` | Passed: 106 tests in eight suites |
+| Offline tool Python validators | Passed: 230 tests |
+| Root dependency/import audit and independent LoggingApp consumer audit | Passed: 33 public products/33 runtime targets; outputs select the logging foundation, protocol owners select no outputs or benchmark tools |
+| Native `swift build --build-tests --build-system native --disable-experimental-prebuilts --jobs 6 --force-resolved-versions`, then symbol-graph export | Passed: 37 normalized graphs; includes new types, scalar bridge and genuine Apple initializer |
+| Affected three-module DocC navigation generation/check and strict DocC conversion | Passed: no navigation drift after generation; all 33 public-module archives converted |
+| Final offline declaration documentation audit | Passed: 858 Swift files, 9,297 explicit callable declarations and zero missing comments; semantic review performed separately |
+| Final local Markdown link/anchor audit and whitespace review | Passed: 32 changed/new Markdown files, 300 local links/anchors and no failures; `git diff --check` clean |
+| Independent implementation and acceptance review | Passed: no blocking Stage 3 gap; reviewed aggregate mapping/privacy, capture loss/clock semantics, signpost concurrency/capacity and executable measurement/cleanup boundaries |
+| Supervised optimized overhead executable | Passed: source/executable-bound release receipt; all 19 modes in separate fresh processes with two workers and 2,000 measured operations per process |
+| Five counterbalanced disabled/no-op pairs | Passed: ten fresh processes, 20,000 measured operations each; preserved gross histograms, native resource gauges and independent output counts |
+| Supervised combined mode with retained export | Passed: 20,000 measured operations; valid aggregate JSON, interval NDJSON and local timeline with 1,283 complete sampled intervals |
+
+The output tests exhaust all 236 finite metric/outcome keys and 56 legacy scalar
+phase/outcome conversions; exercise concurrent aggregation, bounds/censoring,
+invalid clocks and safe/lazy logging; and prove deterministic head selection,
+one-endpoint loss, exact integer offsets, incomplete/null exports, late callbacks,
+concurrent capture and idempotent close. Signpost fixtures cover begin/end/close
+races with barriers, callback snapshot reentry, capacity retained through ending
+delivery, once-only cleanup and the actual native Apple initializer. No recorded
+Instruments session is claimed.
+
+An initial focused test compile used nonexistent `Duration.attoseconds` helpers.
+Fixtures now use the duration component initializer; the final full run above
+includes the corrected fractional-endpoint expectation. Independent review also
+found that a signpost ending callback must retain capacity until it returns.
+The implementation now counts in-flight endings, and deterministic barrier tests
+prove admission remains bounded while those callbacks execute.
+
+The 30 optimized measurement processes completed 258,000 measured operations and
+7,680 separate warmup operations. Every checksum, completed/histogram count and
+mode-specific accounting assertion passed. Every supervised process exited zero,
+was reaped and left no live process-group members; every native report records zero
+remaining owners. Warmup and measurement stopped at their finite iteration caps,
+not at a sustained-load duration. The shared driver retained bounded diagnostics,
+native reports, common envelopes and process receipts under ignored local build
+directories. The package README records the smoke reproduction commands.
+
+The saturation smoke retained three endpoints and explicitly counted 3,997 drops,
+1,999 incomplete intervals and one unmatched terminal. The deliberately closed
+file sink counted all 4,000 endpoint deliveries as dropped/failed, with no successful
+write. The rotation smoke wrote 4,000 records across 142 rotations without loss;
+native signposts began and ended all 2,000 intervals without retained state. The
+local REST scalar aggregate accepted exactly 8,000 observations for 2,000 calls.
+The retained combined run accepted 20,000 aggregate observations and delivered
+40,000 callback records. Its seeded capture retained 2,566 endpoints, sampled out
+37,434, and reported zero dropped, incomplete or unmatched endpoints. The NDJSON
+and timeline were parsed independently and contained the same 1,283 genuine pairs.
+
+These are overhead experiments on an available Apple M3 Max host, without an
+established exclusive host allocation or noise floor. Across the five pairs,
+disabled cohort wall times ranged from 1.190125 to 2.361542 ms, versus 4.197250 to
+5.087334 ms with a no-op detailed observer, for 20,000 calls and two workers.
+Individual p50 histogram bounds ranged across 0...199 ns and 300...499 ns,
+respectively, at 100 ns resolution. These are gross observations, not subtracted
+observer estimates or thresholds. Different instrumentation identities cannot
+pass an ordinary same-workload report comparison. The 2,000-call mode smokes do
+not qualify p99; native CPU, RSS and live malloc gauges retain the scopes documented
+by the executable, and allocation-event counts remain unavailable.
+
+The captures used the pre-commit Phase 2 revision plus the receipt's explicit dirty
+source fingerprint, rather than claiming a clean committed build. All 820 root
+source, test, manifest and pin file hashes remained identical to the full root
+test inputs. Final validation-record edits are documentation only. Receipts and
+raw local artifacts are evidence of that capture identity, not a published release.
+
+The broad `release_check.py graph` command still encounters an existing Stage 1
+DSL-consumer policy mismatch: its committed manifest selects the shared benchmark
+package while its older consumer policy lists only the runtime checkout. The
+scoped root graph and affected LoggingApp audits passed separately; this broad
+consumer check is not reported as successful. The root policy now declares the
+logging foundation's already-existing `Dispatch` import and optional output edge.
+
+Local measurements and reports establish integrity and explicit collection cost,
+not a controlled-host noise floor, numerical baseline, budget, hosted CI, Linux or
+device runtime, live Discord delivery, publication or deployment. Allocation-event
+counts and an Instruments recording remain unavailable. Existing `withOperation`
+correlation and visible failure behavior are unchanged.

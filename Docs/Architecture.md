@@ -87,6 +87,12 @@ The independently selected output-handler product owns optional outputs; no runt
 product selects it. Applications configure SwiftLog and output lifetimes. Library
 constructors never bootstrap logging or emit events.
 
+The output product also supplies bounded timing aggregation, interval capture and
+Apple signposts over the logging foundation's content-free values. Transport
+converts legacy scalar samples at the application composition boundary; it never
+imports output adapters. Applications join producers before closing capture and
+exporting files. The separate timing benchmark measures these synchronous costs.
+
 The [generation tool](Generation.md) produces reviewed committed output offline.
 Consumers do not fetch documentation or regenerate code. The independent
 [benchmark package](DSLBenchmarks.md) measures selected workloads; runtime products

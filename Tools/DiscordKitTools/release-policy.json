@@ -955,7 +955,6 @@
       "DiscordHTTP",
       "DiscordInteractions",
       "DiscordKit",
-      "DiscordLogging",
       "DiscordMLS",
       "DiscordMedia",
       "DiscordModels",
@@ -1383,6 +1382,9 @@
     ],
     "DiscordTransport": [
       "Dispatch"
+    ],
+    "DiscordLogging": [
+      "Dispatch"
     ]
   },
   "targets": {
@@ -1518,6 +1520,7 @@
       "DiscordTransport"
     ],
     "DiscordLogHandlers": [
+      "DiscordLogging",
       "swift-log/Logging"
     ],
     "DiscordLogging": [

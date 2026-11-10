@@ -9,6 +9,16 @@ https://aurum-studios.com
 
 ## Unreleased
 
+### Timing outputs and observer overhead — 2026-11-10
+
+- Add optional bounded numeric aggregation, safe SwiftLog timing records, sampled
+  interval capture with NDJSON/local timeline export, and Apple signposts driven
+  by actual lifecycle hooks. Expose loss and incomplete intervals at explicit close.
+- Add a development-only timing benchmark using shared reports and process
+  supervision. Keep warmup, gross observation cost and output teardown separate.
+- Preserve legacy scalar phases and runtime ownership. See the
+  [Phase 3 record](Docs/Tasks/latency-timing/PHASE-3.md) for limits and validation.
+
 ### Runtime interval timing — 2026-11-10
 
 - Add opt-in numeric lifecycle intervals to DiscordLogging with checked monotonic

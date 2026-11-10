@@ -16,6 +16,8 @@ public enum BenchmarkWorkload: String, CaseIterable, Sendable {
     case dsl100 = "legacy.dsl.dsl100.wholePopulation"
     case dsl1000 = "legacy.dsl.dsl1000.wholePopulation"
     case voice = "legacy.voice.duplexTick.wholePopulation"
+    /// One complete instrumentation fixture call, including synchronous observer work.
+    case instrumentation = "instrumentation.operation.gross"
 
     /// Selects a declared DSL population without accepting arbitrary metric labels.
     /// - Parameters:

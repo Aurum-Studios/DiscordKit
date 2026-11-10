@@ -2,7 +2,7 @@
 
 # ``DiscordLogHandlers``
 
-Choose optional file, Apple unified-log and callback outputs for native SwiftLog events.
+Choose optional logging outputs and bounded numeric timing adapters.
 
 ## Overview
 
@@ -13,9 +13,15 @@ standard `MultiplexLogHandler` combines destinations. Wrap individual outputs wi
 ``DiscordLevelFilterLogHandler`` to preserve minimum severities when logger thresholds change.
 All dynamic Apple unified-log payloads are private by default.
 
+Timing adapters consume finite observations from `DiscordLogging`. Aggregation
+and capture retain bounded numeric state; applications own close and file export.
+Apple signposts consume genuine live begin/end callbacks rather than reconstructed
+scalar samples. Runtime products retain their independent output-free graph.
+
 ## Topics
 
 ### Output ownership
 
 - <doc:OutputOwnership>
+- <doc:TimingOutputs>
 - <doc:APIReference>

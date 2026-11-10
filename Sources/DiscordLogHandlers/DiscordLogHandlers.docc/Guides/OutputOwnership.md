@@ -27,3 +27,7 @@ Metadata/providers retain native semantics and filtered events never reach the o
 The Apple-only `DiscordOSLogHandler` maps all severities to unified logging and marks
 the entire dynamic message/context payload private. Physical-device capture and
 production throughput require separate qualification.
+
+For bounded scalar aggregation, interval capture and live Apple signposts, see
+<doc:TimingOutputs>. Join producers before closing capture; destination writes and
+serialization belong to the application output path.

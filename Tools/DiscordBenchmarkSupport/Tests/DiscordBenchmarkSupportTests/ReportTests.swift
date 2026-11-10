@@ -37,6 +37,24 @@ import Testing
             cleanup: .init(completed: true, remainingOwners: 0), throughputPerSecond: 1_000_000)
     }
 
+    /// Catalog three accepts the new gross operation metric while catalog-two legacy reports remain readable.
+    /// - Throws: Unexpected fixture initialization or common-envelope validation/round-trip error.
+    @Test func instrumentationCatalogIsExplicitAndLegacyCompatible() throws {
+        var report = try completeReport()
+        #expect(report.identity.catalogVersion == 2)
+        try report.validate()
+        report.metrics[0].id = BenchmarkWorkload.instrumentation.rawValue
+        #expect(throws: BenchmarkReportError.unsupportedMetric) { try report.validate() }
+        report.identity.catalogVersion = 3
+        #expect(try DiscordBenchmarkReport.decode(report.validatedData()) == report)
+        var oldCatalog = report
+        oldCatalog.identity.catalogVersion = 2
+        oldCatalog.metrics[0].id = BenchmarkWorkload.transport.rawValue
+        #expect(!report.comparison(with: oldCatalog).isCompatible)
+        report.identity.catalogVersion = 4
+        #expect(throws: BenchmarkReportError.invalidIdentity) { try report.validate() }
+    }
+
     /// Ensures stable common-envelope round trips preserve complete explicit evidence.
     @Test func roundTripAndCompare() throws {
         let original = try completeReport()

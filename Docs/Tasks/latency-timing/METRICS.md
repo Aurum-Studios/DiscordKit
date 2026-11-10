@@ -7,7 +7,7 @@ https://aurum-studios.com
 
 # Timing metric catalog
 
-Catalog identifier: **discordkit.timing**, revision **2**. Revision 1 was frozen 2026-11-10 at
+Catalog identifier: **discordkit.timing**, revision **3**. Revision 1 was frozen 2026-11-10 at
 `c8d842f7ce51e9adc69ff9997e2c0f374dc2ee68`. Every metric below has semantic
 version **1**. The identity is `(catalog, metric ID, metric version)`; changing
 endpoints, population, units or aggregation creates a new metric version.
@@ -219,3 +219,32 @@ may choose other validated precision/range; mismatched configurations are
 incompatible. A partial run contains only intervals that actually began; requested
 but unstarted work has no invented zero sample. Process-driver partial status,
 missing owner counts and legacy imports cannot establish numerical qualification.
+
+## Stage 3 instrumentation populations
+
+Revision 3 adds the version-1 `instrumentation.operation.gross` identity. One
+observation begins immediately before a selected fixture operation and ends after
+its observable result and synchronous observer work. It excludes checksum accumulation, histogram updates,
+diagnostic resource snapshots and output export/close. The directly measured
+operation includes its own detailed start callback and terminal callback when
+enabled; these outer gross timings deliberately include observer cost. It does
+not alter any earlier scalar or lifecycle boundary.
+
+The timing executable selects finite CPU-fixture, empty-harness, clock-read and
+local REST-owner modes. Mode, fixture family, cohort and warmup/input dimensions
+are profile identity: REST scalar modes cannot be compared as equivalent work to
+the tiny CPU fixture. Every completed measured call enters a shared bounded
+histogram; warmup uses separate owners and counters. Precision/range, censored
+mass, failures, observer drops and joined cleanup accompany the distribution.
+Flush/close/export is measured separately in the native report's
+`flushNanoseconds` field, corresponding to the planned `instrumentation.flush`
+boundary. It is not yet a separate common-envelope metric. Failed close exits
+unsuccessfully rather than inventing a successful flush sample.
+
+Runtime aggregate summaries use their own schema version 1, with separate finite
+scalar and detailed rows, invalid counts, logarithmic bucket ranges and censored
+mass. Numeric interval captures likewise use a distinct schema version 1 with
+explicit sampling, unmatched/incomplete endpoints and loss. These are optional
+local artifacts, not replacements for the common provenance envelope or legacy
+reports. Live Apple profiler timestamps describe callback delivery time rather
+than portable numeric offsets.

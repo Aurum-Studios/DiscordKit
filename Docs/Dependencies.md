@@ -13,7 +13,8 @@ Integrated logging adds the official [SwiftLog 1.16.1](https://github.com/apple/
 selects no external dependencies for `Logging`; it supports the required Swift 6.4
 toolchain. The [pinned license](https://github.com/apple/swift-log/blob/4038b6a4f74a1426f47eb1dd5b4bb5628a15d597/LICENSE.txt)
 is Apache-2.0. Preserve upstream notices in redistribution. `DiscordLogging` and
-optional `DiscordLogHandlers` select only this product; existing operation owners
+optional `DiscordLogHandlers` select this product; the latter also selects the
+`DiscordLogging` foundation for opt-in timing outputs. Existing operation owners
 select the logging foundation and never the outputs. Bits, Core, Models and
 VoiceCrypto do not select the logging foundation. Media and its codec consumers
 select it through their declared product graph. Local builds do not establish other-platform or device qualification;
@@ -371,3 +372,10 @@ external package. Load, DSL benchmarks and local voice qualification explicitly
 select this separate Swift package for bounded statistics and common report
 validation; its Python driver uses the standard library. Runtime manifests and
 imports do not select the support library, report CLI or subprocess runner.
+
+The [timing overhead executable](../Tools/DiscordTimingBenchmarks/README.md)
+also selects that development support package and the existing logging, output
+and transport products. It adds no external package. The optional output product
+accepts logging's numeric interval/scalar values; Transport supplies the scalar
+conversion without importing or selecting output adapters. Pure runtime products
+and the umbrella gain no output, benchmark or subprocess dependency.

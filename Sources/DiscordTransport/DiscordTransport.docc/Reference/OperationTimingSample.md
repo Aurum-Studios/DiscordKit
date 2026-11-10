@@ -16,6 +16,7 @@
 ### Instance properties
 
 - ``DiscordTransport/OperationTimingSample/elapsed``
+- ``DiscordTransport/OperationTimingSample/observation``
 - ``DiscordTransport/OperationTimingSample/outcome``
 - ``DiscordTransport/OperationTimingSample/phase``
 

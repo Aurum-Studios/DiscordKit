@@ -7,7 +7,7 @@ https://aurum-studios.com
 
 # Latency instrumentation and timing suites
 
-Status: Stages 0–2 implemented; stages 3–11 remain proposed.
+Status: Stages 0–3 implemented; stages 4–11 remain proposed.
 Runtime owner hooks are opt-in; no performance qualification is implied. The original
 plan was prepared 2026-11-10 against source revision
 `27cd73f335b2b3058dfa317677c71991292706b8`; the Stage 0 checkpoint uses
@@ -18,6 +18,7 @@ Stage 0 artifacts: [workload and file inventory](INVENTORY.md),
 and [validation/reference-host procedure](VALIDATION.md).
 Stage 1 implementation: [shared harness and integration record](PHASE-1.md).
 Stage 2 implementation: [runtime intervals and semantic coverage](PHASE-2.md).
+Stage 3 implementation: [bounded outputs and observer overhead](PHASE-3.md).
 
 ## Outcome and scope
 
@@ -258,6 +259,14 @@ Exit gate: no unbounded tasks/queues; deterministic redaction and saturation tes
 explicit loss/flush evidence; no file/console/string work in realtime callbacks.
 Record observer cost before proposing filtered-log fast paths. Any optimization
 to `withOperation` must preserve child context and visible failure diagnostics.
+
+Stage 3 implementation: optional `DiscordLogHandlers` adapters now provide bounded
+numeric aggregation, fixed SwiftLog timing records, sampled interval NDJSON/local
+timeline export and genuine Apple signposts. A separate development executable
+uses shared statistics/reports and process supervision to measure 19 finite modes.
+See the [implementation record](PHASE-3.md), [output guide](../../../Sources/DiscordLogHandlers/DiscordLogHandlers.docc/Guides/TimingOutputs.md)
+and [validation evidence](VALIDATION.md#phase-3-validation). No filtered logging
+fast path or numerical baseline is introduced.
 
 ## Stage 4 — Foundation, model and permission microbenchmarks
 

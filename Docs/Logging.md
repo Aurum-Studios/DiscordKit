@@ -22,6 +22,16 @@ and [Phase 2 boundaries and evidence](Tasks/latency-timing/PHASE-2.md). The appl
 owns the synchronous sink, any bounded retention, and its lifetime. Diagnostic UUIDs
 and numeric interval IDs remain separate; scalar samples supply no historical endpoints.
 
+Select `DiscordLogHandlers` for optional bounded timing aggregation, fixed SwiftLog
+timing records, sampled NDJSON/local timeline export and Apple signposts. These
+adapters start no tasks and bootstrap nothing. Join producers, close capture and
+export on the application's output path. Numeric aggregation/capture perform no
+file output; logging/file/profiler callbacks have synchronous cost and stay outside
+realtime audio callbacks. See [timing output ownership](../Sources/DiscordLogHandlers/DiscordLogHandlers.docc/Guides/TimingOutputs.md),
+the [overhead executable](../Tools/DiscordTimingBenchmarks/README.md) and
+[Phase 3](Tasks/latency-timing/PHASE-3.md). Existing logging scopes retain their
+UUID/context work when trace is filtered; no fast-path change is included.
+
 ## Logging model
 
 Logging is part of the runtime's operation contract: a trace should explain what was

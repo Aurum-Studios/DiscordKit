@@ -62,9 +62,9 @@ let package = Package(
     ],
     targets: [
         .target(name: "DiscordLogging", dependencies: [.product(name: "Logging", package: "swift-log")], swiftSettings: concurrencySettings),
-        .target(name: "DiscordLogHandlers", dependencies: [.product(name: "Logging", package: "swift-log")], swiftSettings: concurrencySettings),
+        .target(name: "DiscordLogHandlers", dependencies: ["DiscordLogging", .product(name: "Logging", package: "swift-log")], swiftSettings: concurrencySettings),
         .testTarget(name: "DiscordLoggingTests", dependencies: ["DiscordLogging", "DiscordTestSupport"], swiftSettings: concurrencySettings),
-        .testTarget(name: "DiscordLogHandlersTests", dependencies: ["DiscordLogHandlers", .product(name: "Logging", package: "swift-log")], swiftSettings: concurrencySettings),
+        .testTarget(name: "DiscordLogHandlersTests", dependencies: ["DiscordLogHandlers", "DiscordLogging", "DiscordTransport", .product(name: "Logging", package: "swift-log")], swiftSettings: concurrencySettings),
         .target(
             name: "DiscordKit",
             dependencies: ["DiscordCore", "DiscordClient", "DiscordGateway", "DiscordTransport", "DiscordCommands", "DiscordInteractions", "DiscordOAuth", "DiscordGameServices", "DiscordCommerce"],
