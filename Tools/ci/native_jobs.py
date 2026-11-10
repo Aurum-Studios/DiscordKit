@@ -81,14 +81,16 @@ def runner_entry(native_platform, large):
             "jobs": size, "shell": "pwsh" if windows else "bash"}
 
 
-def matrices(root_targets):
-    """Partition each platform's modules and consumer checks into independent jobs."""
+def matrices(root_targets, native_platform=None):
+    """Partition all platforms or one selected platform into independent native jobs."""
+    if native_platform is not None and native_platform not in PLATFORMS:
+        raise ValueError("unsupported native platform")
     if not root_targets or len(root_targets) != len(set(root_targets)):
         raise ValueError("a nonempty unique root test-target inventory is required")
     if any(not IDENTIFIER.fullmatch(name) for name in root_targets):
         raise ValueError("unsupported root test-target name")
     builds, tests = [], []
-    for native_platform in PLATFORMS:
+    for native_platform in PLATFORMS if native_platform is None else (native_platform,):
         for component in COMPONENTS:
             builds.append({**runner_entry(native_platform, True), "component": component})
         for suite in active_targets(sorted(root_targets), native_platform):
@@ -482,7 +484,7 @@ def main():
     repository, output = arguments.repository.resolve(), arguments.output.resolve()
     try:
         if arguments.operation == "plan":
-            builds, tests = matrices(dump_targets(repository))
+            builds, tests = matrices(dump_targets(repository), arguments.platform)
             write_json(output / "build-matrix.json", builds)
             write_json(output / "test-matrix.json", tests)
         elif arguments.operation == "compile":

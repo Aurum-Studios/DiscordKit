@@ -113,35 +113,43 @@ Keep build outputs, IDE metadata, credentials and local smoke-test secrets out o
 commits. Include reviewed deterministic generated source and fixture provenance
 when those become part of an implemented feature.
 
-### Push CI and Linux source packages
+### Push CI and platform source packages
 
-Every push runs the offline certification workflow. Its Ubuntu 24.04 x86_64 job
-uses Swift 6.4.1 and must pass all Linux tests, independent consumer builds,
-inventory, documentation, generation, parity and release-record checks before
-packaging. The separate macOS jobs retain their existing checks. Pull requests
-run certification without packaging; a manual workflow run also creates a bundle.
+Every push runs the offline certification workflow. Windows x64, Ubuntu 24.04
+x64 and macOS ARM64 independently check their native toolchains, build, test,
+validate and export source packages using Swift 6.4.1. A failing platform cannot
+block another platform's tests or export. Pull requests run certification without
+packaging; a manual workflow run also creates each successful platform's bundle.
 
-After Linux validation, the job builds the root library, authoring macros and DSL
-extensions in release mode using committed dependency pins. It uploads a
-`DiscordKit-linux-source-<revision>-<run>-<attempt>` artifact for 14 days under the
-workflow run's **Artifacts** section. The artifact contains a `.tar.gz` SwiftPM
+Each platform requires its own runtime suites, compiler fixtures, inventory,
+documentation, generation, parity and release-record audits and release-mode
+root, macro and extension builds using committed dependency pins. macOS also
+requires its public API/DocC and Apple SDK checks. Each successful platform uploads
+a `DiscordKit-<platform>-source-<revision>-<run>-<attempt>` artifact for 14 days
+under the workflow run's **Artifacts** section. The artifact contains a `.tar.gz` SwiftPM
 source bundle, a SHA-256 checksum and JSON provenance recording the exact Git
-revision, Swift compiler, Linux host, target triple and release configuration.
+revision, platform, workflow run and attempt, Swift compiler, native host,
+target triple and release configuration.
 The archive preserves tracked manifests, pins, sources, tests, subpackages,
 examples, tools, documentation and license notices. Local build caches, untracked
 files and Air task data are excluded.
 
-Verify the download with `sha256sum -c *.tar.gz.sha256`, then extract it with
-`tar -xzf DiscordKit-<revision>-linux-source.tar.gz`. The extracted `DiscordKit`
+Verify the download using its `.sha256` file, for example with
+`sha256sum -c *.tar.gz.sha256` on Linux or `shasum -a 256 -c *.tar.gz.sha256` on
+macOS, then extract the `.tar.gz` archive. Linux retains the archive name
+`DiscordKit-<revision>-linux-source.tar.gz`; macOS and Windows use
+`DiscordKit-<revision>-<platform>-source.tar.gz`. The extracted `DiscordKit`
 directory works as a local SwiftPM dependency; optional authoring packages remain
 under `Packages` with their relative dependencies intact. Swift and dependency
 downloads are required to compile it. This is a source distribution validated on
-the recorded Linux host, not a precompiled library or a versioned release.
+the recorded native host. Publishing a versioned release still requires successful
+certification across all platforms and shared checks.
 
 Upstream maintenance freshness runs as a separate certification job. When its
-recorded deadline passes, that job fails until a real review is recorded. Linux
-tests and source packaging can still finish, and the overall workflow continues
-to report the failed review gate. CI does not extend review dates automatically.
+recorded deadline passes, that job fails until a real review is recorded. Each
+platform's tests and source packaging can still finish, and the overall workflow
+continues to report the failed review gate. CI does not extend review dates
+automatically.
 
 For HTTP/Gateway changes also build `swift build --package-path Examples/RESTOnly`
 and run the affected local-only load scenarios. Never run an example with real

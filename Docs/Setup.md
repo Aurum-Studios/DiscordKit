@@ -36,10 +36,10 @@ DiscordKit is licensed under the [Apache License, Version 2.0](../LICENSE). See
 [licensing and attribution](../README.md#license-and-attribution) for redistribution
 guidance, including use in paid products.
 
-Successful Linux push CI also provides a tested SwiftPM source bundle with
+Each successful native platform in push CI provides a tested SwiftPM source bundle with
 dependency pins, licenses, revision metadata and a checksum. Download it from
 the workflow run's **Artifacts** section; see the
-[CI packaging instructions](../CONTRIBUTING.md#push-ci-and-linux-source-packages).
+[CI packaging instructions](../CONTRIBUTING.md#push-ci-and-platform-source-packages).
 
 ## Choose an independent consumer
 

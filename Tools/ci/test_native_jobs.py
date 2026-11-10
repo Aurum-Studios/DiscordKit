@@ -65,6 +65,38 @@ class NativePlanTests(unittest.TestCase):
             self.assertEqual(jobs.dump_targets(Path(".")), ["ATests", "ZTests"])
         self.assertIn("dump-package", query.call_args.args[0])
 
+    def test_selected_platform_partitions_equal_complete_plan_without_overlap(self):
+        """Independent platform workflows retain every original producer, suite and runner choice."""
+        modules = ["DiscordCoreTests", "DiscordUnixPlatformTests", "DiscordApplePlatformTests",
+                   "DiscordFoundationTransportTests"]
+        complete = jobs.matrices(modules)
+        partitioned = ([], [])
+        for native_platform in jobs.PLATFORMS:
+            selected = jobs.matrices(modules, native_platform)
+            for complete_matrix, selected_matrix, gathered in zip(complete, selected, partitioned):
+                with self.subTest(platform=native_platform):
+                    self.assertTrue(selected_matrix["include"])
+                    self.assertEqual(selected_matrix["include"], [entry for entry in complete_matrix["include"]
+                        if entry["platform"] == native_platform])
+                    gathered.extend(selected_matrix["include"])
+        for complete_matrix, gathered in zip(complete, partitioned):
+            self.assertEqual(gathered, complete_matrix["include"])
+            unique = {json.dumps(entry, sort_keys=True) for entry in gathered}
+            self.assertEqual(len(unique), len(gathered))
+
+    def test_selected_platform_validates_name_and_its_own_matrix_limit(self):
+        """One platform's matrix capacity is independent from the size of sibling platforms."""
+        for native_platform in ("linux", "", "unsupported"):
+            with self.subTest(platform=native_platform), self.assertRaisesRegex(ValueError, "platform"):
+                jobs.matrices(["CoreTests"], native_platform)
+        modules = [f"Module{number}Tests" for number in range(90)]
+        for native_platform in jobs.PLATFORMS:
+            builds, tests = jobs.matrices(modules, native_platform)
+            self.assertEqual(len(builds["include"]), len(jobs.COMPONENTS))
+            self.assertEqual(len(tests["include"]), len(modules) + 5 + len(jobs.CONSUMER_SUITES))
+            with self.subTest(platform=native_platform), self.assertRaisesRegex(ValueError, "matrix limit"):
+                jobs.matrices([f"Module{number}Tests" for number in range(256)], native_platform)
+
     def test_matrix_rejects_duplicate_empty_invalid_or_oversized_partitions(self):
         """Invalid discovery must fail before GitHub silently drops or truncates jobs."""
         for modules in ([], ["CoreTests", "CoreTests"], ["CoreTests|OtherTests"],
@@ -147,6 +179,29 @@ class NativePlanTests(unittest.TestCase):
                 self.assertEqual(jobs.main(), 1)
             failure = json.loads((output / "failure.json").read_text())
             self.assertEqual(failure, {"status": "failed", "operation": "restore", "error": "wrong compiler"})
+
+    def test_plan_cli_selects_each_platform_and_rejects_unknown_platform(self):
+        """Reusable workflows can request one exact platform through the existing CLI option."""
+        modules = ["CoreTests", "DiscordUnixPlatformTests", "DiscordFoundationTransportTests"]
+        with tempfile.TemporaryDirectory() as directory:
+            for native_platform in jobs.PLATFORMS:
+                output = Path(directory) / native_platform
+                with self.subTest(platform=native_platform), patch.object(sys, "argv", ["native_jobs.py", "plan",
+                        "--output", str(output), "--platform", native_platform]), patch.object(jobs, "dump_targets", return_value=modules):
+                    self.assertEqual(jobs.main(), 0)
+                expected = jobs.matrices(modules, native_platform)
+                for filename, expected_matrix in zip(("build-matrix.json", "test-matrix.json"), expected):
+                    actual = json.loads((output / filename).read_text())
+                    self.assertEqual(actual, expected_matrix)
+                    self.assertEqual({entry["platform"] for entry in actual["include"]}, {native_platform})
+            invalid_output = Path(directory) / "invalid"
+            with patch.object(sys, "argv", ["native_jobs.py", "plan", "--output", str(invalid_output),
+                    "--platform", "unknown"]), patch.object(jobs, "dump_targets") as discover, patch.object(sys, "stderr", io.StringIO()):
+                with self.assertRaises(SystemExit) as error:
+                    jobs.main()
+                self.assertEqual(error.exception.code, 2)
+                discover.assert_not_called()
+            self.assertFalse(invalid_output.exists())
 
 
 class NativeArtifactTests(unittest.TestCase):

@@ -7,8 +7,10 @@ https://aurum-studios.com
 
 # Continuous validation and upstream review
 
-The repository defines four workflows: offline CI validation, documentation
-publication, manual GitHub releases and weekly official upstream review.
+The repository defines four workflow entry points: offline CI validation,
+documentation publication, manual GitHub releases and weekly official upstream
+review. CI also calls one reusable native-platform workflow, which has no push,
+pull-request, schedule or manual trigger of its own.
 A workflow definition does not establish that a hosted runner
 has executed. Review actual artifacts before changing support claims.
 
@@ -16,20 +18,23 @@ has executed. Review actual artifacts before changing support claims.
 
 [Offline validation](../.github/workflows/ci.yml) runs on push, pull request and
 manual dispatch with read-only repository permissions and no Discord secrets.
-The workflow follows the same compile-once, independent-suite pattern as
-MiniCarson, with three native platforms:
+The workflow calls [the native-platform pipeline](../.github/workflows/native-platform.yml)
+once for each platform using a matrix with `fail-fast: false`. Each call owns its
+platform check, plan, builds, runtime suites, compiler fixtures, validation and
+source export. No platform waits for another platform's checks or builds:
 
 ```mermaid
 flowchart LR
-    P[Platform checks: Windows, Linux, macOS] --> B[Independent native builds]
-    P --> A[Apple SDK module builds]
-    B --> T[Independent runtime suites]
-    B --> F[Compiler fixture suites]
-    B --> H[Python, browser, API and source audits]
-    T --> C[Complete certification]
-    F --> C
-    H --> C
-    A --> C
+    W[Windows check and builds] --> WT[Windows suites, fixtures and audits]
+    WT --> WP[Windows source export]
+    L[Linux check and builds] --> LT[Linux suites, fixtures and audits]
+    LT --> LP[Linux source export]
+    M[macOS check and builds] --> MT[macOS suites, fixtures, audits, API and Apple SDKs]
+    MT --> MP[macOS source export]
+    WP --> C[Complete certification]
+    LP --> C
+    MP --> C
+    H[Shared Python, browser and maintenance checks] --> C
 ```
 
 | Target | Platform and runtime suite group | Build and compiler fixture group |
@@ -38,24 +43,27 @@ flowchart LR
 | Windows x64 | `Windows-x64-8` | `Windows-x64-64` |
 | macOS ARM64 / macOS 26 | `MacOS-26-5` | `MacOS-26-5` |
 
-The `platforms` matrix is the first group and contains exactly one Windows, one
-Linux and one macOS check. Each verifies the actual native OS, architecture,
+The `native` matrix contains one Windows, one Linux and one macOS pipeline.
+Each starts with exactly one check of the actual native OS, architecture,
 Swift 6.4.1 compiler and target, then compiles, links and executes an offline
 Foundation JSON roundtrip. A platform check is never multiplied by build
-components, suites or runner sizes. All three must pass before any build starts.
+components, suites or runner sizes. Only that platform's check must pass before
+its builds start. A failed or unfinished Windows job leaves the Linux and macOS
+pipelines free to build, test, validate and export.
 The macOS ARM pool has five cores and serves both compilation and runtime work.
 Linux and Windows use separate 64-core build and 8-core runtime pools.
 
-After platform checks, a small Linux job evaluates the root manifest and plans
+After its platform check, a small native job evaluates the root manifest and plans
 independent builds for the root, macros, extensions, tooling, load tools,
-benchmarks, consumers and optimized library products on each platform. Builds
+benchmarks, consumers and optimized library products for that platform. Builds
 use `swift build --build-tests` where applicable and do not execute test suites.
 The benchmark build also produces its optimized smoke executable. Consumer
 examples keep separate build directories so one example's metadata cannot
 replace another example's test executable. Apple SDK module emissions run in
-this build phase after the same platform barrier.
+this build phase after the macOS platform check.
 
-Every build must pass before the test phase starts. Each root Swift test target
+Every build for a platform must pass before that platform's test phase starts.
+Apple SDK compilation does not gate runtime suites. Each root Swift test target
 gets its own job; macro, extension, tooling, load and benchmark packages and
 individual offline consumer examples have separate jobs. Runtime suites use
 `swift test --skip-build --no-parallel`, and executable smoke tests use
@@ -70,10 +78,17 @@ compiler, so each authoring fixture suite runs as a separate job on the build
 pools. They still require the expected semantic diagnostics; infrastructure
 crashes do not count as successful negative tests. Python tooling, load,
 benchmark and CI helpers and the browser bridge run as five independent small
-Linux jobs. Source audits reuse the compiled Linux tooling executable.
+Linux jobs without native-build dependencies. Source audits run separately on
+each platform and reuse its compiled tooling executable.
 Public API and DocC checks reuse public symbol graphs emitted during the macOS
 root and authoring builds, without recompiling stripped build artifacts.
-The upstream maintenance freshness check remains a separate required job.
+The upstream maintenance freshness check remains a separate required job without
+native-build dependencies. These shared checks gate overall certification;
+platform exports depend on their own native validation.
+
+The reusable workflow keeps all `needs` edges within one platform. The caller's
+matrix also disables fail-fast so a failed pipeline cannot cancel its siblings.
+This follows GitHub's [matrix and reusable workflow support](https://docs.github.com/en/actions/how-tos/reuse-automations/reuse-workflows#using-a-matrix-strategy-with-a-reusable-workflow).
 
 [The shared setup action](../.github/actions/setup-native/action.yml) installs
 Swift 6.4.1, Python 3.12 and Node 24. Linux setup installs the Ubuntu prerequisites
@@ -119,17 +134,26 @@ Build and test commands have finite process timeouts and durable progress logs.
 POSIX execution terminates the child process group on failure or timeout;
 Windows uses regular-file logs and best-effort `taskkill /T /F`. Each job retains
 its own diagnostics even after failure. The final **Offline certification passed**
-job runs with `always()` and fails if any required platform, build, suite, audit,
-Apple module build or packaging job failed, was cancelled or was skipped.
-Only fully successful non-pull-request runs package the clean source revision
-with checksums and native compiler/host metadata. This is a source archive, not
-a published release or precompiled distribution.
+job runs with `always()` and requires all three platform pipelines, shared helper
+suites and maintenance freshness to pass. Each pipeline has its own final gate
+that rejects failed, cancelled or skipped required jobs; only the explicitly
+macOS-only API/DocC and Apple SDK jobs may be skipped on Linux and Windows.
+
+Each successful platform exports the clean source revision on push or manual
+dispatch, even if another platform or a shared certification check fails. The
+export waits for that platform's builds, runtime suites, compiler fixtures and
+source audits; macOS also requires its API/DocC and Apple SDK checks. Pull requests
+run the same validation without creating source bundles. Artifacts are named
+`DiscordKit-<platform>-source-<revision>-<run>-<attempt>` and contain a SwiftPM
+source archive, checksum and native compiler/host provenance. A platform export
+records that platform's validation; release publication still requires complete
+certification across all platforms and shared checks.
 
 For local reproduction with the pinned compiler and native prerequisites:
 
 ```sh
 python3 Tools/ci/platform_probe.py --platform linux-x64 --output .build/local-platform
-python3 Tools/ci/native_jobs.py plan --output .build/local-plan
+python3 Tools/ci/native_jobs.py plan --platform linux-x64 --output .build/local-plan
 python3 Tools/ci/native_jobs.py compile --platform linux-x64 --component root --jobs 8 \
   --output .build/local-build --archive /tmp/discordkit-root.tar.gz
 # In a fresh checkout at the identical absolute path, using the same toolchain:
@@ -139,6 +163,7 @@ python3 Tools/ci/native_jobs.py test --platform linux-x64 --component root \
 ```
 
 Choose the platform matching the current host and an appropriate job limit.
+Omit `--platform` from `plan` to inspect the combined scheduling inventory locally.
 [The legacy serial gate helper](../Tools/ci/linux_ci.py) remains available for
 local whole-stage checks, including root, authoring, tooling, benchmarks, helpers,
 audit, consumers and release. It uses the same pins and native build engine and

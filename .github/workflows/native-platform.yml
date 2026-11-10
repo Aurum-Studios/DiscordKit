@@ -1,0 +1,446 @@
+# File: .github/workflows/native-platform.yml
+# Created by Carson Rau.
+# Copyright (c) 2026 Aurum Studios.
+# https://aurum-studios.com
+
+name: Native platform validation
+
+# Called by CI once per platform; this adds no independently triggered run.
+on:
+  workflow_call:
+    inputs:
+      platform:
+        required: true
+        type: string
+      runner-group:
+        required: true
+        type: string
+      jobs:
+        required: true
+        type: number
+      build-group:
+        required: true
+        type: string
+      build-jobs:
+        required: true
+        type: number
+      shell:
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+# Caller workflow env does not propagate into a reusable workflow.
+env:
+  SWIFTNIO_STRICT: '1'
+  PYTHONUNBUFFERED: '1'
+
+jobs:
+  platform:
+    name: Platform check
+    runs-on:
+      group: ${{ inputs.runner-group }}
+    timeout-minutes: 20
+    defaults:
+      run:
+        shell: ${{ inputs.shell }}
+    steps:
+      - name: Enable Windows checkout long paths
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: git config --system core.longpaths true
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-native
+      - name: Check native host, compiler, linker and runtime
+        run: >-
+          python Tools/ci/platform_probe.py --platform ${{ inputs.platform }}
+          --output .build/platform-ci/${{ inputs.platform }}
+      - name: Retain platform check evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: platform-${{ inputs.platform }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .build/platform-ci/${{ inputs.platform }}
+          if-no-files-found: error
+          include-hidden-files: true
+          retention-days: 14
+
+  plan:
+    name: Plan platform builds and suites
+    needs: platform
+    runs-on:
+      group: ${{ inputs.runner-group }}
+    timeout-minutes: 15
+    outputs:
+      builds: ${{ steps.plan.outputs.builds }}
+      tests: ${{ steps.plan.outputs.tests }}
+    defaults:
+      run:
+        shell: ${{ inputs.shell }}
+    steps:
+      - name: Enable Windows checkout long paths
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: git config --system core.longpaths true
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-native
+      - name: Discover owned test targets and assign runner sizes
+        id: plan
+        shell: python
+        env:
+          NATIVE_PLATFORM: ${{ inputs.platform }}
+        run: |
+          import json, os, subprocess, sys
+          from pathlib import Path
+          subprocess.run([sys.executable, 'Tools/ci/native_jobs.py', 'plan',
+                          '--platform', os.environ['NATIVE_PLATFORM'],
+                          '--output', '.build/ci-plan'], check=True)
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              for key, filename in [('builds', 'build-matrix.json'), ('tests', 'test-matrix.json')]:
+                  matrix = json.loads((Path('.build/ci-plan') / filename).read_text())
+                  output.write(key + '=' + json.dumps(matrix, separators=(',', ':')) + '\n')
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ci-plan-${{ inputs.platform }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .build/ci-plan
+          if-no-files-found: error
+          include-hidden-files: true
+          retention-days: 14
+
+  build:
+    name: Builds / ${{ matrix.component }}
+    needs: plan
+    runs-on:
+      group: ${{ matrix.group }}
+    timeout-minutes: 120
+    defaults:
+      run:
+        shell: ${{ matrix.shell }}
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.plan.outputs.builds) }}
+    steps:
+      - name: Enable Windows checkout long paths
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: git config --system core.longpaths true
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-native
+      - name: Compile selected products and tests without running suites
+        run: >-
+          python Tools/ci/native_jobs.py compile --component ${{ matrix.component }}
+          --platform ${{ matrix.platform }} --jobs ${{ matrix.jobs }}
+          --output .build/build-ci/${{ matrix.platform }}-${{ matrix.component }}
+          --archive "${{ runner.temp }}/compiled/${{ matrix.platform }}-${{ matrix.component }}.tar.gz"
+      - name: Verify generated source and dependency pins remain unchanged
+        run: git diff --exit-code
+      - name: Share compiled products with independent test jobs
+        uses: actions/upload-artifact@v7
+        with:
+          name: compiled-${{ matrix.platform }}-${{ matrix.component }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/compiled/${{ matrix.platform }}-${{ matrix.component }}.tar.gz
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 2
+      - name: Retain build diagnostics
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: build-evidence-${{ matrix.platform }}-${{ matrix.component }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .build/build-ci/${{ matrix.platform }}-${{ matrix.component }}
+          if-no-files-found: warn
+          include-hidden-files: true
+          retention-days: 14
+
+  tests:
+    name: Tests / ${{ matrix.suite }}
+    needs: [plan, build]
+    runs-on:
+      group: ${{ matrix.group }}
+    timeout-minutes: 60
+    defaults:
+      run:
+        shell: ${{ matrix.shell }}
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.plan.outputs.tests) }}
+    steps:
+      - name: Enable Windows checkout long paths
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: git config --system core.longpaths true
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-native
+      - name: Download this run's compiled package
+        uses: actions/download-artifact@v8
+        with:
+          name: compiled-${{ matrix.platform }}-${{ matrix.component }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/compiled
+      - name: Run only the selected suite without rebuilding
+        run: >-
+          python Tools/ci/native_jobs.py test --component ${{ matrix.component }}
+          --suite ${{ matrix.suite }} --platform ${{ matrix.platform }} --jobs ${{ matrix.jobs }}
+          --archive "${{ runner.temp }}/compiled/${{ matrix.platform }}-${{ matrix.component }}.tar.gz"
+          --output .build/test-ci/${{ matrix.platform }}-${{ matrix.suite }}
+      - name: Verify generated source and dependency pins remain unchanged
+        run: git diff --exit-code
+      - name: Retain selected suite evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-evidence-${{ matrix.platform }}-${{ matrix.suite }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            .build/test-ci/${{ matrix.platform }}-${{ matrix.suite }}
+            .build/dsl-measurements/runtime-smoke.json
+          if-no-files-found: warn
+          include-hidden-files: true
+          retention-days: 14
+
+  audit:
+    name: Documentation, inventory, generation and release audits
+    needs: build
+    runs-on:
+      group: ${{ inputs.runner-group }}
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: ${{ inputs.shell }}
+    steps:
+      - name: Enable Windows checkout long paths
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: git config --system core.longpaths true
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-native
+      - uses: actions/download-artifact@v8
+        with:
+          name: compiled-${{ inputs.platform }}-tooling-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/compiled
+      - name: Run audits using the compiled tooling executable
+        run: >-
+          python Tools/ci/native_jobs.py test --component tooling --suite audit
+          --platform ${{ inputs.platform }} --jobs ${{ inputs.jobs }} --archive "${{ runner.temp }}/compiled/${{ inputs.platform }}-tooling.tar.gz"
+          --output .build/audit-ci
+      - name: Verify generated source and dependency pins remain unchanged
+        run: git diff --exit-code
+      - name: Retain audit diagnostics
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: audit-evidence-${{ inputs.platform }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .build/audit-ci
+          if-no-files-found: warn
+          include-hidden-files: true
+          retention-days: 14
+
+  fixtures:
+    name: Compiler fixtures / ${{ matrix.suite }}
+    needs: build
+    # These suites compile positive and intentionally invalid consumers.
+    # Keep their compiler work on the large pools rather than the runtime pool.
+    runs-on:
+      group: ${{ inputs.build-group }}
+    timeout-minutes: 90
+    defaults:
+      run:
+        shell: ${{ inputs.shell }}
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [dsl_compile_fixtures, dsl_extension_fixtures]
+    steps:
+      - name: Enable Windows checkout long paths
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: git config --system core.longpaths true
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-native
+      - name: Require positive builds and exact negative compiler diagnostics
+        run: >-
+          python Tools/ci/${{ matrix.suite }}.py --repository .
+          --jobs ${{ inputs.build-jobs }} --timeout 1200
+      - name: Verify generated source and dependency pins remain unchanged
+        run: git diff --exit-code
+
+  public-api:
+    name: Public API and DocC / macOS ARM
+    if: inputs.platform == 'macos-arm64'
+    needs: build
+    runs-on:
+      group: MacOS-26-5
+    timeout-minutes: 120
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-native
+      - name: Download compiled macOS root
+        uses: actions/download-artifact@v8
+        with:
+          name: compiled-macos-arm64-root-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/compiled
+      - name: Download compiled macOS macros
+        uses: actions/download-artifact@v8
+        with:
+          name: compiled-macos-arm64-macros-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/compiled
+      - name: Download compiled macOS extensions
+        uses: actions/download-artifact@v8
+        with:
+          name: compiled-macos-arm64-extensions-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/compiled
+      - name: Restore compiled root and authoring packages
+        run: |
+          for component in root macros extensions; do
+            python Tools/ci/native_jobs.py restore --component "$component" --platform macos-arm64 \
+              --archive "$RUNNER_TEMP/compiled/macos-arm64-$component.tar.gz" --output .build/api-ci
+          done
+      - name: Compare scoped public API and convert all public DocC modules
+        run: |
+          python3 Tools/ci/curate_docc.py --check
+          python3 Tools/ci/documentation_examples.py
+          python3 Tools/DiscordKitTools/scripts/api_baseline.py snapshot --repository . --symbolgraphs .build/out/symbolgraph --version 0.20.0 --output .build/current-api.json
+          python3 Tools/DiscordKitTools/scripts/api_baseline.py check --baseline Docs/Release/api-baseline.json --candidate .build/current-api.json --version 0.20.0
+          python3 Tools/DiscordKitTools/scripts/api_baseline.py check --baseline Docs/Release/api-baseline-0.15.0.json --candidate .build/current-api.json --version 0.20.0
+          python3 Tools/DiscordKitTools/scripts/api_baseline.py check --baseline Docs/Release/api-baseline-0.16.0.json --candidate .build/current-api.json --version 0.20.0
+          python3 Tools/DiscordKitTools/scripts/api_baseline.py check --baseline Docs/Release/api-baseline-0.17.0.json --candidate .build/current-api.json --version 0.20.0
+          python3 Tools/DiscordKitTools/scripts/api_baseline.py check --baseline Docs/Release/api-baseline-0.18.0.json --candidate .build/current-api.json --version 0.20.0
+          python3 Tools/DiscordKitTools/scripts/api_baseline.py check --baseline Docs/Release/api-baseline-0.19.0.json --candidate .build/current-api.json --version 0.20.0
+          python3 Tools/ci/build_docc.py
+          python3 Tools/ci/curate_docc.py --repository Packages/DiscordDSLMacros --symbolgraphs Packages/DiscordDSLMacros/.build/out/symbolgraph --check
+          python3 Tools/ci/build_docc.py --repository Packages/DiscordDSLMacros --symbolgraphs Packages/DiscordDSLMacros/.build/out/symbolgraph --output .build/documentation-macros
+          python3 Tools/DiscordKitTools/scripts/api_baseline.py snapshot --repository . --authoring-package Packages/DiscordDSLMacros --symbolgraphs Packages/DiscordDSLMacros/.build/out/symbolgraph --version 0.15.0 --output .build/current-macros-api.json
+          python3 Tools/DiscordKitTools/scripts/api_baseline.py check --baseline Docs/Release/api-baseline-macros-0.15.0.json --candidate .build/current-macros-api.json --version 0.15.0
+          python3 Tools/ci/curate_docc.py --repository Packages/DiscordDSLExtensions --symbolgraphs Packages/DiscordDSLExtensions/.build/out/symbolgraph --check
+          python3 Tools/ci/build_docc.py --repository Packages/DiscordDSLExtensions --symbolgraphs Packages/DiscordDSLExtensions/.build/out/symbolgraph --output .build/documentation-extensions
+          python3 Tools/DiscordKitTools/scripts/api_baseline.py snapshot --repository . --authoring-package Packages/DiscordDSLExtensions --symbolgraphs Packages/DiscordDSLExtensions/.build/out/symbolgraph --version 0.15.0 --output .build/current-extensions-api.json
+          python3 Tools/DiscordKitTools/scripts/api_baseline.py check --baseline Docs/Release/api-baseline-extensions-0.15.0.json --candidate .build/current-extensions-api.json --version 0.15.0
+      - name: Package DocC archives and API evidence
+        run: |
+          # DocC symbol filenames contain colons, which upload-artifact rejects.
+          # Preserve those filenames and internal links inside a tarball.
+          tar -czf "$RUNNER_TEMP/public-documentation-and-api.tar.gz" -C .build \
+            documentation current-api.json \
+            documentation-macros current-macros-api.json \
+            documentation-extensions current-extensions-api.json
+      - name: Upload DocC archives and API evidence
+        uses: actions/upload-artifact@v7
+        with:
+          name: public-documentation-and-api
+          path: ${{ runner.temp }}/public-documentation-and-api.tar.gz
+          compression-level: 0
+          if-no-files-found: error
+          include-hidden-files: true
+      - name: Verify tracked generated source and dependency pins remain unchanged
+        run: git diff --exit-code
+
+  apple-compilation:
+    name: Build Apple minima / device and simulator modules
+    if: inputs.platform == 'macos-arm64'
+    needs: platform
+    runs-on:
+      group: MacOS-26-5
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: swift-actions/setup-swift@v3
+        with:
+          swift-version: '6.4.1'
+      - name: Record compiler and Xcode
+        run: |
+          swift --version
+          swiftc --version
+          xcodebuild -version
+      - name: Emit selected modules with installed Xcode SDKs
+        run: python3 Tools/ci/compile_apple.py
+      - uses: actions/upload-artifact@v7
+        with:
+          name: apple-selected-module-compilation
+          path: .build/apple-compile.json
+          if-no-files-found: error
+          include-hidden-files: true
+
+  package:
+    name: Export validated platform source
+    needs: [build, tests, audit, fixtures, public-api, apple-compilation]
+    # Non-Apple pipelines intentionally skip the two macOS-only checks.
+    # Override implicit success() so those skips do not suppress their export.
+    if: >-
+      ${{ !cancelled() && needs.build.result == 'success' &&
+          needs.tests.result == 'success' && needs.audit.result == 'success' &&
+          needs.fixtures.result == 'success' &&
+          (inputs.platform != 'macos-arm64' ||
+           (needs.public-api.result == 'success' && needs.apple-compilation.result == 'success')) }}
+    runs-on:
+      group: ${{ inputs.runner-group }}
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: ${{ inputs.shell }}
+    steps:
+      - name: Enable Windows checkout long paths
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: git config --system core.longpaths true
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-native
+      - name: Package the clean source revision validated on this platform
+        if: github.event_name != 'pull_request'
+        run: >-
+          python Tools/ci/package_source.py --repository . --platform ${{ inputs.platform }}
+          --output .build/packages
+      - name: Upload platform SwiftPM source bundle
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v7
+        with:
+          name: DiscordKit-${{ inputs.platform }}-source-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .build/packages/*
+          if-no-files-found: error
+          include-hidden-files: true
+          compression-level: 0
+          retention-days: 14
+
+  complete:
+    name: Platform validation passed
+    if: always()
+    needs: [platform, plan, build, tests, audit, fixtures, public-api, apple-compilation, package]
+    runs-on:
+      group: ${{ inputs.runner-group }}
+    timeout-minutes: 5
+    steps:
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Require every applicable platform gate to pass
+        shell: python
+        env:
+          RESULTS: ${{ toJSON(needs) }}
+          NATIVE_PLATFORM: ${{ inputs.platform }}
+        run: |
+          import json, os
+          results = json.loads(os.environ['RESULTS'])
+          optional = {'public-api', 'apple-compilation'} if os.environ['NATIVE_PLATFORM'] != 'macos-arm64' else set()
+          failed = {name: value['result'] for name, value in results.items()
+                    if value['result'] != 'success' and not (name in optional and value['result'] == 'skipped')}
+          if failed:
+              raise SystemExit('Platform validation incomplete: ' + json.dumps(failed, sort_keys=True))
