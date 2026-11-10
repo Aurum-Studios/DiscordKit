@@ -29,13 +29,12 @@ build/test commands, public API comparisons and DocC conversion. Fixture helpers
 enforce committed dependency pins on both hosts; their optional job limit is
 applied explicitly only by the Ubuntu runner.
 
-The Ubuntu job uses a dedicated GitHub-hosted larger runner, `linux-x64-4`,
-with the Ubuntu 24.04 x64 image, 4 CPUs, 16 GiB RAM and 150 GB disk. The
-`DiscordKit-Native` runner group grants selected-repository access only to
-`Aurum-Studios/DiscordKit`, with public-repository access enabled. The runner
-has a maximum count of one and static IP allocation is disabled. The workflow
-selects both `group: DiscordKit-Native` and `labels: linux-x64-4`; the ordinary
-`ubuntu-24.04` label remains in use for the separate maintenance job.
+The Ubuntu job selects the `linux-x64-8-core` GitHub-hosted runner group,
+without a configuration-name label. Each group member must use the Ubuntu 24.04
+x64 image and the 8-core class (32 GiB RAM and 300 GB disk). GitHub can select any
+available compatible member as the organization scales the class. The group must
+grant access to `Aurum-Studios/DiscordKit`, with public-repository access enabled.
+The ordinary `ubuntu-24.04` label remains in use for the separate maintenance job.
 An explicit apt step installs Python and the native build/runtime dependencies.
 Node 24 is installed separately, and `setup-swift@v3` installs exactly Swift 6.4.1.
 
