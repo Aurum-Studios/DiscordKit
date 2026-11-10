@@ -29,6 +29,8 @@ public final class RESTClient<C: Clock>: Sendable, CustomStringConvertible, Cust
     private let egress: UUID?
     /// Explicit content-free observer; nil reads no instrumentation clock and retains no timing history.
     private let timing: OperationTiming?
+    /// Separate opt-in detailed lifecycle observer; nil creates no identities or instrumentation reads.
+    private let intervals: DiscordIntervalTiming?
 
     /// Conceals credentials and injected owners from ordinary diagnostic formatting.
     public var description: String { "RESTClient(redacted)" }
@@ -58,6 +60,10 @@ public final class RESTClient<C: Clock>: Sendable, CustomStringConvertible, Cust
     ///   - userAgent: DiscordBot library identification; validated before transmission.
     ///   - timing: Optional prompt synchronous observer. Actual exchanges and coalesced subscriber waits
     ///     are separate fixed phases; cache hits emit no exchange phases. Nil performs no timing work.
+    ///   - intervals: Optional detailed caller, attempt and subscriber lifecycle observer. Shared wire work
+    ///     has one exchange owner; each caller retains its own logical and subscriber intervals. Detailed
+    ///     elapsed values include their start callback, nested callbacks and any preceding scalar callback;
+    ///     each boundary timestamp is captured before its own synchronous sink. Nil performs no timing work.
     /// - Precondition: Response byte and exchange-duration limits are positive.
     public init(credential: Credential, identity: RateLimitIdentity, transport: any HTTPTransport,
                 coordinator: RateLimitCoordinator<C>, clock: C, cache: ReadCache<C>? = nil,
@@ -65,13 +71,13 @@ public final class RESTClient<C: Clock>: Sendable, CustomStringConvertible, Cust
                 maximumResponseBytes: Int = 8 * 1_024 * 1_024,
                 maximumExchangeDuration: Duration = .seconds(30),
                 egress: UUID? = nil, userAgent: String = "DiscordBot (https://github.com/CarsonAurum/DiscordKit, 0.19.0)",
-                timing: OperationTiming? = nil) {
+                timing: OperationTiming? = nil, intervals: DiscordIntervalTiming? = nil) {
         precondition(maximumResponseBytes > 0 && maximumExchangeDuration > .zero)
         self.credential = credential; self.identity = identity; self.transport = transport
         self.coordinator = coordinator; self.clock = clock; self.cache = cache; self.coalescer = coalescer
         self.retryPolicy = retryPolicy; self.maximumResponseBytes = maximumResponseBytes
         self.maximumExchangeDuration = maximumExchangeDuration; self.userAgent = userAgent; self.egress = egress
-        self.timing = timing
+        self.timing = timing; self.intervals = intervals
     }
 
     /// Executes a typed or raw descriptor through authentication, admission and bounded decoding.
@@ -86,14 +92,24 @@ public final class RESTClient<C: Clock>: Sendable, CustomStringConvertible, Cust
     ///   Decoder errors are replaced with a safe invalid-response category.
     public func execute<Response: Sendable>(_ endpoint: Endpoint<Response>, deadline: C.Instant? = nil) async throws -> Response {
         let executionStarted = timing?.instant()
+        let interval = intervals?.begin(.rest, stage: .operation)
         do {
-            let result = try await executeObserved(endpoint, deadline: deadline)
+            let result: Response
+            if let interval {
+                result = try await DiscordIntervalScope.$context.withValue(interval.context) {
+                    try await executeObserved(endpoint, deadline: deadline)
+                }
+            } else {
+                result = try await executeObserved(endpoint, deadline: deadline)
+            }
             if let timing, let executionStarted { timing.record(.httpExecutionJoined, since: executionStarted) }
+            interval?.end()
             return result
         } catch {
             if let timing, let executionStarted {
                 timing.record(.httpExecutionJoined, since: executionStarted, outcome: OperationTiming.outcome(for: error))
             }
+            interval?.end(Self.intervalOutcome(for: error))
             throw error
         }
     }
@@ -124,7 +140,10 @@ public final class RESTClient<C: Clock>: Sendable, CustomStringConvertible, Cust
                         return try self.decode(endpoint, data: data)
                     }
                     DiscordLog.makeLogger("http.cache").trace("REST read reuse lookup completed without a cached response", metadata: ["dk.event": "http.cache.miss", "dk.enabled": .stringConvertible(endpoint.readPolicy?.timeToLive != nil && self.cache != nil)])
-                    let operation: @Sendable () async throws -> Data = {
+                    // A shared flight may outlive its initiating subscriber. Capture the numeric caller
+                    // context explicitly instead of inheriting whichever subscriber happens to run later.
+                    let exchangeParent = self.intervals == nil ? nil : DiscordIntervalScope.context
+                    let exchange: @Sendable () async throws -> Data = {
                         let generation = await self.cache?.generation()
                         let maximumDeadline = self.clock.now.advanced(by: self.maximumExchangeDuration)
                         let shared = endpoint.readPolicy?.coalescing == true && self.coalescer != nil
@@ -142,20 +161,27 @@ public final class RESTClient<C: Clock>: Sendable, CustomStringConvertible, Cust
                         }
                         return data
                     }
+                    let operation: @Sendable () async throws -> Data = {
+                        guard self.intervals != nil else { return try await exchange() }
+                        return try await DiscordIntervalScope.$context.withValue(exchangeParent, operation: exchange)
+                    }
                     let data: Data
                     if endpoint.readPolicy?.coalescing == true, let coalescer = self.coalescer {
                         DiscordLog.makeLogger("http.coalescing").trace("REST read entering shared flight admission", metadata: ["dk.event": "http.coalescing.admission"])
                         let subscriberStarted = self.timing?.instant()
+                        let subscriber = self.intervals?.begin(.httpSubscriber, stage: .subscriber)
                         do {
                             data = try await coalescer.run(key: key, operation: operation)
                             if let timing = self.timing, let subscriberStarted {
                                 timing.record(.httpCoalescedSubscriber, since: subscriberStarted)
                             }
+                            subscriber?.end()
                         } catch {
                             if let timing = self.timing, let subscriberStarted {
                                 timing.record(.httpCoalescedSubscriber, since: subscriberStarted,
                                     outcome: OperationTiming.outcome(for: error))
                             }
+                            subscriber?.end(Self.intervalOutcome(for: error))
                             throw error
                         }
                     } else { data = try await operation() }
@@ -207,7 +233,8 @@ public final class RESTClient<C: Clock>: Sendable, CustomStringConvertible, Cust
                 attempt += 1
                 DiscordLog.makeLogger("http.execution").trace("REST attempt started", metadata: ["dk.event": "http.attempt.started", "dk.attempt": .stringConvertible(attempt), "dk.maximum_attempts": .stringConvertible(self.retryPolicy.maximumAttempts)])
                 let reply: WireReply
-                do { reply = try await self.send(endpoint, context: context, evidence: evidence) }
+                do { reply = try await self.send(endpoint, context: context, evidence: evidence,
+                                                attempt: UInt32(attempt)) }
                 catch let error as DiscordError {
                     if case .transport = error, endpoint.retrySafety == .safe,
                        let delay = self.retryPolicy.delay(after: attempt) {
@@ -252,20 +279,50 @@ public final class RESTClient<C: Clock>: Sendable, CustomStringConvertible, Cust
     ///   - endpoint: Operation providing a fresh replayable body for this attempt.
     ///   - context: Clock/deadline/cancellation context used for admission and transport.
     ///   - evidence: Records possible submission before awaiting the injected adapter.
+    ///   - attempt: One-based retry attempt within the existing finite budget of at most sixteen attempts.
     /// - Returns: Complete bounded response metadata/bytes after authority observation.
     /// - Throws: Safe transport/authority failures or conservative unsafe-send uncertainty.
-    private func send<Response: Sendable>(_ endpoint: Endpoint<Response>, context: TransportContext<C>, evidence: HTTPSubmissionEvidence) async throws -> WireReply {
+    private func send<Response: Sendable>(_ endpoint: Endpoint<Response>, context: TransportContext<C>, evidence: HTTPSubmissionEvidence,
+                                          attempt: UInt32) async throws -> WireReply {
+        guard let interval = intervals?.begin(.httpExchange, stage: .operation, attempt: attempt) else {
+            return try await sendObserved(endpoint, context: context, evidence: evidence, attempt: attempt)
+        }
+        do {
+            let reply = try await DiscordIntervalScope.$context.withValue(interval.context) {
+                try await sendObserved(endpoint, context: context, evidence: evidence, attempt: attempt)
+            }
+            interval.end()
+            return reply
+        } catch {
+            interval.end(Self.intervalOutcome(for: error))
+            throw error
+        }
+    }
+
+    /// Preserves admission, transport and body ownership while observing the real attempt boundaries.
+    /// - Parameters:
+    ///   - endpoint: Operation supplying the request and replay policy for this attempt.
+    ///   - context: Original bounded exchange context, unchanged by observation.
+    ///   - evidence: Conservative submission evidence shared with the caller's cleanup owner.
+    ///   - attempt: One-based attempt identity within this logical wire operation.
+    /// - Returns: Complete reply after response cleanup and rate observation.
+    /// - Throws: The original normalized admission, transport or body failure.
+    private func sendObserved<Response: Sendable>(_ endpoint: Endpoint<Response>, context: TransportContext<C>, evidence: HTTPSubmissionEvidence,
+                                                  attempt: UInt32) async throws -> WireReply {
         try context.check()
         DiscordLog.makeLogger("http.execution").trace("REST attempt requesting rate admission", metadata: ["dk.event": "http.request.admission"])
         let admissionStarted = timing?.instant()
+        let admission = intervals?.begin(.httpExchange, stage: .admission, attempt: attempt)
         let reservation: RateLimitReservation<C.Instant>
         do {
             reservation = try await coordinator.acquire(rateRequest(endpoint), deadline: context.deadline)
             if let timing, let admissionStarted { timing.record(.httpAdmission, since: admissionStarted) }
+            admission?.end()
         } catch {
             if let timing, let admissionStarted {
                 timing.record(.httpAdmission, since: admissionStarted, outcome: OperationTiming.outcome(for: error))
             }
+            admission?.end(Self.intervalOutcome(for: error))
             throw error
         }
         let request: HTTPRequest
@@ -287,13 +344,16 @@ public final class RESTClient<C: Clock>: Sendable, CustomStringConvertible, Cust
         }
         let response: HTTPResponse
         var headersStarted: Duration?
+        var headers: DiscordInterval?
         do {
             await evidence.markSubmitted()
             try context.check()
             DiscordLog.makeLogger("http.execution").trace("REST request submitted to transport", metadata: ["dk.event": "http.request.submitted"])
             headersStarted = timing?.instant()
+            headers = intervals?.begin(.httpExchange, stage: .headers, attempt: attempt)
             response = try await transport.execute(request, context: context)
             if let timing, let headersStarted { timing.record(.httpHeaders, since: headersStarted) }
+            headers?.end()
         }
         catch {
             await request.body?.close()
@@ -304,16 +364,19 @@ public final class RESTClient<C: Clock>: Sendable, CustomStringConvertible, Cust
             if let timing, let headersStarted {
                 timing.record(.httpHeaders, since: headersStarted, outcome: OperationTiming.outcome(for: failure))
             }
+            headers?.end(Self.intervalOutcome(for: failure))
             throw failure
         }
         await request.body?.close()
         DiscordLog.makeLogger("http.execution").trace("REST response received", metadata: ["dk.event": "http.response.received", "dk.status": .stringConvertible(response.status)])
         let data: Data
         let bodyStarted = timing?.instant()
+        let body = intervals?.begin(.httpExchange, stage: .body, attempt: attempt)
         do {
             DiscordLog.makeLogger("http.execution").trace("REST response body collection started", metadata: ["dk.event": "http.response.body.started", "dk.maximum_bytes": .stringConvertible(maximumResponseBytes)])
             data = try await ResponseBody.collect(response.body, maximumBytes: maximumResponseBytes)
             if let timing, let bodyStarted { timing.record(.httpBody, since: bodyStarted) }
+            body?.end()
             DiscordLog.makeLogger("http.execution").trace("REST response body collection completed", metadata: ["dk.event": "http.response.body.completed", "dk.bytes": .stringConvertible(data.count)])
         }
         catch {
@@ -321,6 +384,7 @@ public final class RESTClient<C: Clock>: Sendable, CustomStringConvertible, Cust
             if let timing, let bodyStarted {
                 timing.record(.httpBody, since: bodyStarted, outcome: OperationTiming.outcome(for: failure))
             }
+            body?.end(Self.intervalOutcome(for: failure))
             do { try await coordinator.complete(reservation, status: response.status, headers: response.headers) }
             catch { await recordOwnerFailure(error) }
             await recordOwnerFailure(error)
@@ -345,6 +409,18 @@ public final class RESTClient<C: Clock>: Sendable, CustomStringConvertible, Cust
         DiscordLog.makeLogger("http.execution").trace("REST attempt admission released after response observation", metadata: ["dk.event": "http.request.completed", "dk.status": .stringConvertible(response.status)])
         if response.status == 429 { await evidence.markRejected() }
         return WireReply(status: response.status, headers: response.headers, data: data)
+    }
+
+    /// Maps the existing finite scalar classification without retaining or formatting the failure.
+    /// - Parameter error: Original error whose propagation and retry policy remain unchanged.
+    /// - Returns: The same finite result category in the separate detailed interval model.
+    private static func intervalOutcome(for error: any Error) -> DiscordIntervalOutcome {
+        switch OperationTiming.outcome(for: error) {
+        case .succeeded: .succeeded
+        case .failed: .failed
+        case .cancelled: .cancelled
+        case .uncertain: .uncertain
+        }
     }
 
     /// Records closed owner evidence before normalization can erase the source failure.

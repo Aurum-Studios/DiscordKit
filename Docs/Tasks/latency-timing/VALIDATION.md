@@ -175,3 +175,58 @@ of executable/test/build inputs before commit and reviewed documentation changes
 separately. This evidence establishes local integrity and cleanup. It does not
 establish a stable noise floor, numerical baseline, full stress/soak recovery,
 observer overhead, hosted CI, Linux, physical audio, live Discord or deployment.
+
+## Phase 2 validation
+
+Executed 2026-11-10 from Phase 1 revision `2cbe0e10` on the local macOS ARM64
+candidate with Apple Swift 6.4. The [implementation record](PHASE-2.md) and
+[runtime interval guide](../../../Sources/DiscordLogging/DiscordLogging.docc/Guides/RuntimeIntervals.md)
+describe the actual owner boundaries, propagation, clock validity and callback costs.
+Historical Stage 0/1 results above remain unchanged.
+
+| Check | Result |
+| --- | --- |
+| Root `swift build` | Passed |
+| `SWIFTNIO_STRICT=1 swift test --jobs 6 --force-resolved-versions` | Passed: 2,556 tests across 34 executable summaries, including 26 new interval test methods and existing scalar/trusted-receipt suites |
+| `swift build --package-path Examples/RESTOnly --jobs 4` | Passed: independently adopted REST consumer |
+| `swift test --package-path Tools/DiscordKitLoadTests --jobs 4` | Passed: 28 tests in four suites |
+| Load participant `swift build -c release --package-path Tools/DiscordKitLoadTests --jobs 4` | Passed; prepares local integrity smoke, not a performance baseline |
+| Release load `--scenario http --profile accounts-100` | Existing validator passed: 2,000 successes, zero failures/cancellations/refusals, 1,045 wire exchanges, 1,155 avoided exchanges and 200 retry responses; active/queued/flight/cache ownership zero after shutdown |
+| Release load `--scenario gateway --profile accounts-100` | Existing validator passed: 10,000 dispatches, one identify, two resumes/reconnects and six heartbeat/ACK pairs; connections, leases, pending requests and application writes zero after shutdown |
+| Offline `DiscordKitTools inventory validate --repository .` | Passed: 18,245 entries from 290 sources, 1,081 implemented records, 15,475 pending semantic review, 951 reviewed definitions and 255 mapped endpoints |
+| Offline `DiscordKitTools generate --check --repository .` / `parity check --repository .` | Passed: five generated artifacts byte-identical; parity evidence structurally valid |
+| `swift test --package-path Tools/DiscordKitTools --jobs 4 --force-resolved-versions` | Passed: 106 Swift tests in eight suites |
+| `python3 -m unittest discover -s Tools/DiscordKitTools/scripts -p 'test_*.py'` | Passed: 230 Python tests |
+| Offline `DiscordKitTools documentation audit --repository .` | Passed: 841 Swift files, 9,169 explicit callable declarations, zero missing comments; semantic review performed separately |
+| `python3 Tools/ci/emit_symbol_graphs.py --jobs 6` | Final export passed: 37 normalized graph files; 33 public library modules selected for documentation |
+| `python3 Tools/ci/curate_docc.py --check` with the five affected `--module` selections | Passed after regenerating those modules' navigation: zero changed files; new detailed types and owner initializer signatures resolve |
+| `python3 Tools/ci/build_docc.py` | Passed: all 33 public-module archives converted with strict diagnostics |
+| Local Markdown link/anchor audit and whitespace review | Passed: 26 Markdown files, 247 local links/anchors; `git diff --check` clean |
+| Independent review | No blocking arithmetic, lock/callback, terminal, ownership or result-propagation defect found; exact callback-cost and enabled auto-defer tests added following review |
+
+The initial focused retry fixture stalled because its virtual clock did not advance
+through the coordinator's existing one-second unknown-route debit. The fixture now
+waits for the second admission boundary and advances that clock explicitly. A response
+fixture also incorrectly created its interaction-clock origin after advancing time;
+it now captures the origin first. These were test corrections; rate/deadline policy
+was preserved. The final full root run includes both corrected fixtures.
+
+The first symbol-graph export emitted the current libraries but exited unsuccessfully
+while loading an unbuilt generated `DiscordKitPackageTests` module in the native
+build directory. `swift build --build-tests --build-system native
+--disable-experimental-prebuilts --jobs 6 --force-resolved-versions` completed that
+local build graph. The standard export retry then passed, followed by fresh
+navigation generation/checking and strict DocC conversion. Failed/old normalized
+graphs were not accepted as final documentation evidence.
+
+Manifests, dependency pins, runtime product graph and `OperationTiming.swift` are
+unchanged. Ordinary constructor calls retain defaults; new observer parameters are
+public signature additions, so code storing an initializer as a function value may
+need to include the new parameter. No release API baseline or published version was
+rewritten. Logs and local smoke reports remain under ignored build directories.
+The new hook model does not write files, retain an unbounded history or start tasks.
+
+This evidence establishes local semantics, integrity and cleanup. It does not
+establish detailed trusted socket-receipt begins, per-event Gateway waterfalls,
+broader Stage 5/6 catalog attribution, observer overhead, a numerical baseline,
+hosted CI, Linux/device runtime, live Discord behavior, publication or deployment.

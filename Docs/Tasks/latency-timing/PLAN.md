@@ -7,8 +7,8 @@ https://aurum-studios.com
 
 # Latency instrumentation and timing suites
 
-Status: Stages 0–1 implemented; stages 2–11 remain proposed.
-No runtime instrumentation or performance qualification is implied. The original
+Status: Stages 0–2 implemented; stages 3–11 remain proposed.
+Runtime owner hooks are opt-in; no performance qualification is implied. The original
 plan was prepared 2026-11-10 against source revision
 `27cd73f335b2b3058dfa317677c71991292706b8`; the Stage 0 checkpoint uses
 `c8d842f7ce51e9adc69ff9997e2c0f374dc2ee68`.
@@ -17,6 +17,7 @@ Stage 0 artifacts: [workload and file inventory](INVENTORY.md),
 [versioned metric catalog](METRICS.md), [compatibility and ownership decisions](CONTRACTS.md),
 and [validation/reference-host procedure](VALIDATION.md).
 Stage 1 implementation: [shared harness and integration record](PHASE-1.md).
+Stage 2 implementation: [runtime intervals and semantic coverage](PHASE-2.md).
 
 ## Outcome and scope
 
@@ -218,6 +219,14 @@ logical operation, cache-hit/no-wire behavior and shared-subscriber ownership.
 Cover cancellation before/during work, joined cleanup, failures, uncertain sends,
 deadline races, clock regression and disabled zero-clock/zero-callback behavior.
 ResourceTracker and sleeper counters return to the documented baseline.
+
+Stage 2 implementation: the existing DiscordLogging product now supplies
+`DiscordIntervalTiming`, explicit numeric context and checked lifecycle endpoints.
+REST, Gateway dispatch and response owners expose independent optional hooks;
+legacy scalar timing remains unchanged. See the [implementation record](PHASE-2.md)
+for exact boundaries, callback costs and deterministic checks. Trusted scalar
+receipt age does not become a fabricated detailed begin; per-event Gateway
+waterfalls and the broader Stage 5/6 catalog metrics remain later work.
 
 ## Stage 3 — Timing outputs and instrumentation overhead suite
 

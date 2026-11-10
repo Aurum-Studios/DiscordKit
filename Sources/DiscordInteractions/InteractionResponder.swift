@@ -52,6 +52,8 @@ public actor InteractionResponder: CustomStringConvertible, CustomDebugStringCon
     private let admission: InteractionAcknowledgementAdmission
     /// Explicit content-free observer; nil performs no instrumentation clock reads.
     private let timing: OperationTiming?
+    /// Optional owner-entry intervals; public receipt offsets never authorize a trusted receive interval.
+    private let intervals: DiscordIntervalTiming?
     /// Package-installed socket receipt observation; public receipt offsets never create this trust.
     private var gatewayReceiptAge: (@Sendable () -> Duration?)?
     /// Actual dispatcher admission offset in the enabled observer's clock domain.
@@ -85,11 +87,13 @@ public actor InteractionResponder: CustomStringConvertible, CustomDebugStringCon
     ///     Future values are rejected on first operation rather than granting a later deadline.
     ///   - timing: Optional synchronous content-free observer. Public receipt values do not authorize
     ///     trusted Gateway receive samples; only the package-owned adapter installs that provenance.
+    ///   - intervals: Optional synchronous detailed observer. Intervals start at actor owner entry and include
+    ///     joined sink cleanup; they do not measure caller-to-actor queue residence or invent socket timestamps.
     public init(interaction: Interaction, deliveryMode: InteractionDeliveryMode, clock: InteractionClock,
         sink: InteractionResponseSink, admission: InteractionAcknowledgementAdmission, receivedAt: Duration? = nil,
-        timing: OperationTiming? = nil) {
+        timing: OperationTiming? = nil, intervals: DiscordIntervalTiming? = nil) {
         self.interaction = interaction; self.deliveryMode = deliveryMode; self.clock = clock
-        self.sink = sink; self.admission = admission; self.timing = timing
+        self.sink = sink; self.admission = admission; self.timing = timing; self.intervals = intervals
         let receipt = receivedAt ?? clock.now
         self.receivedAt = receipt; acknowledgementDeadline = receipt + .seconds(3)
         tokenDeadline = receipt + .seconds(900)
@@ -131,6 +135,13 @@ public actor InteractionResponder: CustomStringConvertible, CustomDebugStringCon
     ///   Discord error 10062 closes the expired token; 40060 retains unknown remote acknowledgement ownership.
     ///   At the exact three-second boundary a pending callback fails locally and its token is treated as expired.
     public func respond(_ response: InteractionResponse) async throws {
+        try await observed(.initialResponse) { try await self.performResponse(response) }
+    }
+
+    /// Performs existing initial-response ownership while its enclosing interval retains the caller context.
+    /// - Parameter response: Typed callback validated before admission and sink entry.
+    /// - Throws: The original lifecycle, admission or sink failure after releasing acknowledgement ownership.
+    private func performResponse(_ response: InteractionResponse) async throws {
         let responseStarted = timing?.instant()
         DiscordLog.makeLogger("interactions.response").debug("Initial response processing started", metadata: ["dk.event": "interactions.response.started", "dk.callback_type": .stringConvertible(response.type.rawValue)])
         do {
@@ -153,11 +164,14 @@ public actor InteractionResponder: CustomStringConvertible, CustomDebugStringCon
             state = .acknowledging
             DiscordLog.makeLogger("interactions.response").trace("Initial interaction response reserved", metadata: ["dk.event": "interactions.response.reserved"])
             let reservation: UUID
+            let admissionInterval = intervals?.begin(.interactionResponse, stage: .admission)
             do {
                 reservation = try await admission.acquire(encodedBytes: bytes)
+                admissionInterval?.end()
                 DiscordLog.makeLogger("interactions.response").trace("Acknowledgement admission acquired", metadata: ["dk.event": "interactions.response.admission_acquired"])
             } catch {
                 // A failed acquisition never enters the delivery sink.
+                admissionInterval?.end(Self.intervalOutcome(for: error))
                 state = .pending; updateExpiry()
                 DiscordLog.makeLogger("interactions.response").debug("Acknowledgement admission rejected before delivery", metadata: ["dk.event": "interactions.response.admission_rejected"])
                 throw error
@@ -173,9 +187,12 @@ public actor InteractionResponder: CustomStringConvertible, CustomDebugStringCon
             do {
                 let timeout = acknowledgementDeadline - clock.now
                 DiscordLog.makeLogger("interactions.response").trace("Invoking initial response delivery sink", metadata: ["dk.event": "interactions.response.delivering"])
+                let responseContext = intervals == nil ? nil : DiscordIntervalScope.context
                 try await clock.run(until: acknowledgementDeadline) {
-                    try await InteractionFailureScope.withResponseStage(.acknowledgement) {
-                        try await self.sink.initial(response, timeout)
+                    try await Self.withCallbackContext(responseContext) {
+                        try await InteractionFailureScope.withResponseStage(.acknowledgement) {
+                            try await self.sink.initial(response, timeout)
+                        }
                     }
                 }
                 state = .acknowledged(response.type)
@@ -237,6 +254,14 @@ public actor InteractionResponder: CustomStringConvertible, CustomDebugStringCon
     ///   cancellation or REST failure. Cancellation/deadline after adapter entry remains an explicit unknown mutation
     ///   outcome. Ambiguous edits propagate without changing the confirmed initial state or completing a defer locally.
     public func editOriginal(_ request: InteractionMessageEdit) async throws -> Message {
+        try await observed(.originalEdit) { try await self.performOriginalEdit(request) }
+    }
+
+    /// Owns one original edit through continuation release and existing failure capture.
+    /// - Parameter request: Edit validated against confirmed initial response ownership.
+    /// - Returns: Confirmed adapter result after joined deadline cleanup.
+    /// - Throws: Existing lifecycle or mutation-evidence failure unchanged.
+    private func performOriginalEdit(_ request: InteractionMessageEdit) async throws -> Message {
         let editStarted = timing?.instant()
         DiscordLog.makeLogger("interactions.response").debug("Original response edit started", metadata: ["dk.event": "interactions.response.edit_started"])
         do {
@@ -331,6 +356,17 @@ public actor InteractionResponder: CustomStringConvertible, CustomDebugStringCon
     /// - Throws: Invalid/incompatible policy, handler error, defer failure or cancellation. A concurrent manual response
     ///   wins its reserved slot; the timer then performs no second initial callback.
     public func runWithAutoDefer<Value: Sendable>(policy: InteractionAutoDeferPolicy,
+        operation: @escaping @Sendable () async throws -> Value) async throws -> Value {
+        try await observed(.handler) { try await self.performAutoDefer(policy: policy, operation: operation) }
+    }
+
+    /// Keeps the handler interval open until timer, callback and cancellation cleanup have joined.
+    /// - Parameters:
+    ///   - policy: Validated receipt-relative deferral policy.
+    ///   - operation: Cancellation-cooperative handler retaining its explicit response ownership.
+    /// - Returns: Handler result after the owned timer joins.
+    /// - Throws: Original handler, policy, deferral or cancellation failure.
+    private func performAutoDefer<Value: Sendable>(policy: InteractionAutoDeferPolicy,
         operation: @escaping @Sendable () async throws -> Value) async throws -> Value {
         let response: InteractionResponse = switch policy.mode {
         case .message(let ephemeral): .deferredMessage(ephemeral: ephemeral)
@@ -442,8 +478,11 @@ public actor InteractionResponder: CustomStringConvertible, CustomDebugStringCon
         operation: @escaping @Sendable () async throws -> Value) async throws -> Value {
         do {
             DiscordLog.makeLogger("interactions.response").trace("Invoking response continuation sink", metadata: ["dk.event": "interactions.response.continuation_delivering"])
+            let responseContext = intervals == nil ? nil : DiscordIntervalScope.context
             return try await clock.run(until: tokenDeadline) {
-                try await InteractionFailureScope.withResponseStage(.continuation, operation: operation)
+                try await Self.withCallbackContext(responseContext) {
+                    try await InteractionFailureScope.withResponseStage(.continuation, operation: operation)
+                }
             }
         }
         catch {
@@ -471,6 +510,52 @@ public actor InteractionResponder: CustomStringConvertible, CustomDebugStringCon
                 throw DiscordError.unknownMutationOutcome(.deadlineAfterSubmission)
             }
             throw DiscordError.unknownMutationOutcome(.connectionLostAfterSubmission)
+        }
+    }
+
+    /// Observes an actual actor-owned stage, preserving its result and waiting for all existing cleanup.
+    /// The begin callback is included; legacy scalar callbacks and child observers remain visible costs.
+    /// - Parameters:
+    ///   - stage: Finite response owner boundary, without caller-to-actor residence claims.
+    ///   - operation: Existing lifecycle implementation whose thrown error remains unchanged.
+    /// - Returns: Original result after terminal observation.
+    /// - Throws: Original operation error after exactly one terminal event.
+    private func observed<Value: Sendable>(_ stage: DiscordIntervalStage,
+        operation: @Sendable () async throws -> Value) async throws -> Value {
+        guard let interval = intervals?.begin(.interactionResponse, stage: stage) else {
+            return try await operation()
+        }
+        do {
+            let result = try await DiscordIntervalScope.$context.withValue(interval.context, operation: operation)
+            interval.end()
+            return result
+        } catch {
+            interval.end(stage == .initialResponse && state == .indeterminate ? .uncertain : Self.intervalOutcome(for: error))
+            throw error
+        }
+    }
+
+    /// Carries explicit bounded context through response/deadline child callbacks without assuming inheritance.
+    /// - Parameters:
+    ///   - context: Stage context captured before entering a callback or child-task boundary.
+    ///   - operation: Existing callback whose cancellation and mutation semantics stay unchanged.
+    /// - Returns: Original callback result.
+    /// - Throws: Original callback failure.
+    private nonisolated static func withCallbackContext<Value: Sendable>(_ context: DiscordIntervalContext?,
+        operation: @Sendable () async throws -> Value) async throws -> Value {
+        if let context { return try await DiscordIntervalScope.$context.withValue(context, operation: operation) }
+        return try await operation()
+    }
+
+    /// Maps the existing finite response outcome, retaining explicit mutation uncertainty.
+    /// - Parameter error: Response failure; arbitrary text is never inspected or retained.
+    /// - Returns: Detailed outcome matching the unchanged scalar classification.
+    private nonisolated static func intervalOutcome(for error: any Error) -> DiscordIntervalOutcome {
+        switch timingOutcome(for: error) {
+        case .succeeded: .succeeded
+        case .failed: .failed
+        case .cancelled: .cancelled
+        case .uncertain: .uncertain
         }
     }
 

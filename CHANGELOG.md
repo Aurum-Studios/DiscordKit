@@ -9,6 +9,17 @@ https://aurum-studios.com
 
 ## Unreleased
 
+### Runtime interval timing — 2026-11-10
+
+- Add opt-in numeric lifecycle intervals to DiscordLogging with checked monotonic
+  endpoints, explicit clock domains, parent/attempt context and once-only completion.
+- Expose optional hooks on REST, Gateway dispatch and interaction response owners.
+  Separate shared exchanges from callers and subscribers; preserve existing scalar
+  timing phases, outcomes and ownership behavior.
+- Add deterministic clock, cancellation, cleanup, deadline, retry, cache and trust
+  coverage. See the [Phase 2 record](Docs/Tasks/latency-timing/PHASE-2.md) for exact
+  boundaries and the remaining attribution and performance qualification limits.
+
 ### Discord API documentation update — 2026-11-05
 
 - Add guild and channel member/role permission endpoints, including optional

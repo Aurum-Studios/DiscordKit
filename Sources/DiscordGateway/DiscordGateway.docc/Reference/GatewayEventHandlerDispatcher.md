@@ -6,8 +6,8 @@
 
 ### Creating a value
 
-- ``DiscordGateway/GatewayEventHandlerDispatcher/init(configuration:authority:serializesPerShard:timing:)``
-- ``DiscordGateway/GatewayEventHandlerDispatcher/init(configuration:authority:timing:)``
+- ``DiscordGateway/GatewayEventHandlerDispatcher/init(configuration:authority:serializesPerShard:timing:intervals:)``
+- ``DiscordGateway/GatewayEventHandlerDispatcher/init(configuration:authority:timing:intervals:)``
 
 ### Instance methods
 

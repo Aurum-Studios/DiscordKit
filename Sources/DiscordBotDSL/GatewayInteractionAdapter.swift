@@ -61,6 +61,8 @@ public actor GatewayInteractionAdapter<C: Clock> where C.Duration == Duration {
     private let failureObserver: BotFailureObserver?
     /// Explicit observer shared with dispatcher and responders; nil bypasses timing work.
     private let timing: OperationTiming?
+    /// Independent detailed observation of dispatcher and responder ownership boundaries.
+    private let intervals: DiscordIntervalTiming?
     private var subscription: GatewayEventSubscription?
     private var prepared = false
     private var started = false
@@ -85,6 +87,8 @@ public actor GatewayInteractionAdapter<C: Clock> where C.Duration == Duration {
     ///   - failurePolicy: Explicit fail-fast or isolated invocation handling.
     ///   - failureObserver: Finite synchronous redacted failure observer.
     ///   - timing: Optional prompt content-free observer; only trusted receipt input supplies receive samples.
+    ///   - intervals: Optional detailed owner intervals. Scalar receipt age cannot supply a historical begin,
+    ///     so trusted receive-to-response detailed intervals are unavailable at this composition boundary.
     /// - Throws: Existing catalog, router, queue-bound or registration validation errors.
     public init(applicationID: ApplicationID, commands: CompiledCommands, services: BotServiceAdapter<C>,
         clock: C, admission: InteractionAcknowledgementAdmission, guildID: GuildID? = nil,
@@ -92,7 +96,7 @@ public actor GatewayInteractionAdapter<C: Clock> where C.Duration == Duration {
         maximumPendingInteractions: Int = 256, maximumPendingBytes: Int = 8 * 1_024 * 1_024,
         maximumConcurrentHandlers: Int = 64, maximumDefinitionBytes: Int = 1_048_576,
         limits: JSONLimits = .default, failurePolicy: GatewayInvocationFailurePolicy = .failFast,
-        failureObserver: BotFailureObserver? = nil, timing: OperationTiming? = nil) throws {
+        failureObserver: BotFailureObserver? = nil, timing: OperationTiming? = nil, intervals: DiscordIntervalTiming? = nil) throws {
         self.applicationID = applicationID
         self.services = services
         self.clock = InteractionClock(clock)
@@ -101,13 +105,14 @@ public actor GatewayInteractionAdapter<C: Clock> where C.Duration == Duration {
         self.failurePolicy = failurePolicy
         self.failureObserver = failureObserver
         self.timing = timing
+        self.intervals = intervals
         router = try commands.makeRouter(maximumConcurrentHandlers: maximumConcurrentHandlers)
         reconciler = try CommandReconciler(applicationID: applicationID, guildID: guildID,
             definitions: commands.definitions, maximumDefinitionBytes: maximumDefinitionBytes)
         hub = GatewayEventHub(configuration: try .init(maximumSubscriptions: 1,
             maximumBufferedEvents: maximumPendingInteractions, maximumBufferedBytes: maximumPendingBytes,
             maximumEventsPerSubscription: maximumPendingInteractions, maximumBytesPerSubscription: maximumPendingBytes))
-        dispatcher = GatewayEventHandlerDispatcher(configuration: configuration, authority: authority, timing: timing)
+        dispatcher = GatewayEventHandlerDispatcher(configuration: configuration, authority: authority, timing: timing, intervals: intervals)
     }
 
     /// Validates a finite command host and stores shared authorities without invoking injected work.
@@ -139,6 +144,8 @@ public actor GatewayInteractionAdapter<C: Clock> where C.Duration == Duration {
     ///     error or interaction is passed, and the adapter retains no diagnostic history or observer tasks.
     ///   - timing: Optional synchronous content-free observer shared with dispatcher and responders.
     ///     Nil performs no timing-clock reads or timing-scope work; protocol deadline reads are unchanged.
+    ///   - intervals: Optional detailed owner intervals, independently enabled from scalar timing. The trusted
+    ///     receipt age remains scalar evidence and never becomes a fabricated historical interval start.
     /// - Throws: Existing router/catalog/reconciler or nonpositive queue-bound validation errors.
     /// No application auto-defer timer exists; typed deferred handlers retain their explicit ownership.
     public init(applicationID: ApplicationID, commands: CompiledCommands, services: BotServiceAdapter<C>,
@@ -147,7 +154,7 @@ public actor GatewayInteractionAdapter<C: Clock> where C.Duration == Duration {
         maximumPendingInteractions: Int = 256, maximumPendingBytes: Int = 8 * 1_024 * 1_024,
         maximumConcurrentHandlers: Int = 64, maximumDefinitionBytes: Int = 1_048_576,
         limits: JSONLimits = .default, serializesPerShard: Bool, failurePolicy: GatewayInvocationFailurePolicy = .failFast,
-        failureObserver: BotFailureObserver? = nil, timing: OperationTiming? = nil) throws {
+        failureObserver: BotFailureObserver? = nil, timing: OperationTiming? = nil, intervals: DiscordIntervalTiming? = nil) throws {
         self.applicationID = applicationID
         self.services = services
         self.clock = InteractionClock(clock)
@@ -156,6 +163,7 @@ public actor GatewayInteractionAdapter<C: Clock> where C.Duration == Duration {
         self.failurePolicy = failurePolicy
         self.failureObserver = failureObserver
         self.timing = timing
+        self.intervals = intervals
         router = try commands.makeRouter(maximumConcurrentHandlers: maximumConcurrentHandlers)
         reconciler = try CommandReconciler(applicationID: applicationID, guildID: guildID,
             definitions: commands.definitions, maximumDefinitionBytes: maximumDefinitionBytes)
@@ -163,7 +171,7 @@ public actor GatewayInteractionAdapter<C: Clock> where C.Duration == Duration {
             maximumBufferedEvents: maximumPendingInteractions, maximumBufferedBytes: maximumPendingBytes,
             maximumEventsPerSubscription: maximumPendingInteractions, maximumBytesPerSubscription: maximumPendingBytes))
         dispatcher = GatewayEventHandlerDispatcher(configuration: configuration, authority: authority,
-            serializesPerShard: serializesPerShard, timing: timing)
+            serializesPerShard: serializesPerShard, timing: timing, intervals: intervals)
     }
 
     /// Explicitly reconciles this catalog through the existing bot REST service and managed-name owner.
@@ -236,7 +244,7 @@ public actor GatewayInteractionAdapter<C: Clock> where C.Duration == Duration {
             guard !stopped else { throw CancellationError() }
             let dispatcher = self.dispatcher, applicationID = self.applicationID, services = self.services
             let clock = self.clock, admission = self.admission, router = self.router, limits = self.limits
-            let policy = failurePolicy, observer = failureObserver, timing = self.timing
+            let policy = failurePolicy, observer = failureObserver, timing = self.timing, intervals = self.intervals
             let task = Task {
                 try await dispatcher.run(subscription: subscription) { event in
                     do {
@@ -258,7 +266,7 @@ public actor GatewayInteractionAdapter<C: Clock> where C.Duration == Duration {
                         DiscordLog.makeLogger("bot.interactions").trace("Trusted interaction provenance and application validated", metadata: ["dk.event": "bot_dsl.interactions.validated"])
                         let responder = InteractionResponder(interaction: interaction, deliveryMode: .gateway,
                             clock: clock, sink: services.responseSink(for: interaction), admission: admission,
-                            receivedAt: receivedAt, timing: timing)
+                            receivedAt: receivedAt, timing: timing, intervals: intervals)
                         if timing != nil, let admittedAt = OperationTimingScope.gatewayAdmission {
                             await responder.installGatewayTiming(receiptAge: { clock.now - receivedAt }, admittedAt: admittedAt)
                         }

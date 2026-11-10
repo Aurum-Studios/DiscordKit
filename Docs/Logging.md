@@ -14,6 +14,14 @@ SwiftLog 1.16.1 is the minimum and resolved version for this change. `DiscordLog
 never bootstrap SwiftLog, open outputs or change process-wide log configuration.
 Existing diagnostics, typed errors, cancellation and resource ownership stay authoritative.
 
+The same independent foundation also exposes opt-in detailed runtime intervals through
+`DiscordIntervalTiming`. REST, Gateway dispatch and interaction response owners accept
+an `intervals` option independently from scalar `OperationTiming`. See the
+[runtime interval guide](../Sources/DiscordLogging/DiscordLogging.docc/Guides/RuntimeIntervals.md)
+and [Phase 2 boundaries and evidence](Tasks/latency-timing/PHASE-2.md). The application
+owns the synchronous sink, any bounded retention, and its lifetime. Diagnostic UUIDs
+and numeric interval IDs remain separate; scalar samples supply no historical endpoints.
+
 ## Logging model
 
 Logging is part of the runtime's operation contract: a trace should explain what was

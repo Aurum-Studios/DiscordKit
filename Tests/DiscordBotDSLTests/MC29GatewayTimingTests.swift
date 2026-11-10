@@ -9,6 +9,7 @@ import DiscordCommands
 import DiscordCore
 import DiscordHTTP
 import DiscordInteractions
+import DiscordLogging
 import DiscordModels
 import DiscordTestSupport
 import DiscordTransport
@@ -29,6 +30,17 @@ private final class MC29GatewayObservations: @unchecked Sendable {
     /// Copies the finite sample collection under one lock.
     /// - Returns: Observations emitted so far.
     func snapshot() -> [OperationTimingSample] { lock.withLock { samples } }
+}
+
+/// Finite detailed endpoints for proving receipt age never becomes a historical begin timestamp.
+private final class MC29GatewayIntervalObservations: @unchecked Sendable {
+    private let lock = NSLock()
+    private var events: [DiscordIntervalEvent] = []
+
+    /// Stores one content-free endpoint under the finite test workload.
+    func record(_ event: DiscordIntervalEvent) { lock.withLock { events.append(event) } }
+    /// Copies endpoint observations atomically.
+    func snapshot() -> [DiscordIntervalEvent] { lock.withLock { events } }
 }
 
 /// Inert offline composition with actual command routing, response ownership and HTTP sinks.
@@ -128,6 +140,9 @@ struct MC29GatewayTimingTests {
         let fixture = try MC29GatewayFixture(), observations = MC29GatewayObservations(), completed = TestBarrier()
         let clock = fixture.clock, origin = fixture.clock.now
         let timing = OperationTiming(sink: observations.record, now: { origin.duration(to: clock.now) })
+        let detailed = MC29GatewayIntervalObservations()
+        let intervals = DiscordIntervalTiming(clockDomain: 81, sink: detailed.record,
+            now: { origin.duration(to: clock.now) })
         let commands = try fixture.commands { context in
             try await context.responder.deferResponse()
             try clock.advance(by: .milliseconds(100))
@@ -136,7 +151,7 @@ struct MC29GatewayTimingTests {
         }
         let adapter = try GatewayInteractionAdapter(applicationID: .init(rawValue: 9), commands: commands,
             services: fixture.services, clock: fixture.clock, admission: fixture.admission,
-            serializesPerShard: false, timing: timing)
+            serializesPerShard: false, timing: timing, intervals: intervals)
         try await adapter.prepare(client: fixture.client)
         let task = Task { try await adapter.run() }
         try await adapter.receive(fixture.trustedEvent())
@@ -149,6 +164,15 @@ struct MC29GatewayTimingTests {
         #expect(samples.filter { $0.phase == .gatewayReceiveToAcknowledgement }.allSatisfy { $0.outcome == .succeeded })
         #expect(await fixture.initial.executionCount == 1)
         #expect(await fixture.continuation.executionCount == 1)
+        let began = detailed.snapshot().filter { $0.kind == .began }
+        #expect(began.count == 6)
+        #expect(began.allSatisfy { ($0.timestampNanoseconds ?? -1) >= 0 })
+        #expect(began.first { $0.stage == .initialResponse }?.timestampNanoseconds == 0)
+        // The existing 500 ms trusted age is scalar evidence; no detailed begin predates this run.
+        #expect(detailed.snapshot().first { $0.kind == .ended && $0.stage == .initialResponse }?
+            .elapsedNanoseconds == 20_000_000)
+        let handler = began.first { $0.stage == .handler }
+        #expect(began.first { $0.stage == .initialResponse }?.context.parentID == handler?.context.operationID)
         await adapter.cancel()
         await #expect(throws: CancellationError.self) { try await task.value }
         #expect(await fixture.admission.snapshot().activeCount == 0)
@@ -164,14 +188,18 @@ struct MC29GatewayTimingTests {
         let fixture = try MC29GatewayFixture(), observations = MC29GatewayObservations()
         let clock = fixture.clock, origin = fixture.clock.now
         let timing = OperationTiming(sink: observations.record, now: { origin.duration(to: clock.now) })
+        let detailed = MC29GatewayIntervalObservations()
+        let intervals = DiscordIntervalTiming(clockDomain: 82, sink: detailed.record,
+            now: { origin.duration(to: clock.now) })
         let commands = try fixture.commands { _ in Issue.record("Untrusted replay must not invoke a command") }
         let adapter = try GatewayInteractionAdapter(applicationID: .init(rawValue: 9), commands: commands,
-            services: fixture.services, clock: fixture.clock, admission: fixture.admission, timing: timing)
+            services: fixture.services, clock: fixture.clock, admission: fixture.admission, timing: timing, intervals: intervals)
         try await adapter.prepare(client: fixture.client)
         let event = try GatewayEvent(shard: .init(botID: .init(rawValue: 42), topologyGeneration: 0, index: 0, count: 1),
             name: "INTERACTION_CREATE", sequence: 1, data: JSONValue.parse(Data(MC29GatewayFixture.interactionJSON.utf8)))
         await #expect(throws: GatewayInteractionFailure.untrustedEvent) { try await adapter.receive(event) }
         #expect(observations.snapshot().isEmpty)
+        #expect(detailed.snapshot().isEmpty)
         #expect(await fixture.initial.executionCount == 0)
         #expect(await adapter.snapshot().bufferedEvents == 0)
         await adapter.cancel(); await fixture.close()
