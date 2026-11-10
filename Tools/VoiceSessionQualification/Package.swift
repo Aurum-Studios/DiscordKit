@@ -9,8 +9,9 @@ import PackageDescription
 let package = Package(
     name: "VoiceSessionQualification",
     platforms: [.macOS(.v13)],
-    dependencies: [.package(name: "DiscordKit", path: "../..")],
+    dependencies: [.package(name: "DiscordKit", path: "../.."), .package(path: "../DiscordBenchmarkSupport")],
     targets: [.executableTarget(name: "VoiceSessionQualification", dependencies: [
+        .product(name: "DiscordBenchmarkSupport", package: "DiscordBenchmarkSupport"),
         .product(name: "DiscordLogging", package: "DiscordKit"),
         .product(name: "DiscordCore", package: "DiscordKit"),
         .product(name: "DiscordModels", package: "DiscordKit"),

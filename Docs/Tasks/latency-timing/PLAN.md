@@ -7,7 +7,7 @@ https://aurum-studios.com
 
 # Latency instrumentation and timing suites
 
-Status: Stage 0 contracts and inventory implemented; stages 1–11 remain proposed.
+Status: Stages 0–1 implemented; stages 2–11 remain proposed.
 No runtime instrumentation or performance qualification is implied. The original
 plan was prepared 2026-11-10 against source revision
 `27cd73f335b2b3058dfa317677c71991292706b8`; the Stage 0 checkpoint uses
@@ -16,6 +16,7 @@ plan was prepared 2026-11-10 against source revision
 Stage 0 artifacts: [workload and file inventory](INVENTORY.md),
 [versioned metric catalog](METRICS.md), [compatibility and ownership decisions](CONTRACTS.md),
 and [validation/reference-host procedure](VALIDATION.md).
+Stage 1 implementation: [shared harness and integration record](PHASE-1.md).
 
 ## Outcome and scope
 
@@ -181,6 +182,13 @@ versions, incompatible comparisons, ordering, subprocess cleanup and timeout;
 early/middle/late workload changes all appear in the resulting distributions.
 Injected out-of-range tail stalls and aggregate loss cannot produce a passing
 finite-tail result.
+
+Stage 1 implementation: [DiscordBenchmarkSupport](../../../Tools/DiscordBenchmarkSupport/README.md)
+provides bounded statistics, strict schema/adapters and release-process supervision.
+Load, DSL and local voice tools opt into distinct whole-population sidecars;
+legacy report readers and timer boundaries remain intact. The
+[implementation and validation record](PHASE-1.md) documents partial evidence,
+explicit unavailable receipts and the informational qualification scope.
 
 ## Stage 2 — Runtime interval hooks and deterministic timing semantics
 

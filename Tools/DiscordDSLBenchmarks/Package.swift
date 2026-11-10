@@ -10,9 +10,10 @@ let settings: [SwiftSetting] = [.enableUpcomingFeature("ApproachableConcurrency"
 let package = Package(
     name: "DiscordDSLBenchmarks",
     platforms: [.macOS(.v13)],
-    dependencies: [.package(name: "DiscordKit", path: "../..")],
+    dependencies: [.package(name: "DiscordKit", path: "../.."), .package(path: "../DiscordBenchmarkSupport")],
     targets: [
         .executableTarget(name: "DiscordDSLBenchmarks", dependencies: [
+        .product(name: "DiscordBenchmarkSupport", package: "DiscordBenchmarkSupport"),
             .product(name: "DiscordLogging", package: "DiscordKit"),
             .product(name: "DiscordDSL", package: "DiscordKit"),
             .product(name: "DiscordCommandDSL", package: "DiscordKit"),

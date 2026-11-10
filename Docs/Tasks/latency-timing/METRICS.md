@@ -7,7 +7,7 @@ https://aurum-studios.com
 
 # Timing metric catalog
 
-Catalog identifier: **discordkit.timing**, revision **1**, frozen 2026-11-10 at
+Catalog identifier: **discordkit.timing**, revision **2**. Revision 1 was frozen 2026-11-10 at
 `c8d842f7ce51e9adc69ff9997e2c0f374dc2ee68`. Every metric below has semantic
 version **1**. The identity is `(catalog, metric ID, metric version)`; changing
 endpoints, population, units or aggregation creates a new metric version.
@@ -194,3 +194,28 @@ retains partial status and cannot produce a complete throughput qualification.
 
 Report provenance can contain approved build/artifact paths; they never become
 metric keys. No existing diagnostic UUID is an aggregate dimension.
+
+## Stage 1 development populations
+
+Revision 2 adds these distinct version-1 identities without changing earlier
+metric meanings. Each uses H across every observed completion partitioned by
+finite outcome. Existing native prefix summaries keep their original formats.
+These IDs retain historical diagnostic/validation inclusions; they do not implement
+the corrected runtime metrics proposed above. All use integer nanoseconds from
+one process ContinuousClock domain; sidecar serialization is outside measured work.
+
+| Metric ID | Start and stop / population |
+| --- | --- |
+| `legacy.transport.wholePopulation` | Existing exchange entry through validated body completion or joined failure; includes the existing pool snapshot before body consumption; every returned success/rejection/cancel/failure. |
+| `legacy.httpPolicy.wholePopulation` | Existing logical exchange entry through result classification and coordinator/cache diagnostic snapshots; every returned success/rejection/cancel/failure. |
+| `legacy.dsl.direct10.wholePopulation`, `legacy.dsl.direct100.wholePopulation`, `legacy.dsl.direct1000.wholePopulation` | Existing handwritten invocation entry through responder construction, routing and acknowledgement validation; all started measured invocations, partitioned by observed outcome. |
+| `legacy.dsl.dsl10.wholePopulation`, `legacy.dsl.dsl100.wholePopulation`, `legacy.dsl.dsl1000.wholePopulation` | Same legacy boundary for lowered DSL routes at each finite handler count; separate identities preserve working-set and mode differences. |
+| `legacy.voice.duplexTick.wholePopulation` | Existing tick begins through duplex sends, receives, authentication, decode and expected-PCM assertions; measured tick success or started failure/cancel; pacing, RSS diagnostics and 100-frame warmup excluded. |
+
+The integration collector has 100-microsecond absolute buckets in 0...1 second,
+explicit overflow/loss and exact observed maximum only when supported. Underflow
+is zero for valid nonnegative durations with this range. General shared profiles
+may choose other validated precision/range; mismatched configurations are
+incompatible. A partial run contains only intervals that actually began; requested
+but unstarted work has no invented zero sample. Process-driver partial status,
+missing owner counts and legacy imports cannot establish numerical qualification.

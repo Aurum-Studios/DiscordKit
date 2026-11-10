@@ -29,15 +29,24 @@ struct BenchmarkConfiguration: Codable, Equatable, Sendable {
 
     /// Decodes the explicit offline CLI without reading credentials or ambient configuration.
     /// - Parameter arguments: Option/value pairs after the executable name; an empty array selects the matrix.
-    /// - Returns: Validated configuration and optional local JSON output destination.
+    /// --mode isolates direct or DSL in a fresh process; absence retains the legacy paired matrix.
+    /// --warmup-invocations selects 0...1,000,000 unmeasured invocations per working set.
+    /// - Returns: Validated dimensions, output, optional single mode and explicit warmup count.
     /// - Throws: Invalid configuration for unknown, repeated, incomplete or malformed options.
-    static func parse(_ arguments: [String]) throws -> (configuration: Self, output: String?) {
+    static func parse(_ arguments: [String]) throws -> (configuration: Self, output: String?, mode: String?, warmupInvocations: Int) {
         var result = Self(), output: String?, seen: Set<String> = []
+        var mode: String?, warmupInvocations = 0
         guard arguments.count.isMultiple(of: 2) else { throw BenchmarkError.invalidConfiguration }
         for index in stride(from: 0, to: arguments.count, by: 2) {
             let option = arguments[index], value = arguments[index + 1]
             guard seen.insert(option).inserted else { throw BenchmarkError.invalidConfiguration }
-            if option == "--output" {
+            if option == "--mode" {
+                guard ["direct", "dsl"].contains(value) else { throw BenchmarkError.invalidConfiguration }
+                mode = value
+            } else if option == "--warmup-invocations" {
+                guard let count = Int(value), (0...1_000_000).contains(count) else { throw BenchmarkError.invalidConfiguration }
+                warmupInvocations = count
+            } else if option == "--output" {
                 guard !value.isEmpty else { throw BenchmarkError.invalidConfiguration }
                 output = value
             } else if option == "--handlers" {
@@ -58,7 +67,7 @@ struct BenchmarkConfiguration: Codable, Equatable, Sendable {
             }
         }
         try result.validate()
-        return (result, output)
+        return (result, output, mode, warmupInvocations)
     }
 }
 

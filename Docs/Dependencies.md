@@ -363,3 +363,11 @@ and do not introduce a Gateway/Client/HTTP/facade edge. The separate localhost
 qualification tool explicitly selects the existing NIO adapter; ordinary VoiceBot
 remains adapter-free. The MLS delivery decoder is bounded structural wire splitting,
 with authentication still owned by the receiving MLS/DAVE session.
+
+## Development measurement support
+
+[DiscordBenchmarkSupport](../Tools/DiscordBenchmarkSupport/README.md) adds no
+external package. Load, DSL benchmarks and local voice qualification explicitly
+select this separate Swift package for bounded statistics and common report
+validation; its Python driver uses the standard library. Runtime manifests and
+imports do not select the support library, report CLI or subprocess runner.

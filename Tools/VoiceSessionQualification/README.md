@@ -43,3 +43,13 @@ The two-member signaling is synthetic even though MLS/DAVE cryptography and UDP
 I/O are real. A successful run supplies local software-duplex evidence; it does
 not establish hardware/acoustic, live Discord, independent-client interoperability,
 cross-platform qualification, or independent cryptographic review.
+
+
+## Shared timing sidecars
+
+This tool adopts the development-only [shared harness](../DiscordBenchmarkSupport/README.md).
+Set `DK_BENCHMARK_ENVELOPE` to write a separate schema-v1 common envelope while
+retaining the native report. New whole-population histograms have distinct metric
+identities and explicit precision, censor/loss counts and qualification limits.
+Use the shared process driver for release receipts, bounded fresh-process runs and
+partial artifacts. Legacy baseline readers remain available.

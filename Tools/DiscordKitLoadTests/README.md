@@ -29,6 +29,16 @@ use finite offline scripts with no sockets or credentials. Cache and soak scenar
 exercise fixed-size cache and broadcast recovery workloads locally on macOS 15 or newer.
 The executable sends SwiftLog diagnostics to stderr and writes one JSON report to stdout.
 
+
+## Shared timing sidecars
+
+This tool adopts the development-only [shared harness](../DiscordBenchmarkSupport/README.md).
+Set `DK_BENCHMARK_ENVELOPE` to write a separate schema-v1 common envelope while
+retaining the native report. New whole-population histograms have distinct metric
+identities and explicit precision, censor/loss counts and qualification limits.
+Use the shared process driver for release receipts, bounded fresh-process runs and
+partial artifacts. Legacy baseline readers remain available.
+
 ## Version 1 workloads
 
 The `cache` and `soak` scenarios use these profiles only for their logical population

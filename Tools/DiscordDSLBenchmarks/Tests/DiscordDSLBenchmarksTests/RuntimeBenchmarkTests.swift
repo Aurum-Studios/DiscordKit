@@ -3,6 +3,7 @@
 // Copyright (c) 2026 Aurum Studios.
 // https://aurum-studios.com
 
+import DiscordBenchmarkSupport
 import DiscordCommandDSL
 import DiscordCore
 import DiscordInteractions
@@ -39,6 +40,28 @@ import Testing
         #expect(parsed.configuration.handlerCounts == [10])
         #expect(parsed.configuration.concurrency == 3)
         #expect(parsed.output == "result.json")
+    }
+
+    /// Single-mode parsing and same-plan warmup retain all measured invocations beyond legacy sample limits.
+    /// - Throws: Unexpected parser, routing, ownership, statistics or compilation failure.
+    @Test func fullPopulationExcludesWarmup() async throws {
+        let parsed = try BenchmarkConfiguration.parse(["--mode", "dsl", "--warmup-invocations", "7",
+            "--invocations", "120", "--handlers", "10", "--sample-limit", "3"])
+        #expect(parsed.mode == "dsl")
+        #expect(parsed.warmupInvocations == 7)
+        let statistics = try RunStatistics(workloads: [.dsl10])
+        let report = try await RuntimeBenchmark.run(mode: "dsl", handlerCount: 10,
+            configuration: parsed.configuration, statistics: statistics, warmupInvocations: parsed.warmupInvocations)
+        #expect(report.invocations == 120)
+        #expect(report.counters.handlers == 120)
+        #expect(report.counters.callbacks == 120)
+        #expect(report.cleanup.activeWorkers == 0)
+        #expect(report.latency.sampleCount == 3)
+        #expect(statistics.metrics().count == 1)
+        #expect(statistics.metrics().first?.distribution.observedCount == 120)
+        for arguments in [["--mode", "both"], ["--warmup-invocations", "-1"], ["--warmup-invocations", "1000001"]] {
+            #expect(throws: BenchmarkError.self) { try BenchmarkConfiguration.parse(arguments) }
+        }
     }
 
     /// Every inclusive configuration edge is valid without materializing its potentially large workload.
@@ -119,6 +142,7 @@ import Testing
     /// A failing real callback releases the router, acknowledgement reservation and every finite worker.
     /// - Throws: Unexpected plan construction or ownership errors; expected sink failure is asserted.
     @Test func failureReleasesOwnership() async throws {
+        let statistics = try RunStatistics(workloads: [.dsl10])
         var configuration = BenchmarkConfiguration()
         configuration.handlerCounts = [10]
         configuration.concurrency = 2
@@ -128,18 +152,20 @@ import Testing
             admission: original.admission, sink: .init(initial: { _, _ in throw BenchmarkError.functionalGate }),
             accountedState: original.accountedState)
         await #expect(throws: BenchmarkError.self) {
-            try await RuntimeBenchmark.runRound(plan, start: 0, count: 12, configuration: configuration, counters: counters)
+            try await RuntimeBenchmark.runRound(plan, start: 0, count: 12, configuration: configuration, counters: counters, statistics: statistics, workload: .dsl10)
         }
         #expect(await plan.router.activeHandlerCount == 0)
         let admission = await plan.admission.snapshot()
         #expect(admission.activeCount == 0)
         #expect(admission.encodedBytes == 0)
         #expect(counters.snapshot().activeWorkers == 0)
+        #expect(statistics.metrics().contains { $0.outcome == .failure && $0.distribution.observedCount > 0 })
     }
 
     /// Cancellation during a real suspended callback closes/join workers and releases all admission.
     /// - Throws: Unexpected setup/callback errors; the expected cancellation is asserted.
     @Test func cancellationReleasesOwnership() async throws {
+        let statistics = try RunStatistics(workloads: [.dsl10])
         var configuration = BenchmarkConfiguration()
         configuration.handlerCounts = [10]
         configuration.concurrency = 1
@@ -150,7 +176,7 @@ import Testing
                 await entered.signal()
                 try await Task.sleep(for: .seconds(30))
             }), accountedState: original.accountedState)
-        let task = Task { try await RuntimeBenchmark.runRound(plan, start: 0, count: 12, configuration: configuration, counters: counters) }
+        let task = Task { try await RuntimeBenchmark.runRound(plan, start: 0, count: 12, configuration: configuration, counters: counters, statistics: statistics, workload: .dsl10) }
         await entered.wait()
         task.cancel()
         await #expect(throws: CancellationError.self) { try await task.value }
@@ -159,18 +185,21 @@ import Testing
         #expect(admission.activeCount == 0)
         #expect(admission.encodedBytes == 0)
         #expect(counters.snapshot().activeWorkers == 0)
+        #expect(statistics.metrics().first?.outcome == .cancelled)
+        #expect(statistics.metrics().first?.distribution.observedCount == 1)
     }
 
     /// A caller cancelled before worker admission cannot execute handlers or reserve acknowledgements.
     /// - Throws: Unexpected setup errors; expected cooperative cancellation is asserted.
     @Test func cancellationBeforeRoundIsInert() async throws {
+        let statistics = try RunStatistics(workloads: [.dsl10])
         var configuration = BenchmarkConfiguration()
         configuration.handlerCounts = [10]
         let counters = BenchmarkCounters(), gate = CallbackSignal()
         let plan = try RuntimeBenchmark.makePlan(mode: "dsl", handlerCount: 10, configuration: configuration, counters: counters)
         let task = Task {
             await gate.wait()
-            return try await RuntimeBenchmark.runRound(plan, start: 0, count: 12, configuration: configuration, counters: counters)
+            return try await RuntimeBenchmark.runRound(plan, start: 0, count: 12, configuration: configuration, counters: counters, statistics: statistics, workload: .dsl10)
         }
         task.cancel()
         await gate.signal()
@@ -180,6 +209,7 @@ import Testing
         #expect(counters.snapshot().activeWorkers == 0)
         #expect(await plan.router.activeHandlerCount == 0)
         #expect(await plan.admission.snapshot().activeCount == 0)
+        #expect(statistics.metrics().isEmpty)
     }
 
     /// Quantiles use bounded nearest-rank observations and exclude invalid or negative samples.

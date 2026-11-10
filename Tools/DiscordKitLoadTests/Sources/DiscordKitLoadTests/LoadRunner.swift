@@ -3,6 +3,7 @@
 // Copyright (c) 2026 Aurum Studios.
 // https://aurum-studios.com
 
+import DiscordBenchmarkSupport
 import DiscordNIOTransport
 import DiscordTransport
 import Foundation
@@ -151,11 +152,13 @@ struct LoadRunner: Sendable {
     ///   - requestDeadline: Positive per-request duration up to sixty seconds, default ten; nil disables
     ///     deadline races for explicit allocation diagnostics, retaining cancellation.
     ///   - poolSlots: Optional adapter diagnostic returning current active plus idle slots.
+    ///   - statistics: Optional development-only whole-population collector; nil preserves legacy timing cost.
     /// - Returns: Measured summary with bounded prefix quantiles and explicit refusals.
     /// - Throws: Invalid profile/concurrency/URL errors before any transport work begins.
     func run<T: HTTPTransport>(profile: WorkloadProfile, transport: T, url: URL,
                                offeredConcurrency: Int, requestDeadline: Duration? = .seconds(10),
-                               poolSlots: @escaping @Sendable () async -> Int = { 0 }) async throws -> LoadMeasurement {
+                               poolSlots: @escaping @Sendable () async -> Int = { 0 },
+                               statistics: RunStatistics? = nil) async throws -> LoadMeasurement {
         try profile.validate()
         guard offeredConcurrency > 0, offeredConcurrency <= profile.activeCohort * profile.burstMultiplier,
               requestDeadline.map({ $0 > .zero && $0 <= .seconds(60) }) ?? true,
@@ -182,6 +185,7 @@ struct LoadRunner: Sendable {
                 offered += 1
             }
             while let outcome = await group.next() {
+                statistics?.record(outcome.elapsed, workload: .transport, outcome: outcome.result.benchmarkOutcome)
                 switch outcome.result {
                 case .success:
                     successes += 1
@@ -265,26 +269,42 @@ struct LoadRunner: Sendable {
                 }
             }
             guard received == profile.payloadBytes else { throw LoadFailure.unexpectedResponse }
+            let elapsed = start.duration(to: clock.now)
             return ExchangeOutcome(result: .success, bytes: received,
-                                   milliseconds: seconds(start.duration(to: clock.now)) * 1_000, poolSlots: slots)
+                                   milliseconds: seconds(elapsed) * 1_000, elapsed: elapsed, poolSlots: slots)
         } catch {
             if let body { await body.close() }
             let result: ExchangeOutcome.Result
             if error is CancellationError { result = .cancelled }
             else if let failure = error as? NIOAdapterFailure, failure == .capacityExceeded { result = .capacity }
             else { result = .failure }
+            let elapsed = start.duration(to: clock.now)
             return ExchangeOutcome(result: result, bytes: 0,
-                                   milliseconds: seconds(start.duration(to: clock.now)) * 1_000, poolSlots: 0)
+                                   milliseconds: seconds(elapsed) * 1_000, elapsed: elapsed, poolSlots: 0)
         }
     }
 }
 
 /// One request's bounded result; arbitrary peer errors and bodies are never retained.
 private struct ExchangeOutcome: Sendable {
-    enum Result: Sendable { case success, capacity, cancelled, failure }
+    enum Result: Sendable {
+        case success, capacity, cancelled, failure
+
+        /// Maps existing categorical results without guessing timeout or mutation uncertainty.
+        /// - Returns: The finite common-envelope outcome.
+        var benchmarkOutcome: BenchmarkOutcome {
+            switch self {
+            case .success: .success
+            case .capacity: .rejected
+            case .cancelled: .cancelled
+            case .failure: .failure
+            }
+        }
+    }
     let result: Result
     let bytes: Int
     let milliseconds: Double
+    let elapsed: Duration
     let poolSlots: Int
 }
 

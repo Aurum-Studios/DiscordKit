@@ -5,6 +5,7 @@
 
 import DiscordCore
 import DiscordDAVE
+import DiscordBenchmarkSupport
 import DiscordLogging
 import DiscordMLS
 import DiscordMedia
@@ -82,6 +83,8 @@ struct QualificationReport: Codable {
     /// separate 100-frame/two-second warmup precedes measurement. `--output`
     /// optionally writes the same report atomically. Errors terminate nonzero after cleanup.
     /// Process-owned SwiftLog diagnostics go to stderr, preserving stdout JSON.
+    /// When common-envelope collection is requested, operation failures retain bounded
+    /// partial histograms after awaited cleanup; a sidecar failure preserves the original error.
     /// - Throws: Invalid CLI input, local networking, cryptographic, codec or file errors.
     static func main() async throws {
         LoggingSystem.bootstrap(StreamLogHandler.standardError)
@@ -102,9 +105,32 @@ struct QualificationReport: Codable {
             }
             index += 2
         }
-        let report = try await run(seconds: seconds)
+        let statistics = try RunStatistics.requested(workloads: [.voice])
+        let report: QualificationReport
+        do {
+            report = try await run(seconds: seconds, statistics: statistics)
+        } catch {
+            let operationError = error
+            do {
+                try statistics?.writePartialSidecar(
+                    identity: ReportIdentity(scenario: "local-duplex", profile: "voice-paced-50hz",
+                        inputSizes: ["requestedFramesPerDirection": UInt64(ceil(seconds * 50)),
+                            "requestedWarmupFramesPerDirection": 100],
+                        instrumentation: "aggregate", scheduler: "paced-50hz"),
+                    adapter: LegacyReportFormat.voiceVersion2.rawValue, cancelled: operationError is CancellationError)
+            } catch {
+                try? FileHandle.standardError.write(contentsOf: Data("Partial benchmark sidecar could not be written.\n".utf8))
+            }
+            throw operationError
+        }
         let encoder = JSONEncoder(); encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
         let bytes = try encoder.encode(report)
+        try statistics?.writeLegacySidecar(bytes, format: .voiceVersion2,
+            identity: ReportIdentity(scenario: "local-duplex", profile: "voice-paced-50hz",
+                profileVersion: 1,
+                inputSizes: ["framesPerDirection": UInt64(report.framesPerDirection),
+                    "warmupFramesPerDirection": UInt64(report.warmupFramesPerDirection)],
+                instrumentation: "aggregate", scheduler: "paced-50hz"))
         if let output { try bytes.write(to: URL(fileURLWithPath: output), options: .atomic) }
         print(String(decoding: bytes, as: UTF8.self))
         guard report.successful else { throw QualificationFailure.invariant }
@@ -252,10 +278,13 @@ struct QualificationReport: Codable {
     /// Runs real paced localhost UDP duplex with bounded media/DAVE/socket ownership.
     /// - Parameter seconds: Finite measured actual-wall-clock duration, 0.02...3600,
     ///   following a separate 100-frame/two-second warmup without resetting key/codec state.
+    /// - Parameter statistics: Optional whole-population collector, excluding the existing warmup ticks.
+    ///   Started measured ticks retain success, failure or cancellation exactly once. Diagnostic
+    ///   RSS failures after a successful tick do not reclassify its completed operation.
     /// - Returns: Measured and lifetime packet counters, processing latencies, cold and
     ///   post-warmup RSS traces, buffer bounds, and evidence after sockets/keys close.
     /// - Throws: Native loopback, crypto, codec, invariant or RSS errors after cleanup.
-    private static func run(seconds requestedSeconds: Double) async throws -> QualificationReport {
+    private static func run(seconds requestedSeconds: Double, statistics: RunStatistics? = nil) async throws -> QualificationReport {
         let clock = ContinuousClock()
         let origin = clock.now
         let now: @Sendable () -> TimeInterval = { seconds(origin.duration(to: clock.now)) }
@@ -337,30 +366,41 @@ struct QualificationReport: Codable {
                 try await clock.sleep(until: deadline, tolerance: .zero)
                 if measuring, deadline.duration(to: clock.now) > .milliseconds(20) { underruns += 1 }
                 let operationStart = clock.now
-                let operationContext = TransportContext(clock: clock, deadline: clock.now.advanced(by: .seconds(2)))
-                async let firstSent = first.send(pcm, context: operationContext)
-                async let secondSent = second.send(pcm, context: operationContext)
-                let sent = try await (firstSent, secondSent)
-                guard sent.0, sent.1 else { throw QualificationFailure.invariant }
-                async let firstInput = firstUDP.receiveDatagram(context: operationContext)
-                async let secondInput = secondUDP.receiveDatagram(context: operationContext)
-                let input = try await (firstInput, secondInput)
-                guard let a = input.0, let b = input.1 else { throw QualificationFailure.invariant }
-                try await first.receive(a); try await second.receive(b)
-                let buffered = await first.snapshot().bufferedBytes + second.snapshot().bufferedBytes
-                if measuring { peakBuffered = max(peakBuffered, buffered) }
-                guard let firstPCM = try await first.playout(ssrc: 222),
-                      let secondPCM = try await second.playout(ssrc: 111),
-                      !firstPCM.concealed, !secondPCM.concealed,
-                      firstPCM.pcm.frameCount == 960, secondPCM.pcm.frameCount == 960,
-                      firstPCM.pcm.samples.allSatisfy(\.isFinite), secondPCM.pcm.samples.allSatisfy(\.isFinite) else {
-                    throw QualificationFailure.invariant
-                }
-                if measuring {
-                    decoded += firstPCM.pcm.frameCount + secondPCM.pcm.frameCount
-                    let elapsed = seconds(operationStart.duration(to: clock.now)) * 1_000
-                    timings.append(elapsed)
-                    if elapsed > 20 { overruns += 1 }
+                do {
+                    let operationContext = TransportContext(clock: clock, deadline: clock.now.advanced(by: .seconds(2)))
+                    async let firstSent = first.send(pcm, context: operationContext)
+                    async let secondSent = second.send(pcm, context: operationContext)
+                    let sent = try await (firstSent, secondSent)
+                    guard sent.0, sent.1 else { throw QualificationFailure.invariant }
+                    async let firstInput = firstUDP.receiveDatagram(context: operationContext)
+                    async let secondInput = secondUDP.receiveDatagram(context: operationContext)
+                    let input = try await (firstInput, secondInput)
+                    guard let a = input.0, let b = input.1 else { throw QualificationFailure.invariant }
+                    try await first.receive(a); try await second.receive(b)
+                    let buffered = await first.snapshot().bufferedBytes + second.snapshot().bufferedBytes
+                    if measuring { peakBuffered = max(peakBuffered, buffered) }
+                    guard let firstPCM = try await first.playout(ssrc: 222),
+                          let secondPCM = try await second.playout(ssrc: 111),
+                          !firstPCM.concealed, !secondPCM.concealed,
+                          firstPCM.pcm.frameCount == 960, secondPCM.pcm.frameCount == 960,
+                          firstPCM.pcm.samples.allSatisfy(\.isFinite), secondPCM.pcm.samples.allSatisfy(\.isFinite) else {
+                        throw QualificationFailure.invariant
+                    }
+                    if measuring {
+                        decoded += firstPCM.pcm.frameCount + secondPCM.pcm.frameCount
+                        let duration = operationStart.duration(to: clock.now)
+                        let elapsed = seconds(duration) * 1_000
+                        timings.append(elapsed)
+                        statistics?.record(duration, workload: .voice, outcome: .success)
+                        if elapsed > 20 { overruns += 1 }
+                    }
+                } catch {
+                    if measuring, let statistics {
+                        let duration = operationStart.duration(to: clock.now)
+                        statistics.record(duration, workload: .voice,
+                            outcome: error is CancellationError ? .cancelled : .failure)
+                    }
+                    throw error
                 }
                 if measuring, measuredIndex > 0, measuredIndex.isMultiple(of: 50) {
                     let resident = try residentBytes()

@@ -5,7 +5,7 @@ Copyright (c) 2026 Aurum Studios.
 https://aurum-studios.com
 -->
 
-# Stage 0 validation and reference-host procedure
+# Latency timing validation and reference-host procedure
 
 Prepared 2026-11-10 against `c8d842f7ce51e9adc69ff9997e2c0f374dc2ee68`.
 This records the contract checkpoint for [PLAN.md](PLAN.md),
@@ -72,10 +72,11 @@ cannot be accepted as a comparison key.
    requires investigation; budgets/floors and promotion remain reviewed Stage 10
    work. Preserve failed baselines and never replace one automatically.
 
-No new timing capture command is advertised here: the shared harness and report
-adapters do not exist until Stage 1. The existing executable recipes in the
-inventory remain runnable under their documented legacy semantics. A future guide
-must supply actual new CLI flags only after implementing and testing them.
+The Stage 0 checkpoint advertised no new capture command. Stage 1 now supplies
+the [shared harness commands](../../../Tools/DiscordBenchmarkSupport/README.md)
+and [implementation record](PHASE-1.md). Existing executable recipes remain
+runnable under their documented legacy semantics. New whole-population sidecars
+have distinct identities and do not relabel historical baselines.
 
 ## Stage 0 checks
 
@@ -106,3 +107,71 @@ No runtime behavior, manifest, dependency pin, historical measurement artifact,
 baseline, budget, CI workflow or tracker state is changed. The Stage 0 exit gate
 does not establish numerical performance, native adapter qualification, device
 behavior, publication or deployment.
+
+## Phase 1 validation
+
+Executed 2026-11-10 on the local macOS ARM64 candidate described above with Apple
+Swift 6.4. The [implementation record](PHASE-1.md) and
+[shared harness guide](../../../Tools/DiscordBenchmarkSupport/README.md) describe
+the adopted boundaries and reproduction commands. Stage 0 evidence above remains
+historical; this checkpoint adds development code and three local package edges.
+
+Each check below completed successfully:
+
+| Check | Result |
+| --- | --- |
+| Root `swift build -j 4` and `swift test -j 4` | Build passed; 2,530 tests passed across 34 executable summaries |
+| `swift test --package-path Tools/DiscordBenchmarkSupport -j 4` | 35 tests in five suites passed: histogram merging, precision, censoring, loss/overflow, sparse tails, reservoir selection, checked conversions, strict reports, compatibility, partial outcomes and concurrent collection |
+| `python3 -m unittest discover -s Tools/DiscordBenchmarkSupport/scripts -p 'test_*.py'` | 29 tests passed: real process ownership, timeout/escalation, cancellation, output/RSS limits, incomplete reports, strict integer schema/receipt versions, release identity, fixtures, fresh processes and counterbalanced ordering |
+| `swift test --package-path Tools/DiscordKitLoadTests -j 4` | 28 tests in four suites passed, including all-completion histograms beyond the legacy successful prefix |
+| `swift test --package-path Tools/DiscordDSLBenchmarks -j 4` | 10 tests passed, including same-plan warmup exclusion, exact measured counters, failure/cancellation observations and joined cleanup |
+| Offline `DiscordKitTools inventory validate --repository .` | Passed: 1,081 implemented, 15,475 pending semantic, 951 reviewed and 255 mapped records |
+| `swift test --package-path Tools/DiscordKitTools -j 4` and its Python validator suite | 106 Swift tests in eight suites and 230 Python tests passed |
+| Existing load and DSL Python readers | 12 load and 19 DSL tests passed; legacy reader scripts unchanged |
+| Optimized participant preparation | All three participants built with `-c release --force-resolved-versions -j 4`; release receipts include executable, compiler/target/SDK, dependency pins and exact source identity |
+| Common report CLI | Every release-capture sidecar passed `DiscordBenchmarkReports validate`; legacy adapters remain explicitly unqualified |
+| Dependency, documentation and whitespace review | Runtime manifest/import graph and dependency pins unchanged; local Markdown targets and phase anchors resolve; `git diff --check` passed |
+
+The subprocess tests exposed a Darwin race while an exited parent's orphaned group
+was transitioning to zombies: `killpg(group, 0)` can return `EPERM`. Cleanup now
+uses bounded process-state evidence to accept only an absent or entirely zombie
+group; live or unknown groups retain failure status. The real early-exit/orphan
+case then passed 500 consecutive repetitions. Injected permission states also
+cover live and unavailable groups, and cleanup preserves an earlier timeout or
+cancellation cause. Final review additionally closed boolean/float version
+acceptance in Python and comparison of mismatched resource gauge scopes, units,
+methods or availability.
+
+### Local release captures
+
+Captures ran sequentially, without competing task builds/tests. Direct optimized
+smokes covered transport, HTTP policy, handwritten routing, DSL routing and local
+duplex voice. A final driver run prepared fresh release receipts and performed
+five paired direct/DSL observations plus one smoke each for transport, HTTP and
+voice: 13 distinct subprocess identities, each reaped with no live process-group
+members after cleanup. The standard order alternated A/B then B/A across all five
+pairs. Source, executable and fixture receipts were checked before and after each
+observation; no output bytes were dropped.
+
+| Participant / native settings | Checked result |
+| --- | --- |
+| Transport `--scenario transport --profile accounts-100` | 10,000 whole-population successes; legacy prefix remains capped at 4,096; zero active/idle pool owners after shutdown |
+| HTTP `--scenario http --profile accounts-100` | 2,000 whole-population successes; zero failure/refusal counts and zero queued/active/flight/cache owners after shutdown |
+| Direct/DSL `--mode direct` or `dsl --handlers 10 --invocations 10000 --concurrency 1` | Every fresh process retained 10,000 observations and exact handler/callback totals with joined zero-owner cleanup; direct smokes also exercised 100 unmeasured warmup invocations |
+| Voice `--seconds 0.1` | Five measured duplex ticks after 100 warmup frames per direction; two closed media, DAVE and datagram owners; native success and empty final media buffers |
+
+The driver used `standard` for routing pairs, `smoke` otherwise, a one-second
+requested measurement budget and declared native cohorts of 1, 8, 8 and 2 for
+routing, transport, HTTP and voice. Voice declared two seconds of participant
+warmup; other driver captures declared cold-process execution. Native commands
+retain their actual operation counts/duration. Generic process supervision does
+not prove that a participant obeyed a requested interval, cohort or retained-state
+cap. The guide records this distinction and finite timeout/RSS/output limits.
+
+Local logs, receipts and JSON remain in ignored build directories. Receipts bind
+the pre-commit revision plus the exact dirty/untracked source fingerprint, rather
+than claiming a committed executable identity. The final review checked hashes
+of executable/test/build inputs before commit and reviewed documentation changes
+separately. This evidence establishes local integrity and cleanup. It does not
+establish a stable noise floor, numerical baseline, full stress/soak recovery,
+observer overhead, hosted CI, Linux, physical audio, live Discord or deployment.

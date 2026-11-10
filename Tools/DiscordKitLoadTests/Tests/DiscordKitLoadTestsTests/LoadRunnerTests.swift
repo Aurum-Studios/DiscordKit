@@ -4,6 +4,7 @@
 // https://aurum-studios.com
 
 @testable import DiscordKitLoadTests
+import DiscordBenchmarkSupport
 import DiscordNIOTransport
 import DiscordTransport
 import Foundation
@@ -94,8 +95,9 @@ struct LoadRunnerTests {
         let profile = try fixture(overrides: ["logicalAccounts": 1_000_000, "requests": 20,
                                              "maximumLatencySamples": 3])
         let transport = ScriptedLoadTransport(mode: .success, payloadBytes: profile.payloadBytes)
+        let statistics = try RunStatistics(workloads: [.transport])
         let value = try await LoadRunner().run(profile: profile, transport: transport,
-                                               url: URL(string: "http://127.0.0.1:8080/payload")!, offeredConcurrency: 2)
+                                               url: URL(string: "http://127.0.0.1:8080/payload")!, offeredConcurrency: 2, statistics: statistics)
         #expect(value.logicalAccounts == 1_000_000)
         #expect(value.offeredRequests == 20)
         #expect(value.admittedSuccesses == 20)
@@ -104,6 +106,8 @@ struct LoadRunnerTests {
         #expect(value.receivedBytes == 20 * profile.payloadBytes)
         #expect(value.maximumHarnessTasks == 2)
         #expect(value.latency.sampleCount == 3)
+        #expect(statistics.metrics().count == 1)
+        #expect(statistics.metrics().first?.distribution.observedCount == 20)
         #expect(await transport.liveBodyCount() == 0)
         #expect(await transport.maximumLiveBodies() <= 2)
     }
@@ -113,10 +117,13 @@ struct LoadRunnerTests {
         let profile = try fixture(overrides: ["requests": 4])
         for mode in ScriptedLoadTransport.Mode.allCases where mode != .success {
             let transport = ScriptedLoadTransport(mode: mode, payloadBytes: profile.payloadBytes)
+            let statistics = try RunStatistics(workloads: [.transport])
             let value = try await LoadRunner().run(profile: profile, transport: transport,
-                                                   url: URL(string: "http://127.0.0.1:8080/")!, offeredConcurrency: 2)
+                                                   url: URL(string: "http://127.0.0.1:8080/")!, offeredConcurrency: 2, statistics: statistics)
             #expect(value.offeredRequests == 4)
             #expect(value.admittedSuccesses == 0)
+            #expect(statistics.metrics().first?.distribution.observedCount == 4)
+            #expect(statistics.metrics().first?.outcome != .success)
             if mode == .capacity { #expect(value.capacityRefusals == 4) }
             else if mode == .cancelled { #expect(value.cancelledRequests == 4) }
             else { #expect(value.failedRequests == 4) }

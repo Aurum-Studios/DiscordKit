@@ -4,6 +4,7 @@
 // https://aurum-studios.com
 
 import DiscordHTTP
+import DiscordBenchmarkSupport
 import Foundation
 import Testing
 @testable import DiscordKitLoadTests
@@ -45,9 +46,11 @@ struct HTTPPolicyRunnerTests {
     /// Artificial wire latency is disabled; assertions cover counts and bounds, not timing or throughput.
     @Test func mixedWorkloadAndCleanup() async throws {
         let profile = try fixture(overrides: ["requests": 100, "maximumLatencySamples": 3])
-        let report = try await HTTPPolicyRunner().run(profile: profile, simulatedLatency: .zero)
+        let statistics = try RunStatistics(workloads: [.httpPolicy])
+        let report = try await HTTPPolicyRunner().run(profile: profile, simulatedLatency: .zero, statistics: statistics)
         #expect(report.scenario == "offlineHTTPPolicy")
         #expect(report.offeredRequests == 100)
+        #expect(statistics.metrics().reduce(UInt64(0)) { $0 + $1.distribution.observedCount } == 100)
         #expect(report.successfulRequests == 100)
         #expect(report.failedRequests == 0)
         #expect(report.refusedRequests == 0)

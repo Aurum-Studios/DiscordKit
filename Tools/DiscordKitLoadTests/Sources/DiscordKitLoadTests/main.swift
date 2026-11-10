@@ -3,6 +3,7 @@
 // Copyright (c) 2026 Aurum Studios.
 // https://aurum-studios.com
 
+import DiscordBenchmarkSupport
 import DiscordLogging
 import DiscordNIOTransport
 import Foundation
@@ -166,6 +167,7 @@ enum LoadCommand {
     ///   the HTTP scenario exercises its explicit finite rejected-request retry contract.
     static func run(arguments: [String]) async throws {
         let options = try LoadOptions(arguments: arguments)
+        let statistics = try RunStatistics.requested(workloads: [.transport, .httpPolicy])
         if options.scenario == "cache" || options.scenario == "soak" {
             guard !options.portable, !options.withoutDeadline, options.settleSeconds == 0 else { throw LoadFailure.invalidArguments }
             guard #available(macOS 15, *) else { throw LoadFailure.unsupportedHost }
@@ -175,6 +177,9 @@ enum LoadCommand {
             let encoder = JSONEncoder()
             encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
             var data = try encoder.encode(report); data.append(10)
+            try statistics?.writeLegacySidecar(data, format: .loadUnversioned,
+                identity: ReportIdentity(scenario: options.scenario, profile: options.profileName,
+                    instrumentation: "aggregate", scheduler: "legacy-bounded-cohort"))
             try FileHandle.standardOutput.write(contentsOf: data)
             return
         }
@@ -184,6 +189,9 @@ enum LoadCommand {
             let encoder = JSONEncoder()
             encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
             var data = try encoder.encode(report); data.append(10)
+            try statistics?.writeLegacySidecar(data, format: .loadUnversioned,
+                identity: ReportIdentity(scenario: options.scenario, profile: options.profileName,
+                    instrumentation: "aggregate", scheduler: "legacy-bounded-cohort"))
             try FileHandle.standardOutput.write(contentsOf: data)
             return
         }
@@ -191,10 +199,13 @@ enum LoadCommand {
             guard !options.portable, !options.withoutDeadline, options.settleSeconds == 0 else { throw LoadFailure.invalidArguments }
             let profile = try HTTPWorkloadProfile.load(name: options.profileName,
                 directory: LoadPaths.packageDirectory.appendingPathComponent("HTTPProfiles"))
-            let report = try await HTTPPolicyRunner().run(profile: profile, burst: options.burst)
+            let report = try await HTTPPolicyRunner().run(profile: profile, burst: options.burst, statistics: statistics)
             let encoder = JSONEncoder()
             encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
             var data = try encoder.encode(report); data.append(10)
+            try statistics?.writeLegacySidecar(data, format: .loadUnversioned,
+                identity: ReportIdentity(scenario: options.scenario, profile: options.profileName,
+                    instrumentation: "aggregate", scheduler: "legacy-bounded-cohort"))
             try FileHandle.standardOutput.write(contentsOf: data)
             return
         }
@@ -205,9 +216,9 @@ enum LoadCommand {
                 profile: profile, transport: PortableLoadTransport(payloadBytes: profile.payloadBytes),
                 url: URL(string: "http://127.0.0.1/")!,
                 offeredConcurrency: profile.activeCohort * (options.burst ? profile.burstMultiplier : 1),
-                requestDeadline: options.withoutDeadline ? nil : .seconds(10))
+                requestDeadline: options.withoutDeadline ? nil : .seconds(10), statistics: statistics)
             try await emit(measurement: measurement, active: 0, idle: 0, peerConnections: nil,
-                           settleSeconds: options.settleSeconds,
+                           settleSeconds: options.settleSeconds, statistics: statistics,
                      extraNotes: ["Portable allocation diagnostic: zero sockets; no capacity qualification."])
             return
         }
@@ -226,12 +237,12 @@ enum LoadCommand {
                 poolSlots: {
                     let counts = await transport.connectionCounts()
                     return counts.active + counts.idle
-                })
+                }, statistics: statistics)
             await transport.close()
             let counts = await transport.connectionCounts()
             guard let peerConnections = peer.stop() else { throw LoadFailure.peerStartup }
             try await emit(measurement: measurement, active: counts.active, idle: counts.idle,
-                           peerConnections: peerConnections, settleSeconds: options.settleSeconds,
+                           peerConnections: peerConnections, settleSeconds: options.settleSeconds, statistics: statistics,
                      extraNotes: options.withoutDeadline ? ["Explicit diagnostic: per-request deadlines disabled."] : [])
         } catch {
             await transport.close()
@@ -246,10 +257,11 @@ enum LoadCommand {
     ///   - peerConnections: Actual local-peer TCP counts, nil for portable diagnostics.
     ///   - settleSeconds: Optional wall-time diagnostic wait, zero through thirty seconds.
     ///     Only performance probes wait; deterministic unit tests never rely on this delay.
+    ///   - statistics: Optional whole-run histogram sidecar, written after adapter and peer shutdown.
     ///   - extraNotes: Explicit diagnostic qualifiers, empty for ordinary transport runs.
     /// - Throws: Cancellation during optional settling, JSON encoding or stdout write errors.
     private static func emit(measurement: LoadMeasurement, active: Int, idle: Int,
-                             peerConnections: PeerConnectionMetrics?, settleSeconds: Int,
+                             peerConnections: PeerConnectionMetrics?, settleSeconds: Int, statistics: RunStatistics?,
                              extraNotes: [String]) async throws {
         let immediate = ProcessSample.capture()
         var settled: ProcessSample?
@@ -272,6 +284,12 @@ enum LoadCommand {
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
         var data = try encoder.encode(report)
         data.append(10)
+        try statistics?.writeLegacySidecar(data, format: .loadUnversioned,
+            identity: ReportIdentity(scenario: "transport", profile: measurement.profile,
+                profileVersion: UInt32(measurement.profileVersion),
+                inputSizes: ["requests": UInt64(measurement.offeredRequests),
+                    "concurrency": UInt64(measurement.offeredConcurrency)],
+                instrumentation: "aggregate", scheduler: "legacy-bounded-cohort"))
         try FileHandle.standardOutput.write(contentsOf: data)
     }
 }

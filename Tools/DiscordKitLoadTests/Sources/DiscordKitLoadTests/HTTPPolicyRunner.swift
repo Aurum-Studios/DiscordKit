@@ -6,6 +6,7 @@
 import DiscordCore
 import DiscordHTTP
 import DiscordTransport
+import DiscordBenchmarkSupport
 import Foundation
 
 /// Numeric budgets for an offline HTTP policy workload; population never implies simultaneous sockets.
@@ -107,12 +108,14 @@ struct HTTPPolicyRunner: Sendable {
     ///   - profile: Validated logical population and numeric runtime-owner budgets.
     ///   - burst: Offers ten times the ordinary cohort while retaining the same queue/in-flight/cache caps.
     ///   - simulatedLatency: Artificial exchange latency, default one millisecond; zero removes timers in tests.
+    ///   - statistics: Optional development-only collector recording every legacy diagnostic-inclusive completion.
     /// - Returns: Measured counts, sampled owner caps, bounded latency quantiles and process CPU/RSS.
     /// - Throws: Invalid profile/configuration or setup errors. Individual policy failures are counted.
     ///
     /// No credentials or sockets are created. Every credential partition is a fresh opaque identity;
     /// population/worker dimensions do not claim distributed coordination or Discord quota capacity.
-    func run(profile: HTTPWorkloadProfile, burst: Bool = false, simulatedLatency: Duration = .milliseconds(1)) async throws -> HTTPPolicyReport {
+    func run(profile: HTTPWorkloadProfile, burst: Bool = false, simulatedLatency: Duration = .milliseconds(1),
+             statistics: RunStatistics? = nil) async throws -> HTTPPolicyReport {
         try profile.validate()
         guard simulatedLatency >= .zero, simulatedLatency <= .seconds(1) else { throw LoadFailure.invalidArguments }
         let clock = ContinuousClock()
@@ -151,6 +154,14 @@ struct HTTPPolicyRunner: Sendable {
                 offered += 1
             }
             while let result = await group.next() {
+                let outcome: BenchmarkOutcome
+                switch result.kind {
+                case .success: outcome = .success
+                case .refused: outcome = .rejected
+                case .failure: outcome = .failure
+                case .cancelled: outcome = .cancelled
+                }
+                statistics?.record(result.elapsed, workload: .httpPolicy, outcome: outcome)
                 switch result.kind {
                 case .success:
                     successes += 1; identitySuccesses[result.identity] += 1

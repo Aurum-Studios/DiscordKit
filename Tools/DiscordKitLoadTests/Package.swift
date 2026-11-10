@@ -14,11 +14,12 @@ let concurrencySettings: [SwiftSetting] = [
 let package = Package(
     name: "DiscordKitLoadTests",
     platforms: [.macOS(.v13)],
-    dependencies: [.package(name: "DiscordKit", path: "../..")],
+    dependencies: [.package(name: "DiscordKit", path: "../.."), .package(path: "../DiscordBenchmarkSupport")],
     targets: [
         .executableTarget(
             name: "DiscordKitLoadTests",
             dependencies: [
+                .product(name: "DiscordBenchmarkSupport", package: "DiscordBenchmarkSupport"),
                 .product(name: "DiscordLogging", package: "DiscordKit"),
                 .product(name: "DiscordTransport", package: "DiscordKit"),
                 .product(name: "DiscordNIOTransport", package: "DiscordKit"),

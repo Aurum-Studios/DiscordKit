@@ -115,3 +115,19 @@ existing [cache/broadcast 30-minute soak](../DiscordKitLoadTests/README.md) and 
 new handler soak remain independent evidence. Neither establishes production/fleet
 capacity, live Discord, HTTP/Gateway host throughput, another platform, hardware,
 independent crypto review or full release certification.
+
+
+## Shared timing sidecars
+
+This tool adopts the development-only [shared harness](../DiscordBenchmarkSupport/README.md).
+Set `DK_BENCHMARK_ENVELOPE` to write a separate schema-v1 common envelope while
+retaining the native report. New whole-population histograms have distinct metric
+identities and explicit precision, censor/loss counts and qualification limits.
+Use the shared process driver for release receipts, bounded fresh-process runs and
+partial artifacts. Legacy baseline readers remain available.
+
+`--mode direct` or `--mode dsl` selects one path per fresh process;
+`--warmup-invocations` selects up to 1,000,000 unmeasured same-plan calls before
+measurement, bounded by 60 seconds. Defaults retain the paired matrix and zero
+explicit warmup. Native counters exclude these warmup calls; process-wide memory
+peaks still include them. The sidecar records the declared warmup population.

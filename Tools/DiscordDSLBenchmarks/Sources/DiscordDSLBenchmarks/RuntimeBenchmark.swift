@@ -3,6 +3,7 @@
 // Copyright (c) 2026 Aurum Studios.
 // https://aurum-studios.com
 
+import DiscordBenchmarkSupport
 import DiscordCommandDSL
 import DiscordCommands
 import DiscordCore
@@ -26,6 +27,14 @@ final class BenchmarkCounters: @unchecked Sendable {
     func enterWorker() { lock.withLock { values.activeWorkers += 1; values.peakWorkers = max(values.peakWorkers, values.activeWorkers) } }
     /// Releases worker ownership on success, cancellation and failure.
     func leaveWorker() { lock.withLock { values.activeWorkers -= 1 } }
+    /// Clears completed warmup activity after every worker has joined, preserving schema counters.
+    /// No handler or callback may run concurrently with this owner-only boundary.
+    func resetAfterWarmup() {
+        lock.withLock {
+            precondition(values.activeWorkers == 0)
+            values.handlers = 0; values.callbacks = 0; values.peakWorkers = 0
+        }
+    }
     /// Copies bounded aggregate counters without exposing mutable instrumentation storage.
     /// - Returns: The exact synchronized current counters.
     func snapshot() -> CounterSnapshot { lock.withLock { values } }
@@ -256,10 +265,13 @@ enum RuntimeBenchmark {
     ///   - count: Positive finite number of invocations assigned across at most configured concurrency workers.
     ///   - configuration: Explicit common payload, concurrency and sample bounds.
     ///   - counters: Synchronized worker and handler instrumentation; exit cleanup is unconditional.
-    /// - Returns: At most sampleLimit prefix measurements across all workers and all rounds.
+    ///   - statistics: Optional whole-run collector; every timed invocation is recorded before aggregation.
+    ///   - workload: Fixed mode/population identity, required when statistics is enabled.
+    /// - Returns: At most sampleLimit legacy prefix measurements across all workers and all rounds.
     /// - Throws: The first invocation/cancellation failure after group cancellation and child joining.
     static func runRound(_ plan: RuntimePlan, start: Int, count: Int, configuration: BenchmarkConfiguration,
-        counters: BenchmarkCounters) async throws -> [Double] {
+        counters: BenchmarkCounters, statistics: RunStatistics? = nil,
+        workload: BenchmarkWorkload? = nil) async throws -> [Double] {
         try await withThrowingTaskGroup(of: [Double].self) { group in
             for worker in 0..<min(configuration.concurrency, count) {
                 group.addTask {
@@ -270,10 +282,20 @@ enum RuntimeBenchmark {
                     for offset in stride(from: worker, to: count, by: configuration.concurrency) {
                         try Task.checkCancellation()
                         let index = start + offset
-                        if index < configuration.sampleLimit {
+                        if index < configuration.sampleLimit || statistics != nil {
                             let begin = clock.now
-                            try await invoke(plan, index: index)
-                            samples.append(seconds(begin.duration(to: clock.now)) * 1_000)
+                            do {
+                                try await invoke(plan, index: index)
+                                let elapsed = begin.duration(to: clock.now)
+                                if index < configuration.sampleLimit { samples.append(seconds(elapsed) * 1_000) }
+                                if let workload { statistics?.record(elapsed, workload: workload, outcome: .success) }
+                            } catch {
+                                if let statistics, let workload {
+                                    statistics.record(begin.duration(to: clock.now), workload: workload,
+                                        outcome: error is CancellationError ? .cancelled : .failure)
+                                }
+                                throw error
+                            }
                         } else { try await invoke(plan, index: index) }
                     }
                     return samples
@@ -290,16 +312,34 @@ enum RuntimeBenchmark {
     ///   - mode: Exact direct or DSL path; both use the same handler, schema decoder and response owner.
     ///   - handlerCount: One declared fixed working set from the validated matrix.
     ///   - configuration: Invocation floor, optional duration floor and finite payload/cohort/sample dimensions.
+    ///   - statistics: Optional collection of all measured outcomes under new metric identities.
+    ///   - warmupInvocations: Unmeasured same-plan calls, 0...1,000,000 with a 60-second cap.
     /// - Returns: Reproducible measurements and successful hard gates; all owned counters are zero on return.
     /// - Throws: Invalid configuration, underlying route failure, cleanup/schema gate failure or invocation ceiling.
-    static func run(mode: String, handlerCount: Int, configuration: BenchmarkConfiguration) async throws -> WorkloadMeasurement {
+    static func run(mode: String, handlerCount: Int, configuration: BenchmarkConfiguration,
+        statistics: RunStatistics? = nil, warmupInvocations: Int = 0) async throws -> WorkloadMeasurement {
         try configuration.validate()
+        guard (0...1_000_000).contains(warmupInvocations),
+              let workload = BenchmarkWorkload.authoring(mode: mode, handlers: handlerCount) else {
+            throw BenchmarkError.invalidConfiguration
+        }
         let counters = BenchmarkCounters(), clock = ContinuousClock()
         let initialSchemas = BenchmarkArguments.captures.snapshot().schemas
         let before = ProcessSample.capture()
         var plan: RuntimePlan? = try makePlan(mode: mode, handlerCount: handlerCount, configuration: configuration, counters: counters)
         let compileMilliseconds = plan!.compilationMilliseconds
         let schemaBuilds = BenchmarkArguments.captures.snapshot().schemas - initialSchemas
+        let warmupStart = clock.now
+        var warmed = 0
+        while warmed < warmupInvocations {
+            guard warmupStart.duration(to: clock.now) < .seconds(60) else { throw BenchmarkError.invocationCeiling }
+            let count = min(8_192, warmupInvocations - warmed)
+            _ = try await runRound(plan!, start: configuration.sampleLimit, count: count,
+                configuration: configuration, counters: counters)
+            warmed += count
+            guard warmupStart.duration(to: clock.now) <= .seconds(60) else { throw BenchmarkError.invocationCeiling }
+        }
+        if warmupInvocations > 0 { counters.resetAfterWarmup() }
         let afterPlan = ProcessSample.capture(), start = clock.now
         var total = 0, latencies: [Double] = [], observations: [MemoryObservation] = []
         let observationInterval = Double(max(1, configuration.minimumDurationSeconds / 120))
@@ -308,7 +348,8 @@ enum RuntimeBenchmark {
             guard total < BenchmarkConfiguration.maximumInvocations else { throw BenchmarkError.invocationCeiling }
             let remaining = total < configuration.invocations ? configuration.invocations - total : 8_192
             let count = min(8_192, remaining, BenchmarkConfiguration.maximumInvocations - total)
-            latencies.append(contentsOf: try await runRound(plan!, start: total, count: count, configuration: configuration, counters: counters))
+            latencies.append(contentsOf: try await runRound(plan!, start: total, count: count, configuration: configuration, counters: counters,
+                statistics: statistics, workload: workload))
             total += count
             let elapsed = seconds(start.duration(to: clock.now))
             if elapsed >= nextObservation, observations.count < 121 {
