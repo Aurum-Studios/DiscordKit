@@ -67,7 +67,10 @@ def emit(repository, jobs=5, run=None):
         # SwiftPM writes current modules without removing graphs for deleted ones.
         # Clear only this validated generated directory; normalized graphs stay intact.
         shutil.rmtree(source)
-    run(["swift", "package", *options, "dump-symbol-graph", "--minimum-access-level", "public"],
+    # DocC needs extension blocks to resolve foreign namespaces such as Module/Swift.
+    # SwiftPM can omit these nodes by default, depending on the toolchain.
+    run(["swift", "package", *options, "dump-symbol-graph", "--emit-extension-block-symbols",
+         "--minimum-access-level", "public"],
         cwd=repository, check=True, timeout=3600)
     validate_directory(source, build)
     graphs = sorted(source.glob("*.symbols.json"))

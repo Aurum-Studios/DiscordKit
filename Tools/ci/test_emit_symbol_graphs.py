@@ -74,7 +74,31 @@ class EmitSymbolGraphsTests(unittest.TestCase):
             self.assertTrue(options["check"])
         self.assertEqual(self.calls[0][1]["timeout"], 120)
         self.assertEqual(self.calls[1][1]["timeout"], 3600)
-        self.assertEqual(self.calls[1][0][-3:], ["dump-symbol-graph", "--minimum-access-level", "public"])
+        self.assertEqual(self.calls[1][0][-4:],
+                         ["dump-symbol-graph", "--emit-extension-block-symbols", "--minimum-access-level", "public"])
+
+    def test_foreign_extension_namespaces_survive_a_compiler_default_that_omits_blocks(self):
+        """DocC's external namespace nodes must be requested explicitly and retained."""
+        self.write_graph()
+        extension = {"identifier": {"precise": "s:e:Swift:Sequence:Library"},
+                     "kind": {"identifier": "swift.extension"}, "pathComponents": ["Sequence"],
+                     "swiftExtension": {"extendedModule": "Swift", "typeKind": "swift.protocol"}}
+        method = {"identifier": {"precise": "s:Library:Sequence:read"},
+                  "kind": {"identifier": "swift.method"}, "pathComponents": ["Sequence", "read()"]}
+
+        def compiler(arguments, **options):
+            """Model SwiftPM omitting extension blocks unless the caller opts in."""
+            result = self.compiler(arguments, **options)
+            if "dump-symbol-graph" in arguments:
+                symbols = [extension, method] if "--emit-extension-block-symbols" in arguments else [method]
+                self.write_graph("Library@Swift.symbols.json", {
+                    "module": {"name": "Library"}, "symbols": symbols, "relationships": []})
+            return result
+
+        names = graphs.emit(self.repository, run=compiler)
+        self.assertEqual(names, ["Library.symbols.json", "Library@Swift.symbols.json"])
+        document = json.loads((self.destination / "Library@Swift.symbols.json").read_text())
+        self.assertEqual(document["symbols"], [extension, method])
 
     def test_compile_failure_or_timeout_preserves_previous_graphs(self):
         """A failed native compiler cannot replace previous evidence with partial output."""

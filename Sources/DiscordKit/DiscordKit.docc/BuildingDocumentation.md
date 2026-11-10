@@ -8,7 +8,7 @@ Generate independent product archives and a combined library archive with strict
 
 ### Build locally
 
-Use the Swift 6.4 toolchain and DocC supplied by Xcode or your Swift installation:
+Use the Swift 6.4.1 toolchain pinned by CI and its accompanying DocC:
 
 ```sh
 python3 Tools/ci/emit_symbol_graphs.py --jobs 5
@@ -17,7 +17,7 @@ python3 Tools/ci/documentation_examples.py
 python3 Tools/ci/build_docc.py
 ```
 
-The emission helper uses the native SwiftPM build engine and committed dependency pins, disables experimental prebuilt dependencies, and normalizes graphs into `.build/out/symbolgraph`. The converter handles each root public library module, preserving its primary and owned extension graphs. It enables warnings as errors, diagnostic analysis and public documentation coverage. The umbrella catalog resolves cross-product contents links against those archives. DocC then merges them into `.build/documentation/DiscordKitLibrary.doccarchive` with one library navigator. The macro and extension packages emit separate graphs and catalogs; validate those packages explicitly as described in the repository release-tooling guide.
+The emission helper uses the native SwiftPM build engine and committed dependency pins, disables experimental prebuilt dependencies, and normalizes graphs into `.build/out/symbolgraph`. It explicitly requests extension-block symbols so DocC can resolve public extensions to foreign types, including the `DiscordCore/Swift` and `DiscordCommandDSL/Swift` namespaces. The converter handles each root public library module, preserving its primary and owned extension graphs. It enables warnings as errors, diagnostic analysis and public documentation coverage. The umbrella catalog resolves cross-product contents links against those archives. DocC then merges them into `.build/documentation/DiscordKitLibrary.doccarchive` with one library navigator. The macro and extension packages emit separate graphs and catalogs; validate those packages explicitly as described in the repository release-tooling guide.
 
 Open the merged archive in Xcode, or preview the umbrella catalog with the installed DocC command and the appropriate symbol graphs.
 
@@ -51,6 +51,8 @@ The umbrella catalog contains the package contents, learning paths, application 
 6. Run the nonwriting checks and strict conversion again.
 
 Reference generation uses compiler-produced ownership/member relationships and unambiguous symbol links. It never fetches upstream documentation or executes during a consumer build. Platform-specific public declarations require graphs from that platform; a macOS-generated reference inventory cannot establish the availability of a conditionally compiled Windows or Android API.
+
+After changing the CI toolchain, emit fresh graphs with that same compiler and rerun curation with `--write` for the root, macro and extension packages. Compiler changes can expose additional public API even when source declarations are unchanged. For example, Swift 6.4.1 includes the public `@TaskLocal` projections `$configuration`, `$context` and `$loggerFactory` in `DiscordLog`'s graph; these provide the scoped `withValue` API and belong in its reference navigation. Review the generated diff, then run the nonwriting checks and strict conversion again.
 
 ### Validate content as well as syntax
 

@@ -6,6 +6,9 @@
 
 ### Type properties
 
+- ``DiscordLogging/DiscordLog/$configuration``
+- ``DiscordLogging/DiscordLog/$context``
+- ``DiscordLogging/DiscordLog/$loggerFactory``
 - ``DiscordLogging/DiscordLog/configuration``
 - ``DiscordLogging/DiscordLog/context``
 - ``DiscordLogging/DiscordLog/loggerFactory``

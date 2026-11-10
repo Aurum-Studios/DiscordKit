@@ -167,6 +167,43 @@ class ReferenceCurationTests(unittest.TestCase):
         self.assertIn("init(from:)-" + curate_docc.stable_symbol_hash(own["identifier"]["precise"]),
                       files[Path("Reference/Value.md")])
 
+    def test_public_task_local_projections_match_committed_logging_navigation(self):
+        """Swift 6.4.1 emits owned public projections without source locations."""
+        module = "DiscordLogging"
+        parent = symbol("DiscordLog", "swift.enum", module=module)
+        names = ("loggerFactory", "context", "configuration")
+        properties = [symbol(f"DiscordLog/{name}", "swift.type.property", module=module)
+                      for name in names]
+        # Preserve the location-free public identities from the failing CI graph.
+        identifiers = (
+            "s:14DiscordLogging0A3LogO14$loggerFactory12_Concurrency9TaskLocalCy0B06LoggerVSSYbcGvpZ",
+            "s:14DiscordLogging0A3LogO8$context12_Concurrency9TaskLocalCySDySS0B06LoggerV13MetadataValueOGGvpZ",
+            "s:14DiscordLogging0A3LogO14$configuration12_Concurrency9TaskLocalCyAA0aC13ConfigurationVSgGvpZ",
+        )
+        projections = [symbol(f"DiscordLog/${name}", "swift.type.property", module=module,
+                              identifier=identifier)
+                       for name, identifier in zip(names, identifiers)]
+        foreign = symbol("DiscordLog/$foreign", "swift.type.property", module="Logging")
+        for declaration in [*projections, foreign]:
+            declaration.pop("location")
+        inherited = symbol("DiscordLog/$inherited", "swift.type.property", module=module,
+                           identifier="s:Dependency:property::SYNTHESIZED::DiscordLog")
+        children = [*properties, *projections, foreign, inherited]
+        declarations = [parent, *children]
+        relations = [member(child, parent) for child in children]
+        files, stats = curate_docc.reference_files(module, [graph(declarations, relations, module)])
+        self.assertEqual(stats["memberLinks"], 6)
+        self.assertEqual((files, stats), curate_docc.reference_files(module,
+            [graph(list(reversed(declarations)), list(reversed(relations)), module)]))
+        expected = [f"- ``DiscordLogging/DiscordLog/{name}``" for name in
+                    ("$configuration", "$context", "$loggerFactory", "configuration", "context", "loggerFactory")]
+        relative = Path("Reference/DiscordLog.md")
+        checked_in = Path(__file__).resolve().parents[2] / "Sources/DiscordLogging/DiscordLogging.docc" / relative
+        for label, page in (("generated", files[relative]), ("committed", checked_in.read_text())):
+            with self.subTest(page=label):
+                properties_section = page.split("### Type properties\n\n", 1)[1].split("\n\n", 1)[0]
+                self.assertEqual(properties_section.splitlines(), expected)
+
     def test_external_extensions_curate_owned_functions_without_foreign_type_pages(self):
         """The Swift namespace is required for resolving standard-library extensions."""
         foreign = symbol("KeyedContainer", "swift.extension", swiftExtension={"extendedModule": "Swift"})
