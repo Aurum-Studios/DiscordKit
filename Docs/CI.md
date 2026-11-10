@@ -19,7 +19,9 @@ has executed. Review actual artifacts before changing support claims.
 [Offline validation](../.github/workflows/ci.yml) runs on push, pull request and
 manual dispatch with read-only repository permissions and no Discord secrets.
 The workflow calls [the native-platform pipeline](../.github/workflows/native-platform.yml)
-once for each platform using a matrix with `fail-fast: false`. Each call owns its
+through three explicit jobs: **Windows x64**, **Linux x64** and **macOS ARM64**.
+Separate callers give each platform its own group in GitHub's job viewer, with
+its own build, runtime-suite and compiler-fixture matrices. Each call owns its
 platform check, plan, builds, runtime suites, compiler fixtures, validation and
 source export. No platform waits for another platform's checks or builds:
 
@@ -43,7 +45,7 @@ flowchart LR
 | Windows x64 | `Windows-x64-8` | `Windows-x64-64` |
 | macOS ARM64 / macOS 26 | `MacOS-26-5` | `MacOS-26-5` |
 
-The `native` matrix contains one Windows, one Linux and one macOS pipeline.
+The `native-windows`, `native-linux` and `native-macos` jobs each call one pipeline.
 Each starts with exactly one check of the actual native OS, architecture,
 Swift 6.4.1 compiler and target, then compiles, links and executes an offline
 Foundation JSON roundtrip. A platform check is never multiplied by build
@@ -86,9 +88,12 @@ The upstream maintenance freshness check remains a separate required job without
 native-build dependencies. These shared checks gate overall certification;
 platform exports depend on their own native validation.
 
-The reusable workflow keeps all `needs` edges within one platform. The caller's
-matrix also disables fail-fast so a failed pipeline cannot cancel its siblings.
-This follows GitHub's [matrix and reusable workflow support](https://docs.github.com/en/actions/how-tos/reuse-automations/reuse-workflows#using-a-matrix-strategy-with-a-reusable-workflow).
+The reusable workflow keeps all `needs` edges within one platform. The three
+caller jobs have no dependencies on each other, so a failed pipeline cannot
+cancel its siblings. Their internal matrices retain `fail-fast: false`.
+GitHub groups reusable jobs under their caller; see
+[reusable workflow navigation](https://github.blog/news-insights/product-news/improving-navigation-for-github-actions/)
+and [calling reusable workflows](https://docs.github.com/en/actions/how-tos/reuse-automations/reuse-workflows#calling-a-reusable-workflow).
 
 [The shared setup action](../.github/actions/setup-native/action.yml) installs
 Swift 6.4.1, Python 3.12 and Node 24. Linux setup installs the Ubuntu prerequisites

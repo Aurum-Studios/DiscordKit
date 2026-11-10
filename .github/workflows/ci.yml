@@ -22,39 +22,40 @@ env:
   PYTHONUNBUFFERED: '1'
 
 jobs:
-  native:
-    name: Native / ${{ matrix.platform }}
-    strategy:
-      # A platform failure must never cancel another platform's pipeline.
-      fail-fast: false
-      matrix:
-        include:
-          - platform: windows-x64
-            group: Windows-x64-8
-            jobs: 8
-            build-group: Windows-x64-64
-            build-jobs: 64
-            shell: pwsh
-          - platform: linux-x64
-            group: Linux-x64-8
-            jobs: 8
-            build-group: Linux-x64-64
-            build-jobs: 64
-            shell: bash
-          - platform: macos-arm64
-            group: MacOS-26-5
-            jobs: 5
-            build-group: MacOS-26-5
-            build-jobs: 5
-            shell: bash
+  # Separate callers give each platform its own group in GitHub's job viewer.
+  # No platform depends on another platform's pipeline.
+  native-windows:
+    name: Windows x64
     uses: ./.github/workflows/native-platform.yml
     with:
-      platform: ${{ matrix.platform }}
-      runner-group: ${{ matrix.group }}
-      jobs: ${{ matrix.jobs }}
-      build-group: ${{ matrix.build-group }}
-      build-jobs: ${{ matrix.build-jobs }}
-      shell: ${{ matrix.shell }}
+      platform: windows-x64
+      runner-group: Windows-x64-8
+      jobs: 8
+      build-group: Windows-x64-64
+      build-jobs: 64
+      shell: pwsh
+
+  native-linux:
+    name: Linux x64
+    uses: ./.github/workflows/native-platform.yml
+    with:
+      platform: linux-x64
+      runner-group: Linux-x64-8
+      jobs: 8
+      build-group: Linux-x64-64
+      build-jobs: 64
+      shell: bash
+
+  native-macos:
+    name: macOS ARM64
+    uses: ./.github/workflows/native-platform.yml
+    with:
+      platform: macos-arm64
+      runner-group: MacOS-26-5
+      jobs: 5
+      build-group: MacOS-26-5
+      build-jobs: 5
+      shell: bash
 
   helpers:
     name: Helper suites / ${{ matrix.suite }}
@@ -107,7 +108,7 @@ jobs:
   complete:
     name: Offline certification passed
     if: always()
-    needs: [native, helpers, maintenance]
+    needs: [native-windows, native-linux, native-macos, helpers, maintenance]
     runs-on:
       group: Linux-x64-8
     timeout-minutes: 5
