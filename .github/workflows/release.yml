@@ -37,7 +37,8 @@ env:
 jobs:
   prepare:
     name: Verify commit and package source
-    runs-on: ubuntu-24.04
+    runs-on:
+      group: Linux-x64-8
     timeout-minutes: 10
     permissions:
       actions: read
@@ -67,7 +68,8 @@ jobs:
   publish:
     name: Publish GitHub release
     needs: prepare
-    runs-on: ubuntu-24.04
+    runs-on:
+      group: Linux-x64-8
     timeout-minutes: 10
     permissions:
       actions: read

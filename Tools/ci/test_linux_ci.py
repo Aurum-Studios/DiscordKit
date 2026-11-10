@@ -3,9 +3,9 @@
 # Copyright (c) 2026 Aurum Studios.
 # https://aurum-studios.com
 
-"""Offline Ubuntu gate contracts, durable failure reports and real process cleanup."""
+"""Native offline gate contracts, durable failure reports and real process cleanup."""
 
-from contextlib import ExitStack, redirect_stdout, suppress
+from contextlib import ExitStack, redirect_stderr, redirect_stdout, suppress
 import io
 import json
 import os
@@ -16,7 +16,7 @@ import sys
 import tempfile
 import time
 import unittest
-from unittest.mock import patch
+from unittest.mock import MagicMock, call, patch
 
 import linux_ci
 
@@ -39,7 +39,7 @@ class LinuxCommandTests(unittest.TestCase):
 
     def test_every_swift_invocation_requires_pins_and_bounded_jobs(self):
         """All packages inherit the same dependency and memory policy, including executable runs."""
-        stages = ("root", "authoring", "tooling", "benchmarks", "audit", "consumers", "release")
+        stages = ("root", "authoring", "tooling", "benchmarks", "helpers", "audit", "consumers", "release")
         self.assertEqual(linux_ci.STAGES, stages)
         for stage in stages:
             for command in self.plan(stage):
@@ -53,6 +53,8 @@ class LinuxCommandTests(unittest.TestCase):
                     self.assertEqual(arguments.count("--jobs"), 1)
                     self.assertEqual(arguments[arguments.index("--jobs") + 1], "3")
                     self.assertEqual(arguments.count("--force-resolved-versions"), 1)
+                    self.assertEqual(arguments[arguments.index("--build-system") + 1], "native")
+                    self.assertIn("--disable-experimental-prebuilts", arguments)
                     self.assertIn("--package-path", arguments)
 
     def test_run_options_precede_executable_and_program_arguments_follow(self):
@@ -133,7 +135,7 @@ class LinuxCommandTests(unittest.TestCase):
         (directory / "bridge.test.mjs").unlink()
         for name in ("z.test.mjs", "a test.test.mjs", "bridge.mjs"):
             (directory / name).touch()
-        browser, = [command for command in self.plan("tooling") if command.name == "browser"]
+        browser, = [command for command in self.plan("helpers") if command.name == "browser"]
         self.assertEqual(browser.arguments, ("node", "--test", "Browser/DiscordActivityBridge/a test.test.mjs",
                                              "Browser/DiscordActivityBridge/z.test.mjs"))
 
@@ -141,7 +143,19 @@ class LinuxCommandTests(unittest.TestCase):
         """A missing suite must fail planning rather than let Node choose unrelated tests."""
         (self.repository / "Browser/DiscordActivityBridge/bridge.test.mjs").unlink()
         with self.assertRaisesRegex(ValueError, "browser"):
-            self.plan("tooling")
+            self.plan("helpers")
+
+    def test_helpers_are_independent_from_swift_compilation_stages(self):
+        """Shared Python and browser suites run once without rebuilding any platform graph."""
+        helpers = self.plan("helpers")
+        self.assertEqual({command.arguments[command.arguments.index("-s") + 1] for command in helpers
+                          if command.arguments[0] == sys.executable},
+                         {"Tools/DiscordKitTools/scripts", "Tools/DiscordKitLoadTests/scripts",
+                          "Tools/DiscordDSLBenchmarks/scripts", "Tools/ci"})
+        self.assertEqual(sum(command.arguments[0] == "node" for command in helpers), 1)
+        self.assertNotIn("swift", {command.arguments[0] for command in helpers})
+        for stage in ("tooling", "benchmarks"):
+            self.assertTrue(all(command.arguments[0] == "swift" for command in self.plan(stage)))
 
     def test_plans_do_not_include_credentials_or_live_mutations(self):
         """The CI plan cannot start the qualification client, publish a package or sync Discord commands."""
@@ -258,6 +272,111 @@ class LinuxExecutionTests(unittest.TestCase):
                 with self.assertRaisesRegex(OSError, "could not preserve command output"):
                     linux_ci.execute(command, repository, repository / "logging.log")
             self.assertIn("offline output", (repository / "logging.log").read_text())
+
+    def test_windows_execution_redirects_to_regular_log_and_replays_output(self):
+        """Windows avoids an inherited output pipe and retains the completed parent's log."""
+        with tempfile.TemporaryDirectory() as temporary, redirect_stdout(io.StringIO()):
+            repository = Path(temporary)
+            process = MagicMock()
+            process.wait.return_value = 0
+            command = linux_ci.Command("windows", ("fixture.exe",))
+
+            def start(*arguments, **options):
+                """Model direct child writes through the actual regular-file handle."""
+                destination = options["stdout"]
+                self.assertEqual(Path(destination.name), repository / "windows.log")
+                destination.write("windows fixture\n")
+                destination.flush()
+                return process
+
+            with patch.object(linux_ci, "WINDOWS_HOST", True), \
+                    patch.object(linux_ci.subprocess, "CREATE_NEW_PROCESS_GROUP", 512, create=True), \
+                    patch.object(linux_ci.subprocess, "Popen", side_effect=start) as spawn:
+                linux_ci.execute(command, repository, repository / "windows.log")
+            self.assertEqual(spawn.call_args.kwargs["creationflags"], 512)
+            self.assertNotIn("start_new_session", spawn.call_args.kwargs)
+            self.assertNotEqual(spawn.call_args.kwargs["stdout"], subprocess.PIPE)
+            self.assertEqual(spawn.call_args.kwargs["stderr"], subprocess.STDOUT)
+            process.__enter__.assert_not_called()
+            self.assertIn("windows fixture", (repository / "windows.log").read_text())
+
+    def test_windows_parent_timeout_attempts_cleanup_and_has_bounded_waits(self):
+        """A timed-out parent fails and replays its available log without any pipe drain."""
+        with tempfile.TemporaryDirectory() as temporary, redirect_stdout(io.StringIO()) as console:
+            repository = Path(temporary)
+            process = MagicMock(pid=1234)
+            process.wait.side_effect = [subprocess.TimeoutExpired("fixture.exe", 0.1), 7]
+            process.poll.return_value = 7
+            command = linux_ci.Command("windows", ("fixture.exe",), timeout=0.1)
+            started = time.monotonic()
+            with patch.object(linux_ci, "WINDOWS_HOST", True), \
+                    patch.object(linux_ci.subprocess, "CREATE_NEW_PROCESS_GROUP", 512, create=True), \
+                    patch.object(linux_ci.subprocess, "Popen", return_value=process), \
+                    patch.object(linux_ci.subprocess, "run") as terminate, \
+                    self.assertRaises(subprocess.TimeoutExpired):
+                linux_ci.execute(command, repository, repository / "windows.log")
+            self.assertLess(time.monotonic() - started, 1)
+            self.assertEqual(process.wait.call_args_list, [call(timeout=0.1), call(timeout=5)])
+            terminate.assert_called_once()
+            self.assertIn("fixture.exe", console.getvalue())
+
+    def test_windows_regular_log_does_not_wait_for_an_exited_parents_descendant(self):
+        """A real child retaining the log handle cannot keep the parent's command admission open."""
+        with tempfile.TemporaryDirectory() as temporary, redirect_stdout(io.StringIO()):
+            repository = Path(temporary)
+            pid_file = repository / "descendant.pid"
+            child = ("import os, pathlib, time; "
+                     f"pathlib.Path({str(pid_file)!r}).write_text(str(os.getpid())); "
+                     "print('descendant owns regular log', flush=True); time.sleep(60)")
+            parent = ("import pathlib, subprocess, sys, time; "
+                      f"process = subprocess.Popen([sys.executable, '-c', {child!r}]); "
+                      f"pid_file = pathlib.Path({str(pid_file)!r}); "
+                      "exec('while not pid_file.exists(): time.sleep(0.01)'); "
+                      "print('parent completed', flush=True)")
+            command = linux_ci.Command("windows", (sys.executable, "-c", parent), timeout=5)
+            original_popen = subprocess.Popen
+
+            def start(*arguments, **options):
+                """Exercise actual regular-file inheritance on this test host without Windows creation flags."""
+                options.pop("creationflags")
+                return original_popen(*arguments, **options)
+
+            started = time.monotonic()
+            try:
+                with patch.object(linux_ci, "WINDOWS_HOST", True), \
+                        patch.object(linux_ci.subprocess, "CREATE_NEW_PROCESS_GROUP", 512, create=True), \
+                        patch.object(linux_ci.subprocess, "Popen", side_effect=start):
+                    linux_ci.execute(command, repository, repository / "windows.log")
+                self.assertLess(time.monotonic() - started, 3)
+                self.assertTrue(pid_file.is_file())
+                self.assertIn("parent completed", (repository / "windows.log").read_text())
+            finally:
+                if pid_file.exists():
+                    with suppress(ProcessLookupError):
+                        os.kill(int(pid_file.read_text()), signal.SIGTERM)
+
+    def test_windows_cleanup_attempts_tree_termination_and_reaps_the_parent(self):
+        """Taskkill requests tree termination; orphaned Windows children remain a workflow boundary."""
+        process = MagicMock(pid=1234)
+        process.poll.return_value = 7
+        with patch.object(linux_ci, "WINDOWS_HOST", True), \
+                patch.object(linux_ci.subprocess, "run") as terminate:
+            linux_ci.stop_process_group(process)
+        terminate.assert_called_once_with(["taskkill", "/PID", "1234", "/T", "/F"],
+                                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                                         timeout=10, check=False)
+        process.kill.assert_not_called()
+        process.wait.assert_called_once_with(timeout=5)
+
+    def test_windows_cleanup_reaps_parent_if_taskkill_itself_times_out(self):
+        """Cleanup stays bounded and still kills the admitted parent when the system utility fails."""
+        process = MagicMock(pid=1234)
+        process.poll.return_value = None
+        with patch.object(linux_ci, "WINDOWS_HOST", True), \
+                patch.object(linux_ci.subprocess, "run", side_effect=subprocess.TimeoutExpired("taskkill", 10)):
+            linux_ci.stop_process_group(process)
+        process.kill.assert_called_once_with()
+        process.wait.assert_called_once_with(timeout=5)
 
     @unittest.skipUnless(os.name == "posix", "process-group cleanup is a POSIX contract")
     def test_timeout_terminates_parent_and_sigterm_resistant_descendant(self):
@@ -385,6 +504,137 @@ class LinuxPreflightTests(unittest.TestCase):
 
         stack.enter_context(patch.object(Path, "read_text", read_text))
         return stack
+
+
+class NativePreflightTests(unittest.TestCase):
+    """The selected OS and architecture must match both the host and Swift target."""
+
+    def test_native_macos_and_windows_record_host_compiler_and_terminal_status(self):
+        """A compiler version alone cannot replace native architecture and target evidence."""
+        for target, system, machine, triple in (
+                ("macos-arm64", "Darwin", "arm64", "arm64-apple-macosx13.0"),
+                ("windows-x64", "Windows", "AMD64", "x86_64-unknown-windows-msvc")):
+            with self.subTest(target=target), tempfile.TemporaryDirectory() as temporary:
+                repository = Path(temporary)
+                output = repository / "reports"
+                with self.host_mocks(system, machine, triple):
+                    linux_ci.native_preflight(repository, output, target)
+                self.assertEqual(json.loads((output / "preflight.json").read_text()),
+                                 {"platform": target, "status": "passed"})
+                host = json.loads((output / "host.json").read_text())
+                self.assertEqual(host["system"], system)
+                self.assertEqual(host["machine"], machine)
+                self.assertEqual(host["revision"], "fixture-revision")
+                self.assertEqual(json.loads((output / "target.json").read_text())["target"]["triple"], triple)
+                self.assertIn(linux_ci.SWIFT_VERSION, (output / "swift-version.txt").read_text())
+
+    def test_linux_adds_x64_host_and_target_checks_to_existing_ubuntu_gate(self):
+        """An ARM Ubuntu host or a cross target cannot qualify the Linux x64 lane."""
+        for machine, triple, status in (("x86_64", "x86_64-unknown-linux-gnu", "passed"),
+                                        ("aarch64", "x86_64-unknown-linux-gnu", "failed"),
+                                        ("x86_64", "aarch64-unknown-linux-gnu", "failed")):
+            with self.subTest(machine=machine, triple=triple), tempfile.TemporaryDirectory() as temporary, \
+                    redirect_stdout(io.StringIO()):
+                repository = Path(temporary)
+                output = repository / "reports"
+                with LinuxPreflightTests.host_mocks(), self.host_mocks("Linux", machine, triple):
+                    if status == "failed":
+                        with self.assertRaisesRegex(ValueError, "native linux-x64"):
+                            linux_ci.native_preflight(repository, output, "linux-x64")
+                    else:
+                        linux_ci.native_preflight(repository, output, "linux-x64")
+                self.assertEqual(json.loads((output / "preflight.json").read_text())["status"], status)
+
+    def test_wrong_native_os_fails_before_any_compiler_query(self):
+        """A runner label cannot qualify Windows when the actual host is macOS."""
+        with tempfile.TemporaryDirectory() as temporary:
+            repository = Path(temporary)
+            output = repository / "reports"
+            with patch.object(linux_ci.platform, "system", return_value="Darwin"), \
+                    patch.object(linux_ci.subprocess, "check_output") as compiler:
+                with self.assertRaisesRegex(ValueError, "native Windows"):
+                    linux_ci.native_preflight(repository, output, "windows-x64")
+            compiler.assert_not_called()
+            self.assertEqual(json.loads((output / "preflight.json").read_text())["status"], "failed")
+
+    def test_wrong_architecture_compiler_version_and_target_remain_failed(self):
+        """Rejected evidence remains available and cannot leave a terminal passed report."""
+        for target, system, machine, triple, version, message in (
+                ("macos-arm64", "Darwin", "x86_64", "arm64-apple-macosx13.0", "6.4.1", "host architecture"),
+                ("macos-arm64", "Darwin", "arm64", "x86_64-apple-macosx13.0", "6.4.1", "Swift target"),
+                ("windows-x64", "Windows", "ARM64", "x86_64-unknown-windows-msvc", "6.4.1", "host architecture"),
+                ("windows-x64", "Windows", "AMD64", "x86_64-unknown-linux-gnu", "6.4.1", "Swift target"),
+                ("windows-x64", "Windows", "AMD64", "x86_64-unknown-windows-msvc", "6.4.10", "expected Swift")):
+            with self.subTest(target=target, machine=machine, triple=triple, version=version), \
+                    tempfile.TemporaryDirectory() as temporary:
+                repository = Path(temporary)
+                output = repository / "reports"
+                with self.host_mocks(system, machine, triple, version), self.assertRaisesRegex(ValueError, message):
+                    linux_ci.native_preflight(repository, output, target)
+                report = json.loads((output / "preflight.json").read_text())
+                self.assertEqual(report["status"], "failed")
+                self.assertIn(message, report["error"])
+                self.assertTrue((output / "target.json").is_file())
+
+    @staticmethod
+    def host_mocks(system, machine, triple, version="6.4.1"):
+        """Model one native host without starting a compiler or reading another OS's files."""
+        stack = ExitStack()
+        stack.enter_context(patch.object(linux_ci.platform, "system", return_value=system))
+        stack.enter_context(patch.object(linux_ci.platform, "machine", return_value=machine))
+        stack.enter_context(patch.object(linux_ci.shutil, "which", return_value="/fixture/tool"))
+        stack.enter_context(patch.object(linux_ci.subprocess, "check_output",
+                                       side_effect=["fixture-revision\n", f"Swift version {version}\n",
+                                                    json.dumps({"target": {"triple": triple}})]))
+        return stack
+
+
+class NativeCLITests(unittest.TestCase):
+    """A workflow invocation validates its platform once and runs each selected stage once."""
+
+    def test_repeated_stage_options_validate_once_and_preserve_selected_order(self):
+        """Heavy stages can share one host validation without a runner-size matrix."""
+        with tempfile.TemporaryDirectory() as temporary:
+            repository = Path(temporary).resolve()
+            argv = ["linux_ci.py", "--repository", str(repository), "--platform", "windows-x64", "--jobs", "64",
+                    "--stage", "preflight", "--stage", "root", "--stage", "authoring", "--stage", "root"]
+            with patch.object(sys, "argv", argv), patch.object(linux_ci, "native_preflight") as preflight, \
+                    patch.object(linux_ci, "run_stage") as run:
+                self.assertEqual(linux_ci.main(), 0)
+            output = repository / ".build/linux-ci"
+            preflight.assert_called_once_with(repository, output, "windows-x64")
+            self.assertEqual(run.call_args_list, [call("root", repository, output, 64),
+                                                 call("authoring", repository, output, 64)])
+
+    def test_default_all_keeps_every_stage_and_one_preflight(self):
+        """Local default invocation preserves coverage after splitting shared helper checks."""
+        with patch.object(sys, "argv", ["linux_ci.py"]), \
+                patch.object(linux_ci, "native_preflight") as preflight, patch.object(linux_ci, "run_stage") as run:
+            self.assertEqual(linux_ci.main(), 0)
+        preflight.assert_called_once()
+        self.assertEqual([entry.args[0] for entry in run.call_args_list], list(linux_ci.STAGES))
+
+    def test_shared_checks_can_skip_platform_validation(self):
+        """The small shared-check runner cannot add another platform qualification pass."""
+        with patch.object(sys, "argv", ["linux_ci.py", "--skip-preflight", "--stage", "helpers", "--stage", "audit"]), \
+                patch.object(linux_ci, "native_preflight") as preflight, patch.object(linux_ci, "run_stage") as run:
+            self.assertEqual(linux_ci.main(), 0)
+        preflight.assert_not_called()
+        self.assertEqual([entry.args[0] for entry in run.call_args_list], ["helpers", "audit"])
+
+    def test_platform_stages_cannot_skip_preflight(self):
+        """The lightweight escape hatch cannot admit root compilation or an unvalidated default run."""
+        for selection in ([], ["root"], ["preflight"], ["helpers", "release"], ["all"]):
+            argv = ["linux_ci.py", "--skip-preflight"]
+            for stage in selection:
+                argv += ["--stage", stage]
+            with self.subTest(selection=selection), patch.object(sys, "argv", argv), \
+                    redirect_stderr(io.StringIO()), patch.object(linux_ci, "native_preflight") as preflight, \
+                    patch.object(linux_ci, "run_stage") as run, self.assertRaises(SystemExit) as caught:
+                linux_ci.main()
+            self.assertEqual(caught.exception.code, 2)
+            preflight.assert_not_called()
+            run.assert_not_called()
 
 
 if __name__ == "__main__":

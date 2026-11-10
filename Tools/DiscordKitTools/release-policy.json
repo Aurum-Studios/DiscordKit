@@ -1380,6 +1380,9 @@
     "DiscordLogHandlers": [
       "OSLog",
       "os"
+    ],
+    "DiscordTransport": [
+      "Dispatch"
     ]
   },
   "targets": {

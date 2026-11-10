@@ -21,6 +21,8 @@ class ExtensionFixtureTests(unittest.TestCase):
         self.assertIn("/repo/Tests/Fixtures/DSLExtensionsCompile", command)
         self.assertIn("--explicit-target-dependency-import-check", command)
         self.assertIn("--force-resolved-versions", command)
+        self.assertEqual(command[command.index("--build-system") + 1], "native")
+        self.assertIn("--disable-experimental-prebuilts", command)
         self.assertNotIn("--jobs", command)
         self.assertEqual(command[-2:], ["--target", "PositiveDependencies"])
         self.assertNotIn("DiscordDSLMacros", " ".join(command))

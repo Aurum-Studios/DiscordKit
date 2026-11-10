@@ -25,6 +25,8 @@ class CompileFixtureTests(unittest.TestCase):
         self.assertEqual(command[command.index("--scratch-path") + 1], str(root / "scratch directory"))
         self.assertIn("--disable-sandbox", command)
         self.assertIn("--force-resolved-versions", command)
+        self.assertEqual(command[command.index("--build-system") + 1], "native")
+        self.assertIn("--disable-experimental-prebuilts", command)
         self.assertNotIn("--jobs", command)
         self.assertEqual(command[command.index("--explicit-target-dependency-import-check") + 1], "error")
         self.assertNotIn("-dump-macro-expansions", command)

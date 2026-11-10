@@ -1,0 +1,61 @@
+# File: .github/actions/setup-native/action.yml
+# Created by Carson Rau.
+# Copyright (c) 2026 Aurum Studios.
+# https://aurum-studios.com
+
+name: Set up native Swift validation
+description: Install the pinned Swift toolchain and native validation prerequisites.
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-python@v6
+      with:
+        python-version: '3.12'
+    - name: Install Ubuntu build and validation dependencies
+      if: runner.os == 'Linux'
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get install --yes --no-install-recommends \
+          binutils ca-certificates clang curl git gnupg2 libc6-dev \
+          libcurl4-openssl-dev libedit2 libgcc-13-dev libncurses-dev \
+          libpython3-dev libsqlite3-0 libstdc++-13-dev libxml2-dev \
+          libz3-dev pkg-config python3 tzdata unzip zlib1g-dev
+    - name: Import Swift signing keys before verifying the Swiftly installer
+      if: runner.os == 'Linux'
+      shell: bash
+      run: |
+        # setup-swift v3 verifies Swiftly before it imports any signing keys.
+        # Decode compressed responses as in Swift's official signing guide.
+        curl --compressed --fail --show-error --silent --location --retry 3 \
+          --output "$RUNNER_TEMP/swift-signing-keys.asc" https://www.swift.org/keys/all-keys.asc
+        gpg --batch --import "$RUNNER_TEMP/swift-signing-keys.asc"
+        gpg --batch --list-keys E813C892820A6FA13755B268F167DF1ACF9CE069
+    - uses: swift-actions/setup-swift@v3
+      if: runner.os != 'Windows'
+      with:
+        swift-version: '6.4.1'
+        skip-verify-signature: false
+    - name: Enable Windows developer mode and require native build prerequisites
+      if: runner.os == 'Windows'
+      shell: pwsh
+      run: |
+        New-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem' -Name LongPathsEnabled -Value 1 -PropertyType DWord -Force
+        New-Item -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock' -Force | Out-Null
+        New-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock' -Name AllowDevelopmentWithoutDevLicense -Value 1 -PropertyType DWord -Force
+        $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+        $installation = & $vswhere -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+        if ($LASTEXITCODE -ne 0 -or -not $installation) { throw 'MSVC x64 build tools are required' }
+        $sdk = Get-ChildItem "${env:ProgramFiles(x86)}\Windows Kits\10\Include" -Directory | Where-Object { $_.Name -match '^10\.0\.\d+\.0$' -and [version]$_.Name -ge [version]'10.0.22000.0' }
+        if (-not $sdk) { throw 'Windows SDK 10.0.22000 or newer is required' }
+    - name: Install Swift 6.4.1 on Windows
+      if: runner.os == 'Windows'
+      uses: compnerd/gha-setup-swift@9ff1ee4c44888c5817fc14d1b257ac8cabb4935f # v0.5.1
+      with:
+        swift-version: swift-6.4.1-release
+        swift-build: 6.4.1-RELEASE
+        build_arch: amd64
+    - uses: actions/setup-node@v6
+      with:
+        node-version: '24'

@@ -3,7 +3,7 @@
 # Copyright (c) 2026 Aurum Studios.
 # https://aurum-studios.com
 
-# Organization-hosted runner labels use actionlint's custom runner registry.
+# Workflows route through runner groups rather than individual member labels.
+# No custom runs-on labels are required.
 self-hosted-runner:
-  labels:
-    - linux-x64-4
+  labels: []

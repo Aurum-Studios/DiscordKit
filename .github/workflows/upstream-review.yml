@@ -15,7 +15,8 @@ permissions:
 
 jobs:
   collect:
-    runs-on: ubuntu-24.04
+    runs-on:
+      group: Linux-x64-8
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v6

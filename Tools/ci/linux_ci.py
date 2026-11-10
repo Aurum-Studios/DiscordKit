@@ -4,9 +4,10 @@
 # Copyright (c) 2026 Aurum Studios.
 # https://aurum-studios.com
 
-"""Run the offline Ubuntu gates with pinned resolution, bounded jobs and durable logs."""
+"""Run native offline gates with pinned resolution, bounded jobs and durable logs."""
 
 import argparse
+import codecs
 from contextlib import suppress
 from dataclasses import dataclass
 import json
@@ -24,14 +25,16 @@ import time
 
 
 SWIFT_VERSION = "6.4.1"
-STAGES = ("root", "authoring", "tooling", "benchmarks", "audit", "consumers", "release")
+STAGES = ("root", "authoring", "tooling", "benchmarks", "helpers", "audit", "consumers", "release")
+PLATFORMS = ("linux-x64", "macos-arm64", "windows-x64")
+WINDOWS_HOST = sys.platform == "win32"
 EXAMPLES = ("RESTOnly", "GatewayBot", "HTTPApp", "CommandsApp", "DSLCommands", "DSLEvents",
             "DSLBot", "OAuthApp", "VoiceBot", "RPCApp", "ActivityHost", "SocialApp", "LoggingApp")
 
 
 @dataclass(frozen=True)
 class Command:
-    """One shell-free command; timeout includes its compiler and plugin descendants."""
+    """One shell-free command with a finite parent timeout and platform-specific cleanup."""
 
     name: str
     arguments: tuple[str, ...]
@@ -46,7 +49,7 @@ def commands(stage, repository, jobs):
     macros, tooling and fixtures retain separate scratch directories.
     """
     if stage not in STAGES:
-        raise ValueError(f"unknown Linux stage: {stage}")
+        raise ValueError(f"unknown CI stage: {stage}")
     if type(jobs) is not int or jobs <= 0:
         raise ValueError("jobs must be a positive integer")
     repository = repository.resolve()
@@ -58,9 +61,10 @@ def commands(stage, repository, jobs):
         planned.append(Command(name, tuple(map(str, arguments)), timeout))
 
     def swift(name, verb, package=".", *arguments, scratch=None):
-        """Apply Linux resource and dependency policy to a SwiftPM invocation."""
-        add(name, "swift", verb, "--package-path", package, "--jobs", jobs,
-            "--force-resolved-versions", *(["--scratch-path", scratch] if scratch else []), *arguments)
+        """Apply the shared resource and dependency policy to a SwiftPM invocation."""
+        add(name, "swift", verb, "--build-system", "native", "--package-path", package, "--jobs", jobs,
+            "--force-resolved-versions", "--disable-experimental-prebuilts",
+            *(["--scratch-path", scratch] if scratch else []), *arguments)
 
     def tests(name, directory):
         """Run deterministic Python helpers with the selected interpreter."""
@@ -79,6 +83,8 @@ def commands(stage, repository, jobs):
     elif stage == "tooling":
         for package in ("DiscordKitTools", "DiscordKitLoadTests"):
             swift(package, "test", f"Tools/{package}")
+    elif stage == "helpers":
+        for package in ("DiscordKitTools", "DiscordKitLoadTests", "DiscordDSLBenchmarks"):
             tests(f"{package}-python", f"Tools/{package}/scripts")
         tests("ci-python", "Tools/ci")
         browser_tests = sorted(str(path.relative_to(repository)) for path in
@@ -88,7 +94,6 @@ def commands(stage, repository, jobs):
         add("browser", "node", "--test", *browser_tests)
     elif stage == "benchmarks":
         swift("test", "test", "Tools/DiscordDSLBenchmarks", "--explicit-target-dependency-import-check", "error")
-        tests("python", "Tools/DiscordDSLBenchmarks/scripts")
         swift("smoke", "run", "Tools/DiscordDSLBenchmarks", "--configuration", "release",
               "DiscordDSLBenchmarks", "--invocations", "1000", "--output", ".build/dsl-measurements/runtime-smoke.json")
     elif stage == "audit":
@@ -150,8 +155,85 @@ def preflight(repository, output):
     print(json.dumps(host, indent=2), version, flush=True)
 
 
+def native_preflight(repository, output, target):
+    """Validate one requested native OS/architecture and record its actual evidence.
+
+    The Ubuntu path retains its distribution and dependency checks. Other native
+    hosts record their own metadata without reading Linux-only files. A failed
+    check remains failed in the report, even if compiler metadata was collected.
+    """
+    if target not in PLATFORMS:
+        raise ValueError(f"unknown native platform: {target}")
+    output.mkdir(parents=True, exist_ok=True)
+    report = {"platform": target, "status": "running"}
+    report_path = output / "preflight.json"
+
+    def save():
+        """Keep the last complete validation state available after interruption."""
+        temporary = report_path.with_suffix(".tmp")
+        temporary.write_text(json.dumps(report, indent=2) + "\n")
+        temporary.replace(report_path)
+
+    save()
+    try:
+        if target == "linux-x64":
+            preflight(repository, output)
+            host = json.loads((output / "host.json").read_text())
+            compiler = json.loads((output / "target.json").read_text())
+        else:
+            host = {"system": platform.system(), "machine": platform.machine(),
+                    "release": platform.release(), "python": platform.python_version(),
+                    "disk": shutil.disk_usage(repository)._asdict()}
+            (output / "host.json").write_text(json.dumps(host, indent=2) + "\n")
+            expected_system = "Darwin" if target == "macos-arm64" else "Windows"
+            if host["system"] != expected_system:
+                raise ValueError(f"{target} validation requires a native {expected_system} host")
+            for executable in ("swift", "swiftc", "clang", "git"):
+                if not shutil.which(executable):
+                    raise ValueError(f"required executable is missing: {executable}")
+            host["revision"] = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=repository,
+                                                      text=True, timeout=30).strip()
+            (output / "host.json").write_text(json.dumps(host, indent=2) + "\n")
+            version = subprocess.check_output(["swift", "--version"], text=True, timeout=30)
+            compiler = json.loads(subprocess.check_output(["swift", "-print-target-info"], text=True, timeout=30))
+            (output / "swift-version.txt").write_text(version)
+            (output / "target.json").write_text(json.dumps(compiler, indent=2) + "\n")
+            if not re.search(rf"\bSwift version {re.escape(SWIFT_VERSION)}(?:\s|$)", version):
+                raise ValueError(f"expected Swift {SWIFT_VERSION}: {version.strip()}")
+        architectures = ("arm64", "aarch64") if target == "macos-arm64" else ("x86_64", "amd64")
+        if host["machine"].lower() not in architectures:
+            raise ValueError(f"expected a native {target} host architecture: {host['machine']}")
+        triple = compiler["target"]["triple"].lower()
+        components = triple.split("-")
+        if target == "linux-x64":
+            native_family = "linux" in components
+        elif target == "macos-arm64":
+            native_family = "apple" in components and any(part.startswith("macosx") for part in components)
+        else:
+            native_family = "windows" in components and "msvc" in components
+        native_target = components[0] in architectures and native_family
+        if not native_target:
+            raise ValueError(f"expected a native {target} Swift target: {triple}")
+    except BaseException as error:
+        report.update(status="failed", error=str(error))
+        save()
+        raise
+    report["status"] = "passed"
+    save()
+
+
 def stop_process_group(process):
-    """Terminate timed-out SwiftPM, compiler and plugin processes as one group."""
+    """Reap the parent after group cleanup; Windows tree cleanup is best-effort."""
+    if WINDOWS_HOST:
+        # /T includes descendants while the parent can still be found. An exited
+        # parent may leave descendants for the workflow's final timeout cleanup.
+        with suppress(OSError, subprocess.TimeoutExpired):
+            subprocess.run(["taskkill", "/PID", str(process.pid), "/T", "/F"],
+                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=10, check=False)
+        if process.poll() is None:
+            process.kill()
+        process.wait(timeout=5)
+        return
     with suppress(ProcessLookupError):
         os.killpg(process.pid, signal.SIGTERM)
     try:
@@ -164,13 +246,54 @@ def stop_process_group(process):
     process.wait()
 
 
+def execute_windows(command, repository, log, environment):
+    """Bound the Windows parent wait without a pipe held open by descendants.
+
+    Children write directly to the regular log file. Replay its current snapshot
+    after the parent completes; later descendant output cannot extend the replay.
+    Workflow timeout remains the final boundary for orphaned Windows processes.
+    """
+    try:
+        with log.open("w", encoding="utf-8") as destination:
+            destination.write(shlex.join(command.arguments) + "\n")
+            destination.flush()
+            process = subprocess.Popen(command.arguments, cwd=repository, env=environment,
+                                       creationflags=subprocess.CREATE_NEW_PROCESS_GROUP,
+                                       stdout=destination, stderr=subprocess.STDOUT)
+            try:
+                result = process.wait(timeout=command.timeout)
+            except BaseException:
+                stop_process_group(process)
+                raise
+            if result:
+                stop_process_group(process)
+                raise subprocess.CalledProcessError(result, command.arguments)
+    finally:
+        # Read no more than the file size at admission, even if an orphan keeps
+        # appending. Regular-file reads cannot wait for an inherited pipe's EOF.
+        if log.exists():
+            with log.open("rb") as source:
+                remaining = os.fstat(source.fileno()).st_size
+                decoder = codecs.getincrementaldecoder("utf-8")(errors="replace")
+                while remaining:
+                    chunk = source.read(min(65536, remaining))
+                    if not chunk:
+                        break
+                    remaining -= len(chunk)
+                    print(decoder.decode(chunk), end="", flush=True)
+                print(decoder.decode(b"", final=True), end="", flush=True)
+
+
 def execute(command, repository, log):
     """Stream merged output to console and disk; fail on timeout or nonzero exit.
 
-    A separate session owns the complete command tree. Failed commands are never
-    retried, and KeyboardInterrupt also terminates their descendants.
+    POSIX commands own a process group, including compiler/plugin descendants.
+    Windows writes directly to a log and replays it after the bounded parent wait.
+    Failed commands are never retried; Windows tree cleanup is best-effort.
     """
     environment = dict(os.environ, SWIFTNIO_STRICT="1", PYTHONUNBUFFERED="1")
+    if WINDOWS_HOST:
+        return execute_windows(command, repository, log, environment)
     with log.open("w") as destination:
         destination.write(shlex.join(command.arguments) + "\n")
         destination.flush()
@@ -252,23 +375,34 @@ def run_stage(stage, repository, output, jobs):
 
 
 def main():
-    """Run selected native Ubuntu gates with two compiler jobs unless overridden."""
+    """Validate a native target once, then run the selected bounded stages."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repository", type=Path, default=Path(__file__).resolve().parents[2])
     parser.add_argument("--output", type=Path)
     parser.add_argument("--jobs", type=int, default=2)
-    parser.add_argument("--stage", choices=("preflight", *STAGES, "all"), default="all")
+    parser.add_argument("--platform", choices=PLATFORMS, default="linux-x64")
+    parser.add_argument("--stage", choices=("preflight", *STAGES, "all"), action="append")
+    parser.add_argument("--skip-preflight", action="store_true",
+                        help="run only shared audit/helper stages without platform validation")
     arguments = parser.parse_args()
     if arguments.jobs <= 0:
         parser.error("jobs must be a positive integer")
+    selected = arguments.stage or ["all"]
+    stages = tuple(dict.fromkeys(stage for selection in selected
+                                for stage in (STAGES if selection == "all" else
+                                              () if selection == "preflight" else (selection,))))
+    if arguments.skip_preflight and (not stages or "preflight" in selected or
+                                     any(stage not in ("audit", "helpers") for stage in stages)):
+        parser.error("--skip-preflight is restricted to audit and helpers stages")
     repository = arguments.repository.resolve()
     output = arguments.output or repository / ".build/linux-ci"
     try:
-        preflight(repository, output)
-        for stage in STAGES if arguments.stage == "all" else (() if arguments.stage == "preflight" else (arguments.stage,)):
+        if not arguments.skip_preflight:
+            native_preflight(repository, output, arguments.platform)
+        for stage in stages:
             run_stage(stage, repository, output, arguments.jobs)
     except (ValueError, OSError, subprocess.SubprocessError) as error:
-        print(f"Ubuntu validation failed: {error}", file=sys.stderr)
+        print(f"Offline validation failed: {error}", file=sys.stderr)
         return 1
     return 0
 

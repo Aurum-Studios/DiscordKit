@@ -24,7 +24,8 @@ FIXTURES = (
 def compiler_command(repository, scratch_path, target, swift="swift", cache_path=None, jobs=None):
     """Select exactly one real external target with explicit dependency imports and shared writable caches."""
     validate_jobs(jobs)
-    command = [swift, "build", "--disable-sandbox", "--skip-update", "--force-resolved-versions", "--package-path",
+    command = [swift, "build", "--build-system", "native", "--disable-experimental-prebuilts",
+            "--disable-sandbox", "--skip-update", "--force-resolved-versions", "--package-path",
             str(repository / "Tests/Fixtures/DSLExtensionsCompile"), "--scratch-path", str(scratch_path),
             "--cache-path", str(cache_path or repository / ".build/dsl-extension-cache"),
             "--explicit-target-dependency-import-check", "error", "--target", target]

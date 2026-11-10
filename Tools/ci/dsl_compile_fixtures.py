@@ -94,7 +94,10 @@ def compiler_command(repository, scratch_path, target, swift="swift", cache_path
         does not alter the surrounding environment's permission boundary.
     """
     validate_jobs(jobs)
-    command = [swift, "build", "--disable-sandbox", "--force-resolved-versions", "--package-path",
+    # Separate negative targets trigger a SwiftBuild module-map registry crash
+    # on Swift 6.4.1; the native engine retains the actual semantic checks.
+    command = [swift, "build", "--build-system", "native", "--disable-experimental-prebuilts",
+            "--disable-sandbox", "--force-resolved-versions", "--package-path",
             str(repository / "Tests/Fixtures/DSLCompile"), "--scratch-path", str(scratch_path),
             "--cache-path", str(cache_path or repository / ".build/dsl-compile-cache"),
             "--explicit-target-dependency-import-check", "error", "--target", target]

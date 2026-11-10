@@ -16,92 +16,143 @@ has executed. Review actual artifacts before changing support claims.
 
 [Offline validation](../.github/workflows/ci.yml) runs on push, pull request and
 manual dispatch with read-only repository permissions and no Discord secrets.
-Separate desktop jobs cover macOS 26 and Ubuntu 24.04. Both use Swift 6.4.1,
-build/test the root, test independent tooling/load packages and Python helpers,
-run browser-bridge tests, validate documentation/inventory/generation/parity,
-audit manifest/import isolation, validate release records and build independent
-consumers. Credential-bearing
-examples are built only; explicit offline modes use synthetic peers and payloads.
-Consumers keep independent manifests and import checks while sharing one sequential
-SwiftPM scratch directory to reuse compiled dependencies. Each desktop job allows
-up to 120 minutes. The macOS job retains `setup-swift@v3`, Node 24, its existing
-build/test commands, public API comparisons and DocC conversion. Fixture helpers
-enforce committed dependency pins on both hosts; their optional job limit is
-applied explicitly only by the Ubuntu runner.
+The workflow follows the same compile-once, independent-suite pattern as
+MiniCarson, with three native platforms:
 
-The Ubuntu job selects the `linux-x64-8-core` GitHub-hosted runner group,
-without a configuration-name label. Each group member must use the Ubuntu 24.04
-x64 image and the 8-core class (32 GiB RAM and 300 GB disk). GitHub can select any
-available compatible member as the organization scales the class. The group must
-grant access to `Aurum-Studios/DiscordKit`, with public-repository access enabled.
-The ordinary `ubuntu-24.04` label remains in use for the separate maintenance job.
-An explicit apt step installs Python and the native build/runtime dependencies.
-Node 24 is installed separately, and `setup-swift@v3` installs exactly Swift 6.4.1.
-
-A `Ready` inventory state confirms configured scheduling availability. Hosted
-compilation qualification remains pending until the committed workflow executes
-successfully on this runner and its Linux host, command and artifact evidence is
-reviewed. Inventory, a queued job and workflow configuration alone do not establish
-a completed Ubuntu build.
-
-Earlier installer failures included `gpg: no valid OpenPGP data found` and a
-missing Swiftly signing key. Before invoking `setup-swift`, the workflow downloads
-the official [Swift signing-key bundle](https://www.swift.org/keys/all-keys.asc)
-with `curl --compressed`, imports it with `gpg --batch --import`, and checks for
-the Swiftly key fingerprint `E813C892820A6FA13755B268F167DF1ACF9CE069`. Compression
-handling follows the [official Swiftly installation guide](https://www.swift.org/install/linux/swiftly/).
-This addresses the response format and missing-key requirements without assuming
-compression was the proven cause of the invalid-key response. Installer and
-toolchain signature verification remain enabled; a failed download, import or key
-check stops setup before compilation.
-
-[The Ubuntu runner](../Tools/ci/linux_ci.py) checks Ubuntu 24.04, the exact Swift
-version, a native Linux target and required executables, recording compiler,
-target, memory and disk evidence. The workflow passes `--jobs 4` to every Linux
-stage. Every Swift build/test/run uses that compiler limit and
-`--force-resolved-versions`, including separate authoring/tooling graphs,
-consumers, external fixtures and optimized builds. Missing or stale committed
-resolution fails instead of silently updating dependencies. Root, authoring,
-tooling, benchmarks, audit, consumers and release stages execute sequentially;
-optimized root/macro/extension compilation also runs on pull requests.
-
-Each command has a finite timeout, streams output to a log and records progress
-and its result under `.build/linux-ci`. Timeout/interruption cleanup terminates
-the command's process group, including compiler/plugin descendants. The workflow
-always attempts to upload these logs and host evidence, including after failures.
-Only successful non-pull-request runs package the clean Git revision as a SwiftPM
-source archive with checksums and compiler/host metadata. This artifact contains
-source, not precompiled libraries, and does not publish a release.
-
-For a local reproduction, use a native Ubuntu 24.04 host and an ordinary Git
-checkout with a clean Linux SwiftPM build directory. Follow the Ubuntu job's
-[dependency installation and signing-key setup](../.github/workflows/ci.yml),
-including the compressed key-bundle download, import and Swiftly fingerprint
-check. Install Swift 6.4.1 using the verified Swiftly installer, as
-`setup-swift@v3` does in CI, and install Node 24. Do not reuse macOS SwiftPM caches.
-Once those prerequisites are installed and on `PATH`, run from the repository
-root:
-
-```sh
-python3 Tools/ci/linux_ci.py --jobs 4 --stage preflight
-python3 Tools/ci/linux_ci.py --jobs 4
+```mermaid
+flowchart LR
+    P[Platform checks: Windows, Linux, macOS] --> B[Independent native builds]
+    P --> A[Apple SDK module builds]
+    B --> T[Independent runtime suites]
+    B --> F[Compiler fixture suites]
+    B --> H[Python, browser, API and source audits]
+    T --> C[Complete certification]
+    F --> C
+    H --> C
+    A --> C
 ```
 
-The default runner executes every stage, including optimized compilation, and
-leaves source packaging to the workflow. Logs remain under `.build/linux-ci`.
-Select one gate with, for example, `--jobs 4 --stage authoring`; set `--jobs 1` to
-lower compiler concurrency. Without an explicit `--jobs` argument, the helper
-retains its conservative two-job local default. Every selected stage still
-performs preflight. Cold runs need network access to install prerequisites and
-fetch the committed SwiftPM dependencies; offline refers to the Discord workload,
-not an air-gapped dependency
-bootstrap. Local helper checks on the macOS editing host do not establish a
-completed Ubuntu build. Review a successful native Linux run and its artifacts
-before changing platform claims.
+| Target | Platform and runtime suite group | Build and compiler fixture group |
+| --- | --- | --- |
+| Linux x64 / Ubuntu 24.04 | `Linux-x64-8` | `Linux-x64-64` |
+| Windows x64 | `Windows-x64-8` | `Windows-x64-64` |
+| macOS ARM64 / macOS 26 | `MacOS-26-5` | `MacOS-26-5` |
 
-The maintenance freshness failure observed during this repair is a separate
-semantic-review gate. The Ubuntu build changes do not waive that gate or advance
-the maintenance ledger; a maintainer must complete the review described below.
+The `platforms` matrix is the first group and contains exactly one Windows, one
+Linux and one macOS check. Each verifies the actual native OS, architecture,
+Swift 6.4.1 compiler and target, then compiles, links and executes an offline
+Foundation JSON roundtrip. A platform check is never multiplied by build
+components, suites or runner sizes. All three must pass before any build starts.
+The macOS ARM pool has five cores and serves both compilation and runtime work.
+Linux and Windows use separate 64-core build and 8-core runtime pools.
+
+After platform checks, a small Linux job evaluates the root manifest and plans
+independent builds for the root, macros, extensions, tooling, load tools,
+benchmarks, consumers and optimized library products on each platform. Builds
+use `swift build --build-tests` where applicable and do not execute test suites.
+The benchmark build also produces its optimized smoke executable. Consumer
+examples keep separate build directories so one example's metadata cannot
+replace another example's test executable. Apple SDK module emissions run in
+this build phase after the same platform barrier.
+
+Every build must pass before the test phase starts. Each root Swift test target
+gets its own job; macro, extension, tooling, load and benchmark packages and
+individual offline consumer examples have separate jobs. Runtime suites use
+`swift test --skip-build --no-parallel`, and executable smoke tests use
+`swift run --skip-build`. The helper compares restored test discovery with the
+producer's nonempty inventory before executing a suite, and anchors root filters
+to the exact module. Windows omits the explicitly Unix-only test target.
+Other platform conditionals retain their existing behavior.
+
+No current runtime suite has evidence requiring a large runner. Compiler fixture
+suites are the exception: their positive and negative cases must invoke the
+compiler, so each authoring fixture suite runs as a separate job on the build
+pools. They still require the expected semantic diagnostics; infrastructure
+crashes do not count as successful negative tests. Python tooling, load,
+benchmark and CI helpers and the browser bridge run as five independent small
+Linux jobs. Source audits reuse the compiled Linux tooling executable.
+Public API and DocC checks reuse public symbol graphs emitted during the macOS
+root and authoring builds, without recompiling stripped build artifacts.
+The upstream maintenance freshness check remains a separate required job.
+
+[The shared setup action](../.github/actions/setup-native/action.yml) installs
+Swift 6.4.1, Python 3.12 and Node 24. Linux setup installs the Ubuntu prerequisites
+and imports the official [Swift signing-key bundle](https://www.swift.org/keys/all-keys.asc)
+with `curl --compressed` before invoking `setup-swift@v3`. It verifies the Swiftly
+fingerprint `E813C892820A6FA13755B268F167DF1ACF9CE069`; installer and toolchain
+signature verification remain enabled. Windows enables long paths before
+checkout, enables Developer Mode, requires MSVC x64 tools and Windows SDK
+10.0.22000 or newer, and uses the pinned
+[Swift installer action](https://github.com/compnerd/gha-setup-swift/tree/9ff1ee4c44888c5817fc14d1b257ac8cabb4935f).
+Every consumer job installs its matching compiler/runtime prerequisites too.
+
+[The native job helper](../Tools/ci/native_jobs.py) transports each compilation in
+a tar archive, retaining executable permissions, resources, symlinks and filenames
+that cannot be uploaded individually. The archive receipt binds payload hashes,
+tracked source contents, exact commit, workflow run and attempt, native platform,
+compiler version/target, build engine and absolute checkout path. Consumers check
+the whole archive before extraction and refuse mismatches or existing build
+outputs. Compiled Swift tests embed absolute source paths, so each platform's
+small and large runner images must provide the same checkout path and compatible
+OS/SDK/runtime. A different path fails explicitly instead of silently rebuilding
+on the small runner. Artifacts are local to the same workflow attempt and expire
+after two days. Reruns must use **Re-run all jobs** so the new attempt produces
+matching compilation artifacts.
+
+All compile/test/run commands enforce committed dependency pins and explicit
+positive job limits; the helper caps requests to CPUs visible to the process.
+The native SwiftPM build engine is selected consistently in both producer and
+consumer jobs. This avoids the SwiftBuild module-map registry crash observed in
+[the failed Linux fixture run](https://github.com/Aurum-Studios/DiscordKit/actions/runs/42735757858/job/129564461315)
+without accepting a crash as a semantic diagnostic or removing import checks.
+Macro dependencies are compiled from source with
+`--disable-experimental-prebuilts` to avoid
+[SwiftPM prebuilt import-check false positives](https://github.com/swiftlang/swift-package-manager/issues/8798).
+Use fresh build directories when changing this policy; an earlier prebuilt build
+plan can retain the false-positive state.
+The release graph policy also declares `Dispatch` specifically for
+`DiscordTransport`, where timing uses `DispatchTime`, resolving the independently
+observed import audit failure. These changes need a fresh hosted run for proof
+on the pinned toolchain.
+
+Build and test commands have finite process timeouts and durable progress logs.
+POSIX execution terminates the child process group on failure or timeout;
+Windows uses regular-file logs and best-effort `taskkill /T /F`. Each job retains
+its own diagnostics even after failure. The final **Offline certification passed**
+job runs with `always()` and fails if any required platform, build, suite, audit,
+Apple module build or packaging job failed, was cancelled or was skipped.
+Only fully successful non-pull-request runs package the clean source revision
+with checksums and native compiler/host metadata. This is a source archive, not
+a published release or precompiled distribution.
+
+For local reproduction with the pinned compiler and native prerequisites:
+
+```sh
+python3 Tools/ci/platform_probe.py --platform linux-x64 --output .build/local-platform
+python3 Tools/ci/native_jobs.py plan --output .build/local-plan
+python3 Tools/ci/native_jobs.py compile --platform linux-x64 --component root --jobs 8 \
+  --output .build/local-build --archive /tmp/discordkit-root.tar.gz
+# In a fresh checkout at the identical absolute path, using the same toolchain:
+python3 Tools/ci/native_jobs.py test --platform linux-x64 --component root \
+  --suite DiscordCoreTests --jobs 8 --output .build/local-test \
+  --archive /tmp/discordkit-root.tar.gz
+```
+
+Choose the platform matching the current host and an appropriate job limit.
+[The legacy serial gate helper](../Tools/ci/linux_ci.py) remains available for
+local whole-stage checks, including root, authoring, tooling, benchmarks, helpers,
+audit, consumers and release. It uses the same pins and native build engine and
+retains process cleanup and evidence. Its `--skip-preflight` remains restricted
+to helper/audit stages. Cold setup and dependency resolution require network
+access; the Discord workload itself is offline.
+
+A runner inventory entry, queued job, local helper pass or workflow definition
+is not hosted platform qualification. Review successful command logs and
+artifacts at the actual revision. Native Windows named-pipe I/O, native audio,
+minimum-OS runtime, physical devices, authorized Discord and production capacity
+remain separate gates. Scheduling changes do not advance the maintenance ledger.
+Documentation publication, manual releases and weekly upstream review retain
+their separate workflows described below.
 
 Checks cover typed arguments, command-family routing, response ownership,
 message/mention safety, policies, bounded Gateway dispatch, supervised bot cleanup
@@ -126,7 +177,7 @@ against every retained baseline through 0.19.0; it does not replace the reviewed
 compatibility intent and makes no publication claim. The independently versioned
 macro and extension comparisons remain at 0.15.0.
 
-The macOS 26 hosted label selects an arm64 host; the initial baseline is scoped to
+The `MacOS-26-5` group selects an arm64 host; the initial baseline is scoped to
 arm64 macOS 13 module availability. If a runner architecture or platform scope
 changes, the comparison must fail and receive review rather than resetting the
 baseline silently. Compiler/SDK changes can also produce conservative differences.
@@ -135,7 +186,7 @@ hosted CI requests Swift 6.4.1. A workflow definition does not demonstrate that
 these toolchains emit identical signatures. Review actual same-version comparison
 results before accepting hosted compatibility; do not regenerate a baseline to
 hide compiler-driven differences.
-The macOS job emits public symbol graphs, compares the named platform API baseline,
+The separate macOS public API job emits public symbol graphs, compares the named platform API baseline,
 and converts every owned public library's DocC archive with warnings as errors,
 diagnostic analysis and experimental coverage. Each module receives its own primary
 and extension graphs. Every product has authored guides and curated individual
@@ -169,7 +220,7 @@ recorded as a passed compile.
 The independent [Documentation workflow](../.github/workflows/documentation.yml)
 runs on every push, pull request and manual dispatch. Its build job has no
 dependency on the offline certification jobs, so GitHub can schedule both
-workflows at the same time. It uses macOS 26 and Swift 6.4.1 to emit public symbol
+workflows at the same time. It uses the `MacOS-26-5` group and Swift 6.4.1 to emit public symbol
 graphs, check curation and tutorial snapshots, and convert all root, macro and
 extension library catalogs with the same strict DocC helper used by CI.
 

@@ -17,114 +17,335 @@ concurrency:
   group: offline-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  SWIFTNIO_STRICT: '1'
+  PYTHONUNBUFFERED: '1'
+
 jobs:
-  desktop:
-    name: Swift 6.4.1 / ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    timeout-minutes: 120
+  platforms:
+    name: Platform checks / ${{ matrix.platform }}
+    runs-on:
+      group: ${{ matrix.group }}
+    timeout-minutes: 20
     defaults:
       run:
-        shell: bash
+        shell: ${{ matrix.shell }}
     strategy:
       fail-fast: false
+      # One check per platform; runner sizes never multiply platform checks.
       matrix:
-        os: [macos-26]
-    env:
-      SWIFTNIO_STRICT: '1'
-      PYTHONUNBUFFERED: '1'
+        include:
+          - platform: windows-x64
+            group: Windows-x64-8
+            shell: pwsh
+          - platform: linux-x64
+            group: Linux-x64-8
+            shell: bash
+          - platform: macos-arm64
+            group: MacOS-26-5
+            shell: bash
+    steps:
+      - name: Enable Windows checkout long paths
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: git config --system core.longpaths true
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-native
+      - name: Check native host, compiler, linker and runtime
+        run: >-
+          python Tools/ci/platform_probe.py --platform ${{ matrix.platform }}
+          --output .build/platform-ci/${{ matrix.platform }}
+      - name: Retain platform check evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: platform-${{ matrix.platform }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .build/platform-ci/${{ matrix.platform }}
+          if-no-files-found: error
+          include-hidden-files: true
+          retention-days: 14
+
+  plan:
+    name: Plan independent builds and suites
+    needs: platforms
+    runs-on:
+      group: Linux-x64-8
+    timeout-minutes: 15
+    outputs:
+      builds: ${{ steps.plan.outputs.builds }}
+      tests: ${{ steps.plan.outputs.tests }}
     steps:
       - uses: actions/checkout@v6
         with:
           persist-credentials: false
-      - uses: swift-actions/setup-swift@v3
+      - uses: ./.github/actions/setup-native
+      - name: Discover owned test targets and assign runner sizes
+        id: plan
+        shell: bash
+        run: |
+          python Tools/ci/native_jobs.py plan --output .build/ci-plan
+          python - <<'PYTHON'
+          import json, os
+          from pathlib import Path
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              for key, filename in [('builds', 'build-matrix.json'), ('tests', 'test-matrix.json')]:
+                  matrix = json.loads((Path('.build/ci-plan') / filename).read_text())
+                  output.write(key + '=' + json.dumps(matrix, separators=(',', ':')) + '\n')
+          PYTHON
+      - uses: actions/upload-artifact@v7
         with:
-          swift-version: '6.4.1'
-          skip-verify-signature: false
+          name: ci-plan-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .build/ci-plan
+          if-no-files-found: error
+          include-hidden-files: true
+          retention-days: 14
+
+  build:
+    name: Builds / ${{ matrix.platform }} / ${{ matrix.component }}
+    needs: plan
+    runs-on:
+      group: ${{ matrix.group }}
+    timeout-minutes: 120
+    defaults:
+      run:
+        shell: ${{ matrix.shell }}
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.plan.outputs.builds) }}
+    steps:
+      - name: Enable Windows checkout long paths
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: git config --system core.longpaths true
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-native
+      - name: Compile selected products and tests without running suites
+        run: >-
+          python Tools/ci/native_jobs.py compile --component ${{ matrix.component }}
+          --platform ${{ matrix.platform }} --jobs ${{ matrix.jobs }}
+          --output .build/build-ci/${{ matrix.platform }}-${{ matrix.component }}
+          --archive "${{ runner.temp }}/compiled/${{ matrix.platform }}-${{ matrix.component }}.tar.gz"
+      - name: Verify generated source and dependency pins remain unchanged
+        run: git diff --exit-code
+      - name: Share compiled products with independent test jobs
+        uses: actions/upload-artifact@v7
+        with:
+          name: compiled-${{ matrix.platform }}-${{ matrix.component }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/compiled/${{ matrix.platform }}-${{ matrix.component }}.tar.gz
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 2
+      - name: Retain build diagnostics
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: build-evidence-${{ matrix.platform }}-${{ matrix.component }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .build/build-ci/${{ matrix.platform }}-${{ matrix.component }}
+          if-no-files-found: warn
+          include-hidden-files: true
+          retention-days: 14
+
+  tests:
+    name: Tests / ${{ matrix.platform }} / ${{ matrix.suite }}
+    needs: [plan, build, apple-compilation]
+    runs-on:
+      group: ${{ matrix.group }}
+    timeout-minutes: 60
+    defaults:
+      run:
+        shell: ${{ matrix.shell }}
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.plan.outputs.tests) }}
+    steps:
+      - name: Enable Windows checkout long paths
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: git config --system core.longpaths true
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-native
+      - name: Download this run's compiled package
+        uses: actions/download-artifact@v8
+        with:
+          name: compiled-${{ matrix.platform }}-${{ matrix.component }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/compiled
+      - name: Run only the selected suite without rebuilding
+        run: >-
+          python Tools/ci/native_jobs.py test --component ${{ matrix.component }}
+          --suite ${{ matrix.suite }} --platform ${{ matrix.platform }} --jobs ${{ matrix.jobs }}
+          --archive "${{ runner.temp }}/compiled/${{ matrix.platform }}-${{ matrix.component }}.tar.gz"
+          --output .build/test-ci/${{ matrix.platform }}-${{ matrix.suite }}
+      - name: Verify generated source and dependency pins remain unchanged
+        run: git diff --exit-code
+      - name: Retain selected suite evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-evidence-${{ matrix.platform }}-${{ matrix.suite }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            .build/test-ci/${{ matrix.platform }}-${{ matrix.suite }}
+            .build/dsl-measurements/runtime-smoke.json
+          if-no-files-found: warn
+          include-hidden-files: true
+          retention-days: 14
+
+  helpers:
+    name: Helper suites / ${{ matrix.suite }}
+    needs: [build, apple-compilation]
+    runs-on:
+      group: Linux-x64-8
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - suite: tooling-python
+            directory: Tools/DiscordKitTools/scripts
+          - suite: load-python
+            directory: Tools/DiscordKitLoadTests/scripts
+          - suite: benchmarks-python
+            directory: Tools/DiscordDSLBenchmarks/scripts
+          - suite: ci-python
+            directory: Tools/ci
+          - suite: browser
+            directory: Browser/DiscordActivityBridge
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
       - uses: actions/setup-node@v6
         with:
           node-version: '24'
-      - name: Record compiler and host
-        if: runner.os == 'macOS'
-        run: swift --version
-      - name: Build and test root
-        if: runner.os == 'macOS'
-        run: |
-          swift build
-          swift test
-      - name: Test separate authoring macros and external compile fixtures
-        if: runner.os == 'macOS'
-        run: |
-          swift test --package-path Packages/DiscordDSLMacros --explicit-target-dependency-import-check error
-          python3 Tools/ci/dsl_compile_fixtures.py --repository .
-      - name: Test independently adopted DSL extensions and typed injection fixtures
-        if: runner.os == 'macOS'
-        run: |
-          swift test --package-path Packages/DiscordDSLExtensions --explicit-target-dependency-import-check error
-          python3 Tools/ci/dsl_extension_fixtures.py --repository .
-      - name: Test tooling, Python helpers and browser bridge
-        if: runner.os == 'macOS'
-        run: |
-          swift test --package-path Tools/DiscordKitTools
-          swift test --package-path Tools/DiscordKitLoadTests
-          python3 -m unittest discover -s Tools/DiscordKitTools/scripts -p 'test_*.py'
-          python3 -m unittest discover -s Tools/DiscordKitLoadTests/scripts -p 'test_*.py'
-          python3 -m unittest discover -s Tools/ci -p 'test_*.py'
-          node --test Browser/DiscordActivityBridge/*.test.mjs
-      - name: Test independent DSL benchmark and finite offline smoke matrix
-        if: runner.os == 'macOS'
-        run: |
-          swift test --package-path Tools/DiscordDSLBenchmarks --explicit-target-dependency-import-check error
-          python3 -m unittest discover -s Tools/DiscordDSLBenchmarks/scripts -p 'test_*.py'
-          mkdir -p .build/dsl-measurements
-          swift run -c release --package-path Tools/DiscordDSLBenchmarks DiscordDSLBenchmarks --invocations 1000 --output .build/dsl-measurements/runtime-smoke.json
-      - name: Upload offline DSL smoke measurements
-        if: runner.os == 'macOS'
+      - name: Run selected Python suite
+        if: matrix.suite != 'browser'
+        run: python -m unittest discover -s ${{ matrix.directory }} -p 'test_*.py'
+      - name: Run browser bridge suite
+        if: matrix.suite == 'browser'
+        run: node --test Browser/DiscordActivityBridge/*.test.mjs
+
+  audit:
+    name: Documentation, inventory, generation and release audits
+    needs: [build, apple-compilation]
+    runs-on:
+      group: Linux-x64-8
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-native
+      - uses: actions/download-artifact@v8
+        with:
+          name: compiled-linux-x64-tooling-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/compiled
+      - name: Run audits using the compiled tooling executable
+        run: >-
+          python Tools/ci/native_jobs.py test --component tooling --suite audit
+          --platform linux-x64 --jobs 8 --archive "${{ runner.temp }}/compiled/linux-x64-tooling.tar.gz"
+          --output .build/audit-ci
+      - name: Verify generated source and dependency pins remain unchanged
+        run: git diff --exit-code
+      - name: Retain audit diagnostics
+        if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: dsl-smoke-${{ matrix.os }}
-          path: .build/dsl-measurements/runtime-smoke.json
-          if-no-files-found: error
+          name: audit-evidence-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .build/audit-ci
+          if-no-files-found: warn
           include-hidden-files: true
-      - name: Validate documentation, inventory, generation and parity
-        if: runner.os == 'macOS'
+          retention-days: 14
+
+  fixtures:
+    name: Compiler fixtures / ${{ matrix.platform }} / ${{ matrix.suite }}
+    needs: [build, apple-compilation]
+    # These suites compile positive and intentionally invalid consumers.
+    # Keep their compiler work on the large pools rather than the runtime pool.
+    runs-on:
+      group: ${{ matrix.group }}
+    timeout-minutes: 90
+    defaults:
+      run:
+        shell: ${{ matrix.shell }}
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [dsl_compile_fixtures, dsl_extension_fixtures]
+        platform: [linux-x64, macos-arm64, windows-x64]
+        include:
+          - platform: linux-x64
+            group: Linux-x64-64
+            jobs: 64
+            shell: bash
+          - platform: macos-arm64
+            group: MacOS-26-5
+            jobs: 5
+            shell: bash
+          - platform: windows-x64
+            group: Windows-x64-64
+            jobs: 64
+            shell: pwsh
+    steps:
+      - name: Enable Windows checkout long paths
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: git config --system core.longpaths true
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-native
+      - name: Require positive builds and exact negative compiler diagnostics
+        run: >-
+          python Tools/ci/${{ matrix.suite }}.py --repository .
+          --jobs ${{ matrix.jobs }} --timeout 1200
+      - name: Verify generated source and dependency pins remain unchanged
+        run: git diff --exit-code
+
+  public-api:
+    name: Public API and DocC / macOS ARM
+    needs: [build, apple-compilation]
+    runs-on:
+      group: MacOS-26-5
+    timeout-minutes: 120
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-native
+      - name: Download compiled macOS root
+        uses: actions/download-artifact@v8
+        with:
+          name: compiled-macos-arm64-root-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/compiled
+      - name: Download compiled macOS macros
+        uses: actions/download-artifact@v8
+        with:
+          name: compiled-macos-arm64-macros-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/compiled
+      - name: Download compiled macOS extensions
+        uses: actions/download-artifact@v8
+        with:
+          name: compiled-macos-arm64-extensions-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/compiled
+      - name: Restore compiled root and authoring packages
         run: |
-          swift run --package-path Tools/DiscordKitTools DiscordKitTools documentation audit --repository .
-          swift run --package-path Tools/DiscordKitTools DiscordKitTools inventory validate --repository .
-          swift run --package-path Tools/DiscordKitTools DiscordKitTools generate --check --repository .
-          swift run --package-path Tools/DiscordKitTools DiscordKitTools parity check --repository .
-          python3 Tools/DiscordKitTools/scripts/verify_social_catalog.py
-          python3 Tools/DiscordKitTools/scripts/release_check.py graph --repository .
-          # Preserve historical certification and validate current publication evidence separately.
-          python3 Tools/DiscordKitTools/scripts/release_check.py report --repository . --report Docs/Release/release-report-0.14.0.json
-          python3 Tools/DiscordKitTools/scripts/release_check.py report --repository . --report Docs/Release/release-report-0.15.0.json
-          python3 Tools/DiscordKitTools/scripts/release_check.py report --repository . --report Docs/Release/release-report-0.15.0-final.json
-          python3 Tools/DiscordKitTools/scripts/release_check.py report --repository . --report Docs/Release/semantic-logging-report.json
-          python3 Tools/DiscordKitTools/scripts/release_check.py report --repository . --report Docs/Release/publication-report.json
-      - name: Build independent consumers and test offline examples
-        if: runner.os == 'macOS'
-        env:
-          CONSUMER_SCRATCH_PATH: ${{ github.workspace }}/.build/consumers
-        run: |
-          for example in RESTOnly GatewayBot HTTPApp CommandsApp DSLCommands DSLEvents DSLBot OAuthApp VoiceBot RPCApp ActivityHost SocialApp LoggingApp; do
-            swift build --package-path "Examples/$example" --scratch-path "$CONSUMER_SCRATCH_PATH" --explicit-target-dependency-import-check error
+          for component in root macros extensions; do
+            python Tools/ci/native_jobs.py restore --component "$component" --platform macos-arm64 \
+              --archive "$RUNNER_TEMP/compiled/macos-arm64-$component.tar.gz" --output .build/api-ci
           done
-          swift test --package-path Examples/LoggingApp --scratch-path "$CONSUMER_SCRATCH_PATH"
-          swift run --package-path Examples/LoggingApp --scratch-path "$CONSUMER_SCRATCH_PATH"
-          swift test --package-path Examples/CommandsApp --scratch-path "$CONSUMER_SCRATCH_PATH"
-          swift test --package-path Examples/DSLCommands --scratch-path "$CONSUMER_SCRATCH_PATH"
-          swift test --package-path Examples/DSLEvents --scratch-path "$CONSUMER_SCRATCH_PATH"
-          swift test --package-path Examples/DSLBot --scratch-path "$CONSUMER_SCRATCH_PATH"
-          swift test --package-path Examples/ActivityHost --scratch-path "$CONSUMER_SCRATCH_PATH"
-          swift run --package-path Examples/CommandsApp --scratch-path "$CONSUMER_SCRATCH_PATH"
-          swift run --package-path Examples/DSLCommands --scratch-path "$CONSUMER_SCRATCH_PATH" DSLCommands --offline
-          swift run --package-path Examples/DSLEvents --scratch-path "$CONSUMER_SCRATCH_PATH"
-          swift run --package-path Examples/DSLBot --scratch-path "$CONSUMER_SCRATCH_PATH"
-          swift run --package-path Examples/VoiceBot --scratch-path "$CONSUMER_SCRATCH_PATH" VoiceBot
-          swift run --package-path Examples/SocialApp --scratch-path "$CONSUMER_SCRATCH_PATH"
       - name: Compare scoped public API and convert all public DocC modules
-        if: runner.os == 'macOS'
         run: |
-          swift package dump-symbol-graph --minimum-access-level public
           python3 Tools/ci/curate_docc.py --check
           python3 Tools/ci/documentation_examples.py
           python3 Tools/DiscordKitTools/scripts/api_baseline.py snapshot --repository . --symbolgraphs .build/out/symbolgraph --version 0.20.0 --output .build/current-api.json
@@ -135,18 +356,15 @@ jobs:
           python3 Tools/DiscordKitTools/scripts/api_baseline.py check --baseline Docs/Release/api-baseline-0.18.0.json --candidate .build/current-api.json --version 0.20.0
           python3 Tools/DiscordKitTools/scripts/api_baseline.py check --baseline Docs/Release/api-baseline-0.19.0.json --candidate .build/current-api.json --version 0.20.0
           python3 Tools/ci/build_docc.py
-          swift package --package-path Packages/DiscordDSLMacros dump-symbol-graph --minimum-access-level public
           python3 Tools/ci/curate_docc.py --repository Packages/DiscordDSLMacros --symbolgraphs Packages/DiscordDSLMacros/.build/out/symbolgraph --check
           python3 Tools/ci/build_docc.py --repository Packages/DiscordDSLMacros --symbolgraphs Packages/DiscordDSLMacros/.build/out/symbolgraph --output .build/documentation-macros
           python3 Tools/DiscordKitTools/scripts/api_baseline.py snapshot --repository . --authoring-package Packages/DiscordDSLMacros --symbolgraphs Packages/DiscordDSLMacros/.build/out/symbolgraph --version 0.15.0 --output .build/current-macros-api.json
           python3 Tools/DiscordKitTools/scripts/api_baseline.py check --baseline Docs/Release/api-baseline-macros-0.15.0.json --candidate .build/current-macros-api.json --version 0.15.0
-          swift package --package-path Packages/DiscordDSLExtensions dump-symbol-graph --minimum-access-level public
           python3 Tools/ci/curate_docc.py --repository Packages/DiscordDSLExtensions --symbolgraphs Packages/DiscordDSLExtensions/.build/out/symbolgraph --check
           python3 Tools/ci/build_docc.py --repository Packages/DiscordDSLExtensions --symbolgraphs Packages/DiscordDSLExtensions/.build/out/symbolgraph --output .build/documentation-extensions
           python3 Tools/DiscordKitTools/scripts/api_baseline.py snapshot --repository . --authoring-package Packages/DiscordDSLExtensions --symbolgraphs Packages/DiscordDSLExtensions/.build/out/symbolgraph --version 0.15.0 --output .build/current-extensions-api.json
           python3 Tools/DiscordKitTools/scripts/api_baseline.py check --baseline Docs/Release/api-baseline-extensions-0.15.0.json --candidate .build/current-extensions-api.json --version 0.15.0
       - name: Package DocC archives and API evidence
-        if: runner.os == 'macOS'
         run: |
           # DocC symbol filenames contain colons, which upload-artifact rejects.
           # Preserve those filenames and internal links inside a tarball.
@@ -155,7 +373,6 @@ jobs:
             documentation-macros current-macros-api.json \
             documentation-extensions current-extensions-api.json
       - name: Upload DocC archives and API evidence
-        if: runner.os == 'macOS'
         uses: actions/upload-artifact@v7
         with:
           name: public-documentation-and-api
@@ -166,101 +383,11 @@ jobs:
       - name: Verify tracked generated source and dependency pins remain unchanged
         run: git diff --exit-code
 
-  linux:
-    name: Swift 6.4.1 / ubuntu-24.04
-    runs-on:
-      group: linux-x64-8-core
-    timeout-minutes: 120
-    defaults:
-      run:
-        shell: bash
-    env:
-      SWIFTNIO_STRICT: '1'
-      PYTHONUNBUFFERED: '1'
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          persist-credentials: false
-      - name: Install Ubuntu build and validation dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install --yes --no-install-recommends \
-            binutils ca-certificates clang curl git gnupg2 libc6-dev \
-            libcurl4-openssl-dev libedit2 libgcc-13-dev libncurses-dev \
-            libpython3-dev libsqlite3-0 libstdc++-13-dev libxml2-dev \
-            libz3-dev pkg-config python3 tzdata unzip zlib1g-dev
-      - name: Import Swift signing keys before verifying the Swiftly installer
-        run: |
-          # setup-swift v3 verifies Swiftly before it imports any signing keys.
-          # Decode compressed responses as in Swift's official signing guide.
-          curl --compressed --fail --show-error --silent --location --retry 3 \
-            --output "$RUNNER_TEMP/swift-signing-keys.asc" https://www.swift.org/keys/all-keys.asc
-          gpg --batch --import "$RUNNER_TEMP/swift-signing-keys.asc"
-          gpg --batch --list-keys E813C892820A6FA13755B268F167DF1ACF9CE069
-      - uses: swift-actions/setup-swift@v3
-        with:
-          swift-version: '6.4.1'
-          skip-verify-signature: false
-      - uses: actions/setup-node@v6
-        with:
-          node-version: '24'
-      - name: Verify Ubuntu host, compiler and native target
-        run: python3 Tools/ci/linux_ci.py --jobs 4 --stage preflight
-      - name: Build and test root
-        run: python3 Tools/ci/linux_ci.py --jobs 4 --stage root
-      - name: Test authoring packages and external compile fixtures
-        run: python3 Tools/ci/linux_ci.py --jobs 4 --stage authoring
-      - name: Test tooling, Python helpers and browser bridge
-        run: python3 Tools/ci/linux_ci.py --jobs 4 --stage tooling
-      - name: Test DSL benchmark and finite offline smoke matrix
-        run: python3 Tools/ci/linux_ci.py --jobs 4 --stage benchmarks
-      - name: Validate documentation, inventory, generation and parity
-        run: python3 Tools/ci/linux_ci.py --jobs 4 --stage audit
-      - name: Build independent consumers and test offline examples
-        run: python3 Tools/ci/linux_ci.py --jobs 4 --stage consumers
-      - name: Build optimized root, macro and extension packages
-        run: python3 Tools/ci/linux_ci.py --jobs 4 --stage release
-      - name: Verify tracked generated source and dependency pins remain unchanged
-        run: git diff --exit-code
-      - name: Package checked Linux source
-        if: github.event_name != 'pull_request'
-        run: python3 Tools/ci/package_source.py --repository . --output .build/packages
-      - name: Upload Ubuntu logs and host evidence
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: ubuntu-build-evidence-${{ github.run_id }}-${{ github.run_attempt }}
-          path: |
-            .build/linux-ci
-            .build/dsl-measurements/runtime-smoke.json
-          if-no-files-found: warn
-          include-hidden-files: true
-          retention-days: 14
-      - name: Upload Linux SwiftPM source bundle
-        if: success() && github.event_name != 'pull_request'
-        uses: actions/upload-artifact@v7
-        with:
-          name: DiscordKit-linux-source-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
-          path: .build/packages/*
-          if-no-files-found: error
-          include-hidden-files: true
-          compression-level: 0
-          retention-days: 14
-
-  maintenance:
-    name: Upstream maintenance review freshness
-    runs-on: ubuntu-24.04
-    timeout-minutes: 5
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          persist-credentials: false
-      - name: Require a current upstream review for certification
-        run: python3 Tools/DiscordKitTools/scripts/release_check.py maintenance --repository . --record Docs/Release/maintenance.json
-
   apple-compilation:
-    name: Apple minima / device and simulator modules
-    runs-on: macos-26
+    name: Build Apple minima / device and simulator modules
+    needs: platforms
+    runs-on:
+      group: MacOS-26-5
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v6
@@ -283,14 +410,67 @@ jobs:
           if-no-files-found: error
           include-hidden-files: true
 
-  infrastructure-gates:
-    name: Unverified platform and access gates
-    runs-on: ubuntu-24.04
+  maintenance:
+    name: Upstream maintenance review freshness
+    needs: [build, apple-compilation]
+    runs-on:
+      group: Linux-x64-8
+    timeout-minutes: 5
     steps:
-      - name: Publish excluded qualification scope
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Require a current upstream review for certification
+        run: python3 Tools/DiscordKitTools/scripts/release_check.py maintenance --repository . --record Docs/Release/maintenance.json
+
+  package:
+    name: Package checked Linux source
+    needs: [tests, helpers, audit, fixtures, public-api, maintenance, apple-compilation]
+    runs-on:
+      group: Linux-x64-8
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-native
+      - name: Package the clean source revision
+        if: github.event_name != 'pull_request'
+        run: python Tools/ci/package_source.py --repository . --output .build/packages
+      - name: Upload Linux SwiftPM source bundle
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v7
+        with:
+          name: DiscordKit-linux-source-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .build/packages/*
+          if-no-files-found: error
+          include-hidden-files: true
+          compression-level: 0
+          retention-days: 14
+
+  complete:
+    name: Offline certification passed
+    if: always()
+    needs: [platforms, plan, build, tests, helpers, audit, fixtures, public-api, maintenance, apple-compilation, package]
+    runs-on:
+      group: Linux-x64-8
+    timeout-minutes: 5
+    steps:
+      - name: Require every platform, build and suite to pass
+        env:
+          RESULTS: ${{ toJSON(needs) }}
+        run: |
+          python3 - <<'PYTHON'
+          import json, os
+          results = json.loads(os.environ['RESULTS'])
+          failed = {name: value['result'] for name, value in results.items() if value['result'] != 'success'}
+          if failed:
+              raise SystemExit('Certification incomplete: ' + json.dumps(failed, sort_keys=True))
+          PYTHON
+      - name: Record qualification scope
         run: |
           cat >> "$GITHUB_STEP_SUMMARY" <<'REPORT'
-          Windows and Android require the separately dispatched platform workflow and configured self-hosted runners. Until actual results are reviewed, these hosts remain unverified.
+          Platform checks run once for Windows x64, Linux x64 and macOS ARM64 before compilation. Builds use the large Linux/Windows pools and the available macOS ARM pool. Independent suites reuse this run's compiled artifacts on small pools; compiler fixtures retain large runners.
 
-          Apple device/simulator jobs compile selected modules only. Physical devices, native routing, minimum-OS runtime, authorized Discord, independent crypto review and fleet capacity remain separate gates. Live REST smoke is manual and read-only. No job in this workflow receives Discord credentials.
+          Apple device/simulator jobs compile selected modules only. Android, physical devices, native routing, minimum-OS runtime, authorized Discord, independent crypto review and fleet capacity remain separate gates. Live REST smoke is manual and read-only. No job receives Discord credentials.
           REPORT
