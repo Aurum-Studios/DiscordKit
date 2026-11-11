@@ -196,16 +196,19 @@ public actor CommandRouter {
     private let routes: [CommandRouteKey: CommandRoute]
     private let maximumConcurrentHandlers: Int
     private var activeHandlers = 0
+    private nonisolated let intervals: DiscordIntervalTiming?
 
     /// Validates fixed route count/text budgets and concurrency without running handlers or network work.
     /// - Parameters:
     ///   - routes: Finite routes with unique exact keys; default no routes. Different namespaces can reuse names.
+    ///   - intervals: Optional caller-entry workflow and owner admission/preparation/handler intervals.
     ///   - maximumRoutes: Positive route-count cap, default 1024; fixed closure captures remain caller-owned.
     ///   - maximumRouteTextBytes: Positive aggregate retained UTF-8 key budget, default 256 KiB.
     ///   - maximumConcurrentHandlers: Positive total admitted handler cap, default 64; excess callers fail immediately.
     /// - Throws: Invalid-value for invalid bounds or duplicate keys; limitExceeded for route-count/text excess.
     public init(routes: [CommandRoute] = [], maximumRoutes: Int = 1024,
-        maximumRouteTextBytes: Int = 262_144, maximumConcurrentHandlers: Int = 64) throws {
+        maximumRouteTextBytes: Int = 262_144, maximumConcurrentHandlers: Int = 64,
+        intervals: DiscordIntervalTiming? = nil) throws {
         guard maximumRoutes > 0, maximumRouteTextBytes > 0, maximumConcurrentHandlers > 0,
               Set(routes.map(\.key)).count == routes.count else { throw DiscordError.validation(.invalidValue) }
         guard routes.count <= maximumRoutes else { throw DiscordError.validation(.limitExceeded) }
@@ -215,6 +218,7 @@ public actor CommandRouter {
             guard size <= maximumRouteTextBytes - bytes else { throw DiscordError.validation(.limitExceeded) }
             bytes += size
         }
+        self.intervals = intervals
         self.routes = Dictionary(uniqueKeysWithValues: routes.map { ($0.key, $0) })
         self.maximumConcurrentHandlers = maximumConcurrentHandlers
     }
@@ -230,11 +234,39 @@ public actor CommandRouter {
     ///   synchronous preparation, execution-wrapper or handler error/cancellation. Complete preparation
     ///   precedes wrappers; a preparation failure invokes neither wrapper nor handler.
     ///   Every completion releases admission, including thrown errors. Suspension is reentrant and concurrency remains bounded.
-    public func route(_ context: InteractionContext) async throws -> Bool {
+    public nonisolated func route(_ context: InteractionContext) async throws -> Bool {
+        guard let interval = intervals?.begin(.commandRouting, stage: .operation) else {
+            return try await routeOwned(context)
+        }
+        do {
+            let result = try await DiscordIntervalScope.$context.withValue(interval.context) {
+                try await routeOwned(context)
+            }
+            interval.end()
+            return result
+        } catch {
+            interval.end(Self.intervalOutcome(error))
+            throw error
+        }
+    }
+
+    /// Preserves finite cancellation and mutation uncertainty through routing and application wrappers.
+    private nonisolated static func intervalOutcome(_ error: any Error) -> DiscordIntervalOutcome {
+        if error is CancellationError || (error as? DiscordError) == .cancelled { return .cancelled }
+        if (error as? InteractionDeliveryError) == .indeterminate { return .uncertain }
+        if case .unknownMutationOutcome = error as? DiscordError { return .uncertain }
+        return .failed
+    }
+
+    /// Owns admission, complete preparation and execution after the measured caller-to-actor hop.
+    private func routeOwned(_ context: InteractionContext) async throws -> Bool {
         DiscordLog.makeLogger("commands.router").debug("Command routing started", metadata: ["dk.event": "commands.route.started"])
+        let admissionInterval = intervals?.begin(.commandRouting, stage: .admission)
+        defer { admissionInterval?.end(Task.isCancelled ? .cancelled : .failed) }
         try Task.checkCancellation()
         guard let key = CommandRouteKey.incoming(context.interaction), let route = routes[key] else {
             DiscordLog.makeLogger("commands.router").debug("No command route matched", metadata: ["dk.event": "commands.route.unmatched"])
+            admissionInterval?.end()
             return false
         }
         DiscordLog.makeLogger("commands.router").trace("Exact command route matched", metadata: ["dk.event": "commands.route.matched"])
@@ -243,6 +275,7 @@ public actor CommandRouter {
             throw DiscordError.validation(.limitExceeded)
         }
         activeHandlers += 1
+        admissionInterval?.end()
         DiscordLog.makeLogger("commands.router").trace("Command route admitted", metadata: ["dk.event": "commands.route.admitted", "dk.active": .stringConvertible(activeHandlers)])
         defer {
             activeHandlers -= 1
@@ -251,16 +284,25 @@ public actor CommandRouter {
         return try await InteractionFailureScope.withOperationCapture {
             let execute: @Sendable () async throws -> Void
             DiscordLog.makeLogger("commands.router").trace("Preparing complete command input", metadata: ["dk.event": "commands.route.preparing"])
-            do { execute = try route.prepare(context) }
+            let preparation = intervals?.begin(.commandRouting, stage: .preparation)
+            do { execute = try route.prepare(context); preparation?.end() }
             catch {
+                preparation?.end(Self.intervalOutcome(error))
                 DiscordLog.makeLogger("commands.router").debug("Command input preparation failed", metadata: ["dk.event": "commands.route.preparation_failed"])
                 throw await InteractionFailureScope.annotate(error, at: .preparation)
             }
             DiscordLog.makeLogger("commands.router").trace("Complete command input prepared", metadata: ["dk.event": "commands.route.prepared"])
             try Task.checkCancellation()
             DiscordLog.makeLogger("commands.router").trace("Executing prepared command", metadata: ["dk.event": "commands.route.executing"])
-            do { try await execute() }
+            let handler = intervals?.begin(.commandRouting, stage: .handler)
+            do {
+                if let handler {
+                    try await DiscordIntervalScope.$context.withValue(handler.context) { try await execute() }
+                } else { try await execute() }
+                handler?.end()
+            }
             catch {
+                handler?.end(Self.intervalOutcome(error))
                 if error is CancellationError {
                     DiscordLog.makeLogger("commands.router").debug("Command route cancelled", metadata: ["dk.event": "commands.route.cancelled"])
                 } else {

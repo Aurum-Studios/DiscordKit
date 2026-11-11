@@ -404,3 +404,94 @@ Local smoke proves case semantics, bounded overload and cleanup. It does not
 qualify controlled-host numerical baselines, Linux or other platforms, Discord
 requests, production capacity or later roadmap stages. Actual completed checks
 belong in the [validation record](../../Docs/Tasks/latency-timing/VALIDATION.md#phase-5-validation).
+
+## Phase 6 Gateway and command timing
+
+The explicit `command-timing` subcommand implements the
+[Phase 6 plan](../../Docs/Tasks/latency-timing/PHASE-6.md). It uses the shared
+catalog-six envelope with separate native details. Existing load commands and
+Phase 5 `timing` keep their current meanings and readers.
+
+```sh
+swift run --package-path Tools/DiscordKitLoadTests -c release \
+  --force-resolved-versions DiscordKitLoadTests command-timing --list-cases
+swift run --package-path Tools/DiscordKitLoadTests -c release \
+  --force-resolved-versions DiscordKitLoadTests command-timing \
+  --case interaction.manualDefer --requests 64 --concurrency 4 \
+  --warmup-requests 8 --delay-microseconds 2000 --duration-seconds 10 \
+  --output .build/timing-phase6/manual-defer.json
+```
+
+| Family | Finite scenarios | Actual origin and terminal boundary |
+| --- | --- | --- |
+| `gateway.*` | `burst`, `slowSubscriber`, `slowHandler`, `reconnect`, `callbackError`, `cancelled`, `overloadRecovery` | Scripted uncompressed JSON transport through real shard/hub/dispatcher; includes actual runtime frame, retained queue and control intervals; whole run includes startup and joined teardown |
+| Trusted `gateway.*` | `trustedInteraction`, `trustedDeferred`, `trustedUncertain` | Public client and bot runtime install the private authenticated receiver; existing scalar receipt-to-admission and confirmed acknowledgement metrics retain private provenance |
+| `interaction.*` | `immediate`, `manualDefer`, `automaticDefer`, `duplicate`, `invalidSignature`, `malformed`, `uncertain`, `cancelled`, `admissionRefusal`, `callbackError`, `handlerFailureAfterAcknowledgement`, `deadlineRace`, `durableAdmission`, `durableDuplicate`, `durableFailure` | Real Ed25519-signed injected HTTP request, bounded body/verification/replay/decode/route, first response and joined workflow |
+| `synthetic.*` | `directImmediate`, `dslImmediate`, `directDeferred`, `dslDeferred`, `directFailure`, `dslFailure`, `directCancelled`, `dslCancelled` | Caller immediately before real typed routing through handler and response ownership; explicitly bypasses signed ingress and trusted Gateway receipt |
+
+All fixtures are local and use synthetic credentials. They open no real WebSocket
+or HTTP listener. Gateway binary/ETF/compression is unsupported and excluded.
+Signed request fixtures use a fixed development signing key, never a Discord key.
+Durable profiles run the existing webhook processor with an explicit bounded
+transaction fixture: admission measures its actual consumer hook, durable duplicate
+priming is excluded and later duplicate hints invoke no transaction, and durable
+backend failure returns retryable 503 without claiming a completed commit. These
+profiles do not invent interaction decode or first-response hooks for webhooks.
+Exact duplicate cases reuse the signature and body that primed replay admission.
+
+`interaction.workflow` covers every logical terminal outcome directly, including
+HTTP refusal, cancellation and uncertainty. Its outcome partition matches native
+counts. Runtime child boundaries retain their own result: a confirmed first
+response can succeed before a later workflow failure. Application response timing
+starts after the workflow begin callback and stops at the inline sink completion.
+It excludes earlier listener/socket time; no trusted HTTP receipt metric is
+available. Deadlines are constructed before observer callbacks. `deadlineRace`
+selects an already-expired caller deadline; deterministic runtime tests separately
+prove in-flight deadline/observer ordering. `cancelled` uses an explicitly cancelled
+caller; parent cancellation tests separately prove joined partial results.
+
+The manual defer case sends one acknowledgement and completes it with one edit.
+Automatic defer waits for a real acknowledgement before editing, including when
+provider delay is zero. Callback errors distinguish positive no-submission from
+uncertain submission and perform no replacement initial response. Explicit
+provider waits and policy wrappers are measured directly; policy includes its
+nested handler. Histogram rows overlap and cannot be added into a waterfall.
+
+Configuration bounds match the shared finite profiles: at most 100,000 requests,
+256 workers (64 in smoke), provider delay at most one second, one finite warmup
+population and a cooperative duration cap. The Gateway rate setting applies to
+`slowHandler` and `overloadRecovery`; their source follows absolute monotonic
+arrival deadlines with bounded backpressure. Other cases have no rate-controlled
+source. The overload recovery case also confirms a heartbeat write while the first
+callback still owns its handler permit, then proves subsequent recovery.
+Every retained queue, active handler, initial response slot, stream,
+connection and lease is checked after awaited cleanup. Refused/discarded input
+remains visible in outcome counts without invented handler service latency.
+
+Release capture uses the existing build receipt and serial process supervisor:
+
+```sh
+python3 Tools/DiscordBenchmarkSupport/scripts/run_benchmarks.py build \
+  --repository . --package Tools/DiscordKitLoadTests --product DiscordKitLoadTests \
+  --receipt .build/timing-phase6/release-final.json
+python3 Tools/DiscordKitLoadTests/scripts/run_command_timing_suites.py \
+  --executable Tools/DiscordKitLoadTests/.build/release/DiscordKitLoadTests \
+  --receipt .build/timing-phase6/release-final.json \
+  --output-dir .build/timing-phase6/matrix-final --requests 32 --warmup-requests 8
+```
+
+The wrapper sweeps 1/4/16 handlers against 200/2,000/20,000 offered Gateway
+frames/second for slow handlers and overload recovery. Synthetic cases run in
+forward and reversed order in separate fresh processes; this is informational
+counterbalancing, without controlled-host numerical comparison. The full reports
+retain provenance, all outcome distributions, CPU/RSS scope and cleanup. Each
+completed row becomes a retained checkpoint, and failures cannot silently pass as
+successful throughput. The compact matrix links its complete native reports.
+
+Selected metric sets fit the shared 16 MiB statistics ceiling; requesting the
+entire expanded catalog can fail budget admission. Histograms use 100-microsecond
+buckets over 0...1 second, preserve censor/loss and require sufficient observations
+for tails. Smoke does not establish individual-call P99, production capacity,
+live Discord response delivery, real WebSocket/network throughput, hosted CI or
+other-host support. Completed evidence belongs in the
+[validation record](../../Docs/Tasks/latency-timing/VALIDATION.md#phase-6-validation).

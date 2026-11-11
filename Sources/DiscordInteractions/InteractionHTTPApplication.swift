@@ -18,6 +18,7 @@ public struct InteractionHTTPApplication: Sendable {
     private let admission: InteractionAcknowledgementAdmission
     private let autoDefer: InteractionAutoDeferPolicy?
     private let limits: JSONLimits
+    private let intervals: DiscordIntervalTiming?
 
     /// Binds independently bounded authentication and acknowledgement authorities.
     /// - Parameters:
@@ -26,12 +27,14 @@ public struct InteractionHTTPApplication: Sendable {
     ///   - admission: Shared initial-only count/byte authority, independent from ordinary REST work.
     ///   - autoDefer: Optional early defer, disabled by default. Autocomplete, PING and unknown types never auto-defer.
     ///     Update mode applies only to component/modal input carrying an original message.
+    ///   - intervals: Optional application-entry workflow, first confirmed response, decode and handler intervals.
+    ///     These exclude earlier listener/socket time and convey no trusted receipt provenance.
     ///   - limits: Complete JSON bounds applied only after signature verification.
     public init(applicationID: ApplicationID, ingress: DiscordSignedIngress,
                 admission: InteractionAcknowledgementAdmission, autoDefer: InteractionAutoDeferPolicy? = nil,
-                limits: JSONLimits = .default) {
+                limits: JSONLimits = .default, intervals: DiscordIntervalTiming? = nil) {
         self.applicationID = applicationID; self.ingress = ingress; self.admission = admission
-        self.autoDefer = autoDefer; self.limits = limits
+        self.autoDefer = autoDefer; self.limits = limits; self.intervals = intervals
     }
 
     /// Authenticates one exchange, normalizes its typed context and owns its handler until completion.
@@ -57,15 +60,49 @@ public struct InteractionHTTPApplication: Sendable {
         continuations: (@Sendable (Interaction) -> InteractionResponseSink)? = nil,
         handler: @escaping @Sendable (InteractionContext) async throws -> Void) async throws
         where C.Duration == Duration {
+        // Capture the existing response deadline origin before observer callbacks can consume time.
+        let receiptClock = InteractionClock(context.clock)
+        let workflow = intervals?.begin(.interactionHTTP, stage: .operation)
+        let response = intervals?.begin(.interactionHTTP, stage: .firstResponse,
+            parent: workflow?.context ?? DiscordIntervalScope.context)
+        do {
+            if let workflow {
+                try await DiscordIntervalScope.$context.withValue(workflow.context) {
+                    try await handleOwned(exchange, context: context, receiptClock: receiptClock, continuations: continuations,
+                        firstResponse: response, handler: handler)
+                }
+            } else {
+                try await handleOwned(exchange, context: context, receiptClock: receiptClock, continuations: continuations,
+                    firstResponse: response, handler: handler)
+            }
+            // A confirmed response has already terminated its own interval. A workflow that exits
+            // without confirmation cannot manufacture success for that separate boundary.
+            response?.end(.failed)
+            workflow?.end()
+        } catch {
+            let outcome = Self.outcome(error)
+            response?.end(outcome)
+            workflow?.end(outcome)
+            throw error
+        }
+    }
+
+    /// Owns the existing signed exchange and its structured response/handler cleanup.
+    private func handleOwned<C: Clock>(_ exchange: HTTPExchange, context: TransportContext<C>, receiptClock: InteractionClock,
+        continuations: (@Sendable (Interaction) -> InteractionResponseSink)?, firstResponse: DiscordInterval?,
+        handler: @escaping @Sendable (InteractionContext) async throws -> Void) async throws
+        where C.Duration == Duration {
         DiscordLog.makeLogger("interactions.http").debug("Interaction HTTP application exchange started", metadata: ["dk.event": "interactions.http.started"])
-        let clock = InteractionClock(context.clock)
-        let slot = InlineInteractionResponseSlot(responder: exchange.responder)
+        let clock = receiptClock
+        let slot = InlineInteractionResponseSlot(responder: exchange.responder, firstResponse: firstResponse)
         let failure = InteractionHandlerFailure()
         do {
             let result = try await ingress.process(request: exchange.request, context: context) { verified in
                 let interaction: Interaction
-                do { interaction = try Interaction(data: verified.rawBody, limits: limits) }
+                let decode = intervals?.begin(.interactionHTTP, stage: .decode)
+                do { interaction = try Interaction(data: verified.rawBody, limits: limits); decode?.end() }
                 catch {
+                    decode?.end(.failed)
                     DiscordLog.makeLogger("interactions.http").debug("Authenticated interaction envelope is malformed", metadata: ["dk.event": "interactions.http.decode_rejected", "dk.status": "400"])
                     return HTTPResponse(status: 400)
                 }
@@ -82,7 +119,7 @@ public struct InteractionHTTPApplication: Sendable {
                     try await slot.send(try Self.response(bytes), context: bounded)
                 }, editOriginal: rest?.edit, followup: rest?.followup, deleteOriginal: rest?.delete)
                 let responder = InteractionResponder(interaction: interaction, deliveryMode: .http,
-                    clock: clock, sink: sink, admission: admission, receivedAt: .zero)
+                    clock: clock, sink: sink, admission: admission, receivedAt: .zero, intervals: intervals)
                 let normalized = try InteractionContext(interaction: interaction, deliveryMode: .http, responder: responder)
                 DiscordLog.makeLogger("interactions.http").trace("HTTP interaction response owner and context normalized", metadata: ["dk.event": "interactions.http.normalized"])
                 if interaction.type.knownValue == .ping {
@@ -93,9 +130,21 @@ public struct InteractionHTTPApplication: Sendable {
                     do {
                         DiscordLog.makeLogger("interactions.http").trace("Entering normalized interaction handler", metadata: ["dk.event": "interactions.http.handler_entered"])
                         defer { DiscordLog.makeLogger("interactions.http").trace("Normalized interaction handler exited", metadata: ["dk.event": "interactions.http.handler_exited"]) }
-                        if let autoDefer, Self.canDefer(interaction, policy: autoDefer) {
-                            try await responder.runWithAutoDefer(policy: autoDefer) { try await handler(normalized) }
-                        } else { try await handler(normalized) }
+                        let handlerInterval = intervals?.begin(.interactionHTTP, stage: .handler)
+                        do {
+                            let invoke: @Sendable () async throws -> Void = {
+                                if let autoDefer, Self.canDefer(interaction, policy: autoDefer) {
+                                    try await responder.runWithAutoDefer(policy: autoDefer) { try await handler(normalized) }
+                                } else { try await handler(normalized) }
+                            }
+                            if let handlerInterval {
+                                try await DiscordIntervalScope.$context.withValue(handlerInterval.context, operation: invoke)
+                            } else { try await invoke() }
+                            handlerInterval?.end()
+                        } catch {
+                            handlerInterval?.end(Self.outcome(error))
+                            throw error
+                        }
                     } catch { await failure.store(error) }
                 }
                 return HTTPResponse(status: 500)
@@ -109,6 +158,17 @@ public struct InteractionHTTPApplication: Sendable {
             await exchange.responder.close()
             DiscordLog.makeLogger("interactions.http").trace("Failed interaction HTTP exchange closed", metadata: ["dk.event": "interactions.http.cleanup_completed"])
             throw error
+        }
+    }
+
+    /// Preserves cancellation and explicit response ambiguity without retaining arbitrary errors.
+    private static func outcome(_ error: any Error) -> DiscordIntervalOutcome {
+        if (error as? InteractionDeliveryError) == .indeterminate { return .uncertain }
+        switch OperationTiming.outcome(for: error) {
+        case .succeeded: return .succeeded
+        case .failed: return .failed
+        case .cancelled: return .cancelled
+        case .uncertain: return .uncertain
         }
     }
 
@@ -142,10 +202,13 @@ public struct InteractionHTTPApplication: Sendable {
 private actor InlineInteractionResponseSlot {
     private let responder: any HTTPResponder
     private var reserved = false
+    private let firstResponse: DiscordInterval?
 
     /// Retains the caller-transferred response slot without starting transmission.
     /// - Parameter responder: Exactly-once adapter response owner.
-    init(responder: any HTTPResponder) { self.responder = responder }
+    init(responder: any HTTPResponder, firstResponse: DiscordInterval?) {
+        self.responder = responder; self.firstResponse = firstResponse
+    }
     /// Reports whether an inline response attempt already consumed the slot.
     /// - Returns: True even when the attempted transmission failed ambiguously.
     func wasReserved() -> Bool { reserved }
@@ -158,7 +221,15 @@ private actor InlineInteractionResponseSlot {
         guard !reserved else { await response.body?.close(); throw InteractionLifecycleError.alreadyAcknowledged }
         reserved = true
         DiscordLog.makeLogger("interactions.http").trace("Inline HTTP response slot reserved", metadata: ["dk.event": "interactions.http.response_reserved", "dk.status": .stringConvertible(response.status)])
-        try await responder.respond(response, context: context)
+        do {
+            try await responder.respond(response, context: context)
+            firstResponse?.end((200...299).contains(response.status) ? .succeeded : .failed)
+        } catch {
+            // Positive adapter evidence distinguishes a definite non-submission. The reserved slot
+            // remains consumed in either case, so no fallback response can replay the transmission.
+            firstResponse?.end((error as? InteractionDeliveryError) == .notSubmitted ? .failed : .uncertain)
+            throw error
+        }
         DiscordLog.makeLogger("interactions.http").trace("Inline HTTP response transmission completed", metadata: ["dk.event": "interactions.http.response_sent"])
     }
 }

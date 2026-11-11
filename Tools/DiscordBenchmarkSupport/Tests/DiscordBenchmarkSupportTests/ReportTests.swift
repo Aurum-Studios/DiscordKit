@@ -51,7 +51,7 @@ import Testing
         oldCatalog.identity.catalogVersion = 2
         oldCatalog.metrics[0].id = BenchmarkWorkload.transport.rawValue
         #expect(!report.comparison(with: oldCatalog).isCompatible)
-        report.identity.catalogVersion = 6
+        report.identity.catalogVersion = 7
         #expect(throws: BenchmarkReportError.invalidIdentity) { try report.validate() }
     }
 
@@ -80,7 +80,29 @@ import Testing
             report.identity.catalogVersion = 5
             #expect(try DiscordBenchmarkReport.decode(report.validatedData()) == report)
         }
-        _ = try RunStatistics(workloads: BenchmarkWorkload.allCases)
+        _ = try RunStatistics(workloads: BenchmarkWorkload.allCases.filter { $0.minimumCatalogVersion == 5 })
+    }
+
+    /// Catalog six keeps new owner populations separate and refuses incompatible historical identities.
+    /// - Throws: Unexpected bounded fixture, budget or serialization error.
+    @Test func phaseSixCatalogPreservesEarlierReports() throws {
+        var report = try completeReport()
+        let workloads = BenchmarkWorkload.allCases.filter { $0.minimumCatalogVersion == 6 }
+        for workload in workloads {
+            report.metrics[0].id = workload.rawValue
+            for version: UInt32 in [2, 3, 4, 5] {
+                report.identity.catalogVersion = version
+                #expect(throws: BenchmarkReportError.unsupportedMetric) { try report.validate() }
+            }
+            report.identity.catalogVersion = 6
+            #expect(try DiscordBenchmarkReport.decode(report.validatedData()) == report)
+        }
+        for first in stride(from: 0, to: workloads.count, by: 16) {
+            _ = try RunStatistics(workloads: Array(workloads[first..<min(first + 16, workloads.count)]))
+        }
+        #expect(throws: StatisticsError.storageBudgetExceeded) {
+            _ = try RunStatistics(workloads: BenchmarkWorkload.allCases)
+        }
     }
 
     /// Ensures stable common-envelope round trips preserve complete explicit evidence.

@@ -4,6 +4,7 @@
 // https://aurum-studios.com
 
 import Crypto
+import DiscordLogging
 import DiscordTransport
 import Foundation
 
@@ -57,6 +58,7 @@ public actor SignedRequestVerifier {
     private let maximumReplayEntries: Int
     private let replayPolicy: SignedReplayPolicy
     private let now: @Sendable () -> Int64
+    private let intervals: DiscordIntervalTiming?
     private var replays: [Data: Int64] = [:]
 
     /// Validates policy and the application's public key without starting work.
@@ -68,18 +70,20 @@ public actor SignedRequestVerifier {
     ///   - maximumReplayEntries: Positive retained signature bound, default 4096; full windows fail closed.
     ///   - replayPolicy: Reject exact retries by default; webhook-event endpoints should allow retries
     ///     and use their durable admission authority to decide duplicate processing.
+    ///   - intervals: Optional signature and bounded replay-owner intervals; nil reads no instrumentation clock.
     ///   - now: Wall-clock Unix seconds; inject a deterministic clock in tests. Negative values fail closed.
     /// - Throws: `SignedIngressFailure.invalidConfiguration` for invalid policy or public-key encoding.
     public init(publicKey: String, maximumBodyBytes: Int = 1_048_576,
                 maximumAgeSeconds: Int64 = 300, maximumFutureSkewSeconds: Int64 = 30,
                 maximumReplayEntries: Int = 4_096, replayPolicy: SignedReplayPolicy = .rejectIdentical,
-                now: @escaping @Sendable () -> Int64 = { Int64(Date().timeIntervalSince1970) }) throws {
+                now: @escaping @Sendable () -> Int64 = { Int64(Date().timeIntervalSince1970) },
+                intervals: DiscordIntervalTiming? = nil) throws {
         guard maximumBodyBytes > 0, (0...86_400).contains(maximumAgeSeconds),
               (0...86_400).contains(maximumFutureSkewSeconds), maximumReplayEntries > 0,
               let bytes = Self.hex(publicKey, count: 32),
               let key = try? Curve25519.Signing.PublicKey(rawRepresentation: bytes)
         else { throw SignedIngressFailure.invalidConfiguration }
-        self.key = key; self.maximumBodyBytes = maximumBodyBytes
+        self.key = key; self.maximumBodyBytes = maximumBodyBytes; self.intervals = intervals
         maximumAge = maximumAgeSeconds; futureSkew = maximumFutureSkewSeconds
         self.maximumReplayEntries = maximumReplayEntries; self.replayPolicy = replayPolicy; self.now = now
     }
@@ -97,6 +101,8 @@ public actor SignedRequestVerifier {
     /// - Throws: Sanitized malformed header, invalid signature, stale timestamp, oversized body,
     ///   replay or capacity errors. This synchronous actor operation never suspends midway.
     public func verify(headers: [HTTPHeader], body: Data) throws -> VerifiedDiscordRequest {
+        let signatureInterval = intervals?.begin(.signedIngress, stage: .signatureVerification)
+        defer { signatureInterval?.end(.failed) }
         guard body.count <= maximumBodyBytes else { throw SignedIngressFailure.bodyTooLarge }
         let signatures = headers.filter { $0.name.lowercased() == "x-signature-ed25519" }
         let timestamps = headers.filter { $0.name.lowercased() == "x-signature-timestamp" }
@@ -113,6 +119,9 @@ public actor SignedRequestVerifier {
         var message = Data(timestamps[0].value.utf8)
         message.append(body)
         guard key.isValidSignature(signature, for: message) else { throw SignedIngressFailure.invalidSignature }
+        signatureInterval?.end()
+        let replayInterval = intervals?.begin(.signedIngress, stage: .replayAdmission)
+        defer { replayInterval?.end(.failed) }
         replays = replays.filter { $0.value >= current }
         let replay = replays[signature] != nil
         if replay, case .rejectIdentical = replayPolicy { throw SignedIngressFailure.replay }
@@ -122,6 +131,7 @@ public actor SignedRequestVerifier {
         }
         let (expiry, overflow) = timestamp.addingReportingOverflow(maximumAge)
         replays[signature] = overflow ? Int64.max : expiry
+        replayInterval?.end()
         return VerifiedDiscordRequest(rawBody: body, timestamp: timestamp, isReplay: replay)
     }
 

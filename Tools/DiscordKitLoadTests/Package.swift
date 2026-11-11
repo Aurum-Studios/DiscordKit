@@ -14,7 +14,8 @@ let concurrencySettings: [SwiftSetting] = [
 let package = Package(
     name: "DiscordKitLoadTests",
     platforms: [.macOS(.v13)],
-    dependencies: [.package(name: "DiscordKit", path: "../.."), .package(path: "../DiscordBenchmarkSupport")],
+    dependencies: [.package(name: "DiscordKit", path: "../.."), .package(path: "../DiscordBenchmarkSupport"),
+        .package(url: "https://github.com/apple/swift-crypto.git", from: "5.0.1")],
     targets: [
         .executableTarget(
             name: "DiscordKitLoadTests",
@@ -27,8 +28,15 @@ let package = Package(
                 .product(name: "DiscordHTTP", package: "DiscordKit"),
                 .product(name: "DiscordGateway", package: "DiscordKit"),
                 .product(name: "DiscordCache", package: "DiscordKit"),
+                .product(name: "DiscordClient", package: "DiscordKit"),
+                .product(name: "DiscordBotDSL", package: "DiscordKit"),
                 .product(name: "DiscordModels", package: "DiscordKit"),
                 .product(name: "DiscordCore", package: "DiscordKit"),
+                .product(name: "DiscordInteractions", package: "DiscordKit"),
+                .product(name: "DiscordCommands", package: "DiscordKit"),
+                .product(name: "DiscordCommandDSL", package: "DiscordKit"),
+                .product(name: "DiscordDSL", package: "DiscordKit"),
+                .product(name: "Crypto", package: "swift-crypto"),
             ],
             swiftSettings: concurrencySettings
         ),

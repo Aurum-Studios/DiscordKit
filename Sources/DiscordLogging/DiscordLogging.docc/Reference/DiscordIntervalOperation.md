@@ -6,11 +6,17 @@
 
 ### Cases
 
+- ``DiscordLogging/DiscordIntervalOperation/commandRouting``
 - ``DiscordLogging/DiscordIntervalOperation/gatewayDispatch``
+- ``DiscordLogging/DiscordIntervalOperation/gatewayFrame``
+- ``DiscordLogging/DiscordIntervalOperation/gatewayPublication``
+- ``DiscordLogging/DiscordIntervalOperation/gatewaySession``
 - ``DiscordLogging/DiscordIntervalOperation/httpExchange``
 - ``DiscordLogging/DiscordIntervalOperation/httpSubscriber``
+- ``DiscordLogging/DiscordIntervalOperation/interactionHTTP``
 - ``DiscordLogging/DiscordIntervalOperation/interactionResponse``
 - ``DiscordLogging/DiscordIntervalOperation/rest``
+- ``DiscordLogging/DiscordIntervalOperation/signedIngress``
 
 ## See Also
 

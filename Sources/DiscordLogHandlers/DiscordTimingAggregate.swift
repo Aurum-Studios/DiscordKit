@@ -18,7 +18,7 @@ public struct DiscordTimingAggregateConfiguration: Sendable, Codable, Equatable 
     public let lowerBoundNanoseconds: Int64
     /// Largest supported integer nanosecond value; larger valid durations remain censored overflow.
     public let upperBoundNanoseconds: Int64
-    /// Maximum distinct metric/outcome rows; 236 covers all scalar and detailed combinations.
+    /// Maximum retained metric/outcome rows; later identities share this explicit finite capacity.
     public let maximumKeys: Int
     /// Per-key received-observation cap, including invalid observations; subsequent values count as drops.
     public let maximumObservationsPerKey: UInt64
@@ -29,7 +29,7 @@ public struct DiscordTimingAggregateConfiguration: Sendable, Codable, Equatable 
     /// - Parameters:
     ///   - lowerBoundNanoseconds: Inclusive nonnegative supported minimum; defaults to zero.
     ///   - upperBoundNanoseconds: Inclusive maximum, at least the minimum; defaults to 60 seconds.
-    ///   - maximumKeys: Allowed row count in 1...256; defaults to every 236 closed combination.
+    ///   - maximumKeys: Allowed row count in 1...256; defaults to 236 retained combinations; excess keys count as loss.
     ///   - maximumObservationsPerKey: Positive explicit saturation cap; defaults to UInt64.max.
     ///   - storageBudgetBytes: Positive retained-state allowance, at most 16 MiB; defaults to 16 MiB.
     public init(lowerBoundNanoseconds: Int64 = 0, upperBoundNanoseconds: Int64 = 60_000_000_000,
@@ -114,7 +114,8 @@ public final class DiscordTimingAggregate: @unchecked Sendable {
     private let configuration: DiscordTimingAggregateConfiguration
     private let storageUpperBoundBytes: Int
     private let lock = NSLock()
-    private var keySlots = Array(repeating: -1, count: 236)
+    private static let keyCapacity = (14 + TimingOutputNames.operations.count * TimingOutputNames.stages.count) * 4
+    private var keySlots = Array(repeating: -1, count: DiscordTimingAggregate.keyCapacity)
     private var states: [RowState]
     private var cells: [UInt64]
     private var usedKeys = 0
@@ -125,7 +126,7 @@ public final class DiscordTimingAggregate: @unchecked Sendable {
     private var counterSaturationCount: UInt64 = 0
 
     /// Validates limits and allocates all histogram/key/counter capacity before the first observation.
-    /// - Parameter configuration: Finite range/storage/key limits; defaults cover all closed identities.
+    /// - Parameter configuration: Finite range/storage/key limits; defaults retain up to 236 distinct rows and count excess keys as loss.
     /// - Throws: `DiscordTimingAggregateError.invalidConfiguration` if the requested profile is invalid
     ///   or its conservative storage bound exceeds the selected allowance or 16 MiB ceiling.
     public init(configuration: DiscordTimingAggregateConfiguration = .init()) throws {
@@ -138,7 +139,7 @@ public final class DiscordTimingAggregate: @unchecked Sendable {
         }
         // Includes contiguous cells/rows, finite key lookup, object/array headers and conservative slack.
         let bytes = configuration.maximumKeys * (64 * MemoryLayout<UInt64>.stride + 128)
-            + 236 * MemoryLayout<Int>.stride + 8_192
+            + Self.keyCapacity * MemoryLayout<Int>.stride + 8_192
         guard bytes <= configuration.storageBudgetBytes else {
             throw DiscordTimingAggregateError.invalidConfiguration
         }
@@ -176,7 +177,7 @@ public final class DiscordTimingAggregate: @unchecked Sendable {
         let operation = TimingOutputNames.operationIndex(event.operation)
         let stage = TimingOutputNames.stageIndex(event.stage)
         let result = TimingOutputNames.outcomeIndex(outcome)
-        record(key: (14 + operation * 9 + stage) * 4 + result,
+        record(key: (14 + operation * TimingOutputNames.stages.count + stage) * 4 + result,
                elapsed: event.validity == .valid ? event.elapsedNanoseconds : nil)
     }
 
@@ -198,8 +199,8 @@ public final class DiscordTimingAggregate: @unchecked Sendable {
                 operation = DiscordTimingObservation.Phase.allCases[metric].rawValue
                 stage = nil
             } else {
-                operation = TimingOutputNames.operations[(metric - 14) / 9]
-                stage = TimingOutputNames.stages[(metric - 14) % 9]
+                operation = TimingOutputNames.operations[(metric - 14) / TimingOutputNames.stages.count]
+                stage = TimingOutputNames.stages[(metric - 14) % TimingOutputNames.stages.count]
             }
             return DiscordTimingAggregateRow(source: metric < 14 ? "scalar" : "interval",
                 operation: operation, stage: stage, outcome: outcome, count: state.count,
@@ -216,7 +217,7 @@ public final class DiscordTimingAggregate: @unchecked Sendable {
 
     /// Applies one finite numeric update atomically, with first-arrival key admission and counted loss.
     /// - Parameters:
-    ///   - key: Internal index in 0..<236; no user string participates in admission.
+    ///   - key: Internal index in the finite key table; no user string participates in admission.
     ///   - elapsed: Nonnegative valid duration; nil denotes invalid clock/conversion.
     private func record(key: Int, elapsed: Int64?) {
         lock.withLock {
@@ -271,8 +272,8 @@ public final class DiscordTimingAggregate: @unchecked Sendable {
 
 /// Shared closed identity mapping for optional outputs; no application content enters these tables.
 enum TimingOutputNames {
-    static let operations = ["rest", "httpExchange", "httpSubscriber", "gatewayDispatch", "interactionResponse"]
-    static let stages = ["operation", "admission", "headers", "body", "subscriber", "localQueue", "handler", "initialResponse", "originalEdit"]
+    static let operations = ["rest", "httpExchange", "httpSubscriber", "gatewayDispatch", "interactionResponse", "gatewaySession", "gatewayFrame", "gatewayPublication", "signedIngress", "interactionHTTP", "commandRouting"]
+    static let stages = ["operation", "admission", "headers", "body", "subscriber", "localQueue", "handler", "initialResponse", "originalEdit", "socketReceipt", "decode", "ingestionQueue", "hubResidence", "heartbeatACK", "reconnect", "shutdown", "signatureVerification", "replayAdmission", "preparation", "firstResponse"]
 
     /// Maps a finite scalar phase directly without allocating an all-cases array on the hot path.
     /// - Parameter phase: Legacy scalar owner boundary.
@@ -318,6 +319,12 @@ enum TimingOutputNames {
         case .httpSubscriber: 2
         case .gatewayDispatch: 3
         case .interactionResponse: 4
+        case .gatewaySession: 5
+        case .gatewayFrame: 6
+        case .gatewayPublication: 7
+        case .signedIngress: 8
+        case .interactionHTTP: 9
+        case .commandRouting: 10
         }
     }
 
@@ -335,6 +342,17 @@ enum TimingOutputNames {
         case .handler: 6
         case .initialResponse: 7
         case .originalEdit: 8
+        case .socketReceipt: 9
+        case .decode: 10
+        case .ingestionQueue: 11
+        case .hubResidence: 12
+        case .heartbeatACK: 13
+        case .reconnect: 14
+        case .shutdown: 15
+        case .signatureVerification: 16
+        case .replayAdmission: 17
+        case .preparation: 18
+        case .firstResponse: 19
         }
     }
 

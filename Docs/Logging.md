@@ -15,7 +15,7 @@ never bootstrap SwiftLog, open outputs or change process-wide log configuration.
 Existing diagnostics, typed errors, cancellation and resource ownership stay authoritative.
 
 The same independent foundation also exposes opt-in detailed runtime intervals through
-`DiscordIntervalTiming`. REST, Gateway dispatch and interaction response owners accept
+`DiscordIntervalTiming`. REST, Gateway shard/hub/dispatch, signed ingress, command routing and interaction response owners accept
 an `intervals` option independently from scalar `OperationTiming`. See the
 [runtime interval guide](../Sources/DiscordLogging/DiscordLogging.docc/Guides/RuntimeIntervals.md)
 and [Phase 2 boundaries and evidence](Tasks/latency-timing/PHASE-2.md). The application

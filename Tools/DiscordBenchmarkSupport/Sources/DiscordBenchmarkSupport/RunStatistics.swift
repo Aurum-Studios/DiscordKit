@@ -45,11 +45,51 @@ public enum BenchmarkWorkload: String, CaseIterable, Sendable {
     case arrivalAdmissionWait = "arrival.admissionWait"
     case arrivalService = "arrival.service"
 
+    /// Gateway, signed application and explicitly synthetic owner boundaries, introduced in catalog six.
+    case gatewaySession = "gateway.sessionJoined"
+    case gatewaySocketReceipt = "gateway.socketReceipt"
+    case gatewayDecode = "gateway.decode"
+    case gatewayIngestionQueue = "gateway.ingestionQueue"
+    case gatewayPublication = "gateway.publication"
+    case gatewayHubResidence = "gateway.hubResidence"
+    case gatewayDispatch = "gateway.dispatchJoined"
+    case gatewayLocalQueue = "gateway.localQueue"
+    case gatewayAdmission = "gateway.admission"
+    case gatewayHandler = "gateway.handler"
+    case gatewayHeartbeatACK = "gateway.heartbeatAck"
+    case gatewayReconnect = "gateway.reconnect"
+    case gatewayShutdown = "gateway.shutdown"
+    case ingressApplicationResponse = "ingress.applicationResponse"
+    case ingressBodyRead = "ingress.bodyRead"
+    case ingressSignature = "ingress.signature"
+    case ingressAdmission = "ingress.admission"
+    case ingressDecode = "ingress.decode"
+    case commandRoute = "command.route"
+    case commandArguments = "command.arguments"
+    case commandAdmission = "command.admission"
+    case commandPolicy = "command.policy"
+    case commandHandler = "command.handler"
+    case interactionHandler = "interaction.handler"
+    case interactionWorkflow = "interaction.workflow"
+    case interactionProviderWait = "interaction.providerWait"
+    case interactionInitialResponse = "interaction.initialResponse"
+    case interactionOriginalEdit = "interaction.originalEdit"
+    case syntheticInvoke = "synthetic.invoke"
+    case syntheticProviderWait = "synthetic.providerWait"
+
+    case gatewayReceiveToAdmission = "gateway.receiveToAdmission"
+    case gatewayReceiveToAcknowledgement = "gateway.receiveToAcknowledgement"
+    case gatewayAdmissionToAcknowledgement = "gateway.admissionToAcknowledgement"
+    case gatewayInitialResponse = "gateway.initialResponse"
+    case gatewayOriginalEdit = "gateway.originalEdit"
+    case gatewayAcknowledgementToOriginalEdit = "gateway.acknowledgementToOriginalEdit"
+
     /// Earliest catalog revision defining this identity; old readers retain old semantics.
     public var minimumCatalogVersion: UInt32 {
         /// Returns the frozen catalog introduction version without inspecting observations.
         get {
             switch self {
+            case .gatewayReceiveToAdmission, .gatewayReceiveToAcknowledgement, .gatewayAdmissionToAcknowledgement, .gatewayInitialResponse, .gatewayOriginalEdit, .gatewayAcknowledgementToOriginalEdit, .commandPolicy, .gatewaySession, .gatewaySocketReceipt, .gatewayDecode, .gatewayIngestionQueue, .gatewayPublication, .gatewayHubResidence, .gatewayDispatch, .gatewayLocalQueue, .gatewayAdmission, .gatewayHandler, .gatewayHeartbeatACK, .gatewayReconnect, .gatewayShutdown, .ingressApplicationResponse, .ingressBodyRead, .ingressSignature, .ingressAdmission, .ingressDecode, .commandRoute, .commandArguments, .commandAdmission, .commandHandler, .interactionHandler, .interactionWorkflow, .interactionProviderWait, .interactionInitialResponse, .interactionOriginalEdit, .syntheticInvoke, .syntheticProviderWait: 6
             case .instrumentation: 3
             case .pureBatch: 4
             case .transport, .httpPolicy, .direct10, .direct100, .direct1000,
@@ -73,7 +113,7 @@ public enum BenchmarkWorkload: String, CaseIterable, Sendable {
 ///
 /// Initialization allocates every finite population before work. Each 100-microsecond
 /// bucket covers durations in 0...1 second; longer observations remain censored.
-/// Six outcome histograms per workload use less than 16 MiB across the entire enum.
+/// Selected workload subsets must fit the shared 16 MiB ceiling; a full catalog allocation can be rejected.
 /// A lock protects concurrent DSL workers. It never calls application code or does
 /// I/O, and completed timestamps are captured before entering it. Collection cost
 /// can still perturb scheduling and enclosing throughput measurements.

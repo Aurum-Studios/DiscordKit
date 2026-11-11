@@ -105,7 +105,15 @@ public actor GatewayShard<C: Clock, Leases: ShardLeaseStore> where C.Duration ==
     private var resumeURL: URL?
     private var sequence: Int64?
     private var heartbeatPending = false
-    private var events: [GatewayEvent] = []
+    private struct QueuedEvent: Sendable {
+        let event: GatewayEvent
+        let interval: DiscordInterval?
+    }
+    private var events: [QueuedEvent] = []
+    private let intervals: DiscordIntervalTiming?
+    private var sessionContext: DiscordIntervalContext?
+    private var heartbeatInterval: DiscordInterval?
+    private var reconnectInterval: DiscordInterval?
     private var bufferedBytes = 0
     private let eventSignal = AsyncStream<Void>.makeStream(bufferingPolicy: .bufferingNewest(1))
     private var waitingForEvents = false
@@ -131,6 +139,7 @@ public actor GatewayShard<C: Clock, Leases: ShardLeaseStore> where C.Duration ==
     ///   - commandCoordinator: Shared per-bot opcode/resource admission, preserved across replacements.
     ///     Nil creates a bounded local authority on first command; share an injected authority
     ///     across workers/handoffs to preserve cooldowns beyond one actor lifetime.
+    ///   - intervals: Optional detailed runtime hooks; nil performs no instrumentation clock reads.
     ///   - owner: Fresh nonsecret worker ID; defaults to a random UUID.
     ///   - random: Independent jitter sample; values are clamped to 0...1 and nonfinite samples become 0.5.
     public init(identity: ShardIdentity, token: BotToken, intents: UInt64, discovery: GatewayDiscovery,
@@ -138,11 +147,13 @@ public actor GatewayShard<C: Clock, Leases: ShardLeaseStore> where C.Duration ==
                 startup: any GatewayStartupCoordinator, configuration: GatewayShardConfiguration,
                 identifyConfiguration: GatewayIdentifyConfiguration = .default,
                 commandCoordinator: (any GatewayCommandCoordinator)? = nil,
+                intervals: DiscordIntervalTiming? = nil,
                 owner: UUID = UUID(), random: @escaping @Sendable () -> Double = { Double.random(in: 0...1) }) {
         self.identity = identity; self.token = token; self.intents = intents; initialURL = discovery.url
         self.transport = transport; self.clock = clock; self.leases = leases; self.startup = startup
         self.configuration = configuration; self.owner = owner; self.random = random
         self.identifyConfiguration = identifyConfiguration; self.commandCoordinator = commandCoordinator
+        self.intervals = intervals
         requests = GatewayRequestRegistry(maximumRequests: configuration.maximumPendingRequests,
             maximumEvents: configuration.maximumResponseEvents, maximumBytes: configuration.maximumResponseBytes,
             maximumRetiredKeys: configuration.maximumRequestKeys)
@@ -161,10 +172,24 @@ public actor GatewayShard<C: Clock, Leases: ShardLeaseStore> where C.Duration ==
     ///   `coordinatorUnavailable` category so dependency text cannot expose credentials.
     ///   Remote release failure takes precedence over a prior run error so uncertain handoff is visible.
     public func run() async throws {
+        guard !running, state.phase == .disconnected else { throw GatewayFailure.alreadyRunning }
+        try Task.checkCancellation()
+        running = true
+        let interval = intervals?.begin(.gatewaySession, stage: .operation)
+        sessionContext = interval?.context
+        defer { sessionContext = nil }
+        do {
+            try await runObserved()
+            interval?.end()
+        } catch {
+            interval?.end(Self.intervalOutcome(error))
+            throw error
+        }
+    }
+
+    /// Supervises the original runtime; the public owner terminates its interval after cleanup returns.
+    private func runObserved() async throws {
         try await DiscordLog.withOperation("gateway.session", event: "gateway.operation") {
-            guard !running, state.phase == .disconnected else { throw GatewayFailure.alreadyRunning }
-            try Task.checkCancellation()
-            running = true
             DiscordLog.makeLogger("gateway.session").info("Gateway shard started", metadata: ["dk.event": "gateway.shard.started"])
             var runFailure: (any Error)?
             do {
@@ -182,7 +207,9 @@ public actor GatewayShard<C: Clock, Leases: ShardLeaseStore> where C.Duration ==
             } catch { runFailure = safeGatewayFailure(error) }
             // A failed remote release is observable even when the original run also failed.
             // Until expiry, an external coordinator may still retain the ownership record.
-            try await finish()
+            let shutdown = intervals?.begin(.gatewaySession, stage: .shutdown, parent: sessionContext)
+            do { try await finish(interruptedOutcome: runFailure.map { Self.intervalOutcome($0) } ?? .cancelled); shutdown?.end() }
+            catch { shutdown?.end(Self.intervalOutcome(error)); throw error }
             if let runFailure {
                 if runFailure is CancellationError {
                     DiscordLog.makeLogger("gateway.session").debug("Gateway shard cancelled", metadata: ["dk.event": "gateway.shard.cancelled"])
@@ -224,9 +251,11 @@ public actor GatewayShard<C: Clock, Leases: ShardLeaseStore> where C.Duration ==
     public func drainEvents(maximum: Int = 64) -> [GatewayEvent] {
         guard maximum > 0 else { return [] }
         let count = min(maximum, events.count)
-        let result = Array(events.prefix(count))
+        let queued = Array(events.prefix(count))
         events.removeFirst(count)
+        let result = queued.map(\.event)
         bufferedBytes -= result.reduce(0) { $0 + $1.byteCount }
+        for entry in queued { entry.interval?.end() }
         DiscordLog.makeLogger("gateway.events").trace("Gateway ingestion batch drained", metadata: ["dk.event": "gateway.events.drained", "dk.events": .stringConvertible(count), "dk.queued": .stringConvertible(events.count), "dk.bytes": .stringConvertible(bufferedBytes)])
         return result
     }
@@ -437,6 +466,7 @@ public actor GatewayShard<C: Clock, Leases: ShardLeaseStore> where C.Duration ==
                 DiscordLog.makeLogger("gateway.session").trace("Gateway connection generation cleaned up", metadata: ["dk.event": "gateway.connection.cleaned", "dk.resumable": .stringConvertible(sessionID != nil && sequence != nil && resumeURL != nil)])
                 requests.reset()
                 heartbeatPending = false
+                heartbeatInterval?.end(Self.intervalOutcome(error)); heartbeatInterval = nil
                 if !running { return }
                 try Task.checkCancellation()
                 if GatewayCloseDisposition.classify(code) == .fatal { throw GatewayFailure.fatalClose(code!) }
@@ -450,6 +480,9 @@ public actor GatewayShard<C: Clock, Leases: ShardLeaseStore> where C.Duration ==
                     }
                 }
                 guard retries < configuration.maximumReconnectAttempts else { throw GatewayFailure.retryLimitExceeded }
+                if reconnectInterval == nil {
+                    reconnectInterval = intervals?.begin(.gatewaySession, stage: .reconnect, parent: sessionContext)
+                }
                 _ = try state.apply(.reconnect)
                 var cap = configuration.retryBase
                 for _ in 0..<retries {
@@ -473,7 +506,7 @@ public actor GatewayShard<C: Clock, Leases: ShardLeaseStore> where C.Duration ==
             deadline: clock.now.advanced(by: configuration.helloTimeout))) else { throw GatewayFailure.disconnected }
         try await fence(active)
         DiscordLog.makeLogger("gateway.protocol").trace("Gateway Hello received for decoding", metadata: ["dk.event": "gateway.hello.received"])
-        let hello = try GatewayEnvelope(message, maximumBytes: configuration.maximumFrameBytes)
+        let hello = try decodeFrame(message, parent: sessionContext)
         guard hello.opcode == 10, case .object(let data) = hello.data,
               case .number(let value) = data["heartbeat_interval"], let milliseconds = Int64(value.rawValue),
               milliseconds > 0, milliseconds <= 3_600_000 else { throw GatewayFailure.invalidPayload }
@@ -507,49 +540,74 @@ public actor GatewayShard<C: Clock, Leases: ShardLeaseStore> where C.Duration ==
                 throw GatewayFailure.disconnected
             }
             let receivedAt = clock.now
-            try await fence(active)
-            DiscordLog.makeLogger("gateway.protocol").trace("Gateway frame received for decoding", metadata: ["dk.event": "gateway.frame.received"])
-            let envelope = try GatewayEnvelope(message, maximumBytes: configuration.maximumFrameBytes)
-            DiscordLog.makeLogger("gateway.protocol").trace("Gateway frame decoded", metadata: ["dk.event": "gateway.frame.decoded", "dk.opcode": .stringConvertible(envelope.opcode), "dk.bytes": .stringConvertible(envelope.byteCount)])
-            switch envelope.opcode {
-            case 0:
-                guard let next = envelope.sequence, let name = envelope.name else { throw GatewayFailure.invalidPayload }
-                if let sequence, next <= sequence {
-                    DiscordLog.makeLogger("gateway.protocol").trace("Gateway duplicate or stale dispatch discarded", metadata: ["dk.event": "gateway.dispatch.duplicate"])
-                    continue
-                }
-                if name == "READY" {
-                    guard case .object(let data) = envelope.data,
-                          case .string(let session) = data["session_id"], !session.isEmpty,
-                          case .string(let url) = data["resume_gateway_url"] else { throw GatewayFailure.invalidPayload }
-                    let validated = try gatewayURL(url)
-                    _ = try state.apply(.ready)
-                    DiscordLog.makeLogger("gateway.session").notice("Gateway session ready", metadata: ["dk.event": "gateway.session.ready"])
-                    sessionID = session; resumeURL = validated
-                } else if name == "RESUMED" {
-                    _ = try state.apply(.ready)
-                    DiscordLog.makeLogger("gateway.session").notice("Gateway session resumed", metadata: ["dk.event": "gateway.session.resumed"])
-                }
-                sequence = next
-                try append(envelope, receivedAt: receivedAt)
-                requests.ingest(GatewayEvent(shard: identity, envelope: envelope, socketGeneration: active))
-                if name == "RATE_LIMITED" { try await recordRateLimit(envelope.data, generation: active) }
-            case 1: try await sendHeartbeat(generation: active, scheduled: false)
-            case 7:
-                DiscordLog.makeLogger("gateway.session").notice("Gateway server requested reconnect", metadata: ["dk.event": "gateway.reconnect.requested"])
-                throw GatewayFailure.reconnectRequested
-            case 9:
-                guard case .bool(let resumable) = envelope.data else { throw GatewayFailure.invalidPayload }
-                DiscordLog.makeLogger("gateway.session").notice("Gateway session invalidated by server", metadata: ["dk.event": "gateway.session.invalidated", "dk.resumable": .stringConvertible(resumable)])
-                if !resumable { clearSession() }
-                throw GatewayFailure.reconnectRequested
-            case 11:
-                heartbeatPending = false
-                DiscordLog.makeLogger("gateway.heartbeat").trace("Gateway heartbeat acknowledged", metadata: ["dk.event": "gateway.heartbeat.acknowledged"])
-            case 10: throw GatewayFailure.invalidPayload
-            default: try append(envelope, receivedAt: receivedAt)
+            let receipt = intervals?.begin(.gatewayFrame, stage: .socketReceipt, parent: sessionContext)
+            do {
+                try await processFrame(message, receivedAt: receivedAt, generation: active, parent: receipt?.context)
+                receipt?.end()
+            } catch {
+                receipt?.end(Self.intervalOutcome(error))
+                throw error
             }
         }
+    }
+
+    /// Processes one received frame; duplicate sequences still complete their parse/receipt observations.
+    private func processFrame(_ message: WebSocketMessage, receivedAt: C.Instant, generation active: UInt64,
+                              parent: DiscordIntervalContext?) async throws {
+        try await fence(active)
+        DiscordLog.makeLogger("gateway.protocol").trace("Gateway frame received for decoding", metadata: ["dk.event": "gateway.frame.received"])
+        let envelope = try decodeFrame(message, parent: parent)
+        DiscordLog.makeLogger("gateway.protocol").trace("Gateway frame decoded", metadata: ["dk.event": "gateway.frame.decoded", "dk.opcode": .stringConvertible(envelope.opcode), "dk.bytes": .stringConvertible(envelope.byteCount)])
+        switch envelope.opcode {
+        case 0:
+            guard let next = envelope.sequence, let name = envelope.name else { throw GatewayFailure.invalidPayload }
+            if let sequence, next <= sequence {
+                DiscordLog.makeLogger("gateway.protocol").trace("Gateway duplicate or stale dispatch discarded", metadata: ["dk.event": "gateway.dispatch.duplicate"])
+                return
+            }
+            if name == "READY" {
+                guard case .object(let data) = envelope.data,
+                      case .string(let session) = data["session_id"], !session.isEmpty,
+                      case .string(let url) = data["resume_gateway_url"] else { throw GatewayFailure.invalidPayload }
+                let validated = try gatewayURL(url)
+                _ = try state.apply(.ready)
+                DiscordLog.makeLogger("gateway.session").notice("Gateway session ready", metadata: ["dk.event": "gateway.session.ready"])
+                sessionID = session; resumeURL = validated
+            } else if name == "RESUMED" {
+                _ = try state.apply(.ready)
+                DiscordLog.makeLogger("gateway.session").notice("Gateway session resumed", metadata: ["dk.event": "gateway.session.resumed"])
+            }
+            if name == "READY" || name == "RESUMED" { reconnectInterval?.end(); reconnectInterval = nil }
+            sequence = next
+            try append(envelope, receivedAt: receivedAt, parent: parent)
+            requests.ingest(GatewayEvent(shard: identity, envelope: envelope, socketGeneration: active))
+            if name == "RATE_LIMITED" { try await recordRateLimit(envelope.data, generation: active) }
+        case 1: try await sendHeartbeat(generation: active, scheduled: false)
+        case 7:
+            DiscordLog.makeLogger("gateway.session").notice("Gateway server requested reconnect", metadata: ["dk.event": "gateway.reconnect.requested"])
+            throw GatewayFailure.reconnectRequested
+        case 9:
+            guard case .bool(let resumable) = envelope.data else { throw GatewayFailure.invalidPayload }
+            DiscordLog.makeLogger("gateway.session").notice("Gateway session invalidated by server", metadata: ["dk.event": "gateway.session.invalidated", "dk.resumable": .stringConvertible(resumable)])
+            if !resumable { clearSession() }
+            throw GatewayFailure.reconnectRequested
+        case 11:
+            heartbeatPending = false
+            heartbeatInterval?.end(); heartbeatInterval = nil
+            DiscordLog.makeLogger("gateway.heartbeat").trace("Gateway heartbeat acknowledged", metadata: ["dk.event": "gateway.heartbeat.acknowledged"])
+        case 10: throw GatewayFailure.invalidPayload
+        default: try append(envelope, receivedAt: receivedAt, parent: parent)
+        }
+    }
+
+    /// Parses one supported JSON frame at its actual synchronous owner boundary.
+    private func decodeFrame(_ message: WebSocketMessage, parent: DiscordIntervalContext?) throws -> GatewayEnvelope {
+        let interval = intervals?.begin(.gatewayFrame, stage: .decode, parent: parent)
+        do {
+            let envelope = try GatewayEnvelope(message, maximumBytes: configuration.maximumFrameBytes)
+            interval?.end()
+            return envelope
+        } catch { interval?.end(.failed); throw error }
     }
 
     /// Schedules jittered first and fixed subsequent heartbeats independently of ingestion/handlers.
@@ -578,12 +636,13 @@ public actor GatewayShard<C: Clock, Leases: ShardLeaseStore> where C.Duration ==
         if scheduled {
             if heartbeatPending {
                 DiscordLog.makeLogger("gateway.heartbeat").warning("Gateway heartbeat acknowledgement missing; connection recovery required", metadata: ["dk.event": "gateway.heartbeat.missed"])
+                heartbeatInterval?.end(.failed); heartbeatInterval = nil
                 throw GatewayFailure.missedHeartbeatACK
             }
             heartbeatPending = true
         }
         DiscordLog.makeLogger("gateway.heartbeat").trace("Gateway heartbeat sending", metadata: ["dk.event": "gateway.heartbeat.send", "dk.scheduled": .stringConvertible(scheduled)])
-        try await send(opcode: 1, data: sequence.map(gatewayNumber) ?? .null, generation: active)
+        try await send(opcode: 1, data: sequence.map(gatewayNumber) ?? .null, generation: active, observeHeartbeat: scheduled)
     }
 
     /// Obtains shared Identify allowance, or resumes without consuming startup quota.
@@ -626,8 +685,9 @@ public actor GatewayShard<C: Clock, Leases: ShardLeaseStore> where C.Duration ==
     ///   - opcode: Implemented lifecycle or typed application opcode.
     ///   - data: Exact JSON payload, possibly containing the token; never logged.
     ///   - generation: Socket fence rechecked around every suspension.
+    ///   - observeHeartbeat: Starts a scheduled heartbeat ACK interval only after confirmed adapter write.
     /// - Throws: Authority, cancellation, 4096-byte outbound limit or adapter/deadline failures.
-    private func send(opcode: Int, data: JSONValue, generation active: UInt64) async throws {
+    private func send(opcode: Int, data: JSONValue, generation active: UInt64, observeHeartbeat: Bool = false) async throws {
         try await fence(active)
         guard let socket = connection else { throw GatewayFailure.disconnected }
         let bytes = try JSONValue.object(["op": gatewayNumber(opcode), "d": data])
@@ -644,6 +704,11 @@ public actor GatewayShard<C: Clock, Leases: ShardLeaseStore> where C.Duration ==
         sentAt.append(now)
         try await socket.send(.text(String(decoding: bytes, as: UTF8.self)), context:
             TransportContext(clock: clock, deadline: clock.now.advanced(by: configuration.writeTimeout)))
+        // Start only at adapter-confirmed write completion. An ACK already received before
+        // confirmation has no honest measurable confirmation-to-ACK interval.
+        if observeHeartbeat, heartbeatPending {
+            heartbeatInterval = intervals?.begin(.gatewaySession, stage: .heartbeatACK, parent: sessionContext)
+        }
         try await fence(active)
         DiscordLog.makeLogger("gateway.protocol").trace("Gateway outbound frame submitted", metadata: ["dk.event": "gateway.frame.sent", "dk.opcode": .stringConvertible(opcode), "dk.bytes": .stringConvertible(bytes.count)])
     }
@@ -684,8 +749,9 @@ public actor GatewayShard<C: Clock, Leases: ShardLeaseStore> where C.Duration ==
     /// - Parameters:
     ///   - envelope: Validated event or unknown opcode; controls are not queued.
     ///   - receivedAt: Exact monotonic socket receipt instant, before fencing and envelope parsing.
+    ///   - parent: Optional frame-processing context for this independently retained raw queue entry.
     /// - Throws: `eventCapacityExceeded` atomically before exceeding either bound.
-    private func append(_ envelope: GatewayEnvelope, receivedAt: C.Instant) throws {
+    private func append(_ envelope: GatewayEnvelope, receivedAt: C.Instant, parent: DiscordIntervalContext?) throws {
         guard events.count < configuration.maximumBufferedEvents,
               envelope.byteCount <= configuration.maximumBufferedBytes - bufferedBytes else {
             DiscordLog.makeLogger("gateway.events").error("Gateway raw event queue exhausted", metadata: ["dk.event": "gateway.events.overflow", "dk.queued": .stringConvertible(events.count), "dk.bytes": .stringConvertible(bufferedBytes)])
@@ -696,8 +762,9 @@ public actor GatewayShard<C: Clock, Leases: ShardLeaseStore> where C.Duration ==
         if envelope.opcode == 0, envelope.name == "INTERACTION_CREATE" {
             receiptAge = { receivedAt.duration(to: clock.now) }
         } else { receiptAge = nil }
-        events.append(GatewayEvent(shard: identity, envelope: envelope, socketGeneration: generation,
-            receiptAge: receiptAge))
+        let event = GatewayEvent(shard: identity, envelope: envelope, socketGeneration: generation, receiptAge: receiptAge)
+        events.append(QueuedEvent(event: event,
+            interval: intervals?.begin(.gatewayFrame, stage: .ingestionQueue, parent: parent)))
         bufferedBytes += envelope.byteCount
         eventSignal.continuation.yield(())
         DiscordLog.makeLogger("gateway.events").trace("Gateway dispatch queued", metadata: ["dk.event": "gateway.events.queued", "dk.queued": .stringConvertible(events.count), "dk.bytes": .stringConvertible(bufferedBytes)])
@@ -718,10 +785,12 @@ public actor GatewayShard<C: Clock, Leases: ShardLeaseStore> where C.Duration ==
 
     /// Completes stop/error cleanup after all structured children have exited.
     /// Socket ownership is cleared before suspension; the latest lease is released once.
+    /// - Parameter interruptedOutcome: Actual terminal run failure for unfinished reconnect work;
+    ///   controlled stop without a run failure supplies cancellation for that interrupted interval.
     /// - Throws: Known closed release failure, or fixed coordinator unavailability for unknown
     ///   errors, after local cleanup; callers must wait for lease
     ///   expiry or repair coordination before assuming handoff authority became available.
-    private func finish() async throws {
+    private func finish(interruptedOutcome: DiscordIntervalOutcome) async throws {
         DiscordLog.makeLogger("gateway.session").trace("Gateway shard cleanup started", metadata: ["dk.event": "gateway.cleanup.started", "dk.queued": .stringConvertible(events.count), "dk.pending_requests": .stringConvertible(requests.pending.count)])
         running = false
         eventSignal.continuation.finish()
@@ -733,6 +802,9 @@ public actor GatewayShard<C: Clock, Leases: ShardLeaseStore> where C.Duration ==
             lease = nil
             do { try await leases.release(ticket) } catch { releaseFailure = safeGatewayFailure(error) }
         }
+        for entry in events { entry.interval?.end(.cancelled) }
+        heartbeatInterval?.end(.cancelled); heartbeatInterval = nil
+        reconnectInterval?.end(interruptedOutcome); reconnectInterval = nil
         events.removeAll(); bufferedBytes = 0; heartbeatPending = false; clearSession()
         if state.phase == .draining { _ = try? state.apply(.closed) }
         else if state.phase != .stopped { _ = try? state.apply(.fatal) }
@@ -744,6 +816,10 @@ public actor GatewayShard<C: Clock, Leases: ShardLeaseStore> where C.Duration ==
             }
             throw releaseFailure
         }
+    }
+    /// Classifies actual lifecycle failures without exposing dependency error text.
+    private static func intervalOutcome(_ error: any Error) -> DiscordIntervalOutcome {
+        error is CancellationError ? .cancelled : .failed
     }
 }
 

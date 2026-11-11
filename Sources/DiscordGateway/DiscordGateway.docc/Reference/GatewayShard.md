@@ -6,7 +6,7 @@
 
 ### Creating a value
 
-- ``DiscordGateway/GatewayShard/init(identity:token:intents:discovery:transport:clock:leases:startup:configuration:identifyConfiguration:commandCoordinator:owner:random:)``
+- ``DiscordGateway/GatewayShard/init(identity:token:intents:discovery:transport:clock:leases:startup:configuration:identifyConfiguration:commandCoordinator:intervals:owner:random:)``
 
 ### Instance properties
 

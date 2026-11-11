@@ -7,7 +7,7 @@ https://aurum-studios.com
 
 # Timing metric catalog
 
-Catalog identifier: **discordkit.timing**, revision **5**. Revision 1 was frozen 2026-11-10 at
+Catalog identifier: **discordkit.timing**, revision **6**. Revision 1 was frozen 2026-11-10 at
 `c8d842f7ce51e9adc69ff9997e2c0f374dc2ee68`. Every metric below has semantic
 version **1**. The identity is `(catalog, metric ID, metric version)`; changing
 endpoints, population, units or aggregation creates a new metric version.
@@ -91,12 +91,13 @@ Gateway trusted receipt is the timestamp captured immediately after
 validation and parsing. It is not a kernel/transport arrival timestamp and cannot
 measure earlier actor residence. Replayed/public events do not gain receipt trust.
 Only cooperating owners using the same timing clock may compute the admission
-milestones. The signed HTTP path currently has no adapter receipt timestamp or
+milestones. Stage 6 records these as success-only scalar distributions; uncertain
+initial sends emit no confirmed acknowledgement milestone. The signed HTTP path currently has no adapter receipt timestamp or
 scalar timing injection; application entry is a different boundary.
 
 ## Primary-workflow durations
 
-Stage 5 implements the transport/REST/arrival subset below; the remaining IDs reserve later intervals. None was emitted by Stage 0. Population A and
+Stages 5 and 6 implement transport/REST/arrival and Gateway/interaction/command subsets below; explicitly unavailable IDs and later stages remain reservations. None was emitted by Stage 0. Population A and
 H apply unless a row explicitly specifies S or B. One logical operation may have
 many attempt intervals. All child work retains its owning workflow's outcome
 counts and independent terminal result.
@@ -127,21 +128,21 @@ counts and independent terminal result.
 | `arrival.admissionWait` | Actual driver submission → explicitly supplied owner admission | Emitted only with real same-clock owner timestamp; not emitted by current REST arrival fixture; Stage 5 |
 | `arrival.service` | Driver operation closure invocation → joined return | Includes REST admission and service; optional finer timestamp ranges do not change this metric; Stage 5 |
 | `gateway.decode` | Shard begins parsing received supported JSON → decoded payload or rejection | Child of receipt-to-dispatch; Stage 6 |
-| `gateway.hubResidence` | Private hub retains event → dispatcher removes event for its local queue | Precedes legacy local queue; Stage 6; only with actual owner hooks |
+| `gateway.hubResidence` | One subscription retains an event → iterator removes it, or explicit discard/cleanup | Precedes legacy local queue; each retained copy has its own actual owner hook; Stage 6 |
 | `gateway.handler` | Admitted callback invocation → callback completion and existing owned cleanup | Child of dispatcher run; Stage 6 |
 | `gateway.heartbeatAck` | Heartbeat write confirmation → matching ACK handled or deadline/cancel outcome | Independent control lane; includes peer/scheduling wait; Stage 6 |
 | `gateway.reconnect` | Owner begins reconnect → new session identified/resumed and locally usable, or joined failure | Lifecycle interval, may overlap handlers; Stage 6; no live READY claim |
-| `ingress.applicationResponse` | InteractionHTTPApplication.handle entry → first confirmed HTTP response sink completion, or joined failure before any confirmation | Direct application response; later handler failure belongs to interaction.workflow; excludes earlier adapter/socket wait; Stage 6 |
+| `ingress.applicationResponse` | Application first-response begin, after workflow begin callback → first confirmed HTTP response sink completion, or joined failure before confirmation | Direct application response; later handler failure belongs to interaction.workflow; excludes earlier adapter/socket wait; Stage 6 |
 | `ingress.trustedResponse` | Future trusted adapter receipt hook → first confirmed response sink completion, or joined failure before any confirmation | Direct trusted response; later handler failure belongs to interaction.workflow; unavailable until real receipt provenance exists; Stage 6 |
 | `ingress.bodyRead` | Bounded request-body read entry → EOF/error and existing close | Child of application workflow; Stage 6 |
 | `ingress.signature` | Verification entry with exact bytes → verified/rejected signature result | Synchronous child; excludes body read; Stage 6 |
-| `ingress.admission` | Before duplicate/durable authority acquire → admission/refusal/error | Child; injected durable-store wait included, never authorization inferred from timing; Stage 6 |
+| `ingress.admission` | Verified signature begins replay authority admission → admission/refusal/error | Replay admission for ordinary interaction profiles; actual consumer transaction for separately identified durable webhook profiles, without replay-window double counting; Stage 6 |
 | `command.route` | CommandRouter.route caller entry → route result/error and owned cleanup | Child of interaction workflow; Stage 6 |
 | `command.arguments` | Typed argument preparation starts → prepared arguments or validation failure | Synchronous/owned route child; Stage 6 |
 | `command.policy` | Policy/middleware invocation → result/error and joined middleware work | Route child; may include application code; Stage 6 |
 | `interaction.handler` | Admitted application handler invocation → its joined return/error | Child of workflow; includes injected provider waits; Stage 6 |
 | `interaction.providerWait` | Explicit fixture/application provider call → provider result/error/cleanup | Child of handler only when composition exposes it; no subtraction; Stage 6 |
-| `interaction.workflow` | Trusted adapter receipt, or separately labeled synthetic caller entry → handler plus response ownership/cleanup joined | Direct full workflow; may outlive acknowledgement; Stage 6 |
+| `interaction.workflow` | HTTP suite caller immediately before application.handle → joined return/error, before result/ownership diagnostic snapshots | Direct whole signed application workflow, classified by harness terminal result; may outlive acknowledgement; Stage 6 |
 | `cache.call` | Caller before selected cache operation actor hop → result/error | Per fixed operation class: lookup/merge/project/permission/expire/evict/invalidate/refresh; Stage 7 |
 | `cache.owner` | Same selected operation's owner entry → owner result including owned suspensions | Nested in caller interval; do not infer queue time by subtracting histograms; Stage 7 |
 | `cache.loader` | Explicit loader invocation → value/error/owned cleanup | Child of refresh; single-flight loaders count once, callers independently; Stage 7 |
@@ -152,12 +153,42 @@ counts and independent terminal result.
 | `compiler.clean` | Driver starts consumer build subprocess → process exit and reap | Manual/macro consumer build, prepared dependencies excluded; Stage 7; compiler configuration explicit |
 | `compiler.incremental` | Driver starts build after a declared fixture edit → exit and reap | Separate process cost, excludes fixture mutation; Stage 7 |
 
-`interaction.workflow` profiles must fix their origin kind; synthetic caller and
-trusted Gateway/HTTP origin are incompatible profiles. For cache queue attribution,
+`interaction.workflow` uses signed application caller origin. Trusted Gateway scalar
+milestones and synthetic invocation use distinct metric IDs and incompatible
+profiles; no HTTP socket receipt is inferred. For cache queue attribution,
 add explicit paired submission/admission hooks before claiming residence. Do not
 subtract aggregate caller and owner distributions. Expiry/eviction are currently
 side effects of cache calls; profiles select the triggering public operation and
 state that setup, rather than inventing public expiry/eviction methods.
+
+## Additional Stage 6 registered populations
+
+Catalog revision 6 registers the following additional IDs with semantic version 1.
+They preserve actual scalar or detailed owner boundaries and do not relabel older
+samples. All use bounded whole-population H aggregation per finite outcome.
+
+| Metric ID | Actual start and stop / population |
+| --- | --- |
+| `gateway.sessionJoined` | Accepted shard run before observation → joined run exit; includes session ownership, no discovery/client startup claim |
+| `gateway.socketReceipt` | Transport receive returns → accepted frame processing or discard/error; excludes pre-receipt network wait |
+| `gateway.ingestionQueue` | Shard enqueues a dispatch → consumer removal or joined discard |
+| `gateway.publication` | Hub actor owner enters publication → bounded publication result; excludes preceding actor hop |
+| `gateway.dispatchJoined` | Dispatcher run → handlers/permits/subscription joined |
+| `gateway.localQueue`, `gateway.admission` | Actual dispatcher local retained queue and shared-authority acquire boundaries |
+| `gateway.shutdown` | Run supervision has joined siblings → socket/control/request/lease teardown completed |
+| `gateway.receiveToAdmission`, `gateway.receiveToAcknowledgement`, `gateway.admissionToAcknowledgement` | Existing trusted scalar owner milestones, adapted directly as durations; confirmed acknowledgement only |
+| `gateway.initialResponse`, `gateway.originalEdit`, `gateway.acknowledgementToOriginalEdit` | Existing trusted responder scalar boundaries; no fabricated receipt interval starts |
+| `ingress.decode` | Authenticated bounded body → typed interaction or decode failure |
+| `command.admission` | Router owner entry → exact-route admission/refusal; excludes earlier actor hop |
+| `command.handler` | Real route execution → unchanged handler/wrapper result; overlaps application handler |
+| `interaction.initialResponse`, `interaction.originalEdit` | Existing detailed actor-owned response/edit boundary through release and cleanup |
+| `synthetic.invoke` | External caller immediately before typed route → joined return/error; responder construction and authoring excluded |
+| `synthetic.providerWait` | Explicit identical provider fixture → result/failure/cancellation; excludes response work |
+
+The complete catalog exceeds a single collector's storage allowance. Each suite
+preallocates only its selected finite identities. Runtime aggregate outputs keep
+their configured retained-key cap; expanded identities cannot escape that cap and
+excess keys count as loss. New optional signpost codes append to existing codes.
 
 ## Planned pure, optional-product and instrumentation durations
 

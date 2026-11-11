@@ -68,6 +68,12 @@ emit catalog revision 5 with corrected native and REST operation boundaries and
 independent arrival populations. Earlier catalogs remain readable. New identities
 cannot relabel historical diagnostics-inclusive or successful-prefix artifacts.
 
+The [Gateway/command suites](../DiscordKitLoadTests/README.md#phase-6-gateway-and-command-timing)
+emit catalog revision 6 with signed application, trusted Gateway and explicitly
+synthetic origins. New metrics require catalog six; earlier catalogs retain their
+semantics. Allocate only the selected finite workload subset: the complete catalog
+exceeds one collector's 16 MiB budget and is rejected before histogram allocation.
+
 Run from the repository root with Python 3.10+ and Swift 6.4+. Keep receipts and
 outputs in ignored build directories. Finish source edits before preparation:
 receipts bind revision, exact dirty/untracked content, dependency pins, executable

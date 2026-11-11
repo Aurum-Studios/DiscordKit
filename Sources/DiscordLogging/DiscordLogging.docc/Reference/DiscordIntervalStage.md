@@ -8,12 +8,23 @@
 
 - ``DiscordLogging/DiscordIntervalStage/admission``
 - ``DiscordLogging/DiscordIntervalStage/body``
+- ``DiscordLogging/DiscordIntervalStage/decode``
+- ``DiscordLogging/DiscordIntervalStage/firstResponse``
 - ``DiscordLogging/DiscordIntervalStage/handler``
 - ``DiscordLogging/DiscordIntervalStage/headers``
+- ``DiscordLogging/DiscordIntervalStage/heartbeatACK``
+- ``DiscordLogging/DiscordIntervalStage/hubResidence``
+- ``DiscordLogging/DiscordIntervalStage/ingestionQueue``
 - ``DiscordLogging/DiscordIntervalStage/initialResponse``
 - ``DiscordLogging/DiscordIntervalStage/localQueue``
 - ``DiscordLogging/DiscordIntervalStage/operation``
 - ``DiscordLogging/DiscordIntervalStage/originalEdit``
+- ``DiscordLogging/DiscordIntervalStage/preparation``
+- ``DiscordLogging/DiscordIntervalStage/reconnect``
+- ``DiscordLogging/DiscordIntervalStage/replayAdmission``
+- ``DiscordLogging/DiscordIntervalStage/shutdown``
+- ``DiscordLogging/DiscordIntervalStage/signatureVerification``
+- ``DiscordLogging/DiscordIntervalStage/socketReceipt``
 - ``DiscordLogging/DiscordIntervalStage/subscriber``
 
 ## See Also

@@ -4,6 +4,7 @@
 // https://aurum-studios.com
 
 import DiscordCore
+import DiscordLogging
 import DiscordTransport
 import DiscordTestSupport
 import Foundation
@@ -376,7 +377,8 @@ func makeRuntime(sockets: [GatewayTestSocket], retries: Int = 2, maximumEvents: 
                          connectGate: TestBarrier? = nil, connectEntered: TestBarrier? = nil,
                          intents: UInt64 = 1, configuration: GatewayShardConfiguration? = nil,
                          identifyConfiguration: GatewayIdentifyConfiguration = .default,
-                         commandCoordinator: (any GatewayCommandCoordinator)? = nil) throws -> RuntimeFixture {
+                         commandCoordinator: (any GatewayCommandCoordinator)? = nil,
+                         intervals: DiscordIntervalTiming? = nil) throws -> RuntimeFixture {
     let clock = ManualClock(onSleepScheduled: onSleep)
     let leases = try InProcessShardLeaseStore(clock: clock, maximumLeases: 4)
     let discovery = try makeDiscovery()
@@ -386,7 +388,7 @@ func makeRuntime(sockets: [GatewayTestSocket], retries: Int = 2, maximumEvents: 
         token: try BotToken("test-token"), intents: intents, discovery: discovery, transport: transport,
         clock: clock, leases: leases, startup: startup,
         configuration: try configuration ?? GatewayShardConfiguration(maximumBufferedEvents: maximumEvents, maximumReconnectAttempts: retries),
-        identifyConfiguration: identifyConfiguration, commandCoordinator: commandCoordinator, random: { jitter })
+        identifyConfiguration: identifyConfiguration, commandCoordinator: commandCoordinator, intervals: intervals, random: { jitter })
     return RuntimeFixture(shard: shard, clock: clock, leases: leases, startup: startup, transport: transport)
 }
 

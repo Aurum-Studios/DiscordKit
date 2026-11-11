@@ -7,6 +7,11 @@ https://aurum-studios.com
 
 # Latency workload and ownership inventory
 
+Phase 6 adds [Gateway and command workloads](PHASE-6.md), real owner hooks and
+[catalog-six reports](../../../Tools/DiscordKitLoadTests/README.md#phase-6-gateway-and-command-timing).
+Trusted Gateway and signed application origins remain separate from synthetic routes.
+
+
 Catalog version: 1. Inventoried 2026-11-10 against implementation base
 `c8d842f7`. This records Stage 0 contracts and source seams; it does not claim
 that later timing suites, new hooks or performance qualifications exist.

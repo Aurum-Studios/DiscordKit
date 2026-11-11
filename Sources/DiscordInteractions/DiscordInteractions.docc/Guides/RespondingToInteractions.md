@@ -61,3 +61,16 @@ window, fifteen-minute continuation window, sole initial owner and joined cleanu
 Public `receivedAt` values retain deadline behavior but do not create trusted
 Gateway receipt provenance; only the package-owned Gateway adapter installs that
 observation. No timing sink is installed by default, and sinks retain no inputs.
+
+The verifier, signed ingress and HTTP application independently accept an optional
+`DiscordLogging.DiscordIntervalTiming`. Configure each cooperating owner to observe
+body read/close, signature verification, replay admission, typed decoding, handler,
+first inline response and complete joined workflow. The response clock is created
+before observer callbacks so collection cannot extend the acknowledgement budget.
+Workflow begin precedes the first-response begin callback; the first-response
+interval excludes the earlier workflow begin callback. A confirmed first response
+retains its success when a later handler or edit fails. Definite no-submission and
+uncertain submission remain distinct, with no invented replacement response.
+Application entry excludes earlier socket/listener time and grants no trusted
+HTTP receipt provenance. Signed webhook durable-store work can be timed by an
+explicit application wrapper around its existing transaction closure.

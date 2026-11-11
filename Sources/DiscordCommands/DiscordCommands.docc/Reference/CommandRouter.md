@@ -6,7 +6,7 @@
 
 ### Creating a value
 
-- ``DiscordCommands/CommandRouter/init(routes:maximumRoutes:maximumRouteTextBytes:maximumConcurrentHandlers:)``
+- ``DiscordCommands/CommandRouter/init(routes:maximumRoutes:maximumRouteTextBytes:maximumConcurrentHandlers:intervals:)``
 
 ### Instance properties
 

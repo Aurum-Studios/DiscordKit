@@ -6,7 +6,7 @@
 
 ### Creating a value
 
-- ``DiscordInteractions/DiscordSignedIngress/init(verifier:maximumConcurrentRequests:maximumBodyBytes:maximumHeaderBytes:)``
+- ``DiscordInteractions/DiscordSignedIngress/init(verifier:maximumConcurrentRequests:maximumBodyBytes:maximumHeaderBytes:intervals:)``
 
 ### Instance methods
 

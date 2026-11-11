@@ -6,7 +6,7 @@
 
 ### Creating a value
 
-- ``DiscordInteractions/SignedRequestVerifier/init(publicKey:maximumBodyBytes:maximumAgeSeconds:maximumFutureSkewSeconds:maximumReplayEntries:replayPolicy:now:)``
+- ``DiscordInteractions/SignedRequestVerifier/init(publicKey:maximumBodyBytes:maximumAgeSeconds:maximumFutureSkewSeconds:maximumReplayEntries:replayPolicy:now:intervals:)``
 
 ### Instance methods
 

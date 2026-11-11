@@ -6,7 +6,7 @@
 
 ### Creating a value
 
-- ``DiscordGateway/GatewayEventHub/init(configuration:authority:)``
+- ``DiscordGateway/GatewayEventHub/init(configuration:authority:intervals:)``
 
 ### Instance methods
 

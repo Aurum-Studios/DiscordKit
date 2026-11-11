@@ -15,6 +15,7 @@ public actor DiscordSignedIngress {
     private let maximumBodyBytes: Int
     private let maximumHeaderBytes: Int
     private var active = 0
+    private let intervals: DiscordIntervalTiming?
 
     /// Configures count and byte bounds before accepting external work.
     /// - Parameters:
@@ -22,12 +23,15 @@ public actor DiscordSignedIngress {
     ///   - maximumConcurrentRequests: Positive concurrent body/handler bound; no waiting queue, default 32.
     ///   - maximumBodyBytes: Positive per-request body cap; aggregate buffering is bounded by
     ///     this value times the concurrent count, default 1 MiB. The verifier independently checks its cap.
+    ///   - intervals: Optional body-read owner intervals, ending after joined body close on failure.
     ///   - maximumHeaderBytes: Positive total UTF-8 field-name/value byte cap, default 16 KiB.
     /// - Throws: `SignedIngressFailure.invalidConfiguration` for nonpositive limits.
     public init(verifier: SignedRequestVerifier, maximumConcurrentRequests: Int = 32,
-                maximumBodyBytes: Int = 1_048_576, maximumHeaderBytes: Int = 16_384) throws {
+                maximumBodyBytes: Int = 1_048_576, maximumHeaderBytes: Int = 16_384,
+                intervals: DiscordIntervalTiming? = nil) throws {
         guard maximumConcurrentRequests > 0, maximumBodyBytes > 0, maximumHeaderBytes > 0
         else { throw SignedIngressFailure.invalidConfiguration }
+        self.intervals = intervals
         self.verifier = verifier; self.maximumConcurrentRequests = maximumConcurrentRequests
         self.maximumBodyBytes = maximumBodyBytes; self.maximumHeaderBytes = maximumHeaderBytes
     }
@@ -90,9 +94,11 @@ public actor DiscordSignedIngress {
         let responseLease = ResponseLease()
         var pendingResponse: HTTPResponse?
         var authenticated = false
+        var bodyInterval: DiscordInterval?
         do {
             let maximumBodyBytes = self.maximumBodyBytes
             DiscordLog.makeLogger("interactions.ingress").trace("Reading bounded request body", metadata: ["dk.event": "interactions.ingress.body_reading"])
+            bodyInterval = intervals?.begin(.signedIngress, stage: .body)
             let bytes = try await context.run {
                 var bytes = Data()
                 if let body = request.body {
@@ -106,6 +112,7 @@ public actor DiscordSignedIngress {
                 }
                 return bytes
             }
+            bodyInterval?.end()
             DiscordLog.makeLogger("interactions.ingress").trace("Request body read and closed", metadata: ["dk.event": "interactions.ingress.body_read", "dk.bytes": .stringConvertible(bytes.count)])
             DiscordLog.makeLogger("interactions.ingress").trace("Verifying request signature and replay admission", metadata: ["dk.event": "interactions.ingress.verifying"])
             let verified = try await verifier.verify(headers: request.headers, body: bytes)
@@ -129,6 +136,7 @@ public actor DiscordSignedIngress {
             await pendingResponse?.body?.close()
             await responseLease.take()?.body?.close()
             DiscordLog.makeLogger("interactions.ingress").trace("Failed request bodies closed", metadata: ["dk.event": "interactions.ingress.cleanup_completed"])
+            bodyInterval?.end(error is CancellationError ? .cancelled : .failed)
             try context.check()
             if !authenticated, let failure = error as? SignedIngressFailure {
                 DiscordLog.makeLogger("interactions.ingress").debug("Signed ingress rejected unverified request", metadata: ["dk.event": "interactions.ingress.rejected"])

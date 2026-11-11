@@ -7,7 +7,7 @@ https://aurum-studios.com
 
 # Latency instrumentation and timing suites
 
-Status: Stages 0–4 implemented; stages 5–11 remain proposed.
+Status: Stages 0–6 implemented; stages 7–11 remain proposed.
 Runtime owner hooks are opt-in; no performance qualification is implied. The original
 plan was prepared 2026-11-10 against source revision
 `27cd73f335b2b3058dfa317677c71991292706b8`; the Stage 0 checkpoint uses
@@ -20,6 +20,8 @@ Stage 1 implementation: [shared harness and integration record](PHASE-1.md).
 Stage 2 implementation: [runtime intervals and semantic coverage](PHASE-2.md).
 Stage 3 implementation: [bounded outputs and observer overhead](PHASE-3.md).
 Stage 4 implementation: [foundation/model/permission CPU suites](PHASE-4.md).
+Stage 5 implementation: [transport and REST timing suites](PHASE-5.md).
+Stage 6 implementation: [Gateway, interactions and command timing suites](PHASE-6.md).
 
 ## Outcome and scope
 
@@ -353,6 +355,12 @@ Deliverables:
 Exit gate: trusted receipt cannot be forged by replay/public events; single initial
 response and uncertain-send rules hold; handler overload does not consume control
 authority; precise queue attribution and resource cleanup are demonstrated.
+
+Stage 6 implementation: [owner boundaries, workloads and report semantics](PHASE-6.md)
+are available through the existing load executable. See the
+[validation record](VALIDATION.md#phase-6-validation) for completed local evidence.
+Trusted HTTP socket receipt, real Discord and controlled-host capacity remain
+separate qualifications.
 
 ## Stage 7 — Cache, client and authoring suites
 

@@ -74,7 +74,7 @@ import Testing
         #expect(DiscordTimingObservation(phase: .httpHeaders, outcome: .failed, elapsed: Duration(secondsComponent: 0, attosecondsComponent: 1_000_000_001)).elapsedNanoseconds == 1)
     }
 
-    /// Confirms every finite scalar/detailed combination fits below 256 keys and exports without identities.
+    /// Confirms the original scalar/detailed combinations retain their exported names and fit the default cap.
     /// - Throws: Unexpected aggregate construction or JSON serialization failures.
     @Test func allFiniteKeysFitAndSummaryRoundTrips() throws {
         let aggregate = try DiscordTimingAggregate()
@@ -105,6 +105,22 @@ import Testing
         #expect(!json.contains("clockDomain"))
         #expect(!json.contains("operationID"))
         #expect(summary == aggregate.snapshot())
+    }
+
+    /// New high ordinal identities cannot collide with legacy rows or escape explicit retained-key limits.
+    /// - Throws: Unexpected aggregate construction or missing mapped rows.
+    @Test func expandedIdentitiesPreserveCapacityAndMapping() throws {
+        let aggregate = try DiscordTimingAggregate(configuration: .init(maximumKeys: 2))
+        let timing = DiscordIntervalTiming(clockDomain: 6, sink: { aggregate.record($0) }, now: { .nanoseconds(4) })
+        timing.begin(.interactionResponse, stage: .originalEdit).end(.uncertain)
+        timing.begin(.commandRouting, stage: .firstResponse).end()
+        timing.begin(.gatewayFrame, stage: .decode).end()
+        let summary = aggregate.snapshot()
+        #expect(summary.acceptedCount == 2 && summary.droppedCount == 1)
+        #expect(summary.rows.count == 2)
+        #expect(summary.rows.contains { $0.operation == "interactionResponse" && $0.stage == "originalEdit" && $0.outcome == "uncertain" })
+        #expect(summary.rows.contains { $0.operation == "commandRouting" && $0.stage == "firstResponse" && $0.outcome == "succeeded" })
+        #expect(summary.storageUpperBoundBytes < 16 * 1_024 * 1_024)
     }
 
     /// Exercises histogram edges and censored mass without fabricating a finite tail or invalid zero.

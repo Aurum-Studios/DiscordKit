@@ -57,3 +57,13 @@ adds no timing-clock read, task or scope. The whole-run joined sample is emitted
 after children and the subscription close; a cancelled outcome proves that milestone
 and does not isolate cancellation overhead. FIFO, shard ordering, concurrency,
 backpressure and cancellation ownership remain unchanged.
+
+An independent `DiscordLogging.DiscordIntervalTiming` can also be supplied to the
+shard and event hub. It observes actual supported-JSON receipt/decode, retained
+ingestion and per-subscription residence, confirmed-write heartbeat ACK,
+reconnect-ready and joined cleanup. Direct waiter delivery has no retained queue
+interval. Reconnect begins after the previous generation has joined and passed
+retry eligibility, immediately before the reconnect transition and bounded retry
+wait; it ends at accepted READY/RESUMED. It excludes the previous generation's
+shutdown. Frame timing cannot establish earlier kernel/network arrival. These
+hooks preserve control-lane independence and private interaction receipt trust.

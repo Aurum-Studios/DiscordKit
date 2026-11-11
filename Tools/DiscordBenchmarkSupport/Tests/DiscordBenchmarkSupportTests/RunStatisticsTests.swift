@@ -19,7 +19,7 @@ import Testing
         #expect(BenchmarkWorkload.authoring(mode: "direct", handlers: 10) == .direct10)
         #expect(BenchmarkWorkload.authoring(mode: "remote-url", handlers: 10) == nil)
         #expect(BenchmarkWorkload.authoring(mode: "dsl", handlers: 11) == nil)
-        let statistics = try RunStatistics(workloads: BenchmarkWorkload.allCases)
+        let statistics = try RunStatistics(workloads: [.transport, .gatewayDecode, .commandRoute])
         #expect(statistics.metrics().isEmpty)
     }
 

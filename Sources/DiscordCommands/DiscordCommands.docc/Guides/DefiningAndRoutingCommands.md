@@ -52,3 +52,12 @@ Long work should explicitly defer through the responder and complete the origina
 ### Test identity and ownership separately
 
 Test command type/name/path collisions, focused options, unknown inputs, exact custom IDs, duplicate route rejection, capacity, cancellation and error cleanup. Assert handler side effects and response calls. Then test response ownership with concurrent reply/defer attempts using an injected sink and clock. Avoid live registration merely to unit-test a route.
+
+An optional `DiscordLogging.DiscordIntervalTiming` on `CommandRouter` observes the
+caller before the actor hop, exact-route admission, complete synchronous input
+preparation and admitted execution. Execution includes existing policy wrappers
+and application waits. The router performs no observation clock reads when the
+option is nil. Handler result, cancellation and uncertain response submission
+retain their original semantics; observation neither authorizes input nor owns
+an acknowledgement. Attribute provider or policy work through explicit wrappers
+when needed, and keep overlapping distributions separate.

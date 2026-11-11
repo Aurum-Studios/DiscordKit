@@ -6,7 +6,7 @@
 
 ### Creating a value
 
-- ``DiscordInteractions/InteractionHTTPApplication/init(applicationID:ingress:admission:autoDefer:limits:)``
+- ``DiscordInteractions/InteractionHTTPApplication/init(applicationID:ingress:admission:autoDefer:limits:intervals:)``
 
 ### Instance methods
 

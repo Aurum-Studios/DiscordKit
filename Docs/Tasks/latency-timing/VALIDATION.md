@@ -475,3 +475,104 @@ These checks do not qualify hosted CI, Linux/other native hosts, real Discord,
 controlled-host numerical baselines, individual-call P99 from sparse smoke,
 fleet capacity, publication, deployment or subsequent roadmap stages. Foundation
 private pool gauges and unavailable DNS/TLS/pool/upload endpoints remain explicit.
+
+## Phase 6 validation
+
+Executed locally on macOS arm64 with Apple Swift 6.4 on 2026-11-10, starting from
+Phase 5 revision `45c82163`. The [implementation record](PHASE-6.md) and
+[suite guide](../../../Tools/DiscordKitLoadTests/README.md#phase-6-gateway-and-command-timing)
+define each workload's actual origin, endpoints and limits. Historical phase
+results above retain their original scope.
+
+| Check | Completed result |
+| --- | --- |
+| Root strict tests, forced pins, four jobs | Passed: 2,603 tests across 34 executable summaries; exact receipt/decode/queue/ACK/reconnect, terminal reconnect failure/cancellation, overlapping run rejection, nil-clock, response trust, deadline and uncertainty regressions included |
+| Load package strict tests | Passed: 67 tests in 12 suites covering all 33 finite cases, exact outcome partitions, synthetic typed parity, true trusted receipt, durable replay/admission and deterministic joined parent cancellation |
+| Timing capture Python tests | Passed: 26 load-script tests and 29 shared supervisor tests, including refusal/loss/cleanup gates, control/recovery proof, process timeout, signal forwarding and child reaping |
+| Shared support Swift tests | Passed: 39 tests in five suites; catalog-six identities reject older catalogs, roundtrip in six and retain bounded allocation/loss behavior |
+| Offline tooling | Passed: 106 Swift tests in eight suites and 230 Python tests |
+| Inventory, generation and parity | Passed: 18,245 inventory records, 290 sources, 951 reviewed definitions, 255 mapped endpoints and five byte-identical generated artifacts |
+| Runtime dependency/import audit | Passed: 33 public products/33 runtime targets, 362 source files, 837 imports and eight resolved packages; runtime graph has no benchmark dependency |
+| Independent example graph review | Passed: all 13 example manifests/import graphs; separate consumer builds recorded below |
+| Public symbol graphs/API review | Passed: 37 graph files, 33 public modules and 14,839 symbols; conservative comparison against 0.19.0 accepts the existing pre-1.0 0.20.0 candidate |
+| Documentation | Strict conversion passed for all 33 public-module archives; eight generated navigation files refreshed and checked; 897 Swift files/9,655 explicit callables have zero missing comments; 287 local links/anchors across 20 changed/new documents resolve |
+| Independent consumer builds | CommandsApp and DSLCommands both build with forced pins and four jobs; the latter compiles its real authoring macros |
+| Complete debug smoke | All 33 finite CLI cases pass with 16 offered/completed outcomes each, zero remaining owners and zero aggregate loss |
+| Optimized final matrix | Passed: 57 serial fresh processes, 1,824 measured terminal outcomes, 545 metric populations and 13,296 samples; all 57 common envelopes pass the strict report validator |
+| Capture ownership and statistics | All supervised children exit zero and are reaped without truncated logs; all reported runtime owners return to zero. Zero underflow, overflow, dropped observations or counter overflow; all 545 P99 populations explicitly report insufficient tail data |
+| Overload control and recovery | All nine rate/cohort rows confirm heartbeat write progress while a handler permit is held, then successful recovery and joined cleanup |
+
+The complete release-graph wrapper also inspects the older standalone DSL benchmark
+consumer. It reports pre-existing policy drift because that package gained the
+local shared support package in Phase 1, while its historical release-consumer
+policy still expects only the runtime checkout. The scoped runtime audit and all
+13 example audits above passed without weakening that policy. This phase does
+not promote a complete release audit or publication qualification.
+
+The development graph for this phase selects 16 existing runtime targets without
+voice/DAVE/MLS/compiler-plugin/SwiftSyntax dependencies. Its external product
+closures use the existing Crypto, Logging and NIO packages. No new resolved pin
+or root runtime manifest dependency is introduced. The largest selected timing
+collector uses less than 8 MiB; the complete catalog exceeds the shared 16 MiB
+ceiling and is explicitly rejected instead of silently dropping populations.
+
+Review corrected exact replay to reuse signed bytes, retained first-response
+success after later handler failure, classified whole HTTP workflow outcomes at
+external caller endpoints, distinguished no-submission from uncertainty, and
+preserved deferred acknowledgements under parent cancellation. Runtime queue
+endpoints precede diagnostic logs. Concurrent rejected shard runs cannot overwrite
+the accepted run's observation context. Initial response clocks precede observer
+callbacks, so collection consumes the original deadline rather than extending it.
+Pending reconnects preserve terminal protocol/retry failures as failed; caller
+cancellation and controlled stop retain cancellation after joined cleanup.
+
+Signed HTTP fixtures use actual Ed25519 verification and injected local adapters;
+scripted WebSocket fixtures have no network sockets. Trusted interaction cases
+reach the package's private receiver through the public client/bot runtime and
+actual shard ingestion. Exact per-interaction synthetic tokens and independently
+keyed rate identities preserve ordinary production rate policy. Callback fixture
+headers declare finite local rate limits; no runtime limiter bypass is installed.
+
+The exact optimized capture commands are:
+
+```sh
+python3 Tools/DiscordBenchmarkSupport/scripts/run_benchmarks.py build \
+  --repository . --package Tools/DiscordKitLoadTests --product DiscordKitLoadTests \
+  --receipt .build/timing-phase6/release-final.json
+python3 Tools/DiscordKitLoadTests/scripts/run_command_timing_suites.py \
+  --executable Tools/DiscordKitLoadTests/.build/release/DiscordKitLoadTests \
+  --receipt .build/timing-phase6/release-final.json --output-dir .build/timing-phase6/matrix-final \
+  --requests 32 --warmup-requests 8
+```
+
+The matrix captures all 33 finite cases, expands slow-handler and overload-recovery
+cases to three rates (200, 2,000 and 20,000 events/second) at three cohorts (one,
+four and sixteen), and repeats eight synthetic cases in reverse process order.
+Its measured terminal populations are 971 success, 257 expected failure,
+196 cancellation, 32 timeout, 304 rejection and 64 uncertain results. There are
+1,396 actual admissions and 32 explicit deadline misses; 456 warmup requests are
+excluded. Slow-handler source backpressure completes all offered work; overloaded
+refusals and joined cancellations remain in their actual populations rather than
+disappearing from a success-only throughput denominator. These bounded scripted
+sources do not establish independent-arrival service capacity.
+
+The release receipt binds revision `45c82163a673bdae15b3d1803ebdd614dfa676ed`,
+dirty-source SHA-256
+`1f30fb6fc7a9ae70a30d5ce951dd3f95e89192aa61b1c14c4c1bdd3188759719`
+and executable SHA-256
+`795777735d6d6653af6090fe028b04daf8352b9202959613b130e91861541374`.
+Receipt SHA-256 is
+`7e8e2b6ad0b33d0a4c350b55137ff0667c315a6b66dd4147e321fe99300f2166`;
+matrix SHA-256 is
+`19cbae1b12acb0450cef7768f94fc4c983d1529e19e66c3bc57a9671a1bcef0a`.
+The capture also verifies all three fixture hashes, report hashes and exact
+native/common envelope equality. Raw reports, supervisor receipts and verification
+remain in the ignored output directory named above. This final validation update
+is documentation only; a SHA-256 comparison of all 3,404 source-snapshot files
+confirms executable, test, tool, manifest and pin inputs remain unchanged after
+capture. Final local Markdown link and whitespace checks pass.
+
+These checks do not qualify real Discord,
+client rendering, live READY, native WebSocket network throughput, hosted CI,
+other native hosts, controlled performance baselines, sparse individual-call P99,
+production capacity, release publication or subsequent roadmap stages.

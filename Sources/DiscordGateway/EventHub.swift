@@ -124,6 +124,15 @@ public struct GatewayEventSubscription: AsyncSequence, Sendable {
 /// for shared capacity; lossy eviction can discard only the affected subscriber's own events.
 /// This is an in-process budget, not a distributed broadcast or persistence contract.
 public actor GatewayEventHubAuthority {
+    private struct QueuedEvent: Sendable {
+        let event: GatewayEvent
+        let interval: DiscordInterval?
+        var retainedByteCount: Int {
+            /// Returns the existing raw-envelope accounting bound for this subscriber copy.
+            get { event.retainedByteCount }
+        }
+    }
+
     private struct Subscriber {
         let hub: UUID
         let ordinal: UInt64
@@ -131,7 +140,7 @@ public actor GatewayEventHubAuthority {
         let maximumEvents: Int
         let maximumBytes: Int
         let policy: GatewayEventOverflowPolicy
-        var events: [GatewayEvent] = []
+        var events: [QueuedEvent] = []
         var bytes = 0
         var waiter: CheckedContinuation<GatewayEvent?, any Error>?
         var failed = false
@@ -183,8 +192,10 @@ public actor GatewayEventHubAuthority {
     /// - Parameters:
     ///   - event: Already bounded raw envelope whose byte count is trusted from Gateway ingestion.
     ///   - hub: Opaque source hub; subscribers of other hubs never receive this event.
+    ///   - intervals: Optional observer used only for copies actually retained in a subscription queue.
+    ///   - parent: Numeric publication context; it confers no trusted interaction receipt.
     /// - Returns: Counts of admitted, dropped, and newly failed subscribers.
-    fileprivate func publish(_ event: GatewayEvent, hub: UUID) -> GatewayEventPublication {
+    fileprivate func publish(_ event: GatewayEvent, hub: UUID, intervals: DiscordIntervalTiming?, parent: DiscordIntervalContext?) -> GatewayEventPublication {
         var delivered = 0
         var dropped = 0
         var terminated = 0
@@ -205,6 +216,7 @@ public actor GatewayEventHubAuthority {
                event.retainedByteCount <= configuration.maximumBufferedBytes {
                 while !fits(event, subscriber: subscriber), !subscriber.events.isEmpty {
                     let removed = subscriber.events.removeFirst()
+                    removed.interval?.end(.failed)
                     subscriber.bytes -= removed.retainedByteCount
                     bufferedEvents -= 1
                     bufferedBytes -= removed.retainedByteCount
@@ -212,7 +224,8 @@ public actor GatewayEventHubAuthority {
                 }
             }
             if fits(event, subscriber: subscriber) {
-                subscriber.events.append(event)
+                subscriber.events.append(QueuedEvent(event: event,
+                    interval: intervals?.begin(.gatewayPublication, stage: .hubResidence, parent: parent)))
                 subscriber.bytes += event.retainedByteCount
                 bufferedEvents += 1
                 bufferedBytes += event.retainedByteCount
@@ -221,6 +234,7 @@ public actor GatewayEventHubAuthority {
             } else if subscriber.policy == .resynchronize {
                 bufferedEvents -= subscriber.events.count
                 bufferedBytes -= subscriber.bytes
+                for entry in subscriber.events { entry.interval?.end(.failed) }
                 subscriber.events.removeAll(keepingCapacity: false)
                 subscriber.bytes = 0
                 subscriber.failed = true
@@ -271,8 +285,9 @@ public actor GatewayEventHubAuthority {
             bufferedEvents -= 1
             bufferedBytes -= event.retainedByteCount
             subscribers[id] = subscriber
+            event.interval?.end()
             DiscordLog.makeLogger("gateway.events").trace("Gateway subscription dequeued an event", metadata: ["dk.event": "gateway.subscription.dequeued", "dk.queued": .stringConvertible(bufferedEvents), "dk.bytes": .stringConvertible(bufferedBytes)])
-            return event
+            return event.event
         }
         DiscordLog.makeLogger("gateway.events").trace("Gateway subscription waiting for publication", metadata: ["dk.event": "gateway.subscription.wait"])
         return try await withCheckedThrowingContinuation { continuation in
@@ -289,6 +304,7 @@ public actor GatewayEventHubAuthority {
         guard let subscriber = subscribers.removeValue(forKey: id) else { return }
         bufferedEvents -= subscriber.events.count
         bufferedBytes -= subscriber.bytes
+        for entry in subscriber.events { entry.interval?.end(.cancelled) }
         DiscordLog.makeLogger("gateway.events").trace("Gateway subscription released", metadata: ["dk.event": "gateway.subscription.released", "dk.cancelled": .stringConvertible(cancelled), "dk.subscriptions": .stringConvertible(subscribers.count), "dk.queued": .stringConvertible(bufferedEvents), "dk.bytes": .stringConvertible(bufferedBytes)])
         if cancelled { subscriber.waiter?.resume(throwing: CancellationError()) }
         else { subscriber.waiter?.resume(returning: nil) }
@@ -322,6 +338,7 @@ public actor GatewayEventHub {
     private let id = UUID()
     private let configuration: GatewayEventHubConfiguration
     private let authority: GatewayEventHubAuthority
+    private let intervals: DiscordIntervalTiming?
     private var finished = false
     private var inFlightSubscriptions = 0
     private var admissionsDrained: CheckedContinuation<Void, Never>?
@@ -331,9 +348,12 @@ public actor GatewayEventHub {
     /// - Parameters:
     ///   - configuration: Validated local metadata/count/byte limits and subscriber defaults.
     ///   - authority: Shared aggregate budget; nil creates a private authority with the same limits.
-    public init(configuration: GatewayEventHubConfiguration, authority: GatewayEventHubAuthority? = nil) {
+    ///   - intervals: Optional publication and per-subscription residence hooks. Nil reads no interval clock.
+    public init(configuration: GatewayEventHubConfiguration, authority: GatewayEventHubAuthority? = nil,
+                intervals: DiscordIntervalTiming? = nil) {
         self.configuration = configuration
         self.authority = authority ?? GatewayEventHubAuthority(configuration: configuration)
+        self.intervals = intervals
     }
 
     /// Registers a new consumer before publication; existing queued events are not replayed.
@@ -365,7 +385,10 @@ public actor GatewayEventHub {
     /// - Returns: Explicit subscriber delivery/drop/failure counts. A slow queue never blocks publication.
     @discardableResult public func publish(_ event: GatewayEvent) async -> GatewayEventPublication {
         guard !finished else { return GatewayEventPublication(delivered: 0, dropped: 0, terminated: 0) }
-        return await authority.publish(event, hub: id)
+        let publication = intervals?.begin(.gatewayPublication, stage: .operation)
+        let result = await authority.publish(event, hub: id, intervals: intervals, parent: publication?.context)
+        publication?.end(result.dropped > 0 || result.terminated > 0 ? .failed : .succeeded)
+        return result
     }
 
     /// Permanently closes admission, completes current subscriptions, and discards queues.

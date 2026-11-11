@@ -18,6 +18,18 @@ public enum DiscordIntervalOperation: Sendable, Equatable {
     case gatewayDispatch
     /// Actor-owned interaction response, edit or supervised auto-defer handler work.
     case interactionResponse
+    /// One Gateway connection owner across session recovery and joined shutdown.
+    case gatewaySession
+    /// One supported JSON frame from transport receipt through ingestion.
+    case gatewayFrame
+    /// One bounded hub publication and its independently retained subscriber copies.
+    case gatewayPublication
+    /// Authentication of one bounded signed request; no socket receipt is implied.
+    case signedIngress
+    /// HTTP application entry, first confirmed response and joined workflow.
+    case interactionHTTP
+    /// One exact command route, synchronous preparation and admitted handler.
+    case commandRouting
 }
 
 /// Actual owner boundaries, independent of the legacy scalar phase enumeration.
@@ -41,6 +53,28 @@ public enum DiscordIntervalStage: Sendable, Equatable {
     case initialResponse
     /// Original edit actor entry through result/failure and continuation release.
     case originalEdit
+    /// Actual transport receipt through frame processing; excludes earlier network wait.
+    case socketReceipt
+    /// Parsing or typed decoding of the owner's bounded supported input.
+    case decode
+    /// Shard-owned retention before its consumer removes a received frame.
+    case ingestionQueue
+    /// One subscription's retained event through removal or explicit discard.
+    case hubResidence
+    /// Confirmed heartbeat write through matching ACK, deadline or owner shutdown.
+    case heartbeatACK
+    /// Recovery trigger through the next locally usable READY or RESUMED session.
+    case reconnect
+    /// Joined owner teardown after the owner's supervised children finish.
+    case shutdown
+    /// Exact signed bytes through signature acceptance or rejection.
+    case signatureVerification
+    /// Replay or durable admission acquire through accepted/refused/error result.
+    case replayAdmission
+    /// Complete synchronous command input preparation through validation or failure.
+    case preparation
+    /// HTTP application entry through the first confirmed inline response sink return.
+    case firstResponse
 }
 
 /// Result of this boundary only; successful headers do not promise successful API execution.

@@ -284,7 +284,7 @@ extension DiscordIntervalSignposts {
 
     /// Maps finite owner families to public numeric metadata without constructing per-event strings.
     /// - Parameter operation: Genuine detailed owner family.
-    /// - Returns: One-based stable code: REST, exchange, subscriber, Gateway dispatch, interaction response.
+    /// - Returns: One-based stable code in the finite operation declaration order.
     private static func operationCode(_ operation: DiscordIntervalOperation) -> Int {
         switch operation {
         case .rest: 1
@@ -292,13 +292,18 @@ extension DiscordIntervalSignposts {
         case .httpSubscriber: 3
         case .gatewayDispatch: 4
         case .interactionResponse: 5
+        case .gatewaySession: 6
+        case .gatewayFrame: 7
+        case .gatewayPublication: 8
+        case .signedIngress: 9
+        case .interactionHTTP: 10
+        case .commandRouting: 11
         }
     }
 
     /// Maps finite measured boundaries to numeric metadata without dynamic formatting.
     /// - Parameter stage: Genuine lifecycle boundary.
-    /// - Returns: One-based stable code in order: operation, admission, headers, body, subscriber,
-    ///   local queue, handler, initial response, original edit.
+    /// - Returns: One-based stable code in the finite stage declaration order.
     private static func stageCode(_ stage: DiscordIntervalStage) -> Int {
         switch stage {
         case .operation: 1
@@ -310,6 +315,17 @@ extension DiscordIntervalSignposts {
         case .handler: 7
         case .initialResponse: 8
         case .originalEdit: 9
+        case .socketReceipt: 10
+        case .decode: 11
+        case .ingestionQueue: 12
+        case .hubResidence: 13
+        case .heartbeatACK: 14
+        case .reconnect: 15
+        case .shutdown: 16
+        case .signatureVerification: 17
+        case .replayAdmission: 18
+        case .preparation: 19
+        case .firstResponse: 20
         }
     }
 

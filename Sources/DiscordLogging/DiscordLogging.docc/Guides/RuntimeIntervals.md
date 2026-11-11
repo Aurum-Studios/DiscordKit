@@ -7,7 +7,8 @@ Observe actual owner boundaries with optional, content-free numeric lifecycle ho
 ## Configuration and lifetime
 
 Create one ``DiscordIntervalTiming`` and pass it through the `intervals` option of
-cooperating REST, Gateway dispatcher and interaction response owners. It works
+cooperating REST, Gateway shard/hub/dispatcher, signed ingress, command router and
+interaction response owners. It works
 without configuring SwiftLog. `clockDomain` identifies one run-local monotonic
 origin and clock source; every observer accepting the same domain must use that
 exact origin/source. Custom clocks and sinks must be prompt and concurrent-safe.
@@ -87,6 +88,23 @@ by subtracting its duration from a later timestamp. Trusted Gateway scalar recei
 age remains private provenance. Public receipt offsets and replay events cannot
 create trusted detailed socket-receipt intervals.
 
-These hooks establish local timing semantics. Broader REST/Gateway/ingress
-attribution, bounded output adapters, overhead comparisons, controlled performance
-baselines, hosted/platform and live Discord qualification remain separate work.
+Gateway shard hooks now cover supported JSON receipt/decode, retained ingestion,
+confirmed-write heartbeat ACK, reconnect and joined shutdown. Hub hooks cover
+owner publication and each subscription's retained copy until removal/discard.
+These remain separate from dispatcher queue/admission/handler observations.
+
+Signed HTTP owners accept the observer independently on the verifier, ingress and
+application. Body read/close, signature verification, replay admission, typed decode,
+first confirmed inline response and complete workflow have distinct boundaries.
+Application entry is not trusted listener receipt. Command routing wraps caller
+entry before the actor hop, then observes admission, complete preparation and
+execution. A successful initial response can precede a later workflow failure.
+
+The first HTTP response clock is constructed before interval callbacks. Workflow
+begin precedes first-response begin, so its begin callback is excluded from that
+child interval while still consuming the original acknowledgement budget.
+Observers never extend deadlines or supply permission to retry uncertain sends.
+
+These hooks establish local timing semantics. Optional bounded outputs and local
+benchmarks have separate explicit lifetimes. Controlled performance baselines,
+hosted/platform and live Discord qualification remain separate work.
