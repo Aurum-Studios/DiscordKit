@@ -901,7 +901,7 @@ Verified 2026-11-05. These 951 reviewed records are a selected subset of discove
 | manual.6.GatewayRequestsRequests | manual | supported | 3 | 7 | 33 |
 | manual.6.GatewayResumed | manual | partial | 1 | 4 | 8 |
 | manual.6.GatewayScheduledEventUser | manual | partial | 6 | 7 | 8 |
-| manual.6.GatewayShardRequests | manual | supported | 3 | 20 | 46 |
+| manual.6.GatewayShardRequests | manual | supported | 3 | 20 | 48 |
 | manual.6.GatewaySoundboardSounds | manual | partial | 4 | 6 | 8 |
 | manual.6.GatewayThreadAddedMember | manual | partial | 1 | 6 | 8 |
 | manual.6.GatewayThreadCreate | manual | partial | 1 | 6 | 8 |

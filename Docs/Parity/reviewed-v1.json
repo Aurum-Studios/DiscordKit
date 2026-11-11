@@ -68667,7 +68667,9 @@
         "evidence.6.GatewayReconnectBudgetTests.healthySessionCannotRetryTerminalFailures",
         "evidence.6.GatewayReconnectBudgetTests.cleanupTimeCannotEarnHealth",
         "evidence.6.GatewayReconnectBudgetTests.cancellationJoinsEveryBoundary",
-        "evidence.6.GatewayReconnectBudgetTests.healthyRecoveryCannotRefillSharedIdentifyQuota"
+        "evidence.6.GatewayReconnectBudgetTests.healthyRecoveryCannotRefillSharedIdentifyQuota",
+        "evidence.6.GatewayReconnectBudgetTests.ambiguousOverflowCannotLaterEarnHealth",
+        "evidence.6.GatewayReconnectBudgetTests.healthySessionCannotRetryLostAuthority"
       ],
       "notes": "Gateway API v10 verified 2026-10-16. Current written source hashes are recorded in Docs/Parity/gateway-current-sources.json separately from unchanged original discovery provenance. JSON/uncompressed transport remains explicit. Named event coverage is separate from complete typed child-resource schemas. Privileged intent approval, live Discord, other-host/device, distributed storage adapters and sustained-capacity qualification remain separate. MC-33 adds an opt-in local reconnect-budget policy; the default total-run bound remains unchanged. Healthy-session renewal requires same-socket-generation READY/RESUMED, positive monotonic uptime and conservative adapter-confirmed scheduled-heartbeat ACK observations. Discord ACKs have no nonce, so observations do not prove exact pairing. The 300-second/two-ACK service example is not an upstream requirement.",
       "manual": {
@@ -98408,6 +98410,16 @@
       "id": "evidence.6.GatewayReconnectBudgetTests.healthyRecoveryCannotRefillSharedIdentifyQuota",
       "path": "Tests/DiscordGatewayTests/GatewayReconnectBudgetTests.swift",
       "anchor": "healthyRecoveryCannotRefillSharedIdentifyQuota"
+    },
+    {
+      "id": "evidence.6.GatewayReconnectBudgetTests.ambiguousOverflowCannotLaterEarnHealth",
+      "path": "Tests/DiscordGatewayTests/GatewayReconnectBudgetTests.swift",
+      "anchor": "ambiguousOverflowCannotLaterEarnHealth"
+    },
+    {
+      "id": "evidence.6.GatewayReconnectBudgetTests.healthySessionCannotRetryLostAuthority",
+      "path": "Tests/DiscordGatewayTests/GatewayReconnectBudgetTests.swift",
+      "anchor": "healthySessionCannotRetryLostAuthority"
     }
   ]
 }
