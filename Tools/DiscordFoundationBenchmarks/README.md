@@ -32,7 +32,7 @@ python3 Tools/DiscordFoundationBenchmarks/scripts/run_cases.py \
   --receipt .build/timing-phase4/release.json --output-dir .build/timing-phase4/cases
 ```
 
-The wrapper runs all 115 cases sequentially, in separate processes. Repeated
+The wrapper runs all 129 cases sequentially, in separate processes. Repeated
 `--case` options select a subset. Defaults are 100 measured batches, 16 calls per
 batch, eight warmup batches and one fresh process per case. Finite native limits
 for `--batches` / `--batch-size` / `--warmup-batches` are 100,000 / 1,024 / 10,000.
@@ -68,11 +68,12 @@ use the shared driver for retained performance evidence.
 | --- | ---: | --- |
 | Lossless JSON | 17 | Parse/serialize × 1/16/256 KiB × ASCII/Unicode; paired depths 1/8/64, widths 4/32/256. Authored canonical bytes and trees preserve huge numbers, exponent spelling and negative zero. Five exact malformed/size/depth rejections include parser offsets. |
 | Independent JSON v2 | 24 | One-factor controls around 16 KiB/depth 2/width 4/16 string leaves: bytes 1/16/256 KiB, depth 2/8/32, width 4/32/128, string leaves 1/16/128, escaped-content byte share 0/25/100%, or ASCII/Unicode. Every control changes one dimension and retains exact document bytes. |
+| Independent JSON v3 | 10 | Parse/serialize × five exact 16 KiB controls: numeric-array leaves 1/16/128 or variable-key lengths 1/8/64 bytes. Root width 4, depth 2 and seventeen string leaves stay fixed. Lossless numeric spellings, independently authored canonical bytes and trees provide exact oracles. |
 | Identifiers/bitsets | 14 | Snowflake parse/format includes zero, leading zeroes and UInt64 maximum. Parse/serialize/algebra/mutation × 64/256/4096 bits. Decimal-digit doubling and position sets independently prove every bit. |
 | Models | 9 | Message decode, lossless model encode, field/unknown roundtrip × three sizes. Mentions 0/4/32, embeds 0/2/10, unknown fields 1/16/64, nesting 1/8/16; absent/null/value references and future numeric tokens remain distinct. |
 | Builders | 10 | Legacy messages and V2 components × three sizes, plus contribution/node/row/text-size rejections. Independent wire trees, component grammar and safe mention policy accompany every case. |
 | Permissions | 24 | Allow/deny × paired 1/16/128 assigned roles and overwrites, 64/256/4096-bit width. Fourteen versioned one-factor controls vary assigned roles, overwrites and width separately around 16/16/256. Owner/admin bypass and resource-limit/unknown-overwrite refusals have independently known results. |
-| RPC frames | 17 | Encode × 1/16/256 KiB; incremental decode × those sizes × 7/256/4096-byte fragments. Independent little-endian wire bytes plus malformed-opcode, announced-size, append-size, truncation and encode-size rejections. |
+| RPC frames | 21 | Encode × 1/16/256 KiB; incremental decode × those sizes × 7/256/4096-byte fragments. Four versioned single-append coalesced controls contain 1/16/128 sixteen-byte frames or 128 empty frames. Independent little-endian wire bytes plus malformed-opcode, announced-size, append-size, truncation and encode-size rejections. |
 
 The 24 new `json.v2.parse.*` / `json.v2.serialize.*` cases keep all 77 original
 case identities and fixture bytes. Root member count, nesting, string leaf count,
@@ -83,6 +84,22 @@ each leaf's encoded content bytes to two-byte quote escapes, rounded down per
 leaf; remaining bytes use ASCII or literal Unicode plus exact-byte ASCII padding.
 Full tree equality, canonical bytes and inspected shape/escaping are correctness
 evidence. These cases do not select an optimization or numerical budget.
+
+The ten `json.v3.parse.*` / `json.v3.serialize.*` controls isolate numeric-token
+density and key-byte length at fixed depth, width, string count and total bytes.
+The root has a numeric marker plus string-array, numeric-array and padding-string
+members. Three variable keys have the declared ASCII byte length; the marker's
+`a_variant` key stays fixed. Numeric arrays rotate exact huge integers, exponent
+spellings and negative zero. Padding absorbs the changed token/key bytes while
+the sixteen other strings remain fixed. Existing v2 identities remain unchanged.
+
+The four `rpc.v2.decode.coalesced.*` cases preserve the seventeen historical RPC
+identities. Each call starts one decoder, appends one prepared sequence and checks
+EOF. Frames rotate frame/ping/pong/close opcodes, preserve opaque payload bytes
+and contribute an order-sensitive checksum; untimed verification compares every
+frame and byte. The explicit 4,096-byte payload cap admits each complete append
+(at most 3,072 bytes). These controls measure coalesced small-frame work separately
+from the fixed 256 KiB body split into 7/256/4096-byte fragments.
 
 Each case rotates four prepared variants using the recorded seed and wrapping
 call index. SHA-256 binds prepared inputs; dimensions retain actual sizes/caps.

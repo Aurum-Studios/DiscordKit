@@ -12,11 +12,13 @@ local validation are recorded in [Phase 1](PHASE-1.md). Stage 2 implementation a
 local evidence are tracked in [Phase 2](PHASE-2.md). Stage 3 implementation and
 validation are tracked in [Phase 3](PHASE-3.md). Stage 4 implementation, cache
 scaling observations and resource tradeoffs are recorded in [Phase 4](PHASE-4.md).
-Reserved-host numerical and profiler qualification remain open. Stages 5–10
+Stage 5 implementation and local validation are recorded in [Phase 5](PHASE-5.md).
+Reserved-host numerical and profiler qualification remain open. Stages 6–10
 remain planned. Source investigation and exploratory planning measurements were prepared against
 `065e2b655c28250076ba53fca310f209be1d3fd5`. Stage 1 refines local admission;
 Stage 2 refines request work and NIO buffering; Stage 3 refines bounded event
-delivery; Stage 4 refines cache indexing and separates permission dimensions.
+delivery; Stage 4 refines cache indexing and separates permission dimensions;
+Stage 5 refines shared JSON strings and incremental RPC framing.
 No numerical regression policy is selected.
 
 The first target is avoidable waiting in shared request admission, followed by
@@ -100,7 +102,8 @@ controlled-host numerical gate remains explicit. Stage 1 has a separate
 open. Stage 2 has its own [implementation and validation record](PHASE-2.md).
 Stage 3 has its own [implementation and validation record](PHASE-3.md).
 Stage 4 has its own [implementation, validation and tradeoff record](PHASE-4.md).
-Stages 5–10 remain **planned**.
+Stage 5 has its own [implementation, validation and observation record](PHASE-5.md).
+Stages 6–10 remain **planned**.
 Stage 0 qualifies measurement before any numerical claim. Stages 1–5 prioritize common library paths. Stages 6–9 are independently
 adopted product tracks after Stage 0; source investigations can overlap, but host
 builds and performance captures run sequentially. Stage 10 follows the selected
@@ -252,6 +255,11 @@ limits survive. Permission snapshots remain observations, never authorization.
 Demonstrate hot-hit scaling and bounded memory across repeated churn/expiry cycles.
 
 ### Stage 5 — Reduce shared value and framing CPU/allocation costs
+
+Local implementation and validation are complete; see [Phase 5](PHASE-5.md).
+Safe ASCII strings bypass per-token Foundation work, fallback coders are local
+to one operation, and fragmented RPC retains its validated header. Allocation,
+reserved-host numerical and target-platform qualification remain open.
 
 Profile the shared JSON parser/writer before changing it. Separate buffer copies,
 per-string coder construction, escapes/Unicode, sorted keys and model projection.

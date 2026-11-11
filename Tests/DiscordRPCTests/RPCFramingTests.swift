@@ -78,6 +78,105 @@ import Testing
         try decoder.finish()
     }
 
+    /// Independently generated streams preserve ordering and every opaque byte across header/body boundaries.
+    /// - Parameter fragmentSize: Bounded input chunk size; large chunks coalesce small frames and split large ones.
+    /// - Throws: Unexpected valid-frame setup, incremental decoding or clean-EOF failures.
+    @Test(arguments: [1, 7, 8, 9, 31, 256, 4_096])
+    func generatedFragmentedStreams(fragmentSize: Int) throws {
+        let sizes = [0, 1, 2, 7, 8, 9, 31, 255, 256, 257, 1_024, 4_096]
+        var expected: [RPCFrame] = []
+        var wire = Data()
+        for opcode in RPCOpcode.allCases {
+            for size in sizes {
+                let payload = Data((0..<size).map { UInt8(truncatingIfNeeded: $0 * 31 + Int(opcode.rawValue) * 53) })
+                expected.append(RPCFrame(opcode: opcode, payload: payload))
+                wire.append(independentWire(opcode: opcode.rawValue, length: UInt32(size), payload: payload))
+            }
+        }
+        var decoder = try RPCFrameDecoder(maximumPayloadBytes: 4_096)
+        var actual: [RPCFrame] = []
+        for offset in stride(from: 0, to: wire.count, by: fragmentSize) {
+            #expect(try decoder.append(Data()).isEmpty)
+            // Data slices deliberately keep their nonzero collection indices.
+            actual.append(contentsOf: try decoder.append(wire[offset..<min(offset + fragmentSize, wire.count)]))
+        }
+        #expect(actual == expected)
+        try decoder.finish()
+    }
+
+    /// Every incomplete header/body position rejects EOF without consuming state and can resume or reset.
+    /// - Throws: Unexpected setup or valid suffix/recovery decoding failures.
+    @Test func everyTruncationPositionCanResumeOrReset() throws {
+        let payload = Data((0..<33).map { UInt8(truncatingIfNeeded: $0 * 37) })
+        let frame = RPCFrame(opcode: .pong, payload: payload)
+        let wire = independentWire(opcode: RPCOpcode.pong.rawValue, length: UInt32(payload.count), payload: payload)
+        let empty = independentWire(opcode: RPCOpcode.ping.rawValue, length: 0)
+        for cut in 1..<wire.count {
+            var decoder = try RPCFrameDecoder(maximumPayloadBytes: payload.count)
+            #expect(try decoder.append(wire.prefix(cut)).isEmpty)
+            #expect(try decoder.append(Data()).isEmpty)
+            #expect(throws: RPCFailure.malformedFrame) { try decoder.finish() }
+            var copy = decoder
+            #expect(throws: RPCFailure.malformedFrame) { try copy.finish() }
+            // Resetting the original must not disturb its copy's retained header or payload.
+            decoder.reset()
+            try decoder.finish()
+            #expect(try decoder.append(empty) == [RPCFrame(opcode: .ping, payload: Data())])
+            try decoder.finish()
+            #expect(try copy.append(wire.dropFirst(cut)) == [frame])
+            try copy.finish()
+        }
+    }
+
+    /// Split invalid headers preserve precise error precedence and clear buffered/parsed state on rejection.
+    /// - Throws: Unexpected setup or valid recovery-frame decoding failures.
+    @Test func splitInvalidHeadersAndActiveHeaderErrorsReset() throws {
+        let failures: [(wire: Data, error: RPCFailure)] = [
+            (independentWire(opcode: 5, length: 0), .malformedFrame),
+            (independentWire(opcode: 0x0100_0001, length: 0), .malformedFrame),
+            (independentWire(opcode: UInt32.max, length: UInt32.max), .malformedFrame),
+            (independentWire(opcode: RPCOpcode.frame.rawValue, length: 17), .frameTooLarge),
+            (independentWire(opcode: RPCOpcode.frame.rawValue, length: UInt32.max), .frameTooLarge)
+        ]
+        let frame = RPCFrame(opcode: .ping, payload: Data([0, 255]))
+        let valid = independentWire(opcode: frame.opcode.rawValue, length: 2, payload: frame.payload)
+        for failure in failures {
+            for cut in 0..<8 {
+                var decoder = try RPCFrameDecoder(maximumPayloadBytes: 16)
+                #expect(try decoder.append(failure.wire.prefix(cut)).isEmpty)
+                #expect(throws: failure.error) { try decoder.append(failure.wire.dropFirst(cut)) }
+                try decoder.finish()
+                #expect(try decoder.append(valid) == [frame])
+            }
+            // An append that completes a prior frame and then rejects the next header still resets fully.
+            var decoder = try RPCFrameDecoder(maximumPayloadBytes: 16)
+            #expect(try decoder.append(valid.prefix(9)).isEmpty)
+            #expect(throws: failure.error) { try decoder.append(valid.dropFirst(9) + failure.wire) }
+            try decoder.finish()
+            #expect(try decoder.append(valid) == [frame])
+        }
+        var decoder = try RPCFrameDecoder(maximumPayloadBytes: 16)
+        #expect(try decoder.append(valid.prefix(8)).isEmpty)
+        #expect(throws: RPCFailure.frameTooLarge) { try decoder.append(Data(count: 25)) }
+        try decoder.finish()
+        #expect(try decoder.append(valid) == [frame])
+    }
+
+    /// Authors little-endian framing independently of the production encoder, including intentionally invalid headers.
+    /// - Parameters:
+    ///   - opcode: Raw wire opcode; callers may supply unsupported values to test rejection.
+    ///   - length: Announced payload length, independent of the supplied bytes for malformed-input tests.
+    ///   - payload: Opaque body bytes; omitted when only a header is needed.
+    /// - Returns: Eight literal little-endian header bytes followed by the supplied body.
+    private func independentWire(opcode: UInt32, length: UInt32, payload: Data = Data()) -> Data {
+        var result = Data()
+        for value in [opcode, length] {
+            result.append(contentsOf: [0, 8, 16, 24].map { UInt8(truncatingIfNeeded: value >> $0) })
+        }
+        result.append(payload)
+        return result
+    }
+
     /// Verifies documented environment precedence, absolute paths and bounded Windows discovery names.
     /// - Throws: Unexpected candidate construction error.
     @Test func discovery() throws {

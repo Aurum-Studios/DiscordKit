@@ -9,6 +9,18 @@ https://aurum-studios.com
 
 ## Unreleased
 
+### Performance plan phase 5
+
+- Parse and write safe ASCII JSON strings directly, reusing a lazy operation-local
+  Foundation coder for Unicode and escaping. Preserve exact numeric lexemes,
+  deterministic wire bytes, duplicate rejection, error offsets and resource caps.
+- Validate fragmented RPC headers once per frame while preserving opaque control
+  payloads, ordered emission, bounded buffering and complete error/reset behavior.
+- Add independent JSON differential/generated malformed coverage and RPC wire
+  regressions, plus numeric/key-density and coalesced-frame measurement controls.
+  See the [phase record](Docs/Tasks/performance-improvements/PHASE-5.md) for local
+  validation, observations and separately open qualification gates.
+
 ### Performance plan phase 4
 
 - Replace entity/read cache-wide hot-lookup scans with bounded expiry indexes,

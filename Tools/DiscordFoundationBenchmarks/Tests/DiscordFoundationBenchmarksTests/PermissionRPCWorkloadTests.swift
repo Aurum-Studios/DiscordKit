@@ -16,14 +16,14 @@ import Testing
 @Suite struct PermissionRPCWorkloadTests {
     /// Prepared four-way input selection preserves exact outputs and refusal counts, including wrapping inputs.
     /// - Throws: Fixture construction, full semantic verification or unexpected measured-operation errors.
-    /// Exercises all twenty-four permission and seventeen framing cases, their declared scale dimensions and both rejected
+    /// Exercises all twenty-four permission and twenty-one framing cases, their declared scale dimensions and both rejected
     /// and admitted populations. Input values spanning four variants and UInt64.max qualify modulo selection without
     /// running a clock or asserting machine-dependent speed. Every operation owns only synchronous local values.
     @Test func workloadObservationsMatchIndependentOracles() throws {
         let permissions = try PermissionWorkloads.make()
         let rpc = try RPCWorkloads.make()
         #expect(permissions.count == 24)
-        #expect(rpc.count == 17)
+        #expect(rpc.count == 21)
         let workloads = permissions + rpc
         #expect(Set(workloads.map(\.id)).count == workloads.count)
         for workload in workloads {
@@ -39,6 +39,40 @@ import Testing
         #expect(Set(permissions.compactMap { $0.dimensions["bit_width"] }) == [64, 256, 4_096])
         #expect(Set(rpc.compactMap { $0.dimensions["payload_bytes"] }) == [1_024, 16_384, 262_144])
         #expect(Set(rpc.compactMap { $0.dimensions["fragment_bytes"] }) == [7, 256, 4_096])
+    }
+
+    /// Inspects versioned coalesced inputs with a literal header/payload oracle independent of the production encoder.
+    /// - Throws: Fixture selection, decoder or checksum failures for finite single-append controls.
+    /// Exact frame order, all opaque bytes, empty payloads and ping/pong opcodes are checked for every variant.
+    @Test func coalescedRPCFixturesKeepExactOrderAndBytes() throws {
+        let workloads = try RPCWorkloads.make().filter { $0.id.hasPrefix("rpc.v2.decode.coalesced.") }
+        #expect(workloads.count == 4)
+        for workload in workloads {
+            let count = Int(try #require(workload.dimensions["frame_count"]))
+            let payloadBytes = Int(try #require(workload.dimensions["frame_payload_bytes"]))
+            let wireBytes = Int(try #require(workload.dimensions["wire_bytes"]))
+            #expect(wireBytes == count * (payloadBytes + 8))
+            #expect(workload.dimensions["append_count"] == 1)
+            #expect(workload.fixture.count == wireBytes * 4)
+            for variant in 0..<4 {
+                let wire = workload.fixture.subdata(in: (variant * wireBytes)..<((variant + 1) * wireBytes))
+                var decoder = try RPCFrameDecoder(maximumPayloadBytes: 4_096)
+                let frames = try decoder.append(wire)
+                #expect(frames.count == count)
+                for (index, frame) in frames.enumerated() {
+                    let rawOpcode: UInt32 = [1, 3, 4, 2][(index + variant) % 4]
+                    let headerOffset = index * (payloadBytes + 8)
+                    #expect(wire.subdata(in: headerOffset..<(headerOffset + 8)) ==
+                        Data([UInt8(rawOpcode), 0, 0, 0, UInt8(payloadBytes), 0, 0, 0]))
+                    #expect(frame.opcode.rawValue == rawOpcode)
+                    #expect(frame.payload == Data((0..<payloadBytes).map {
+                        UInt8(truncatingIfNeeded: $0 &* 31 &+ index &* 17 &+ variant &* 53)
+                    }))
+                }
+                try decoder.finish()
+                #expect(try workload.operation(UInt64(variant)) == workload.expected(UInt64(variant)))
+            }
+        }
     }
 
     /// Independent permission controls preserve the original catalog while separating role, overwrite and width costs.

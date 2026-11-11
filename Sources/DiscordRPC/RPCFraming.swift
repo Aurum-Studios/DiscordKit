@@ -65,6 +65,7 @@ public struct RPCFrame: Sendable, Equatable, CustomStringConvertible, CustomDebu
 ///
 /// At most one incomplete header/payload is retained. Each append is capped to
 /// `maximumPayloadBytes + 8`; callers must bound their read size accordingly.
+/// A completed header is validated once and retained until its frame completes or resets.
 /// Complete returned frames are caller-owned. Any append error discards buffered input.
 public struct RPCFrameDecoder: Sendable, CustomStringConvertible, CustomDebugStringConvertible, CustomReflectable {
     /// Hides incomplete secret-bearing frame bytes from ordinary formatting.
@@ -75,6 +76,7 @@ public struct RPCFrameDecoder: Sendable, CustomStringConvertible, CustomDebugStr
     public var customMirror: Mirror { Mirror(self, children: ["redacted": true]) }
     public let maximumPayloadBytes: Int
     private var buffer = Data()
+    private var parsedHeader: (opcode: RPCOpcode, requiredBytes: Int)?
 
     /// Validates frame bounds without allocating a frame-sized buffer.
     /// - Parameter maximumPayloadBytes: Positive byte cap, default 1 MiB, at most UInt32.max minus 8.
@@ -96,34 +98,42 @@ public struct RPCFrameDecoder: Sendable, CustomStringConvertible, CustomDebugStr
             var frames: [RPCFrame] = []
             var offset = bytes.startIndex
             while offset < bytes.endIndex {
-                if buffer.count < 8 {
+                let header: (opcode: RPCOpcode, requiredBytes: Int)
+                if let retained = parsedHeader {
+                    header = retained
+                } else {
                     let count = min(8 - buffer.count, bytes.endIndex - offset)
-                    buffer.append(bytes[offset..<(offset + count)]); offset += count
+                    if count > 0 { buffer.append(bytes[offset..<(offset + count)]); offset += count }
+                    guard buffer.count == 8 else { break }
+                    let headerBytes = Array(buffer.prefix(8))
+                    let opcodeValue = (0..<4).reduce(UInt32(0)) { $0 | UInt32(headerBytes[$1]) << ($1 * 8) }
+                    let length = (0..<4).reduce(UInt32(0)) { $0 | UInt32(headerBytes[$1 + 4]) << ($1 * 8) }
+                    guard let opcode = RPCOpcode(rawValue: opcodeValue) else { throw RPCFailure.malformedFrame }
+                    guard length <= maximumPayloadBytes else { throw RPCFailure.frameTooLarge }
+                    header = (opcode, 8 + Int(length))
+                    parsedHeader = header
                 }
-                guard buffer.count == 8 || buffer.count > 8 else { break }
-                let header = Array(buffer.prefix(8))
-                let opcodeValue = (0..<4).reduce(UInt32(0)) { $0 | UInt32(header[$1]) << ($1 * 8) }
-                let length = (0..<4).reduce(UInt32(0)) { $0 | UInt32(header[$1 + 4]) << ($1 * 8) }
-                guard let opcode = RPCOpcode(rawValue: opcodeValue) else { throw RPCFailure.malformedFrame }
-                guard length <= maximumPayloadBytes else { throw RPCFailure.frameTooLarge }
-                let required = 8 + Int(length)
-                let count = min(required - buffer.count, bytes.endIndex - offset)
+                // A validated header belongs to exactly one incomplete frame, regardless of fragment count.
+                let count = min(header.requiredBytes - buffer.count, bytes.endIndex - offset)
                 if count > 0 { buffer.append(bytes[offset..<(offset + count)]); offset += count }
-                if buffer.count == required {
-                    frames.append(RPCFrame(opcode: opcode, payload: Data(buffer.dropFirst(8))))
-                    buffer.removeAll(keepingCapacity: false)
+                if buffer.count == header.requiredBytes {
+                    frames.append(RPCFrame(opcode: header.opcode, payload: Data(buffer.dropFirst(8))))
+                    reset()
                 }
             }
             return frames
-        } catch { buffer.removeAll(keepingCapacity: false); throw error }
+        } catch { reset(); throw error }
     }
 
     /// Validates that EOF falls on a frame boundary without accepting truncated input.
     /// - Throws: `RPCFailure.malformedFrame` when any header/payload bytes remain.
     public func finish() throws { guard buffer.isEmpty else { throw RPCFailure.malformedFrame } }
 
-    /// Discards incomplete header/payload storage without changing validated size bounds.
+    /// Discards incomplete bytes and parsed-header state without changing validated size bounds.
     /// Use after connection closure or before beginning an unrelated byte stream. This
     /// releases retained Data ownership; Swift does not guarantee secret-memory wiping.
-    public mutating func reset() { buffer.removeAll(keepingCapacity: false) }
+    public mutating func reset() {
+        buffer.removeAll(keepingCapacity: false)
+        parsedHeader = nil
+    }
 }

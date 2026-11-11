@@ -72,4 +72,57 @@ import Testing
             #expect(try selected.operation(3) == legacy.expected(3))
         }
     }
+
+    /// Varies numeric density and key length at fixed document bytes, root width, depth and string count.
+    /// - Throws: Missing dimensions, fixture selection or parser/operation errors.
+    /// Every exact numeric spelling and literal key length is inspected; version-two case selection stays byte-identical.
+    @Test func densityControlsHaveIndependentExactOracles() throws {
+        let workloads = try JSONDimensionWorkloads.makeDensityControls()
+        #expect(workloads.count == 10 && Set(workloads.map(\.id)).count == 10)
+        let baseline = try #require(workloads.first)
+        let varying = ["numericLeaves", "variableKeyBytes"]
+        var changed: Set<String> = []
+        for workload in workloads {
+            let differences = varying.filter { workload.dimensions[$0] != baseline.dimensions[$0] }
+            #expect(differences.count <= 1)
+            changed.formUnion(differences)
+            for fixed in ["payloadBytes", "depth", "width", "stringLeaves", "variants"] {
+                #expect(workload.dimensions[fixed] == baseline.dimensions[fixed])
+            }
+            let keyBytes = Int(try #require(workload.dimensions["variableKeyBytes"]))
+            let numbers = Int(try #require(workload.dimensions["numericLeaves"])) - 1
+            try workload.verify()
+            #expect(workload.fixture.count == 16_384 * 4)
+            for variant in 0..<4 {
+                let source = workload.fixture.subdata(in: (variant * 16_384)..<((variant + 1) * 16_384))
+                guard case .object(let object) = try JSONValue.parse(source) else {
+                    Issue.record("Density fixture root must be an object"); continue
+                }
+                #expect(object.count == 4)
+                let variableKeys = object.keys.filter { $0 != "a_variant" }.sorted()
+                #expect(variableKeys.count == 3 && variableKeys.allSatisfy { $0.utf8.count == keyBytes })
+                guard case .array(let leaves) = object["b" + String(repeating: "x", count: keyBytes - 1)],
+                      case .array(let numeric) = object["c" + String(repeating: "x", count: keyBytes - 1)],
+                      case .string(let padding) = object["d" + String(repeating: "x", count: keyBytes - 1)] else {
+                    Issue.record("Density fixture arrays or padding missing"); continue
+                }
+                #expect(leaves == Array(repeating: .string(String(repeating: "x", count: 32)), count: 16))
+                #expect(!padding.isEmpty && padding.utf8.allSatisfy { $0 == 120 })
+                #expect(numeric.count == numbers)
+                let lexemes = ["18446744073709551616", "1.2300e+900", "-0", "9007199254740993"]
+                for (index, value) in numeric.enumerated() {
+                    guard case .number(let token) = value else { Issue.record("Nonnumeric density leaf"); continue }
+                    #expect(token.rawValue == lexemes[(index + variant) % 4])
+                }
+                #expect(try workload.operation(UInt64(variant)) == workload.expected(UInt64(variant)))
+            }
+            let selected = try FoundationWorkloads.selected(workload.id)
+            #expect(selected.fixture == workload.fixture && selected.dimensions == workload.dimensions)
+        }
+        #expect(changed == Set(varying))
+        for original in try JSONDimensionWorkloads.make() {
+            let selected = try FoundationWorkloads.selected(original.id)
+            #expect(selected.fixture == original.fixture && selected.dimensions == original.dimensions)
+        }
+    }
 }

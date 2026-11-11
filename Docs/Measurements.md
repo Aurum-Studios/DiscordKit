@@ -285,6 +285,9 @@ The [performance refinement plan](Tasks/performance-improvements/PLAN.md) applie
 these tools to source findings, causal experiments and staged optimization gates.
 Its [planning evidence](Tasks/performance-improvements/EVIDENCE.md) retains current
 local observations separately from the historical measurements below.
+The [phase 5 record](Tasks/performance-improvements/PHASE-5.md) adds paired local
+JSON/RPC observations, numeric/key-density and coalesced-frame controls, with
+allocation tracing and controlled-host numerical qualification kept explicit.
 
 Create a separate change only after reproducing the cost with a defined boundary.
 Attach the exact case, catalog/metric/profile versions, fixture hashes, command

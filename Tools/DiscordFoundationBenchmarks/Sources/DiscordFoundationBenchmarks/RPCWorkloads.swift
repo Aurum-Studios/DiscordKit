@@ -9,7 +9,8 @@ import Foundation
 /// Opaque IPC framing CPU work uses prepared bytes and never opens a desktop connection.
 enum RPCWorkloads {
     /// Covers three payload scales, split headers/bodies and exact bounded rejection paths.
-    /// - Returns: Seventeen cases: three encoders, nine incremental decoders and five distinct rejection paths,
+    /// - Returns: Twenty-one cases: three encoders, nine incremental decoders, four coalesced-frame controls
+    ///   and five distinct rejection paths,
     ///   each selecting among four prepared immutable variants by the operation's input modulo four.
     /// - Throws: No protocol errors during setup; the returned operation/verification closures propagate unexpected
     ///   framing errors and verification failures when executed.
@@ -24,8 +25,60 @@ enum RPCWorkloads {
                 result.append(decode(fixtures: fixtures, size: size, fragment: fragment))
             }
         }
+        for count in [1, 16, 128] { result.append(coalesced(frameCount: count, payloadBytes: 16)) }
+        result.append(coalesced(frameCount: 128, payloadBytes: 0))
         for kind in Rejection.allCases { result.append(rejection(kind)) }
         return result
+    }
+
+    /// Measures one append containing many independently authored small frames, separate from one fragmented body.
+    /// - Parameters:
+    ///   - frameCount: Positive finite control selected from 1, 16 and 128.
+    ///   - payloadBytes: Exact body size of every frame, selected from zero and sixteen.
+    /// - Returns: A versioned four-variant workload with exact ordered-frame and opaque-payload oracles.
+    /// Preparation and complete equality checks stay untimed. The fixed 4,096-byte decoder cap admits the entire
+    /// largest 3,072-byte append, while remaining explicit and independent from the small per-frame body length.
+    private static func coalesced(frameCount: Int, payloadBytes: Int) -> FoundationWorkload {
+        let maximumPayloadBytes = 4_096
+        let opcodes: [RPCOpcode] = [.frame, .ping, .pong, .close]
+        let fixtures: [(frames: [RPCFrame], wire: Data)] = (0..<4).map { variant in
+            var frames: [RPCFrame] = [], wire = Data()
+            for index in 0..<frameCount {
+                let opcode = opcodes[(index + variant) % opcodes.count]
+                let payload = Data((0..<payloadBytes).map {
+                    UInt8(truncatingIfNeeded: $0 &* 31 &+ index &* 17 &+ variant &* 53)
+                })
+                frames.append(RPCFrame(opcode: opcode, payload: payload))
+                wire.append(contentsOf: [UInt8(opcode.rawValue), 0, 0, 0, UInt8(payloadBytes), 0, 0, 0])
+                wire.append(payload)
+            }
+            return (frames, wire)
+        }
+        let id = "rpc.v2.decode.coalesced.n\(frameCount).p\(payloadBytes)"
+        return FoundationWorkload(id: id,
+            dimensions: ["fixture_version": 2, "variant_count": 4, "frame_count": UInt64(frameCount),
+                "frame_payload_bytes": UInt64(payloadBytes), "wire_bytes": UInt64(frameCount * (payloadBytes + 8)),
+                "append_count": 1, "maximum_payload_bytes": UInt64(maximumPayloadBytes)],
+            fixture: fixtures.reduce(into: Data()) { $0.append($1.wire) }, operation: { input in
+                var decoder = try RPCFrameDecoder(maximumPayloadBytes: maximumPayloadBytes)
+                let frames = try decoder.append(fixtures[Int(input % 4)].wire)
+                try decoder.finish()
+                return FoundationObservation(checksum: frames.enumerated().reduce(UInt64(0)) {
+                    $0 &+ UInt64($1.offset + 1) &* frameChecksum($1.element)
+                })
+            }, expected: { input in
+                FoundationObservation(checksum: fixtures[Int(input % 4)].frames.enumerated().reduce(UInt64(0)) {
+                    $0 &+ UInt64($1.offset + 1) &* frameChecksum($1.element)
+                })
+            }, verify: {
+                for fixture in fixtures {
+                    var decoder = try RPCFrameDecoder(maximumPayloadBytes: maximumPayloadBytes)
+                    guard try decoder.append(fixture.wire) == fixture.frames else {
+                        throw FoundationBenchmarkError.integrityFailure(id)
+                    }
+                    try decoder.finish()
+                }
+            })
     }
 
     /// Independent wire bytes prevent a matching encoder/decoder bug from constructing its own oracle.

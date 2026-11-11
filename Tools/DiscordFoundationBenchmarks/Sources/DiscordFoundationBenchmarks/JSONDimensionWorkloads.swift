@@ -51,6 +51,94 @@ enum JSONDimensionWorkloads {
         }
     }
 
+    /// Adds independent numeric-leaf density and key-length controls without changing version-two fixtures.
+    /// - Returns: Ten version-three parse/serialize cases with exact 16 KiB documents and four variants each.
+    /// - Throws: Invalid exact-byte budgets or source/tree disagreement during untimed verification.
+    /// Root width, depth and string count remain fixed. Padding adjusts only the final string's length so that
+    /// increasing numeric tokens or key bytes does not simultaneously increase the total document byte count.
+    static func makeDensityControls() throws -> [FoundationWorkload] {
+        try [(numbers: 16, keyBytes: 8), (1, 8), (128, 8), (16, 1), (16, 64)].flatMap { shape in
+            let fixtures = try (0..<4).map {
+                try DensityFixture(numbers: shape.numbers, keyBytes: shape.keyBytes, variant: $0)
+            }
+            let label = "bytes16384.keys\(shape.keyBytes).numbers\(shape.numbers)"
+            let dimensions: [String: UInt64] = ["fixtureVersion": 3, "payloadBytes": 16_384,
+                "depth": 2, "width": 4, "stringLeaves": 17, "numericLeaves": UInt64(shape.numbers + 1),
+                "variableKeyBytes": UInt64(shape.keyBytes), "variants": 4]
+            let verify = {
+                for fixture in fixtures {
+                    guard try JSONValue.parse(fixture.source) == fixture.tree,
+                          try fixture.tree.serialized() == fixture.source else {
+                        throw FoundationBenchmarkError.integrityFailure("Version-three JSON source/tree mismatch")
+                    }
+                }
+            }
+            let evidence = fixtures.reduce(into: Data()) { $0.append($1.source) }
+            return [
+                FoundationWorkload(id: "json.v3.parse.\(label)", dimensions: dimensions, fixture: evidence,
+                    operation: { index in
+                        let fixture = fixtures[Int(index % 4)]
+                        guard case .object(let object) = try JSONValue.parse(fixture.source),
+                              case .number(let marker) = object["a_variant"], let value = UInt64(marker.rawValue),
+                              case .array(let numbers) = object[fixture.numberKey],
+                              case .number(let first) = numbers.first,
+                              case .number(let last) = numbers.last else {
+                            throw FoundationBenchmarkError.integrityFailure("Version-three JSON marker/numbers missing")
+                        }
+                        let firstBytes = first.rawValue.utf8, lastBytes = last.rawValue.utf8
+                        return FoundationObservation(checksum: UInt64(object.count) &+ value
+                            &+ UInt64(numbers.count) &* 65_537 &+ UInt64(firstBytes.count) &* 257
+                            &+ UInt64(firstBytes.first ?? 0) &+ UInt64(lastBytes.count) &* 65_521
+                            &+ UInt64(lastBytes.last ?? 0))
+                    }, expected: { FoundationObservation(checksum: fixtures[Int($0 % 4)].parseChecksum) }, verify: verify),
+                FoundationWorkload(id: "json.v3.serialize.\(label)", dimensions: dimensions, fixture: evidence,
+                    operation: { index in
+                        let bytes = try fixtures[Int(index % 4)].tree.serialized()
+                        return FoundationObservation(checksum: UInt64(bytes.count) &+ UInt64(bytes[13]))
+                    }, expected: { FoundationObservation(checksum: 16_384 &+ 48 &+ ($0 % 4)) }, verify: verify),
+            ]
+        }
+    }
+
+    private struct DensityFixture {
+        let source: Data
+        let tree: JSONValue
+        let numberKey: String
+        let parseChecksum: UInt64
+
+        /// Authors canonical wire bytes and an independent tree with fixed structure and an exact byte budget.
+        /// - Parameters:
+        ///   - numbers: Number of exact numeric tokens in the second array, selected from 1, 16 and 128.
+        ///   - keyBytes: Encoded ASCII length of each of three variable keys, selected from 1, 8 and 64.
+        ///   - variant: Index in `0..<4`, rotating lossless decimal spellings and the root marker.
+        /// - Throws: Number validation errors or an insufficient exact document byte budget.
+        /// The numeric marker key stays `a_variant`; the other keys begin with b/c/d and remain canonically ordered.
+        init(numbers: Int, keyBytes: Int, variant: Int) throws {
+            let keys = ["b", "c", "d"].map { $0 + String(repeating: "x", count: keyBytes - 1) }
+            let lexemes = ["18446744073709551616", "1.2300e+900", "-0", "9007199254740993"]
+            let numericText = (0..<numbers).map { lexemes[($0 + variant) % lexemes.count] }
+            numberKey = keys[1]
+            let first = numericText[0].utf8, last = numericText[numericText.count - 1].utf8
+            parseChecksum = 4 &+ UInt64(variant) &+ UInt64(numbers) &* 65_537
+                &+ UInt64(first.count) &* 257 &+ UInt64(first.first ?? 0)
+                &+ UInt64(last.count) &* 65_521 &+ UInt64(last.last ?? 0)
+            let strings = Array(repeating: String(repeating: "x", count: 32), count: 16)
+            let prefix = "{\"a_variant\":\(variant),\"\(keys[0])\":["
+                + strings.map { "\"" + $0 + "\"" }.joined(separator: ",")
+                + "],\"\(keys[1])\":[" + numericText.joined(separator: ",") + "],\"\(keys[2])\":\""
+            let padding = 16_384 - prefix.utf8.count - 2
+            guard padding > 0 else {
+                throw FoundationBenchmarkError.invalidConfiguration("Version-three JSON budget too small")
+            }
+            let tail = String(repeating: "x", count: padding)
+            source = Data((prefix + tail + "\"}").utf8)
+            tree = .object(["a_variant": .number(try JSONNumber(rawValue: String(variant))),
+                keys[0]: .array(strings.map(JSONValue.string)),
+                keys[1]: .array(try numericText.map { .number(try JSONNumber(rawValue: $0)) }),
+                keys[2]: .string(tail)])
+        }
+    }
+
     /// Defaults form the shared control; each additional catalog shape changes exactly one field.
     private struct Shape {
         var bytes = 16_384

@@ -15,8 +15,10 @@ F02/F03/F04/F06 refinements and the retained F05/F07 decisions are tracked in
 [Phase 2](PHASE-2.md). F08/F09 event-delivery refinements and retained F10/F11
 ownership/routing decisions are tracked in [Phase 3](PHASE-3.md). F12 cache indexes
 and F13 retained byte-charging/stateless-permission decisions are tracked in
-[Phase 4](PHASE-4.md), including slower full expiry drains and higher entity RSS;
-later-stage candidates remain proposed. See [stage gates](PLAN.md) and
+[Phase 4](PHASE-4.md), including slower full expiry drains and higher entity RSS.
+F14 ASCII/coder and F15 RPC-header refinements, local profiles/comparisons and
+retained F16 bitset/model/builder decisions are recorded in [Phase 5](PHASE-5.md).
+Later-stage candidates remain proposed. See [stage gates](PLAN.md) and
 [planning evidence](EVIDENCE.md).
 
 ## Shared runtime paths

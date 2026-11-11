@@ -180,7 +180,8 @@ public indirect enum JSONValue: Sendable, Hashable {
     ///   if a string cannot be encoded. No partial output escapes on failure.
     ///
     /// Runtime is linear in output size plus object-key sorting. String escaping
-    /// uses a fresh Foundation encoder and no globally shared mutable state.
+    /// uses a safe ASCII fast path and one lazily created Foundation encoder per
+    /// serialization operation, with no globally shared mutable state.
     public func serialized(limits: JSONLimits = .default) throws -> Data {
         try limits.validate()
         var writer = JSONWriter(limits: limits)
@@ -238,6 +239,7 @@ private struct JSONParser {
     let limits: JSONLimits
     var index = 0
     var nodes = 0
+    var stringDecoder: JSONDecoder?
 
     /// Skips exactly the four whitespace bytes allowed by RFC 8259.
     ///
@@ -285,22 +287,31 @@ private struct JSONParser {
         index += expected.count
     }
 
-    /// Scans a quoted token and delegates Unicode/escape validation to Foundation's string decoder.
+    /// Decodes unescaped ASCII directly and delegates other strings to a parse-local Foundation decoder.
     /// - Returns: Decoded Unicode content; escape spelling itself is intentionally not retained.
     /// - Throws: A malformed-input error for unterminated strings, control bytes, invalid escapes, or invalid Unicode.
     mutating func string() throws -> String {
         let start = index
+        var unescapedASCII = true
         index += 1
         while index < bytes.count {
             let byte = bytes[index]
             guard byte >= 32 else { throw JSONValueError.malformed(byteOffset: index) }
             index += 1
             if byte == 92 {
+                unescapedASCII = false
                 guard index < bytes.count else { throw JSONValueError.malformed(byteOffset: index) }
                 index += 1
             } else if byte == 34 {
-                do { return try JSONDecoder().decode(String.self, from: Data(bytes[start..<index])) }
+                if unescapedASCII {
+                    return String(decoding: bytes[(start + 1)..<(index - 1)], as: UTF8.self)
+                }
+                let decoder = stringDecoder ?? JSONDecoder()
+                stringDecoder = decoder
+                do { return try decoder.decode(String.self, from: Data(bytes[start..<index])) }
                 catch { throw JSONValueError.malformed(byteOffset: start) }
+            } else if byte >= 128 {
+                unescapedASCII = false
             }
         }
         throw JSONValueError.malformed(byteOffset: start)
@@ -360,6 +371,7 @@ private struct JSONWriter {
     let limits: JSONLimits
     var bytes: [UInt8] = []
     var nodes = 0
+    var stringEncoder: JSONEncoder?
 
     /// Appends bytes only when the complete append fits the remaining output budget.
     /// - Parameter data: Next UTF-8 fragment or punctuation; must already be valid JSON syntax in context.
@@ -369,12 +381,24 @@ private struct JSONWriter {
         bytes.append(contentsOf: data)
     }
 
-    /// Escapes and appends one JSON string using an isolated Foundation encoder.
+    /// Quotes safe ASCII directly and otherwise escapes with a lazily created write-local Foundation encoder.
     /// - Parameter value: Unicode scalar content to quote; includes object keys as well as string values.
     /// - Throws: Byte-limit errors or Foundation string-encoding errors. No string contents appear in limit diagnostics.
+    /// Slashes use the Foundation path to retain its default escaping policy and exact output bytes.
     mutating func string(_ value: String) throws {
-        guard value.utf8.count <= limits.maximumBytes - bytes.count else { throw JSONValueError.maximumBytesExceeded }
-        try append(JSONEncoder().encode(value))
+        let utf8 = value.utf8
+        let remaining = limits.maximumBytes - bytes.count
+        guard utf8.count <= remaining else { throw JSONValueError.maximumBytesExceeded }
+        if utf8.allSatisfy({ $0 >= 32 && $0 < 128 && $0 != 34 && $0 != 47 && $0 != 92 }) {
+            guard remaining >= 2, utf8.count <= remaining - 2 else { throw JSONValueError.maximumBytesExceeded }
+            bytes.append(34)
+            bytes.append(contentsOf: utf8)
+            bytes.append(34)
+        } else {
+            let encoder = stringEncoder ?? JSONEncoder()
+            stringEncoder = encoder
+            try append(encoder.encode(value))
+        }
     }
 
     /// Writes a subtree with deterministic key order and original numeric spellings.
