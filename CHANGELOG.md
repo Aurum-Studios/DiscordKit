@@ -9,6 +9,20 @@ https://aurum-studios.com
 
 ## Unreleased
 
+### Performance plan phase 2
+
+- Decode successful unshared REST exchanges once while preserving validated byte
+  retention, independent coalesced results and cancellation/deadline behavior.
+- Reuse validated initial interaction callback bytes for exact acknowledgement
+  admission and built-in inline/REST delivery; preserve public typed custom sinks.
+- Bound signed-ingress expiry maintenance with one indexed entry per signature,
+  preserving inclusive expiry and atomic authenticated replay admission.
+- Remove NIO response FIFO shifts and intermediate body materialization while
+  retaining response caps, complete EOF drain and connection lifecycle rules.
+- Add typed-size, replay-state and actor-admission measurement controls plus
+  deterministic regression coverage. See the [phase record](Docs/Tasks/performance-improvements/PHASE-2.md)
+  for validation and the separately open numerical/platform qualification gates.
+
 ### Local admission notifications — 2026-11-11
 
 - Replace local order/rate eligibility polling with targeted FIFO handoff and a

@@ -18,6 +18,7 @@ enum InteractionTimingScenario: String, Codable, CaseIterable, Sendable {
     case immediate, manualDefer, automaticDefer, duplicate, invalidSignature, malformed
     case uncertain, cancelled, admissionRefusal, callbackError, handlerFailureAfterAcknowledgement, deadlineRace
     case durableAdmission, durableDuplicate, durableFailure
+    case replayNearCapacityV1
 
     /// Selects webhook event admission, which has a separate consumer transaction authority.
     var isDurable: Bool { self == .durableAdmission || self == .durableDuplicate || self == .durableFailure }
@@ -48,6 +49,10 @@ struct InteractionTimingReport: Codable, Sendable {
     let cleanup: InteractionTimingCleanup
     let durableTransactions: Int
     let setupDurableTransactions: Int
+    var setupReplayEntries: Int? = nil
+    var finalReplayEntries: Int? = nil
+    var replayCapacity: Int? = nil
+    var verifierActorAdmission: HistogramSnapshot? = nil
     let notes: [String]
 }
 
@@ -64,7 +69,8 @@ struct InteractionTimingRunner: Sendable {
     func run(scenario: InteractionTimingScenario, requests: Int = 32, concurrency: Int = 4,
         delay: Duration = .milliseconds(2)) async throws -> InteractionTimingReport {
         guard (1...100_000).contains(requests), (1...256).contains(concurrency), concurrency <= requests,
-              delay >= .zero, delay <= .seconds(1) else { throw LoadFailure.invalidArguments }
+              delay >= .zero, delay <= .seconds(1),
+              scenario != .replayNearCapacityV1 || requests <= 256 else { throw LoadFailure.invalidArguments }
         if scenario.isDurable { return try await runDurable(scenario: scenario, requests: requests, concurrency: concurrency, delay: delay) }
         let statistics = try RunStatistics(workloads: [.ingressApplicationResponse, .ingressBodyRead,
             .ingressSignature, .ingressAdmission, .ingressDecode, .commandRoute, .commandAdmission,
@@ -72,15 +78,21 @@ struct InteractionTimingRunner: Sendable {
             .interactionProviderWait, .interactionInitialResponse, .interactionOriginalEdit, .commandPolicy])
         let clock = ContinuousClock(), origin = clock.now
         let collection = InteractionTimingCollectionGate()
+        let verifierAdmission = try InteractionVerifierAdmission()
         let intervals = DiscordIntervalTiming(clockDomain: UInt64.random(in: 1...UInt64.max), sink: { event in
-            guard collection.enabled, event.kind == .ended, let workload = interactionWorkload(event) else { return }
+            guard collection.enabled, event.kind == .ended else { return }
+            if event.operation == .signedIngress, event.stage == .admission {
+                verifierAdmission.record(event)
+                return
+            }
+            guard let workload = interactionWorkload(event) else { return }
             let outcome = interactionIntervalOutcome(event.outcome)
             statistics.record(event.validity == .valid ? (event.elapsedNanoseconds.map(Duration.nanoseconds) ?? .seconds(-1)) : .seconds(-1),
                 workload: workload, outcome: outcome)
         }, now: { origin.duration(to: clock.now) })
         let key = try Curve25519.Signing.PrivateKey(rawRepresentation: Data(repeating: 19, count: 32))
         let verifier = try SignedRequestVerifier(publicKey: interactionHex(key.publicKey.rawRepresentation),
-            maximumReplayEntries: max(1, requests), now: { 1_000 }, intervals: intervals)
+            maximumReplayEntries: max(1, requests) + (scenario == .replayNearCapacityV1 ? 4_095 : 0), now: { 1_000 }, intervals: intervals)
         let ingress = try DiscordSignedIngress(verifier: verifier, maximumConcurrentRequests: concurrency, intervals: intervals)
         let acknowledgement = try InteractionAcknowledgementAdmission(maximumConcurrent: concurrency,
             maximumBytes: scenario == .admissionRefusal ? 1 : 1_048_576)
@@ -144,6 +156,14 @@ struct InteractionTimingRunner: Sendable {
         if scenario == .duplicate {
             _ = try await verifier.verify(headers: duplicateHeaders, body: duplicateBody)
         }
+        if scenario == .replayNearCapacityV1 {
+            for ordinal in 0..<4_095 {
+                try Task.checkCancellation()
+                let body = Data("phase2-replay-prefill-\(ordinal)".utf8)
+                _ = try await verifier.verify(headers: interactionHeaders(key: key, body: body), body: body)
+            }
+        }
+        let replayBefore = scenario == .replayNearCapacityV1 ? await verifier.replayEntryCount() : nil
         collection.enable()
         var outcomes = Dictionary(uniqueKeysWithValues: BenchmarkOutcome.allCases.map { ($0, UInt64(0)) })
         var completed = 0, admitted = 0, bodyOwners = 0, slotOwners = 0
@@ -200,7 +220,11 @@ struct InteractionTimingRunner: Sendable {
             counts: .init(offered: UInt64(completed), admitted: UInt64(admitted), completed: UInt64(completed),
                 outcomes: outcomes, deadlineMisses: outcomes[.timedOut, default: 0]), metrics: statistics.metrics(), clockDomain: statistics.clockDomain,
             durationNanoseconds: try BenchmarkTime.nanoseconds(duration: first.flatMap { a in last.map { a.duration(to: $0) } } ?? .zero),
-            cleanup: cleanup, durableTransactions: 0, setupDurableTransactions: 0, notes: [
+            cleanup: cleanup, durableTransactions: 0, setupDurableTransactions: 0,
+            setupReplayEntries: replayBefore,
+            finalReplayEntries: scenario == .replayNearCapacityV1 ? await verifier.replayEntryCount() : nil,
+            replayCapacity: scenario == .replayNearCapacityV1 ? 4_095 + requests : nil,
+            verifierActorAdmission: verifierAdmission.snapshot(), notes: [
                 "Injected HTTP requests carry real Ed25519 signatures; no sockets, Discord credentials or trusted receipt claims.",
                 "Application response starts after workflow begin callback at handle entry; workflow starts at external caller entry and stops at joined handle result/error, before response-status diagnostics.",
                 "Workflow histograms use logical caller outcomes; owner intervals retain their documented local outcomes, so successful handling of a rejected HTTP request does not become a successful workflow.",
@@ -208,7 +232,7 @@ struct InteractionTimingRunner: Sendable {
                 "deadlineRace supplies an already-expired caller deadline before signed body admission; in-flight response/deadline races have separate virtual-clock runtime tests.",
                 "Admitted counts actual normalized application-handler invocations; authentication/decode refusal never increments admission.",
                 "Signing and allocation precede measured caller entry. Every completion is retained in bounded outcome histograms.",
-                "Duplicate fixture primes one bounded replay entry outside measured request intervals and histograms.",
+                "Duplicate fixture primes one bounded replay entry outside measured request intervals and histograms. replayNearCapacityV1 primes 4095 distinct signatures, excluded from timing populations; its native receipt retains initial/final counts.",
                 "Automatic-defer handlers await the actual automatic acknowledgement before their first edit; timer/handler scheduling remains measured."
             ])
     }
@@ -480,4 +504,31 @@ private actor InteractionTimingDurableLedger {
 /// Encodes a future webhook-event fixture with a unique exact-byte delivery key per ordinal.
 private func interactionWebhookFixture(ordinal: Int) -> Data {
     Data("{\"version\":1,\"application_id\":\"2\",\"type\":1,\"event\":{\"type\":\"FIXTURE_\(ordinal)\",\"timestamp\":\"2026-10-17T12:00:00Z\",\"data\":{}}}".utf8)
+}
+
+/// One fixed histogram for genuine caller-to-verifier actor admission, separate from replay service.
+/// The native-only field preserves historical common catalog identities; no user data is retained.
+private final class InteractionVerifierAdmission: @unchecked Sendable {
+    private let lock = NSLock()
+    private var histogram: BoundedHistogram
+
+    /// Allocates a fixed 0...100ms, 1us histogram outside measured requests; overflow stays explicit.
+    /// - Throws: Invalid static histogram bounds rather than silently changing precision.
+    init() throws {
+        histogram = BoundedHistogram(configuration: try HistogramConfiguration(lowerBoundNanoseconds: 0,
+            upperBoundNanoseconds: 100_000_000, bucketWidthNanoseconds: 1_000))
+    }
+
+    /// Records one ended admission interval; invalid clocks count as observation loss.
+    /// - Parameter event: Actual runtime caller-to-actor interval after the collection gate opens.
+    func record(_ event: DiscordIntervalEvent) {
+        lock.withLock {
+            if event.validity == .valid, let elapsed = event.elapsedNanoseconds, elapsed >= 0 { histogram.record(UInt64(elapsed)) }
+            else { histogram.recordLoss() }
+        }
+    }
+
+    /// Copies fixed histogram cells after callers join; no actor service is inferred by subtraction.
+    /// - Returns: Full count, range, censoring and loss evidence for this separate endpoint.
+    func snapshot() -> HistogramSnapshot { lock.withLock { histogram.snapshot() } }
 }

@@ -140,6 +140,14 @@ Call coalescer/coordinator close and adapter close after clients finish. Cache h
 no tasks; removeAll releases retained snapshots. Counter snapshots expose aggregate
 ownership without credentials or per-account labels.
 
+Unshared successful exchanges return the decoded value already used to validate
+retention; they invoke the endpoint decoder once. Cache hits invoke the current
+caller's decoder once. A shared flight validates its bytes before retention and
+each subscriber decodes independently. No typed value is shared across callers or
+response types. Decoder failures keep their existing sanitized invalid-response
+category, and malformed successes never enter the cache. See the
+[Phase 2 record](Tasks/performance-improvements/PHASE-2.md).
+
 ## Pagination, polling and qualification
 
 `CursorPagination` fetches lazily, preserving operation-selected continuation rules;

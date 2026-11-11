@@ -13,7 +13,9 @@ import Foundation
 /// Closures receive remaining monotonic timeout, must cooperate with cancellation, and must not retry an
 /// ambiguous initial submission. Construction starts no work and owns no shared transport/client lifetime.
 public struct InteractionResponseSink: Sendable {
-    let initial: @Sendable (InteractionResponse, Duration) async throws -> Void
+    /// Carries the exact validated bytes charged to acknowledgement admission into built-in delivery.
+    /// Custom typed callbacks retain their existing response input and ignore this internal byte value.
+    let initial: @Sendable (InteractionResponse, InteractionType, Data, Duration) async throws -> Void
     let edit: @Sendable (InteractionMessageEdit, Duration) async throws -> Message
     let followup: @Sendable (InteractionMessageCreate, Duration) async throws -> Message
     let delete: @Sendable (Duration) async throws -> Void
@@ -30,10 +32,37 @@ public struct InteractionResponseSink: Sendable {
         editOriginal: (@Sendable (InteractionMessageEdit, Duration) async throws -> Message)? = nil,
         followup: (@Sendable (InteractionMessageCreate, Duration) async throws -> Message)? = nil,
         deleteOriginal: (@Sendable (Duration) async throws -> Void)? = nil) {
-        self.initial = initial
+        self.initial = { response, _, _, timeout in try await initial(response, timeout) }
         self.edit = editOriginal ?? { _, _ in throw DiscordError.capabilityUnavailable(.missingConfiguration) }
         self.followup = followup ?? { _, _ in throw DiscordError.capabilityUnavailable(.missingConfiguration) }
         self.delete = deleteOriginal ?? { _ in throw DiscordError.capabilityUnavailable(.missingConfiguration) }
+    }
+
+    /// Binds package-owned delivery to the responder's complete validated callback serialization.
+    /// - Parameters:
+    ///   - encodedInitial: Receives exactly the bytes charged to admission and the remaining deadline.
+    ///     This closure must preserve ambiguous-submission semantics and must not encode the callback again.
+    ///   - interactionType: Optional sink-bound trigger kind. A mismatched response owner retains the old
+    ///     typed compatibility validation against this kind, without another serialization. Nil adds no binding.
+    ///   - editOriginal: Optional typed original edit, retaining the public initializer's failure behavior.
+    ///   - followup: Optional typed follow-up, retaining independent continuation ownership.
+    ///   - deleteOriginal: Optional typed deletion, retaining independent continuation ownership.
+    /// Construction starts no work. Only the responder supplies bytes, after trigger and payload validation;
+    /// no public raw-byte callback path bypasses those checks.
+    init(encodedInitial: @escaping @Sendable (Data, Duration) async throws -> Void,
+        interactionType: InteractionType? = nil,
+        editOriginal: (@Sendable (InteractionMessageEdit, Duration) async throws -> Message)? = nil,
+        followup: (@Sendable (InteractionMessageCreate, Duration) async throws -> Message)? = nil,
+        deleteOriginal: (@Sendable (Duration) async throws -> Void)? = nil) {
+        initial = { response, validatedType, bytes, timeout in
+            if let interactionType, interactionType != validatedType {
+                _ = try response.jsonValue(interactionType: interactionType)
+            }
+            try await encodedInitial(bytes, timeout)
+        }
+        edit = editOriginal ?? { _, _ in throw DiscordError.capabilityUnavailable(.missingConfiguration) }
+        self.followup = followup ?? { _, _ in throw DiscordError.capabilityUnavailable(.missingConfiguration) }
+        delete = deleteOriginal ?? { _ in throw DiscordError.capabilityUnavailable(.missingConfiguration) }
     }
 
     /// Creates HTTP callback/continuation mechanics with independent initial REST admission ownership.
@@ -45,15 +74,16 @@ public struct InteractionResponseSink: Sendable {
     ///   - clock: Same monotonic domain as both REST clients; per-call remaining time becomes its local deadline.
     /// - Returns: JSON-only sink using API v10 typed endpoints without Gateway imports. Ambiguous initial submissions
     ///   are never retried; complete 429 rejections retain the initial client's finite explicit rejection-retry policy.
-    /// - Note: Inline HTTP responses use `init(initial:editOriginal:followup:deleteOriginal:)` instead. Bounded uploads
-    ///   remain available through the underlying typed endpoints and are not silently copied into these helpers.
+    /// - Note: `InteractionHTTPApplication` reuses responder-owned bytes for inline HTTP instead. Custom delivery
+    ///   retains the public typed initializer. Bounded uploads remain available through the underlying typed
+    ///   endpoints and are not silently copied into these helpers.
     public static func rest<C: Clock>(interaction: Interaction, initialClient: RESTClient<C>,
         continuationClient: RESTClient<C>, clock: C) -> Self where C.Duration == Duration {
-        Self(initial: { response, timeout in
-            let endpoint = try InteractionEndpoints.createResponse(interactionID: interaction.id,
-                token: interaction.token, response: response, interactionType: interaction.type.knownValue)
+        Self(encodedInitial: { bytes, timeout in
+            let endpoint = try InteractionEndpoints.createValidatedResponse(interactionID: interaction.id,
+                token: interaction.token, encodedResponse: bytes)
             _ = try await initialClient.execute(endpoint, deadline: clock.now.advanced(by: timeout))
-        }, editOriginal: { request, timeout in
+        }, interactionType: interaction.type.knownValue, editOriginal: { request, timeout in
             try await continuationClient.execute(InteractionEndpoints.editOriginalResponse(
                 applicationID: interaction.applicationID, token: interaction.token, request: request),
                 deadline: clock.now.advanced(by: timeout))

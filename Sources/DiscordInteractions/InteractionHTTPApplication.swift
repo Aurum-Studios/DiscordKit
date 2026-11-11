@@ -112,8 +112,7 @@ public struct InteractionHTTPApplication: Sendable {
                     return HTTPResponse(status: 403)
                 }
                 let rest = continuations?(interaction)
-                let sink = InteractionResponseSink(initial: { response, remaining in
-                    let bytes = try response.jsonValue(interactionType: interaction.type.knownValue).serialized()
+                let sink = InteractionResponseSink(encodedInitial: { bytes, remaining in
                     let deadline = context.clock.now.advanced(by: remaining)
                     let bounded = TransportContext(clock: context.clock, deadline: context.deadline.map { min($0, deadline) } ?? deadline)
                     try await slot.send(try Self.response(bytes), context: bounded)

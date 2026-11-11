@@ -23,6 +23,8 @@ enum TransportTimingCase: String, CaseIterable, Codable, Sendable {
     case malformedBody = "transport.malformedBody"
     case cancelled = "transport.cancelled"
     case timedOut = "transport.timedOut"
+    case body64KiBChunk257V1 = "transport.body64KiBChunk257V1"
+    case body64KiBChunk65536V1 = "transport.body64KiBChunk65536V1"
 
     /// Exact response size checked while consuming every byte, including malformed cases.
     var responseBytes: Int {
@@ -30,10 +32,34 @@ enum TransportTimingCase: String, CaseIterable, Codable, Sendable {
         get {
         switch self {
         case .empty: 0
-        case .streamedBody: 65_536
+        case .streamedBody, .body64KiBChunk257V1, .body64KiBChunk65536V1: 65_536
         case .largeBody: 1_048_576
         default: 256
         }
+        }
+    }
+
+    /// Native adapter output/socket-read bound; historical cases retain their 16 KiB default.
+    var responseChunkBytes: Int {
+        /// Returns the single changed dimension for the versioned equal-payload chunk controls.
+        get {
+            switch self {
+            case .body64KiBChunk257V1: 257
+            case .body64KiBChunk65536V1: 65_536
+            default: 16_384
+            }
+        }
+    }
+
+    /// Scripted producer bound, preserving historical streaming semantics.
+    var scriptedResponseChunkBytes: Int {
+        /// Mirrors native chunk controls without changing legacy one-chunk scripted responses.
+        get {
+            switch self {
+            case .body64KiBChunk257V1, .body64KiBChunk65536V1: responseChunkBytes
+            case .streamedBody: 1_024
+            default: max(1, responseBytes)
+            }
         }
     }
 
@@ -327,9 +353,10 @@ struct ScriptedTimingTransport: HTTPTransport {
             if scenario == .timedOut { throw TransportFailure.deadlineExceeded }
             if scenario == .delayedHeaders { try await context.clock.sleep(for: .milliseconds(2)) }
             try context.check()
-            let source = TimingPayloadSource(bytes: scenario.responseBytes,
-                chunkBytes: scenario == .streamedBody ? 1_024 : max(1, scenario.responseBytes))
-            let body = try BodyStream(maximumChunkBytes: max(1, scenario.responseBytes), next: {
+            let source = TimingPayloadSource(bytes: scenario.responseBytes, chunkBytes: scenario.scriptedResponseChunkBytes)
+            // Preserve the historical streamed fixture's declared upper bound.
+            let maximumChunkBytes = scenario == .streamedBody ? max(1, scenario.responseBytes) : scenario.scriptedResponseChunkBytes
+            let body = try BodyStream(maximumChunkBytes: maximumChunkBytes, next: {
                 try context.check()
                 if scenario == .delayedBody { try await context.clock.sleep(for: .milliseconds(2)) }
                 try context.check()
@@ -425,7 +452,7 @@ private enum TimingAdapterResource: Sendable {
     /// Allocates one native owner before any warm measured request starts.
     /// - Parameters:
     ///   - adapter: Finite native or scripted implementation.
-    ///   - scenario: Exact scripted payload/error selection, unused by native wire adapters.
+    ///   - scenario: Exact payload/error selection and versioned native chunk-size control.
     ///   - maximumConnections: Positive per-owner connection or operation capacity.
     ///   - tls: Whether NIO replaces system roots with the repository's local fixture root.
     /// - Returns: An unconnected owner with separately awaited shutdown.
@@ -436,11 +463,12 @@ private enum TimingAdapterResource: Sendable {
         case .nio:
             let roots = tls ? try Data(contentsOf: TimingLocalPeer.certificate).map { $0 } : nil
             return .nio(try NIOHTTPTransport(configuration: NIOHTTPConfiguration(maximumConnections: maximumConnections,
-                maximumConnectionsPerOrigin: maximumConnections), tls: TLSPolicy(additionalTrustRootsPEM: roots)))
+                maximumConnectionsPerOrigin: maximumConnections, chunkBytes: scenario.responseChunkBytes),
+                tls: TLSPolicy(additionalTrustRootsPEM: roots)))
         case .foundation:
             #if canImport(Darwin)
             return .foundation(FoundationHTTPTransport(configuration: try FoundationTransportConfiguration(
-                maximumConcurrentOperations: maximumConnections)))
+                maximumConcurrentOperations: maximumConnections, responseChunkBytes: scenario.responseChunkBytes)))
             #else
             throw FoundationTransportFailure.unavailableCapability
             #endif
@@ -499,7 +527,7 @@ private actor NativeTimingTransport: HTTPTransport {
     /// Creates the warm adapter outside every measured interval; cold owners are deferred.
     /// - Parameters:
     ///   - adapter: Finite adapter implementation.
-    ///   - scenario: Exact scripted payload/error fixture.
+    ///   - scenario: Exact payload/error fixture and native chunk-size control.
     ///   - mode: Shared warm owner or fresh owner per cold exchange.
     ///   - maximumConnections: Positive capacity applied separately to each native owner.
     ///   - tls: Enables explicit verified local fixture trust for NIO.

@@ -32,7 +32,8 @@ struct Phase6TimingConfiguration: Codable, Equatable, Sendable {
             (0...10_000).contains(warmupRequests), (1...1_000_000).contains(rate),
             (0...1_000_000).contains(delayMicroseconds), durationSeconds > 0,
             durationSeconds <= (profile == "soak" ? 3_600 : profile == "smoke" ? 10 : 300),
-            warmupSeconds <= 60, output != "", commonReport != "" else {
+            warmupSeconds <= 60, output != "", commonReport != "",
+            scenario != "interaction.replayNearCapacityV1" || (requests <= 256 && warmupRequests <= 256) else {
             throw Phase6TimingError.invalidConfiguration("Unsupported case or finite workload limits")
         }
         if let output, let commonReport {

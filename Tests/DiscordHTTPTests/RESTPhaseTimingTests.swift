@@ -51,8 +51,8 @@ struct RESTPhaseTimingTests {
             successStatuses: [204], decode: { $0 })
         try clock.advance(by: .nanoseconds(17))
         #expect(try await client.execute(endpoint).isEmpty)
-        #expect(observations.snapshot().samples.map(\.phase) == [.ordering, .construction, .decode, .decode])
-        #expect(observations.snapshot().reads == (enabled ? 9 : 8))
+        #expect(observations.snapshot().samples.map(\.phase) == [.ordering, .construction, .decode])
+        #expect(observations.snapshot().reads == (enabled ? 7 : 6))
         #expect(await coordinator.snapshot().activeCount == 0)
         await coordinator.close()
     }
@@ -85,14 +85,14 @@ struct RESTPhaseTimingTests {
         #expect(try await client.execute(endpoint).isEmpty)
         let snapshot = observations.snapshot()
         if enabled {
-            #expect(snapshot.samples.map(\.phase) == [.ordering, .construction, .decode, .decode])
-            #expect(snapshot.samples.map(\.elapsed) == [.zero, .nanoseconds(7), .nanoseconds(3), .nanoseconds(3)])
+            #expect(snapshot.samples.map(\.phase) == [.ordering, .construction, .decode])
+            #expect(snapshot.samples.map(\.elapsed) == [.zero, .nanoseconds(7), .nanoseconds(3)])
             #expect(snapshot.samples.allSatisfy { $0.outcome == .succeeded })
-            #expect(snapshot.reads == 8)
-            #expect(origin.duration(to: clock.now) == .nanoseconds(44))
+            #expect(snapshot.reads == 6)
+            #expect(origin.duration(to: clock.now) == .nanoseconds(36))
         } else {
             #expect(snapshot.samples.isEmpty && snapshot.reads == 0)
-            #expect(origin.duration(to: clock.now) == .nanoseconds(24))
+            #expect(origin.duration(to: clock.now) == .nanoseconds(21))
         }
         #expect(await coordinator.snapshot().activeCount == 0)
         #expect(await coordinator.snapshot().orderedOperationsCount == 0)
@@ -140,7 +140,7 @@ struct RESTPhaseTimingTests {
         _ = try await client.execute(endpoint)
         #expect(await transport.executionCount == 1)
         #expect(observations.snapshot().samples.map(\.phase) ==
-            [.cacheLookup, .construction, .decode, .decode, .cacheLookup, .decode])
+            [.cacheLookup, .construction, .decode, .cacheLookup, .decode])
         await cache.removeAll(); await coordinator.close()
     }
 

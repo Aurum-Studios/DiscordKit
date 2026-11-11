@@ -15,6 +15,17 @@ enum RESTTimingScenario: String, Codable, CaseIterable, Sendable {
     case noCache, cacheMiss, cacheFresh, cacheExpiry, coalesced, independentKeys
     case delayedHeaders, delayedBody, streamedBody, largeBody, orderedMutation, orderedMutationDefaultV1
     case rateLimitRetry, serverRetry, retryExhausted, malformed, cancelled, uncertainMutation
+    case typedDecode1KiBV1, typedDecode16KiBV1, typedDecode256KiBV1
+
+    /// Exact response bytes for the versioned unshared typed-decoder controls; legacy fixtures remain unchanged.
+    var typedResponseBytes: Int? {
+        switch self {
+        case .typedDecode1KiBV1: 1_024
+        case .typedDecode16KiBV1: 16_384
+        case .typedDecode256KiBV1: 262_144
+        default: nil
+        }
+    }
 }
 
 /// Reviewed scheduler identity, kept separately from the scripted peer's learned rate headers.
@@ -82,6 +93,19 @@ struct RESTTimingCleanup: Codable, Equatable, Sendable {
     }
 }
 
+/// Finite mechanism receipt derived from actual decode timing invocations, never elapsed-time subtraction.
+struct RESTRequestWorkReceipt: Codable, Equatable, Sendable {
+    let payloadBytes: Int
+    let decoderInvocations: UInt64
+    var decoder = "Foundation.JSONDecoder-content-sequence-v1"
+}
+
+/// Exact typed shape used by versioned 1/16/256 KiB response fixtures.
+private struct RESTTypedPayload: Decodable {
+    let content: String
+    let sequence: Int
+}
+
 /// Full-population metrics and exact counts from an entirely local bounded scripted transport.
 struct RESTTimingReport: Codable, Sendable {
     let scenario: RESTTimingScenario
@@ -98,6 +122,7 @@ struct RESTTimingReport: Codable, Sendable {
     let durationNanoseconds: UInt64
     let cleanup: RESTTimingCleanup
     let scheduling: RESTSchedulingReceipt?
+    let requestWork: RESTRequestWorkReceipt?
     let notes: [String]
 }
 
@@ -199,11 +224,14 @@ struct RESTTimingRunner: Sendable {
             seconds: seconds, metrics: metrics, clockDomain: statistics.clockDomain,
             durationNanoseconds: try BenchmarkTime.nanoseconds(duration: measuredDuration), cleanup: cleanup,
             scheduling: owner.scheduling,
+            requestWork: scenario.typedResponseBytes.map { RESTRequestWorkReceipt(payloadBytes: $0,
+                decoderInvocations: metrics.filter { $0.id == "rest.decode" }
+                    .reduce(0) { $0 + $1.distribution.observedCount }) },
             notes: ["Offline scripted adapter: zero sockets and credentials. Real RESTClient owns rate, order, retry, cache, decode and subscriber semantics.",
                 "Caller timers stop at execute result/error before aggregation and owner snapshots. Setup cache priming and expiry waits are excluded from operation distributions.",
                 "Throughput spans first measured submission through last measured terminal, including inter-wave setup, driver work and expiry gaps; initial setup and final diagnostics are excluded.",
                 "Cohorts are bounded at \(concurrency); every outcome is observed with fixed histogram storage. No numerical qualification is claimed.",
-                "429 delay is owned by rate admission; retryWait records only actual policy backoff sleeps. Decode includes validation and caller decoding as separate invocations.",
+                "429 delay is owned by rate admission; retryWait records only actual policy backoff sleeps. Decode records each actual validation or caller invocation; shared owners and subscribers decode independently.",
                 "Same-key cohorts use an explicit fixture header gate released after exact subscriber registration; this coordination is artificial header service."])
     }
 
@@ -414,7 +442,12 @@ private func restEndpoint(scenario: RESTTimingScenario, ordinal: Int, partition:
         route: "/timing/fixture", query: [QueryItem(name: "ordinal", value: String(scenario == .cacheFresh ? 0 : ordinal))],
         authentication: .none, majorParameter: partition, body: unsafe ? RequestBody.json(JSONValue.object(["fixture": .bool(true)])) : nil,
         retrySafety: unsafe ? .unsafe : .safe, readPolicy: reuse, decode: { data in
-            _ = try JSONValue.parse(data); return data
+            if let bytes = scenario.typedResponseBytes {
+                let value = try JSONDecoder().decode(RESTTypedPayload.self, from: data)
+                guard data.count == bytes, value.sequence == 1,
+                      value.content.utf8.count == bytes - 27 else { throw LoadFailure.unexpectedResponse }
+            } else { _ = try JSONValue.parse(data) }
+            return data
         })
 }
 
@@ -433,6 +466,7 @@ private func restOutcome(_ error: any Error) -> BenchmarkOutcome {
 private actor RESTScriptTransport: HTTPTransport {
     private let scenario: RESTTimingScenario
     private let delay: Duration
+    private let typedPayload: Data?
     private var calls = 0, active = 0, bodies = 0, peakActive = 0
     private var retrying: Set<String> = []
     private var held = false
@@ -442,7 +476,12 @@ private actor RESTScriptTransport: HTTPTransport {
     /// - Parameters:
     ///   - scenario: Reviewed response behavior.
     ///   - delay: Artificial header, body or retry delay.
-    init(scenario: RESTTimingScenario, delay: Duration) { self.scenario = scenario; self.delay = delay }
+    init(scenario: RESTTimingScenario, delay: Duration) {
+        self.scenario = scenario; self.delay = delay
+        typedPayload = scenario.typedResponseBytes.map { bytes in
+            Data(("{\"content\":\"" + String(repeating: "x", count: bytes - 27) + "\",\"sequence\":1}").utf8)
+        }
+    }
 
     /// Holds the next coalesced wave at a real injected header-service boundary.
     func holdHeaders() { held = true }
@@ -473,7 +512,8 @@ private actor RESTScriptTransport: HTTPTransport {
             if !firstRetry { retrying.remove(key) }
             let status = scenario == .retryExhausted ? 503 : (firstRetry ? (scenario == .rateLimitRetry ? 429 : 503) : 200)
             let data: Data
-            if status == 429 { data = Data("{\"retry_after\":0.001,\"global\":false}".utf8) }
+            if let typedPayload { data = typedPayload }
+            else if status == 429 { data = Data("{\"retry_after\":0.001,\"global\":false}".utf8) }
             else if scenario == .malformed { data = Data("[malformed".utf8) }
             else if scenario == .largeBody { data = Data(("\"" + String(repeating: "x", count: 131_072) + "\"").utf8) }
             else { data = Data("{\"fixture\":true}".utf8) }
@@ -508,7 +548,7 @@ private actor RESTScriptBody {
 
     /// Retains one finite fixture body; no producer task or chunk queue is created.
     /// - Parameters:
-    ///   - data: At most 131,074 response bytes.
+    ///   - data: At most 262,144 response bytes.
     ///   - chunkBytes: Positive pull chunk bound.
     ///   - delay: Injected delay before each nonempty pull.
     ///   - cancelled: Emits the fixture's typed cancellation at the body boundary.

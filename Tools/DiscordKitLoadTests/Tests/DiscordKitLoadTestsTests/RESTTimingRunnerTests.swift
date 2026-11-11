@@ -27,6 +27,7 @@ struct RESTTimingRunnerTests {
         #expect(report.metrics.allSatisfy { $0.distribution.droppedCount == 0 })
         #expect(Set(report.metrics.map(\.clockDomain)).count == 1)
         #expect(try JSONEncoder().encode(report).count > 0)
+        #expect((report.requestWork == nil) == (scenario.typedResponseBytes == nil))
         switch scenario {
         case .cacheFresh:
             #expect(report.wireExchanges == 0 && report.setupWireExchanges == 1)
@@ -48,6 +49,9 @@ struct RESTTimingRunnerTests {
             #expect(count(report, "rest.headers") == 2)
             #expect(count(report, "rest.body") == 2)
             #expect(count(report, "rest.decode") == 8)
+        case .independentKeys:
+            #expect(report.wireExchanges == 6)
+            #expect(count(report, "rest.decode") == 12)
         case .rateLimitRetry, .serverRetry, .retryExhausted:
             #expect(report.wireExchanges == 12)
             #expect(count(report, "rest.construct") == 12)
@@ -70,12 +74,25 @@ struct RESTTimingRunnerTests {
         default:
             #expect(report.wireExchanges == 6)
             #expect(count(report, "rest.cacheLookup") == 0)
-            #expect(count(report, "rest.decode") == 12)
+            #expect(count(report, "rest.decode") == 6)
         }
         if scenario != .malformed && scenario != .cancelled && scenario != .uncertainMutation && scenario != .retryExhausted {
             #expect(report.counts.outcomes[.success] == 6)
         }
         if scenario == .retryExhausted { #expect(report.counts.outcomes[.failure] == 6) }
+    }
+
+    /// Typed controls preserve exact payload sizes and count one successful decode per unshared caller.
+    /// - Parameter scenario: One independently versioned response-size fixture.
+    /// - Throws: Unexpected decoding, schema or cleanup failure.
+    @Test(arguments: [RESTTimingScenario.typedDecode1KiBV1, .typedDecode16KiBV1, .typedDecode256KiBV1])
+    func typedRequestWork(scenario: RESTTimingScenario) async throws {
+        let report = try await RESTTimingRunner().run(scenario: scenario, requests: 3, concurrency: 1, delay: .zero)
+        let receipt = try #require(report.requestWork)
+        #expect(receipt.payloadBytes == scenario.typedResponseBytes)
+        #expect(receipt.decoderInvocations == 3)
+        #expect(report.counts.outcomes[.success] == 3)
+        #expect(report.wireExchanges == 3 && report.setupWireExchanges == 0 && report.cleanup.isEmpty)
     }
 
     /// A partial final cohort still owns one exchange and exactly its actual number of subscribers.

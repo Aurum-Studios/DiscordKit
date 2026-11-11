@@ -58,6 +58,13 @@ outer timeout, so listeners must choose a finite ingress/handler policy. Deferre
 handlers may need an outer deadline longer than three seconds and an injected
 continuation sink; the initial responder still has its own three-second deadline.
 
+Built-in inline and REST initial-response sinks reuse the exact callback bytes
+serialized for acknowledgement admission. The responder reserves its state before
+suspension and charges those bytes once; public custom sinks still receive the
+typed response and retain their own delivery contract. Ambiguous initial delivery
+still prevents a second callback. See the
+[Phase 2 record](Tasks/performance-improvements/PHASE-2.md).
+
 ## Authentication, replay and admission
 
 `SignedRequestVerifier` uses Ed25519 over the exact original timestamp bytes followed
@@ -85,6 +92,13 @@ creating independent instances does not create a fleet-wide limit. Ingress admis
 is fail-fast: overload returns 503, body/header excess returns 413/431, unsupported
 methods return 405 and authentication failures return 401. Cancellation/deadline
 expiry closes owned bodies and propagates through the supplied transport context.
+
+The replay owner keeps one indexed expiry entry per signature. It checks only the
+minimum expiry when no entries are stale; insertion and oldest-entry eviction
+cost O(log n). Inclusive expiry, authentication before replay mutation and atomic
+actor admission remain unchanged. Signature verification remains serialized on
+the verifier actor; the caller-to-actor admission interval is separate from its
+signature and replay-service intervals.
 
 Reject-identical replay policy is the verifier default. Its full window fails closed
 with 503 for a new signature rather than evicting protection. Allow-identical-retries

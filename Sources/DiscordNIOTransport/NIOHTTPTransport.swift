@@ -528,7 +528,7 @@ private final class HTTPWireHandler: ChannelInboundHandler {
     private let configuration: NIOHTTPConfiguration
     private var headers: EventLoopPromise<HTTPResponse>?
     private var reader: EventLoopPromise<Data?>?
-    private var chunks: [Data] = []
+    private var chunks = CircularBuffer<Data>()
     private var receivedBytes = 0
     private var ended = false
     private var keepAlive = false
@@ -550,7 +550,8 @@ private final class HTTPWireHandler: ChannelInboundHandler {
         isHeadRequest = method == "HEAD"
     }
 
-    /// Delivers queued data first; otherwise arms exactly one demand-driven socket read.
+    /// Delivers queued data first in constant time; otherwise arms exactly one
+    /// demand-driven socket read. Removing a chunk also releases its queued payload.
     /// - Parameters:
     ///   - promise: One active body consumer; simultaneous consumers fail.
     ///   - channel: Channel whose reads are disabled between demands.
@@ -590,7 +591,7 @@ private final class HTTPWireHandler: ChannelInboundHandler {
             }
             headers?.succeed(HTTPResponse(status: Int(head.status.code), headers: head.headers.map { HTTPHeader(name: $0.name, value: $0.value) }))
             headers = nil
-        case .body(let buffer):
+        case .body(var buffer):
             guard hasHead, buffer.readableBytes <= configuration.maximumResponseBytes - receivedBytes else {
                 fail(NIOAdapterFailure.responseTooLarge, context: context); return
             }
@@ -598,9 +599,12 @@ private final class HTTPWireHandler: ChannelInboundHandler {
             // EOF may synchronously drain many reads before the async consumer resumes.
             // The cumulative guard above bounds all retained payload, including this backlog;
             // a smaller queue cap would reject otherwise valid close-delimited responses.
-            let bytes = Data(buffer.readableBytesView)
-            for offset in stride(from: 0, to: bytes.count, by: configuration.chunkBytes) {
-                let chunk = bytes.subdata(in: offset..<min(bytes.count, offset + configuration.chunkBytes))
+            // Each emitted chunk copies its native slice once. Avoid materializing
+            // the complete decoded buffer as Data before copying its subranges.
+            while buffer.readableBytes > 0 {
+                let length = min(buffer.readableBytes, configuration.chunkBytes)
+                let chunk = Data(buffer.readableBytesView.prefix(length))
+                buffer.moveReaderIndex(forwardBy: length)
                 if let reader { self.reader = nil; reader.succeed(chunk) }
                 else { chunks.append(chunk) }
             }

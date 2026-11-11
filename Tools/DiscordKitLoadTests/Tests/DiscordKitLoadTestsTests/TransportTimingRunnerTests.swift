@@ -15,6 +15,70 @@ import Testing
 struct TransportTimingRunnerTests {
     private let url = URL(string: "http://127.0.0.1:8080/payload")!
 
+    /// Versioned controls hold complete immediate payload bytes fixed while varying
+    /// only response chunk size; legacy native and scripted defaults stay intact.
+    @Test func versionedChunkDimensionsPreserveLegacyFixtures() {
+        #expect(TransportTimingCase.body64KiBChunk257V1.responseBytes == 65_536)
+        #expect(TransportTimingCase.body64KiBChunk65536V1.responseBytes == 65_536)
+        #expect(TransportTimingCase.body64KiBChunk257V1.responseChunkBytes == 257)
+        #expect(TransportTimingCase.body64KiBChunk65536V1.responseChunkBytes == 65_536)
+        for scenario in TransportTimingCase.allCases {
+            if scenario == .body64KiBChunk257V1 || scenario == .body64KiBChunk65536V1 {
+                #expect(scenario.uploadBytes == 0 && scenario.uploadChunkBytes == 1)
+                #expect(scenario.scriptedResponseChunkBytes == scenario.responseChunkBytes)
+            } else {
+                #expect(scenario.responseChunkBytes == 16_384)
+                #expect(scenario.scriptedResponseChunkBytes == (scenario == .streamedBody ? 1_024 : max(1, scenario.responseBytes)))
+            }
+        }
+    }
+
+    /// Scripted controls expose exact bounded chunks, including the odd control's
+    /// one-byte final chunk, without peer delays, upload work or native resources.
+    /// - Parameter scenario: One versioned fixed-byte response chunk control.
+    /// - Throws: Fixture construction or unexpected body-read failure.
+    @Test(arguments: [TransportTimingCase.body64KiBChunk257V1, .body64KiBChunk65536V1])
+    func scriptedChunkControlsEmitExactPayload(scenario: TransportTimingCase) async throws {
+        let response = try await ScriptedTimingTransport(scenario: scenario).execute(
+            HTTPRequest(method: "GET", url: url), context: TransportContext(clock: ContinuousClock()))
+        let body = try #require(response.body)
+        do {
+            var lengths: [Int] = [], received = Data()
+            for try await chunk in body {
+                #expect(chunk.count <= scenario.responseChunkBytes)
+                lengths.append(chunk.count); received.append(chunk)
+            }
+            #expect(received == Data(repeating: 120, count: 65_536))
+            #expect(lengths == (scenario == .body64KiBChunk257V1 ? Array(repeating: 257, count: 255) + [1] : [65_536]))
+        } catch { await body.close(); throw error }
+        await body.close()
+    }
+
+    /// One local immediate response per supported native adapter checks that both
+    /// chunk controls reach the same payload and join all adapter/socket ownership.
+    /// - Parameter scenario: One versioned fixed-byte response chunk control.
+    /// - Throws: Local Python peer startup, adapter configuration or execution failure.
+    @Test(arguments: [TransportTimingCase.body64KiBChunk257V1, .body64KiBChunk65536V1])
+    func nativeChunkControlsCloseOwnedResources(scenario: TransportTimingCase) async throws {
+        var adapters: [TransportTimingAdapter] = [.nio]
+        #if canImport(Darwin)
+        adapters.append(.foundation)
+        #endif
+        for adapter in adapters {
+            let result = try await TransportTimingNativeSuite().run(adapter: adapter, scenario: scenario,
+                requests: 1, concurrency: 1, warmupRequests: 0)
+            #expect(result.counts.offered == 1 && result.counts.completed == 1)
+            #expect(result.counts.outcomes[.success] == 1)
+            #expect(result.receivedBytes == 65_536 && result.uploadedBytes == 0)
+            #expect(result.cleanup.ownedAdaptersClosed)
+            #expect(result.cleanup.peerConnections?.acceptedConnections == 1)
+            #expect(result.cleanup.peerConnections?.activeConnections == 0)
+            if adapter == .nio {
+                #expect(result.cleanup.poolActiveAfterShutdown == 0 && result.cleanup.poolIdleAfterShutdown == 0)
+            }
+        }
+    }
+
     /// Full-body EOF cleanup is included; a subsequent fifty-millisecond diagnostic is excluded.
     @Test func successfulEndpointExcludesDiagnostics() async throws {
         let clock = TransportTimingTestClock()

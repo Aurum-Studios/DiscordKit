@@ -72,6 +72,13 @@ transparent request replay or socket migration.
 | `FoundationHTTPTransport` | Ephemeral URLSession, bounded upload collection and native byte pulls, no redirects/cookies/cache/credential persistence | 32 admitted operations including owned bodies, 8 MiB request/consumed response, 16 KiB emitted chunks |
 | `FoundationWebSocketTransport` | Apple URLSession WebSocket, native complete-message framing and explicit cancellation/close | Shared admission settings, 1 MiB message cap, bounded writer reservations; ordinary watchOS use rejected |
 
+NIO materializes each emitted response chunk directly from its native buffer and
+retains queued chunks in a FIFO with constant-time removal. Consumed chunks release
+their queued payload immediately. The cumulative response cap still bounds EOF
+backlogs; neither upload collection nor deadline-child ownership changes. These
+[Phase 2 refinements](Tasks/performance-improvements/PHASE-2.md) make no DNS, TLS,
+pool-capacity or Foundation bulk-delivery claim.
+
 NIO's HTTP response parser bounds headers separately from body bytes. Ordinary
 socket reads follow body demand and use the configured fixed read size. When a
 peer closes, SwiftNIO may synchronously drain all remaining response bytes before

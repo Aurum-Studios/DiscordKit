@@ -121,9 +121,12 @@ def make_server(payload_bytes, timing_case=None, tls_cert=None, tls_key=None):
     cases = {"transport.empty", "transport.smallBody", "transport.streamedBody",
              "transport.largeBody", "transport.smallUpload", "transport.streamedUpload",
              "transport.largeUpload", "transport.delayedHeaders", "transport.delayedBody",
-             "transport.malformedBody", "transport.cancelled", "transport.timedOut"}
+             "transport.malformedBody", "transport.cancelled", "transport.timedOut",
+             "transport.body64KiBChunk257V1", "transport.body64KiBChunk65536V1"}
     if timing_case is not None and timing_case not in cases:
         raise ValueError("unknown timing case")
+    if timing_case in {"transport.body64KiBChunk257V1", "transport.body64KiBChunk65536V1"} and payload_bytes != 65_536:
+        raise ValueError("versioned chunk controls require exactly 65536 response bytes")
     if bool(tls_cert) != bool(tls_key):
         raise ValueError("TLS requires both certificate and key")
     server = LoadServer(("127.0.0.1", 0), PayloadHandler)

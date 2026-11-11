@@ -140,13 +140,18 @@ private final class HTTPTestHandler: ChannelInboundHandler {
 
     /// Flushes a bounded backlog and closes before releasing the test's consumption barrier.
     /// - Parameter context: Owning event loop; length and EOF routes use identical body bytes.
-    /// The overflow suffix adds exactly one byte, and completion/teardown resolve the barrier once.
+    /// The overflow suffix adds exactly one byte. Pattern routes vary every byte
+    /// so backlog tests detect reordered or duplicated slices. Completion and
+    /// teardown resolve the barrier once.
     private func writeClosedResponse(context: ChannelHandlerContext) {
         let count = 262_144 + (path.hasSuffix("/overflow") ? 1 : 0)
         var headers = HTTPHeaders([("Connection", "close")])
         if path.contains("/length/") { headers.add(name: "Content-Length", value: String(count)) }
         context.write(wrapOutboundOut(.head(HTTPResponseHead(version: .http1_1, status: .ok, headers: headers))), promise: nil)
-        let bytes = context.channel.allocator.buffer(bytes: Data(repeating: 165, count: count))
+        let payload = path.contains("/pattern/")
+            ? Data((0..<count).map { UInt8(truncatingIfNeeded: $0 ^ ($0 >> 8) ^ ($0 >> 16)) })
+            : Data(repeating: 165, count: count)
+        let bytes = context.channel.allocator.buffer(bytes: payload)
         context.write(wrapOutboundOut(.body(.byteBuffer(bytes))), promise: nil)
         let channel = context.channel
         let completion = context.eventLoop.makePromise(of: Void.self)
@@ -186,6 +191,50 @@ private final class HTTPTestHandler: ChannelInboundHandler {
             let counts = await transport.connectionCounts()
             #expect(counts.active == 0 && counts.idle == 0)
             #expect(peer.requests.withLockedValue { $0 } == 1)
+        } catch { await transport.close(); await peer.close(); throw error }
+        await transport.close(); await peer.close()
+    }
+
+    /// Drains varied native slices in wire order after a peer has closed with a
+    /// complete unread response. Small odd chunks create a substantial FIFO backlog;
+    /// partial final chunks and repeated EOF retain the same ownership contract.
+    /// A later request must succeed through a fresh connection without a stale lease.
+    /// - Parameters:
+    ///   - framing: Explicit Content-Length or EOF-delimited response framing.
+    ///   - chunkBytes: Positive maximum output size, including odd byte boundaries.
+    /// - Throws: Local peer, parser, chunk ordering or cleanup assertion failures.
+    @Test(arguments: ["length", "eof"], [257, 4_096])
+    func closedPatternBacklogPreservesOrder(_ framing: String, _ chunkBytes: Int) async throws {
+        let peer = try await HTTPTestPeer.open()
+        let transport = try NIOHTTPTransport(configuration: .init(maximumConnections: 1,
+            maximumConnectionsPerOrigin: 1, maximumResponseBytes: 262_144, chunkBytes: chunkBytes))
+        let expected = Data((0..<262_144).map { UInt8(truncatingIfNeeded: $0 ^ ($0 >> 8) ^ ($0 >> 16)) })
+        let clock = ContinuousClock()
+        do {
+            let response = try await transport.execute(HTTPRequest(method: "GET", url: peer.url("/closed/\(framing)/pattern/exact")),
+                context: .init(clock: clock, deadline: clock.now.advanced(by: .seconds(10))))
+            try await peer.arrived.futureResult.get()
+            let body = try #require(response.body)
+            var iterator = body.makeAsyncIterator()
+            var offset = 0
+            while let chunk = try await iterator.next() {
+                #expect(!chunk.isEmpty && chunk.count <= chunkBytes)
+                #expect(offset + chunk.count <= expected.count)
+                guard offset + chunk.count <= expected.count else { break }
+                #expect(chunk == expected.subdata(in: offset..<(offset + chunk.count)))
+                offset += chunk.count
+            }
+            #expect(offset == expected.count)
+            #expect(try await iterator.next() == nil)
+            await body.close(); await body.close()
+            let drained = await transport.connectionCounts()
+            #expect(drained.active == 0 && drained.idle == 0)
+            let following = try await transport.execute(HTTPRequest(method: "GET", url: peer.url()),
+                context: .init(clock: clock, deadline: clock.now.advanced(by: .seconds(10))))
+            #expect(try await collect(following, bound: chunkBytes) == Data("hello\0world".utf8))
+            let reused = await transport.connectionCounts()
+            #expect(reused.active == 0 && reused.idle == 1)
+            #expect(peer.requests.withLockedValue { $0 } == 2)
         } catch { await transport.close(); await peer.close(); throw error }
         await transport.close(); await peer.close()
     }

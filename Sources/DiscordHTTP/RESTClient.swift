@@ -87,6 +87,9 @@ public final class RESTClient<C: Clock>: Sendable, CustomStringConvertible, Cust
     /// Executes a typed or raw descriptor through authentication, admission and bounded decoding.
     /// Trace diagnostics correlate validation, reuse, attempts, rate admission, request/body
     /// ownership and decoding without exposing routes, credentials or content.
+    /// Unshared exchanges return their validated decoded value directly. Shared exchanges validate
+    /// before retaining bytes, then run each subscriber's decoder independently; cache hits also
+    /// run the current caller's decoder. Typed values never enter shared reuse storage.
     /// - Parameters:
     ///   - endpoint: Explicit success, retry, representation and optional read-reuse policy.
     ///   - deadline: Optional inclusive deadline in this client's clock domain.
@@ -154,7 +157,7 @@ public final class RESTClient<C: Clock>: Sendable, CustomStringConvertible, Cust
                     // A shared flight may outlive its initiating subscriber. Capture the numeric caller
                     // context explicitly instead of inheriting whichever subscriber happens to run later.
                     let exchangeParent = self.intervals == nil ? nil : DiscordIntervalScope.context
-                    let exchange: @Sendable () async throws -> Data = {
+                    let exchange: @Sendable () async throws -> (data: Data, value: Response) = {
                         let generation = await self.cache?.generation()
                         let maximumDeadline = self.clock.now.advanced(by: self.maximumExchangeDuration)
                         let shared = endpoint.readPolicy?.coalescing == true && self.coalescer != nil
@@ -163,26 +166,26 @@ public final class RESTClient<C: Clock>: Sendable, CustomStringConvertible, Cust
                         let reply = try await self.perform(endpoint, deadline: sharedDeadline, evidence: evidence)
                         let data = reply.data
                         // Validate before retention so malformed successes never become cached data.
-                        _ = try self.decode(endpoint, data: data)
+                        let value = try self.decode(endpoint, data: data)
                         if let requested = endpoint.readPolicy?.timeToLive, let generation,
                            let ttl = self.cacheLifetime(requested: requested, headers: reply.headers + endpoint.headers,
                                                         elapsed: started.duration(to: self.clock.now)) {
                             await self.cache?.insert(data, for: key, timeToLive: ttl,
                                                      tags: endpoint.readPolicy?.tags ?? [], generation: generation)
                         }
-                        return data
+                        return (data, value)
                     }
-                    let operation: @Sendable () async throws -> Data = {
+                    let operation: @Sendable () async throws -> (data: Data, value: Response) = {
                         guard self.intervals != nil else { return try await exchange() }
                         return try await DiscordIntervalScope.$context.withValue(exchangeParent, operation: exchange)
                     }
-                    let data: Data
                     if endpoint.readPolicy?.coalescing == true, let coalescer = self.coalescer {
                         DiscordLog.makeLogger("http.coalescing").trace("REST read entering shared flight admission", metadata: ["dk.event": "http.coalescing.admission"])
                         let subscriberStarted = self.timing?.instant()
                         let subscriber = self.intervals?.begin(.httpSubscriber, stage: .subscriber)
+                        let data: Data
                         do {
-                            data = try await coalescer.run(key: key, operation: operation)
+                            data = try await coalescer.run(key: key) { try await operation().data }
                             if let timing = self.timing, let subscriberStarted {
                                 timing.record(.httpCoalescedSubscriber, since: subscriberStarted)
                             }
@@ -195,9 +198,12 @@ public final class RESTClient<C: Clock>: Sendable, CustomStringConvertible, Cust
                             subscriber?.end(Self.intervalOutcome(for: error))
                             throw error
                         }
-                    } else { data = try await operation() }
+                        try context.check()
+                        return try self.decode(endpoint, data: data)
+                    }
+                    let result = try await operation().value
                     try context.check()
-                    return try self.decode(endpoint, data: data)
+                    return result
                 }
                 try context.check()
                 DiscordLog.makeLogger("http.execution").info("REST execution completed", metadata: ["dk.event": "http.execute.completed"])

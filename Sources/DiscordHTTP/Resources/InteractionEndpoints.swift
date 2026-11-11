@@ -32,6 +32,27 @@ public enum InteractionEndpoints {
             files: files, uploadLimits: uploadLimits, withResponse: false, decode: { try EmptyResponse(data: $0) })
     }
 
+    /// Reuses the initial response owner's exact validated JSON bytes for the empty-result callback route.
+    /// - Parameters:
+    ///   - interactionID: Exact interaction identifier already bound to its response owner.
+    ///   - token: Exact typed interaction path credential, also required by the executing client.
+    ///   - encodedResponse: Complete JSON-only callback serialization after the responder has checked trigger
+    ///     compatibility, message context and model limits. These bytes are also its admission charge.
+    /// - Returns: The same globally exempt unsafe POST and strict empty HTTP 204 contract as `createResponse`.
+    /// - Throws: Existing path/body descriptor validation failures before I/O. This package-only boundary does
+    ///   not parse, validate or serialize the callback again; public endpoint callers retain typed validation.
+    package static func createValidatedResponse(interactionID: InteractionID, token: InteractionToken,
+        encodedResponse: Data) throws -> Endpoint<EmptyResponse> {
+        try token.withUnsafeValue { raw in
+            try Endpoint(method: "POST", path: ["interactions", interactionID.description, raw, "callback"],
+                route: "/interactions/{interaction.id}/{interaction.token}/callback",
+                authentication: .none, pathCredential: .interaction(token), successStatuses: [204],
+                usesGlobalLimit: false, body: RequestBody(bytes: encodedResponse, contentType: "application/json",
+                    maximumBytes: MessageUploadLimits.default.maximumRequestBytes),
+                retrySafety: .unsafe, decode: { try EmptyResponse(data: $0) })
+        }
+    }
+
     /// Acknowledges an interaction and requests the typed callback metadata/resource result in HTTP 200.
     /// - Parameters:
     ///   - interactionID: Exact interaction snowflake, preserving all 64 bits.

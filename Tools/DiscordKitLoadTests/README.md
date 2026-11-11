@@ -765,3 +765,34 @@ injected bridge profile. Actual desktop IPC qualification likewise requires an
 explicit desktop host and remains separate from injected-byte-stream framing.
 Local captures establish fixture integrity and cleanup; numerical capacity,
 hosted CI, live Discord and other platforms require their own qualification.
+
+## Performance phase 2 controls
+
+The versioned `timing` cases `rest.typedDecode1KiBV1`,
+`rest.typedDecode16KiBV1` and `rest.typedDecode256KiBV1` run unshared successful
+responses with exact 1/16/256 KiB JSON bodies. A Foundation `JSONDecoder` validates
+a finite content/sequence model. Native `requestWork` records exact payload bytes
+and the actual decode-observer invocation count; the endpoint still returns the
+original bytes after validation. Payload generation precedes caller timing. Legacy
+cases retain their existing policies and payloads; `rest.decode` always records
+actual invocations, so an optimized unshared runtime has one instead of two.
+
+The `command-timing` case `interaction.replayNearCapacityV1` primes 4095 unique
+real signatures before opening its measurement gate. It accepts at most 256
+measured requests; capacity is exactly 4095 plus that count. The initial/final
+entry counts and capacity are retained in the native report. Other outcomes retain
+their existing fixture semantics. A separate native `verifierActorAdmission`
+histogram (0...100 ms, 1 µs buckets) observes genuine caller-to-verifier entry;
+`ingress.admission` continues to measure replay service. Observation loss and
+histogram overflow stay explicit. Durable-event cases retain their separate
+transaction fixtures and omit this native actor histogram.
+
+The `timing` cases `transport.body64KiBChunk257V1` and
+`transport.body64KiBChunk65536V1` hold the immediate peer body at 65536 bytes while
+varying only the adapter's emitted chunk bound. Both Foundation and NIO are
+supported. Legacy transport scenarios keep their original chunk and peer policies.
+
+Use the shared release-build and fresh-process comparison driver. Process CPU/RSS
+includes setup, signing, replay prefill, warmup and cleanup; caller/workflow
+histograms exclude initial setup. Do not subtract phase percentiles or interpret
+these local fixtures as reserved-host, production, DNS/TLS or capacity evidence.

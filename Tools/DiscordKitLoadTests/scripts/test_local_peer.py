@@ -40,6 +40,33 @@ class LocalPeerTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 make_server(size)
 
+    def test_versioned_chunk_controls_keep_identical_immediate_payloads(self):
+        """Native chunk controls vary client configuration, retaining the same immediate wire body."""
+        for case in ("transport.body64KiBChunk257V1", "transport.body64KiBChunk65536V1"):
+            with self.subTest(case=case), make_server(65_536, case) as server:
+                worker = threading.Thread(target=server.serve_forever)
+                worker.start()
+                connection = http.client.HTTPConnection("127.0.0.1", server.server_port, timeout=5)
+                try:
+                    for _ in range(2):
+                        connection.request("GET", "/payload")
+                        response = connection.getresponse()
+                        self.assertEqual(response.status, 200)
+                        self.assertEqual(response.getheader("Content-Length"), "65536")
+                        self.assertEqual(response.read(), b"x" * 65_536)
+                    self.assertEqual(server.metrics()["acceptedConnections"], 1)
+                finally:
+                    connection.close()
+                    server.shutdown()
+                    worker.join()
+
+    def test_versioned_chunk_controls_reject_payload_identity_changes(self):
+        """A versioned fixed-size identity rejects any different body size before socket allocation."""
+        for case in ("transport.body64KiBChunk257V1", "transport.body64KiBChunk65536V1"):
+            for size in (0, 65_535, 65_537):
+                with self.subTest(case=case, size=size), self.assertRaises(ValueError):
+                    make_server(size, case)
+
     def test_timing_payloads_and_uploads(self):
         """Streamed/large bodies and all upload sizes retain framing and bounded input validation."""
         for case, response_size, upload_size in (

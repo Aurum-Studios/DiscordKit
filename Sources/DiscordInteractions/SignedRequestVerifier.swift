@@ -59,7 +59,8 @@ public actor SignedRequestVerifier {
     private let replayPolicy: SignedReplayPolicy
     private let now: @Sendable () -> Int64
     private let intervals: DiscordIntervalTiming?
-    private var replays: [Data: Int64] = [:]
+    /// One indexed expiry entry per retained signature; retries never append stale duplicate metadata.
+    private var replays = SignedReplayWindow()
 
     /// Validates policy and the application's public key without starting work.
     /// - Parameters:
@@ -94,6 +95,9 @@ public actor SignedRequestVerifier {
     /// insertion; invalid requests cannot poison the window. Expired entries are pruned on
     /// each valid signature. Allow-retry mode evicts the oldest timestamp at capacity, so
     /// `isReplay` is advisory; reject mode refuses new work instead of evicting protection.
+    /// An indexed minimum expiry avoids scanning retained live signatures; insertion/eviction is
+    /// O(log n), and retries retain one entry. Signature verification and replay admission remain
+    /// one synchronous actor operation; caller residence is measured only by `verifyWithAdmissionTiming`.
     /// - Parameters:
     ///   - headers: Original ordered fields, including X-Signature-Ed25519 and X-Signature-Timestamp.
     ///   - body: Complete, unmodified bytes; whitespace and JSON key order are significant.
@@ -148,15 +152,15 @@ public actor SignedRequestVerifier {
         signatureInterval?.end()
         let replayInterval = intervals?.begin(.signedIngress, stage: .replayAdmission)
         defer { replayInterval?.end(.failed) }
-        replays = replays.filter { $0.value >= current }
-        let replay = replays[signature] != nil
+        replays.removeExpired(before: current)
+        let replay = replays.contains(signature)
         if replay, case .rejectIdentical = replayPolicy { throw SignedIngressFailure.replay }
         if !replay, replays.count >= maximumReplayEntries {
             if case .rejectIdentical = replayPolicy { throw SignedIngressFailure.replayCapacity }
-            if let oldest = replays.min(by: { $0.value < $1.value }) { replays.removeValue(forKey: oldest.key) }
+            replays.removeOldest()
         }
         let (expiry, overflow) = timestamp.addingReportingOverflow(maximumAge)
-        replays[signature] = overflow ? Int64.max : expiry
+        replays.insert(signature, expiry: overflow ? Int64.max : expiry)
         replayInterval?.end()
         return VerifiedDiscordRequest(rawBody: body, timestamp: timestamp, isReplay: replay)
     }
@@ -192,5 +196,102 @@ public actor SignedRequestVerifier {
         case 97...102: byte - 87
         default: nil
         }
+    }
+}
+
+/// Actor-owned replay membership and minimum expiry with bounded one-entry-per-signature metadata.
+/// Root inspection avoids scanning live entries on every authenticated request; insertion and oldest
+/// removal cost O(log n), and expiring k entries costs O(k log n). No operation suspends or owns tasks.
+private struct SignedReplayWindow {
+    private struct Entry {
+        let signature: Data
+        var expiry: Int64
+    }
+    private var entries: [Entry] = []
+    private var positions: [Data: Int] = [:]
+
+    /// Returns the exact retained signature count, equal to both index and heap sizes.
+    var count: Int { entries.count }
+
+    /// Looks up membership without scanning expiry metadata or copying the retained window.
+    /// - Parameter signature: Authenticated fixed-length signature bytes.
+    /// - Returns: Whether this signature currently has one retained entry.
+    func contains(_ signature: Data) -> Bool { positions[signature] != nil }
+
+    /// Removes signatures only after their inclusive signed timestamp acceptance boundary has passed.
+    /// - Parameter current: Validated nonnegative wall seconds; backward clock movement never resurrects entries.
+    /// Each removed entry releases its signature and position immediately; a live root ends pruning.
+    mutating func removeExpired(before current: Int64) {
+        while let first = entries.first, first.expiry < current { removeOldest() }
+    }
+
+    /// Inserts or updates one authenticated signature while retaining exactly one heap/index entry.
+    /// - Parameters:
+    ///   - signature: Fixed-length authenticated key; a retry updates its existing position in place.
+    ///   - expiry: Inclusive final accepted wall second, saturated by the verifier on arithmetic overflow.
+    /// The owner enforces capacity before insertion. Updating supports either expiry direction without
+    /// relying on request timestamp arrival order, even if the wall clock moves backwards.
+    mutating func insert(_ signature: Data, expiry: Int64) {
+        if let index = positions[signature] {
+            let previous = entries[index].expiry
+            entries[index].expiry = expiry
+            if expiry < previous { moveUp(from: index) }
+            else if expiry > previous { moveDown(from: index) }
+            return
+        }
+        positions[signature] = entries.count
+        entries.append(Entry(signature: signature, expiry: expiry))
+        moveUp(from: entries.count - 1)
+    }
+
+    /// Removes the minimum expiry, or does nothing for an empty window.
+    /// Equal-expiry entries have no promised eviction order, matching advisory retry policy semantics.
+    /// Reject policy uses this operation only for expired entries and never evicts live protection.
+    mutating func removeOldest() {
+        guard let oldest = entries.first else { return }
+        positions.removeValue(forKey: oldest.signature)
+        let last = entries.removeLast()
+        guard !entries.isEmpty else { return }
+        entries[0] = last
+        positions[last.signature] = 0
+        moveDown(from: 0)
+    }
+
+    /// Restores heap order towards the root after insertion or a reduced expiry.
+    /// - Parameter index: Existing entry whose ancestors already satisfy heap order.
+    /// Every swap updates both position mappings before another iteration; metadata stays bounded.
+    private mutating func moveUp(from index: Int) {
+        var child = index
+        while child > 0 {
+            let parent = (child - 1) / 2
+            guard entries[child].expiry < entries[parent].expiry else { return }
+            exchange(child, parent)
+            child = parent
+        }
+    }
+
+    /// Restores heap order towards the leaves after oldest removal or an increased expiry.
+    /// - Parameter index: Existing entry whose child subtrees already satisfy heap order.
+    /// Child arithmetic occurs only for a real parent and therefore cannot overflow an array index.
+    private mutating func moveDown(from index: Int) {
+        var parent = index
+        while parent < entries.count / 2 {
+            let left = parent * 2 + 1, right = left + 1
+            let child = right < entries.count && entries[right].expiry < entries[left].expiry ? right : left
+            guard entries[child].expiry < entries[parent].expiry else { return }
+            exchange(parent, child)
+            parent = child
+        }
+    }
+
+    /// Exchanges two heap elements and synchronizes their exact membership positions.
+    /// - Parameters:
+    ///   - left: Existing first position.
+    ///   - right: Existing distinct second position.
+    /// The actor is the sole owner, so no caller can observe an intermediate index update.
+    private mutating func exchange(_ left: Int, _ right: Int) {
+        entries.swapAt(left, right)
+        positions[entries[left].signature] = left
+        positions[entries[right].signature] = right
     }
 }

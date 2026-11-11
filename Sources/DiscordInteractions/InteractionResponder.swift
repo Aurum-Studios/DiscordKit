@@ -141,6 +141,8 @@ public actor InteractionResponder: CustomStringConvertible, CustomDebugStringCon
     /// Performs existing initial-response ownership while its enclosing interval retains the caller context.
     /// - Parameter response: Typed callback validated before admission and sink entry.
     /// - Throws: The original lifecycle, admission or sink failure after releasing acknowledgement ownership.
+    /// The complete serialization is retained once across admission and built-in inline/REST delivery;
+    /// initial ownership is reserved before the first suspension and bytes are charged without estimation.
     private func performResponse(_ response: InteractionResponse) async throws {
         let responseStarted = timing?.instant()
         DiscordLog.makeLogger("interactions.response").debug("Initial response processing started", metadata: ["dk.event": "interactions.response.started", "dk.callback_type": .stringConvertible(response.type.rawValue)])
@@ -159,7 +161,8 @@ public actor InteractionResponder: CustomStringConvertible, CustomDebugStringCon
             if response.type == .deferredUpdateMessage || response.type == .updateMessage {
                 guard case .value = interaction.message else { throw InteractionLifecycleError.originalResponseUnavailable }
             }
-            let bytes = try response.jsonValue(interactionType: kind).serialized().count
+            let encodedResponse = try response.jsonValue(interactionType: kind).serialized()
+            let bytes = encodedResponse.count
             DiscordLog.makeLogger("interactions.response").trace("Initial response validated and encoded", metadata: ["dk.event": "interactions.response.validated", "dk.bytes": .stringConvertible(bytes)])
             state = .acknowledging
             DiscordLog.makeLogger("interactions.response").trace("Initial interaction response reserved", metadata: ["dk.event": "interactions.response.reserved"])
@@ -191,7 +194,7 @@ public actor InteractionResponder: CustomStringConvertible, CustomDebugStringCon
                 try await clock.run(until: acknowledgementDeadline) {
                     try await Self.withCallbackContext(responseContext) {
                         try await InteractionFailureScope.withResponseStage(.acknowledgement) {
-                            try await self.sink.initial(response, timeout)
+                            try await self.sink.initial(response, kind, encodedResponse, timeout)
                         }
                     }
                 }

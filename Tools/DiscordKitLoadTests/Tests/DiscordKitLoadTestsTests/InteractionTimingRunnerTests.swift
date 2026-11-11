@@ -9,6 +9,19 @@ import Testing
 
 /// Bounded offline scenarios retain every terminal result and exact body/admission cleanup.
 @Suite(.timeLimit(.minutes(1))) struct InteractionTimingRunnerTests {
+    /// Near-capacity fixtures reject oversized populations before allocating signatures or owners.
+    /// - Throws: Unexpected configuration parsing errors fail the test.
+    @Test func nearCapacityBounds() throws {
+        #expect(throws: (any Error).self) {
+            try Phase6TimingConfiguration.parse(["--case", "interaction.replayNearCapacityV1", "--requests", "257"])
+        }
+        #expect(throws: (any Error).self) {
+            try Phase6TimingConfiguration.parse(["--case", "interaction.replayNearCapacityV1", "--warmup-requests", "257"])
+        }
+        let valid = try Phase6TimingConfiguration.parse(["--case", "interaction.replayNearCapacityV1", "--requests", "256"])
+        #expect(valid.requests == 256)
+    }
+
     /// Checks every declared outcome, population, admission receipt and resource close.
     @Test(arguments: InteractionTimingScenario.allCases) func allOutcomes(scenario: InteractionTimingScenario) async throws {
         let report = try await InteractionTimingRunner().run(scenario: scenario, requests: 3, concurrency: 2,
@@ -16,6 +29,12 @@ import Testing
         #expect(report.counts.offered == 3 && report.counts.completed == 3)
         let expectedAdmissions: UInt64 = [.duplicate, .invalidSignature, .malformed, .cancelled, .deadlineRace, .durableDuplicate].contains(scenario) ? 0 : 3
         #expect(report.counts.admitted == expectedAdmissions)
+        if scenario == .replayNearCapacityV1 {
+            #expect(report.setupReplayEntries == 4_095 && report.finalReplayEntries == 4_098)
+            #expect(report.replayCapacity == 4_098)
+            #expect(report.metrics.filter { $0.id == "ingress.admission" }
+                .reduce(UInt64(0)) { $0 + $1.distribution.observedCount } == 3)
+        } else { #expect(report.setupReplayEntries == nil && report.finalReplayEntries == nil) }
         #expect(report.cleanup.isEmpty)
         #expect(report.cleanup.remainingOwners == 0)
         #expect(report.durationNanoseconds > 0)
@@ -36,6 +55,11 @@ import Testing
                 == report.counts.outcomes[outcome])
         }
         #expect(!report.metrics.contains { $0.id == "ingress.trustedResponse" })
+        if !scenario.isDurable {
+            let admission = try #require(report.verifierActorAdmission)
+            #expect(admission.observedCount == (scenario == .cancelled || scenario == .deadlineRace ? 0 : 3))
+            #expect(admission.droppedCount == 0)
+        }
         let signature = report.metrics.filter { $0.id == "ingress.signature" }
         if scenario != .cancelled && scenario != .deadlineRace {
             #expect(signature.reduce(UInt64(0)) { $0 + $1.distribution.observedCount } == 3)
