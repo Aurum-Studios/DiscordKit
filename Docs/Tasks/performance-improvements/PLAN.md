@@ -13,12 +13,15 @@ local evidence are tracked in [Phase 2](PHASE-2.md). Stage 3 implementation and
 validation are tracked in [Phase 3](PHASE-3.md). Stage 4 implementation, cache
 scaling observations and resource tradeoffs are recorded in [Phase 4](PHASE-4.md).
 Stage 5 implementation and local validation are recorded in [Phase 5](PHASE-5.md).
-Reserved-host numerical and profiler qualification remain open. Stages 6–10
+Stage 6 implementation and local validation are recorded in [Phase 6](PHASE-6.md).
+Reserved-host numerical and profiler qualification remain open. Stages 7–10
 remain planned. Source investigation and exploratory planning measurements were prepared against
 `065e2b655c28250076ba53fca310f209be1d3fd5`. Stage 1 refines local admission;
 Stage 2 refines request work and NIO buffering; Stage 3 refines bounded event
 delivery; Stage 4 refines cache indexing and separates permission dimensions;
-Stage 5 refines shared JSON strings and incremental RPC framing.
+Stage 5 refines shared JSON strings and incremental RPC framing;
+Stage 6 refines OAuth and Activity subscriber bookkeeping; the RPC queue marker
+is deferred after measured tradeoffs.
 No numerical regression policy is selected.
 
 The first target is avoidable waiting in shared request admission, followed by
@@ -103,7 +106,8 @@ open. Stage 2 has its own [implementation and validation record](PHASE-2.md).
 Stage 3 has its own [implementation and validation record](PHASE-3.md).
 Stage 4 has its own [implementation, validation and tradeoff record](PHASE-4.md).
 Stage 5 has its own [implementation, validation and observation record](PHASE-5.md).
-Stages 6–10 remain **planned**.
+Stage 6 has its own [implementation and validation record](PHASE-6.md).
+Stages 7–10 remain **planned**.
 Stage 0 qualifies measurement before any numerical claim. Stages 1–5 prioritize common library paths. Stages 6–9 are independently
 adopted product tracks after Stage 0; source investigations can overlap, but host
 builds and performance captures run sequentially. Stage 10 follows the selected
@@ -280,6 +284,9 @@ ping/pong bytes, truncation rejection and full error/reset behavior. Recheck RES
 Gateway, DSL and optional-protocol callers after each shared-core change.
 
 ### Stage 6 — Refine optional protocol and service workflows
+
+Local implementation and validation are complete; see [Phase 6](PHASE-6.md). Controlled
+host numerical and external browser/desktop/provider qualification remain open.
 
 Use service timing to split OAuth refresh subscribers from one shared refresh and
 storage/backend latency; RPC submission/correlation from IPC/peer delay; Activities

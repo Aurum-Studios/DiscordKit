@@ -219,11 +219,13 @@ excess keys count as loss. New optional signpost codes append to existing codes.
 
 The `service-timing` command implements the following external wrapper boundaries
 with actual public runtime owners and injected, credential-free peers. All use H
-and A populations in integer nanoseconds. They introduce no runtime callback or
-public enum changes. Fixed case names and explicit injected delay/fanout/concurrency
+and A populations in integer nanoseconds unless explicitly marked as cohort/batch
+populations below. They introduce no runtime callback or
+public runtime enum changes. Fixed case names and explicit injected delay/fanout/concurrency
 fields distinguish incomparable operations. Primary distributions account for
 every terminal call; supporting peer requests are separately counted and excluded
-from primary offered/completed counts. Timing stops before diagnostics except for
+from primary offered/completed counts. Versioned cohort primaries instead count
+completed batches, independently of their per-call context observations. Timing stops before diagnostics except for
 the explicitly inclusive joined-refresh boundary below.
 
 | Metric ID | Start → stop and population |
@@ -235,15 +237,18 @@ the explicitly inclusive joined-refresh boundary below.
 | `oauth.storage.cas` | Injected compare-exchange entry → generation comparison and mutation result/error after configured wait. |
 | `oauth.refresh.io` | Injected refresh backend method entry after actor admission → returned rotated token/error, including configured wait or held gate. Once per actual backend invocation; excludes the closure-to-actor hop. |
 | `oauth.refresh.joined` | External independent-refresh caller or shared-cohort submission → every caller joined and coordinator close complete. Includes harness joining, diagnostic and close work; one per actual refresh flight. This does not claim internal flight admission. |
+| `oauth.refreshCohortV2` | Driver submission before creating a finite V2 cohort's caller tasks → every terminal reader joined, before subsequent coordinator close and diagnostic snapshots. B population: one observation per cohort, including unrelated-grant cohorts with multiple actual refresh flights. Includes deliberate backend admission gate, final subscriber observation and caller joining; excludes fixture construction. Selected partial-reader cancellation is a successfully completed cohort; individual reader outcomes remain in `oauth.lookup`. External cancellation is a separate cohort outcome. Never emitted as `oauth.refresh.joined`; cohort percentiles are not per-reader or per-flight percentiles. |
 | `oauth.revoke.io` | Injected revoke backend method entry after actor admission → returned result/error after configured wait. Excludes the closure-to-actor hop and its preceding storage-inspection precondition. |
 | `oauth.close` | Caller before coordinator close → joined return, before fixture storage disposal. Repeated close calls remain actual calls. |
-| `rpc.request`, `activities.request` | Caller before public request/execute → correlated reply or typed failure/rejection/cancellation. One primary call per independently owned fixture; supporting correlation/pressure calls excluded. |
+| `rpc.request` | Caller before public request → correlated reply or typed failure/rejection/cancellation. Legacy fixtures observe one primary call per independently owned fixture and exclude supporting correlation/pressure calls. `rpc.queuedRepliesV1` separately observes all 64 selected already-sent public calls per cohort, including their prefill/setup residence, while excluding the parked writer and unsent supporting callers. The per-call endpoint is unchanged; primary offered/completed counts belong to its separate cohort metric. |
+| `rpc.queuedReplyCohortV1` | Immediately before submission of prepared synthetic reverse replies → all 64 already-sent public caller tasks returned. B population: one fixed 64-request cohort per independently owned fixture while one writer and an independently sized unsent backlog remain parked. Includes reply delivery, production correlation, task scheduling, joining and minimal caller result consumption; excludes fixture construction, pending admission, reply preparation, histogram recording, diagnostics and final cancellation/close. Native exact duration sum/cohort count accompany the histogram. Cohort percentiles and throughput are not per-call statistics. Injected complete-frame `RPCConnection` only; no native IPC/framing/browser/provider qualification. |
+| `activities.request` | Caller before public execute → correlated reply or typed failure/rejection/cancellation. One primary call per independently owned fixture; supporting correlation/pressure calls excluded. In `activities.subscriptionGroupsV1` this is a later control request after subscription release, not subscription-admission timing. |
 | `rpc.handshake`, `activities.handshake` | Caller before public connect/start → READY accepted or failure; separately followed by a primary request. |
 | `rpc.write`, `activities.write` | Injected adapter write after its initial cancellation/deadline check → frame/tuple processing and response submission complete. Includes fixture framing/preparation work; no internal admission claim. |
 | `rpc.peerWait`, `activities.peerWait` | Immediately before configured complete-frame delivery delay → delay completion/error, before fragment/tuple delivery. No samples when no configured wait is performed. |
 | `rpc.eventDispatch`, `activities.eventDispatch` | Injected event batch submission → sentinel reply and public event drain complete; includes queue residence and batch work, not an individual-event P99. |
 | `rpc.close`, `activities.close` | Caller before public close → joined return and explicit fixture adapter-read join; peer receipts follow the endpoint. |
-| `activities.subscription` | Public subscribe caller boundary → acquired token/error. Releases are verified by shared upstream subscribe/unsubscribe native counts; no release duration is inferred. |
+| `activities.subscription` | Public subscribe caller boundary → acquired token/error. In `activities.subscriptionGroupsV1`, initial acknowledged owners seed distinct groups outside this population; subsequent duplicate acquisitions and separate capacity-rejection probes use the unchanged public-call endpoint. Native exact successful-duplicate duration sum/count remain separate from rejection observations. Releases are verified by exact shared upstream subscribe/unsubscribe native counts; no release duration is inferred. |
 | `service.operation` | Caller before selected implemented Social/GameServices/Commerce/CertifiedDevices orchestration → result/error; local validation, snapshot work and backend waits included where selected. |
 | `service.backend` | Injected backend method entry after actor admission → provider/executor/body-read result/error after configured wait. Excludes preceding actor residence and does not time the entire HTTP transport call. |
 | `service.validation` | External selected public validation or snapshot-application call → returned result/error; excluded setup checks never become observations. |

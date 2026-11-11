@@ -14,7 +14,7 @@ struct OAuthTimingRunnerTests {
     /// Every selected workflow preserves complete caller and backend populations through a partial cohort.
     /// - Parameter scenario: Finite injected workflow; credentials and external I/O are never required.
     /// - Throws: Unexpected fixture setup, coordinator invariant or report serialization failures.
-    @Test(arguments: OAuthTimingScenario.allCases)
+    @Test(arguments: OAuthTimingScenario.allCases.filter { !$0.isScaling })
     func wholePopulationsAndJoinedCleanup(scenario: OAuthTimingScenario) async throws {
         let report = try await OAuthTimingRunner().run(scenario: scenario, requests: 7, concurrency: 3, delay: .zero)
         try report.counts.validate()

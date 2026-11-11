@@ -110,9 +110,13 @@ public enum BenchmarkWorkload: String, CaseIterable, Sendable {
     case oauthStorageCAS = "oauth.storage.cas"
     case oauthRefreshIO = "oauth.refresh.io"
     case oauthRefreshJoined = "oauth.refresh.joined"
+    /// V2 driver submission through all terminal reader joins, once per cohort, before close.
+    case oauthRefreshCohortV2 = "oauth.refreshCohortV2"
     case oauthRevokeIO = "oauth.revoke.io"
     case oauthClose = "oauth.close"
     case rpcRequest = "rpc.request"
+    /// One fixed cohort of already-sent requests completed while unrelated sends remain queued.
+    case rpcQueuedReplyCohortV1 = "rpc.queuedReplyCohortV1"
     case rpcHandshake = "rpc.handshake"
     case rpcWrite = "rpc.write"
     case rpcPeerWait = "rpc.peerWait"
@@ -161,7 +165,7 @@ public enum BenchmarkWorkload: String, CaseIterable, Sendable {
                  .voiceHandshake, .voiceHeartbeat, .voiceReconnect, .voiceSpeaking, .voiceTermination,
                  .voiceShutdown, .voiceLifecycle, .voiceTick, .voicePacingLate, .voiceEncode, .voiceEncrypt,
                  .voiceSend, .voiceReceiveDecrypt, .voiceDecode, .appleAudioCodec: 9
-            case .oauthLookup, .oauthInstall, .oauthRevoke, .oauthStorageLoad, .oauthStorageCAS, .oauthRefreshIO, .oauthRefreshJoined, .oauthRevokeIO, .oauthClose, .rpcRequest, .rpcHandshake, .rpcWrite, .rpcPeerWait, .rpcEventDispatch, .rpcClose, .activitiesRequest, .activitiesHandshake, .activitiesWrite, .activitiesPeerWait, .activitiesEventDispatch, .activitiesClose, .activitiesSubscription, .serviceOperation, .serviceBackend, .serviceValidation, .serviceCleanup: 8
+            case .oauthLookup, .oauthInstall, .oauthRevoke, .oauthStorageLoad, .oauthStorageCAS, .oauthRefreshIO, .oauthRefreshJoined, .oauthRefreshCohortV2, .oauthRevokeIO, .oauthClose, .rpcRequest, .rpcQueuedReplyCohortV1, .rpcHandshake, .rpcWrite, .rpcPeerWait, .rpcEventDispatch, .rpcClose, .activitiesRequest, .activitiesHandshake, .activitiesWrite, .activitiesPeerWait, .activitiesEventDispatch, .activitiesClose, .activitiesSubscription, .serviceOperation, .serviceBackend, .serviceValidation, .serviceCleanup: 8
             case .cacheCall, .cacheOwner, .cacheLoader, .cacheBroadcast, .clientConstruction, .clientDiscovery, .clientIngestion, .clientLocalReady, .clientShutdown, .clientLifecycle, .dslDefinition, .dslInvoke, .dslPolicy, .dslMiddleware, .compilerClean, .compilerIncremental: 7
             case .gatewayReceiveToAdmission, .gatewayReceiveToAcknowledgement, .gatewayAdmissionToAcknowledgement, .gatewayInitialResponse, .gatewayOriginalEdit, .gatewayAcknowledgementToOriginalEdit, .commandPolicy, .gatewaySession, .gatewaySocketReceipt, .gatewayDecode, .gatewayIngestionQueue, .gatewayPublication, .gatewayHubResidence, .gatewayDispatch, .gatewayLocalQueue, .gatewayAdmission, .gatewayHandler, .gatewayHeartbeatACK, .gatewayReconnect, .gatewayShutdown, .ingressApplicationResponse, .ingressBodyRead, .ingressSignature, .ingressAdmission, .ingressDecode, .commandRoute, .commandArguments, .commandAdmission, .commandHandler, .interactionHandler, .interactionWorkflow, .interactionProviderWait, .interactionInitialResponse, .interactionOriginalEdit, .syntheticInvoke, .syntheticProviderWait: 6
             case .instrumentation: 3

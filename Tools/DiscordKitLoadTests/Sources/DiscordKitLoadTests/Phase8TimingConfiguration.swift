@@ -20,6 +20,11 @@ struct Phase8TimingConfiguration: Codable, Equatable, Sendable {
     var warmupRequests = 8
     var fanOut = 2
     var delayMicroseconds = 2_000
+    var storageDelayMicroseconds = 0
+    var backendDelayMicroseconds = 0
+    var subscriptionGroups = 1
+    var ownersPerGroup = 1
+    var queueDepth = 0
     var durationSeconds: UInt64 = 10
     var warmupSeconds: UInt64 = 1
     var output: String?
@@ -28,12 +33,25 @@ struct Phase8TimingConfiguration: Codable, Equatable, Sendable {
     /// Rejects unknown scenarios, unsafe limits and destinations sharing the same file.
     func validate() throws {
         guard Phase8TimingCommand.cases.contains(scenario), ["smoke", "standard", "stress", "soak"].contains(profile),
-            (1...100_000).contains(requests), (1...64).contains(concurrency),
+            (1...100_000).contains(requests),
+            (1...(OAuthTimingScenario(rawValue: scenario)?.isScaling == true ? 256 : 64)).contains(concurrency),
             (0...10_000).contains(warmupRequests), (1...32).contains(fanOut),
-            (0...1_000_000).contains(delayMicroseconds), durationSeconds > 0,
+            (0...1_000_000).contains(delayMicroseconds),
+            (0...1_000_000).contains(storageDelayMicroseconds), (0...1_000_000).contains(backendDelayMicroseconds),
+            (1...4_096).contains(subscriptionGroups), (1...4_096).contains(ownersPerGroup),
+            subscriptionGroups * (ownersPerGroup + 1) <= 65_536, (0...4_096).contains(queueDepth), durationSeconds > 0,
             durationSeconds <= (profile == "soak" ? 3_600 : profile == "smoke" ? 10 : 300),
             warmupSeconds <= 60, output != "", commonReport != "" else {
             throw Phase8TimingError.invalidConfiguration("Unsupported case or finite workload limits")
+        }
+        guard OAuthTimingScenario(rawValue: scenario)?.isScaling == true ||
+                (storageDelayMicroseconds == 0 && backendDelayMicroseconds == 0),
+              scenario == "activities.subscriptionGroupsV1" || (subscriptionGroups == 1 && ownersPerGroup == 1),
+              scenario == "rpc.queuedRepliesV1" || queueDepth == 0 else {
+            throw Phase8TimingError.invalidConfiguration("Versioned dimensions require their matching workload")
+        }
+        guard OAuthTimingScenario(rawValue: scenario)?.isScaling != true || delayMicroseconds == 0 else {
+            throw Phase8TimingError.invalidConfiguration("Versioned OAuth uses independent storage/backend delays")
         }
         if let output, let commonReport {
             guard URL(fileURLWithPath: output).standardizedFileURL.resolvingSymlinksInPath() !=
@@ -53,7 +71,8 @@ struct Phase8TimingConfiguration: Codable, Equatable, Sendable {
             }
         }
         let known: Set<String> = ["--case", "--profile", "--seed", "--requests", "--concurrency", "--warmup-requests",
-            "--fan-out", "--delay-microseconds", "--duration-seconds", "--warmup-seconds", "--output", "--common-report"]
+            "--fan-out", "--delay-microseconds", "--storage-delay-microseconds", "--backend-delay-microseconds",
+            "--subscription-groups", "--owners-per-group", "--queue-depth", "--duration-seconds", "--warmup-seconds", "--output", "--common-report"]
         guard Set(options.keys).isSubset(of: known) else { throw Phase8TimingError.invalidConfiguration("Unknown option") }
         var result = Self()
         result.scenario = options["--case"] ?? result.scenario
@@ -61,7 +80,11 @@ struct Phase8TimingConfiguration: Codable, Equatable, Sendable {
         for (key, value) in [("--requests", options["--requests"]),
             ("--concurrency", options["--concurrency"] ?? environment["DK_BENCHMARK_CONCURRENCY"]),
             ("--warmup-requests", options["--warmup-requests"]), ("--fan-out", options["--fan-out"]),
-            ("--delay-microseconds", options["--delay-microseconds"])] {
+            ("--delay-microseconds", options["--delay-microseconds"]),
+            ("--storage-delay-microseconds", options["--storage-delay-microseconds"]),
+            ("--backend-delay-microseconds", options["--backend-delay-microseconds"]),
+            ("--subscription-groups", options["--subscription-groups"]), ("--owners-per-group", options["--owners-per-group"]),
+            ("--queue-depth", options["--queue-depth"])] {
             guard let value else { continue }
             guard let number = Int(value) else { throw Phase8TimingError.invalidConfiguration("Invalid integer") }
             switch key {
@@ -69,6 +92,11 @@ struct Phase8TimingConfiguration: Codable, Equatable, Sendable {
             case "--concurrency": result.concurrency = number
             case "--warmup-requests": result.warmupRequests = number
             case "--fan-out": result.fanOut = number
+            case "--storage-delay-microseconds": result.storageDelayMicroseconds = number
+            case "--backend-delay-microseconds": result.backendDelayMicroseconds = number
+            case "--subscription-groups": result.subscriptionGroups = number
+            case "--owners-per-group": result.ownersPerGroup = number
+            case "--queue-depth": result.queueDepth = number
             default: result.delayMicroseconds = number
             }
         }
@@ -84,7 +112,43 @@ struct Phase8TimingConfiguration: Codable, Equatable, Sendable {
         }
         result.output = options["--output"]
         result.commonReport = options["--common-report"] ?? environment["DK_BENCHMARK_ENVELOPE"]
+        if OAuthTimingScenario(rawValue: result.scenario)?.isScaling == true && options["--delay-microseconds"] == nil {
+            result.delayMicroseconds = 0
+        }
         try result.validate()
         return result
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case scenario, profile, seed, requests, concurrency, warmupRequests, fanOut, delayMicroseconds
+        case storageDelayMicroseconds, backendDelayMicroseconds, subscriptionGroups, ownersPerGroup, queueDepth
+        case durationSeconds, warmupSeconds, output, commonReport
+    }
+
+    /// Creates the retained smoke defaults without allocating any runtime service owner.
+    init() {}
+
+    /// Older native reports omit only the newly introduced versioned dimensions.
+    /// - Parameter decoder: Native report configuration containing the original finite policy fields.
+    /// - Throws: Missing original fields or a field of an incompatible serialized type.
+    init(from decoder: any Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        scenario = try values.decode(String.self, forKey: .scenario)
+        profile = try values.decode(String.self, forKey: .profile)
+        seed = try values.decode(UInt64.self, forKey: .seed)
+        requests = try values.decode(Int.self, forKey: .requests)
+        concurrency = try values.decode(Int.self, forKey: .concurrency)
+        warmupRequests = try values.decode(Int.self, forKey: .warmupRequests)
+        fanOut = try values.decode(Int.self, forKey: .fanOut)
+        delayMicroseconds = try values.decode(Int.self, forKey: .delayMicroseconds)
+        storageDelayMicroseconds = try values.decodeIfPresent(Int.self, forKey: .storageDelayMicroseconds) ?? 0
+        backendDelayMicroseconds = try values.decodeIfPresent(Int.self, forKey: .backendDelayMicroseconds) ?? 0
+        subscriptionGroups = try values.decodeIfPresent(Int.self, forKey: .subscriptionGroups) ?? 1
+        ownersPerGroup = try values.decodeIfPresent(Int.self, forKey: .ownersPerGroup) ?? 1
+        queueDepth = try values.decodeIfPresent(Int.self, forKey: .queueDepth) ?? 0
+        durationSeconds = try values.decode(UInt64.self, forKey: .durationSeconds)
+        warmupSeconds = try values.decode(UInt64.self, forKey: .warmupSeconds)
+        output = try values.decodeIfPresent(String.self, forKey: .output)
+        commonReport = try values.decodeIfPresent(String.self, forKey: .commonReport)
     }
 }

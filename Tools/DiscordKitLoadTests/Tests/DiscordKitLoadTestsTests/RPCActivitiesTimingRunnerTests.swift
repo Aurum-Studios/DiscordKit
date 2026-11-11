@@ -12,7 +12,7 @@ import Testing
 @Suite("Phase eight RPC and Activities timing", .timeLimit(.minutes(1)))
 struct RPCActivitiesTimingRunnerTests {
     /// Every script retains its exact primary population and post-close receipts without live host access.
-    @Test(arguments: RPCActivitiesTimingScenario.allCases)
+    @Test(arguments: RPCActivitiesTimingScenario.allCases.filter { $0 != .activitiesSubscriptionGroupsV1 && $0 != .rpcQueuedRepliesV1 })
     func finiteProtocolPopulation(scenario: RPCActivitiesTimingScenario) async throws {
         let report = try await RPCActivitiesTimingRunner().run(scenario: scenario, requests: 4, concurrency: 2,
             fanOut: 3, delay: .microseconds(1))
@@ -64,6 +64,22 @@ struct RPCActivitiesTimingRunnerTests {
         #expect(scenario.isRPC ? report.protocolWrites == 65 : (65...66).contains(report.protocolWrites))
     }
 
+    /// Cancels after replies are released while the actual first adapter delivery is explicitly held.
+    /// - Parameter scenario: Public RPC or Activity correlation workflow with supporting callers.
+    /// - Throws: Unexpected operation errors; CancellationError requires every caller/read to join first.
+    @Test(arguments: [RPCActivitiesTimingScenario.rpcRequests, .activitiesRequests])
+    func parentCancellationJoinsReleasedReplyCallers(scenario: RPCActivitiesTimingScenario) async throws {
+        let gate = ProtocolTimingCancellationGate()
+        let task = Task {
+            try await RPCActivitiesTimingRunner(onReplyDelivery: { await gate.arriveAndWait() })
+                .run(scenario: scenario, requests: 4, concurrency: 1, fanOut: 4)
+        }
+        await gate.waitForArrival()
+        task.cancel()
+        await gate.release()
+        await #expect(throws: CancellationError.self) { _ = try await task.value }
+    }
+
     /// Cancellation before a wave creates no client, protocol work, histogram observation or peer-close invocation.
     @Test func preCancelledDriverOwnsNothing() async throws {
         let task = Task {
@@ -90,5 +106,31 @@ struct RPCActivitiesTimingRunnerTests {
         await #expect(throws: LoadFailure.invalidArguments) {
             try await RPCActivitiesTimingRunner().run(scenario: .activitiesRequests, delay: .seconds(2))
         }
+    }
+}
+
+/// Explicit read-side barrier proves cancellation occurs after release with every reply still undelivered.
+private actor ProtocolTimingCancellationGate {
+    private var arrived = false
+    private var released = false
+    private var arrival: CheckedContinuation<Void, Never>?
+    private var delivery: CheckedContinuation<Void, Never>?
+
+    /// Signals the first released reply's actual read and parks delivery until the test cancels its owner.
+    func arriveAndWait() async {
+        arrived = true
+        arrival?.resume(); arrival = nil
+        if !released { await withCheckedContinuation { delivery = $0 } }
+    }
+
+    /// Awaits actual reply delivery admission without a wall-clock scheduling assumption.
+    func waitForArrival() async {
+        if !arrived { await withCheckedContinuation { arrival = $0 } }
+    }
+
+    /// Releases the reader so existing awaited close can join it after public caller cancellation.
+    func release() {
+        released = true
+        delivery?.resume(); delivery = nil
     }
 }

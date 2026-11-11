@@ -85,6 +85,12 @@ and diagnostic ceilings are 32 MiB and 16 MiB. See the
 for stress/soak limits and the process timeout, which includes warmup, measurement
 and 30 seconds for teardown. Limits bound a run; they are not capacity results.
 
+The [performance phase 6 record](Tasks/performance-improvements/PHASE-6.md)
+separates OAuth/Activity bookkeeping from storage/backend delays and native
+Unix adapter checks, records default-sized and enlarged-budget tradeoffs, and
+retains the deferred RPC queue-marker experiment separately. Service fixture timings do not qualify real browser,
+desktop, provider or distributed authorization performance.
+
 ## Observe a runtime operation
 
 Select `DiscordLogging` for content-free interval hooks and select

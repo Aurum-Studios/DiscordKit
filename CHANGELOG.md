@@ -9,6 +9,18 @@ https://aurum-studios.com
 
 ## Unreleased
 
+### Performance plan phase 6
+
+- Keep OAuth refresh subscriber dictionaries under one actor-confined flight owner,
+  preserving independent cancellation, durable rotation and current authority checks.
+- Maintain exact Activity subscription-owner counts across admission, cancellation,
+  release and failure, and reuse command correlation metadata.
+- Add independent optional-service delay, grant-contention, subscription-group and
+  held-writer RPC cohort controls with ownership/fencing regressions. Defer the
+  RPC runtime queue marker after measurement. See the
+  [phase record](Docs/Tasks/performance-improvements/PHASE-6.md) for local evidence
+  and separately open numerical, desktop, browser and provider qualification gates.
+
 ### Performance plan phase 5
 
 - Parse and write safe ASCII JSON strings directly, reusing a lazy operation-local

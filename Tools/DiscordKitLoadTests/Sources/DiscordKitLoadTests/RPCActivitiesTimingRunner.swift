@@ -24,6 +24,8 @@ enum RPCActivitiesTimingScenario: String, CaseIterable, Codable, Sendable {
     case activitiesPendingPressure = "activities.pendingPressure"
     case activitiesEvents = "activities.events"
     case activitiesSubscriptions = "activities.subscriptions"
+    case activitiesSubscriptionGroupsV1 = "activities.subscriptionGroupsV1"
+    case rpcQueuedRepliesV1 = "rpc.queuedRepliesV1"
     case activitiesCancelled = "activities.cancelled"
     case activitiesCorrelationFailure = "activities.correlationFailure"
 
@@ -58,10 +60,23 @@ struct RPCActivitiesTimingReport: Codable, Sendable {
     let inputFragments: Int
     let closedPeers: Int
     let notes: [String]
+    /// Exact successful duplicate-admission sum/population for subscriptionGroupsV1 only.
+    var subscriptionAdmissionNanoseconds: UInt64? = nil
+    var subscriptionAdmissions: UInt64? = nil
+    /// Exact total for complete fixed-size reply cohorts, before histogram recording or cleanup.
+    var queuedReplyCohortNanoseconds: UInt64? = nil
+    /// Number of complete reply cohorts contributing to the exact total.
+    var queuedReplyCohorts: UInt64? = nil
 }
 
 /// Measures real RPC framing and Activity client orchestration with no desktop or browser access.
 struct RPCActivitiesTimingRunner: Sendable {
+    private let onReplyDelivery: (@Sendable () async -> Void)?
+
+    /// Optionally parks the first released reply at its actual adapter read for cancellation tests.
+    /// - Parameter onReplyDelivery: Test-owned gate; nil leaves ordinary adapter delivery unchanged.
+    init(onReplyDelivery: (@Sendable () async -> Void)? = nil) { self.onReplyDelivery = onReplyDelivery }
+
     /// Runs finite independent sessions, retaining one measured primary command per session.
     /// - Parameters:
     ///   - scenario: Fixed framing, correlation, capacity, event, subscription or cancellation script.
@@ -69,13 +84,21 @@ struct RPCActivitiesTimingRunner: Sendable {
     ///   - concurrency: Concurrent session owners, in 1...64 and no greater than requests.
     ///   - fanOut: Concurrent supporting requests, events or shared subscription owners, in 1...64.
     ///   - delay: Injected peer delivery delay per complete protocol frame, zero through one second.
+    ///   - subscriptionGroups: Independent active groups for subscriptionGroupsV1; one for legacy cases.
+    ///   - ownersPerGroup: Measured duplicate owners after each seeded group; one for legacy cases.
     /// - Returns: Every started primary call, bounded child populations and actual post-close receipts.
     /// - Throws: Invalid bounds, allocation failure or an independently detected protocol/cleanup mismatch.
-    /// External cancellation stops new waves; an interrupted startup or fixture error throws after joined cleanup.
+    /// External cancellation stops new waves; interrupted in-flight callers, startup and fixture failures
+    /// throw only after all public caller tasks, native fixture reads and cleanup have joined.
     func run(scenario: RPCActivitiesTimingScenario, requests: Int = 8, concurrency: Int = 1,
-             fanOut: Int = 4, delay: Duration = .zero) async throws -> RPCActivitiesTimingReport {
+             fanOut: Int = 4, delay: Duration = .zero, subscriptionGroups: Int = 1,
+             ownersPerGroup: Int = 1) async throws -> RPCActivitiesTimingReport {
         guard (1...100_000).contains(requests), (1...64).contains(concurrency), concurrency <= requests,
-              (1...64).contains(fanOut), delay >= .zero, delay <= .seconds(1) else { throw LoadFailure.invalidArguments }
+              (1...64).contains(fanOut), delay >= .zero, delay <= .seconds(1),
+              (1...4_096).contains(subscriptionGroups), (1...4_096).contains(ownersPerGroup),
+              subscriptionGroups * (ownersPerGroup + 1) <= 65_536,
+              scenario == .activitiesSubscriptionGroupsV1 || (subscriptionGroups == 1 && ownersPerGroup == 1),
+              scenario != .rpcQueuedRepliesV1 else { throw LoadFailure.invalidArguments }
         let statistics = try RunStatistics(workloads: scenario.isRPC
             ? [.rpcRequest, .rpcHandshake, .rpcWrite, .rpcPeerWait, .rpcEventDispatch, .rpcClose]
             : [.activitiesRequest, .activitiesHandshake, .activitiesWrite, .activitiesPeerWait,
@@ -86,12 +109,15 @@ struct RPCActivitiesTimingRunner: Sendable {
         var outcomes = Dictionary(uniqueKeysWithValues: BenchmarkOutcome.allCases.map { ($0, UInt64(0)) })
         var completed = 0, peak = 0, events = 0, subscriptions = 0, upstream = 0, removed = 0
         var writes = 0, fragments = 0, closed = 0, remaining = 0, invalid = false
+        var admissionNanoseconds: UInt64 = 0, admissions: UInt64 = 0
         for wave in stride(from: 0, to: requests, by: concurrency) {
             if Task.isCancelled { break }
             results.removeAll(keepingCapacity: true)
             try await withThrowingTaskGroup(of: ProtocolTimingReceipt.self) { group in
                 for _ in wave..<min(requests, wave + concurrency) {
-                    group.addTask { try await runProtocolFixture(scenario, fanOut: fanOut, delay: delay, statistics: statistics) }
+                    group.addTask { try await runProtocolFixture(scenario, fanOut: fanOut, delay: delay,
+                        subscriptionGroups: subscriptionGroups, ownersPerGroup: ownersPerGroup,
+                        onReplyDelivery: onReplyDelivery, statistics: statistics) }
                 }
                 for try await result in group { results.append(result) }
             }
@@ -101,10 +127,13 @@ struct RPCActivitiesTimingRunner: Sendable {
                 upstream += result.peer.subscriptions; removed += result.peer.unsubscriptions
                 writes += result.peer.writes; fragments += result.peer.fragments; closed += result.peer.closes
                 remaining += result.remaining; invalid = invalid || !result.valid
+                let sum = admissionNanoseconds.addingReportingOverflow(result.admissionNanoseconds)
+                guard !sum.overflow else { throw ProtocolTimingFailure.integrity }
+                admissionNanoseconds = sum.partialValue; admissions += UInt64(result.admissions)
             }
         }
         guard !invalid, remaining == 0 else { throw ProtocolTimingFailure.integrity }
-        return RPCActivitiesTimingReport(scenario: scenario.rawValue, clockDomain: statistics.clockDomain,
+        var report = RPCActivitiesTimingReport(scenario: scenario.rawValue, clockDomain: statistics.clockDomain,
             counts: .init(offered: UInt64(completed), admitted: UInt64(completed) - outcomes[.rejected, default: 0],
                 completed: UInt64(completed), outcomes: outcomes, deadlineMisses: 0), metrics: statistics.metrics(),
             durationNanoseconds: try BenchmarkTime.nanoseconds(duration: origin.duration(to: .now)),
@@ -119,8 +148,15 @@ struct RPCActivitiesTimingRunner: Sendable {
                 "Event dispatch is a batch from injected dispatch submission through the sentinel request reply and public drain, including protocol read/queue residence. Concurrent support replies are delivered in reverse order and each caller's distinct response is checked.",
                 "All RPC scripts use the production RPCIPCConnection and RPCFrameDecoder; fragmented uses single-byte input, other RPC scripts use seven-byte input. Activities use complete authenticated-adapter tuples; origin authentication belongs to the separate Node bridge checks.",
                 "Activity subscription metrics time acquisition through each returned token or rejection. Duplicate owners share one actual SUBSCRIBE; one extra owner proves bounded capacity rejection without another wire subscription. Final release emits one UNSUBSCRIBE and is verified through receipts, without a release histogram. A support command holds pending capacity for rejected primary calls.",
+                "subscriptionGroupsV1 seeds one acknowledged owner per distinct group outside subscription timing, then measures duplicate acquisitions while every seeded group remains active. Upstream delay is excluded from these measured duplicates; seed and final release provider work remains in overall duration. Capacity rejection and exact full release are checked independently.",
+                "For subscriptionGroupsV1 compare activities.subscription and the exact successful duplicate-admission native sum/count. Its later generic activities.request primary and common throughput are control observations and do not measure subscription admission.",
                 "Peak pending is the maximum observed per independent session; retained-event and subscription receipts sum actual per-session counts. Nested intervals overlap and are not additive. Overall duration includes fixture allocation, orchestration and diagnostics; local timing is not live host qualification."
             ])
+        if scenario == .activitiesSubscriptionGroupsV1 {
+            report.subscriptionAdmissionNanoseconds = admissionNanoseconds
+            report.subscriptionAdmissions = admissions
+        }
+        return report
     }
 }
 
@@ -136,6 +172,8 @@ private struct ProtocolTimingReceipt: Sendable {
     let subscriptions: Int
     let remaining: Int
     let peer: ProtocolPeerReceipt
+    var admissionNanoseconds: UInt64 = 0
+    var admissions: Int = 0
 }
 
 /// Numeric peer ownership and observed protocol receipts, independent of client snapshots.
@@ -240,10 +278,22 @@ private func protocolTimingCall(_ client: ProtocolTimingClient, expected: Int, s
 }
 
 /// Drives one primary and its finite support owners, then checks both client and peer cleanup independently.
+/// - Parameters:
+///   - scenario: Fixed protocol family and finite fixture policy.
+///   - fanOut: Legacy supporting requests, events or shared owners.
+///   - delay: Injected peer receive wait per complete frame.
+///   - subscriptionGroups: Independently seeded upstream group count for the versioned control.
+///   - ownersPerGroup: Duplicate admissions measured for every seeded group.
+///   - onReplyDelivery: Optional test-owned first released-reply read gate.
+///   - statistics: Full-population collector used after each terminal timestamp.
+/// - Returns: Joined primary outcome and exact protocol, subscription and cleanup receipts.
+/// - Throws: Fixture, protocol, cancellation or independently detected population/ownership failures.
 private func runProtocolFixture(_ scenario: RPCActivitiesTimingScenario, fanOut: Int, delay: Duration,
+                                subscriptionGroups: Int, ownersPerGroup: Int,
+                                onReplyDelivery: (@Sendable () async -> Void)?,
                                 statistics: RunStatistics) async throws -> ProtocolTimingReceipt {
     let peer = try ProtocolTimingPeer(rpc: scenario.isRPC, fragmentSize: scenario == .rpcFragmented ? 1 : 7,
-        delay: delay, statistics: statistics)
+        delay: delay, onReplyDelivery: onReplyDelivery, statistics: statistics)
     let client: ProtocolTimingClient
     if scenario.isRPC {
         let connection = try RPCIPCConnection(transport: peer, maximumPayloadBytes: 4096)
@@ -254,7 +304,8 @@ private func runProtocolFixture(_ scenario: RPCActivitiesTimingScenario, fanOut:
         let host = try ActivityHostParameters(url: URL(string: "https://1.discordsays.com/?frame_id=fixture&instance_id=fixture&platform=desktop")!)
         client = .activities(try ActivityClient(applicationID: .init(rawValue: 1), host: host, transport: peer,
             clock: ContinuousClock(), limits: .init(maximumFrameBytes: 4096, maximumPending: scenario.isPressure ? 1 : 64,
-                maximumEvents: 66, maximumSubscriptions: scenario == .activitiesSubscriptions ? fanOut : 64)))
+                maximumEvents: 66, maximumSubscriptions: scenario == .activitiesSubscriptions ? fanOut :
+                    scenario == .activitiesSubscriptionGroupsV1 ? subscriptionGroups * (ownersPerGroup + 1) : 64)))
     }
     let handshake = ContinuousClock.now
     do {
@@ -273,6 +324,7 @@ private func runProtocolFixture(_ scenario: RPCActivitiesTimingScenario, fanOut:
     do {
     var valid = true, acquired = 0, peak = 0, events = 0
     var subscriptions: [ActivitySubscription] = []
+    var admissionNanoseconds: UInt64 = 0, admissions = 0
     if scenario == .activitiesSubscriptions, case .activities(let activity) = client {
         // The first owner establishes the upstream group. Equal later tokens prove sharing independently.
         do {
@@ -297,6 +349,43 @@ private func runProtocolFixture(_ scenario: RPCActivitiesTimingScenario, fanOut:
             }
             for token in subscriptions { try await activity.unsubscribe(token, timeout: .seconds(10)) }
         } catch { await client.close(); await peer.joinReads(); throw error }
+    }
+    if scenario == .activitiesSubscriptionGroupsV1, case .activities(let activity) = client {
+        // Populate independent groups first so timed duplicate admissions see a fixed group count.
+        for group in 0..<subscriptionGroups {
+            subscriptions.append(try await activity.subscribe(.init(rawValue: "TIMING_EVENT"),
+                arguments: ["channel_id": .string(String(group + 1))], timeout: .seconds(10)))
+        }
+        for _ in 0..<ownersPerGroup {
+            for group in 0..<subscriptionGroups {
+                let start = ContinuousClock.now
+                let token = try await activity.subscribe(.init(rawValue: "TIMING_EVENT"),
+                    arguments: ["channel_id": .string(String(group + 1))], timeout: .seconds(10))
+                let end = ContinuousClock.now
+                statistics.record(start.duration(to: end), workload: .activitiesSubscription, outcome: .success)
+                subscriptions.append(token)
+                let duration = try BenchmarkTime.nanoseconds(duration: start.duration(to: end))
+                let sum = admissionNanoseconds.addingReportingOverflow(duration)
+                guard !sum.overflow else { throw ProtocolTimingFailure.integrity }
+                admissionNanoseconds = sum.partialValue; admissions += 1
+            }
+        }
+        acquired = await activity.snapshot().subscriptions
+        let start = ContinuousClock.now
+        do {
+            let extra = try await activity.subscribe(.init(rawValue: "TIMING_EVENT"),
+                arguments: ["channel_id": .string("1")], timeout: .seconds(10))
+            let end = ContinuousClock.now
+            statistics.record(start.duration(to: end), workload: .activitiesSubscription, outcome: .success)
+            subscriptions.append(extra); valid = false
+        } catch {
+            let end = ContinuousClock.now, outcome = protocolTimingOutcome(error)
+            statistics.record(start.duration(to: end), workload: .activitiesSubscription, outcome: outcome)
+            valid = valid && outcome == .rejected
+        }
+        for token in subscriptions { try await activity.unsubscribe(token, timeout: .seconds(10)) }
+        let released = await activity.snapshot()
+        valid = valid && released.subscriptions == 0
     }
     let eventStart = ContinuousClock.now
     if scenario.isEvents { try await peer.pushEvents(fanOut) }
@@ -327,19 +416,31 @@ private func runProtocolFixture(_ scenario: RPCActivitiesTimingScenario, fanOut:
         }
         peak = await client.snapshot().pending
     }
-    let result: ProtocolCallResult
-    if scenario.isPressure {
-        result = await primary.value
-        try await peer.releaseReplies(mismatch: false)
-    } else if scenario.isCancelled || Task.isCancelled {
-        primary.cancel(); result = await primary.value
-        // Late responses are intentionally delivered after the primary continuation has been released.
-        try await peer.releaseReplies(mismatch: false)
-    } else {
-        try await peer.releaseReplies(mismatch: scenario.isMismatch)
-        result = await primary.value
+    let currentHelpers = helpers
+    let joined = try await withTaskCancellationHandler {
+        let result: ProtocolCallResult
+        if scenario.isPressure {
+            result = await primary.value
+            try await peer.releaseReplies(mismatch: false)
+        } else if scenario.isCancelled || Task.isCancelled {
+            primary.cancel(); result = await primary.value
+            // Late responses are intentionally delivered after the primary continuation has been released.
+            try await peer.releaseReplies(mismatch: false)
+        } else {
+            try await peer.releaseReplies(mismatch: scenario.isMismatch)
+            result = await primary.value
+        }
+        var helpersValid = true
+        for helper in currentHelpers { helpersValid = await helper.value && helpersValid }
+        // Parent cancellation is observed only after every unstructured public caller has joined.
+        try Task.checkCancellation()
+        return (result, helpersValid)
+    } onCancel: {
+        primary.cancel()
+        for helper in currentHelpers { helper.cancel() }
     }
-    for helper in helpers { valid = await helper.value && valid }
+    let result = joined.0
+    valid = valid && joined.1
     let expectedOutcome: BenchmarkOutcome = scenario.isPressure ? .rejected : scenario.isCancelled || Task.isCancelled ? .cancelled : scenario.isMismatch ? .failure : .success
     valid = valid && result.valid && result.outcome == expectedOutcome
     if scenario.isEvents {
@@ -357,8 +458,13 @@ private func runProtocolFixture(_ scenario: RPCActivitiesTimingScenario, fanOut:
     let snapshot = await client.snapshot(), receipt = await peer.receipt()
     valid = valid && receipt.closes == 1
     if scenario == .activitiesSubscriptions { valid = valid && acquired == fanOut && receipt.subscriptions == 1 && receipt.unsubscriptions == 1 }
+    if scenario == .activitiesSubscriptionGroupsV1 {
+        valid = valid && acquired == subscriptionGroups * (ownersPerGroup + 1)
+            && receipt.subscriptions == subscriptionGroups && receipt.unsubscriptions == subscriptionGroups
+    }
     return .init(outcome: result.outcome, valid: valid, peakPending: peak, events: events, subscriptions: acquired,
-        remaining: snapshot.remaining + receipt.remaining, peer: receipt)
+        remaining: snapshot.remaining + receipt.remaining, peer: receipt,
+        admissionNanoseconds: admissionNanoseconds, admissions: admissions)
     } catch {
         ownedPrimary?.cancel()
         for helper in helpers { helper.cancel() }
@@ -366,6 +472,8 @@ private func runProtocolFixture(_ scenario: RPCActivitiesTimingScenario, fanOut:
         await peer.joinReads()
         _ = await ownedPrimary?.value
         for helper in helpers { _ = await helper.value }
+        let state = await client.snapshot(), receipt = await peer.receipt()
+        guard state.remaining + receipt.remaining == 0 else { throw ProtocolTimingFailure.integrity }
         throw error
     }
 }
@@ -384,6 +492,7 @@ private actor ProtocolTimingPeer: IPCTransport, ActivityTransport {
     private let rpc: Bool
     private let fragmentSize: Int
     private let delay: Duration
+    private let onReplyDelivery: (@Sendable () async -> Void)?
     private let statistics: RunStatistics
     private var decoder: RPCFrameDecoder
     private var input: [(Data, Bool)] = []
@@ -391,6 +500,8 @@ private actor ProtocolTimingPeer: IPCTransport, ActivityTransport {
     private var barrier: (Int, CheckedContinuation<Void, Never>)?
     private var held: [[String: JSONValue]] = []
     private var holding = false
+    private var repliesReleased = false
+    private var observedReplyDelivery = false
     private var ended = false
     private var activeReads = 0
     private var readJoiner: CheckedContinuation<Void, Never>?
@@ -398,8 +509,17 @@ private actor ProtocolTimingPeer: IPCTransport, ActivityTransport {
     private(set) var commandCount = 0
 
     /// Allocates an inert, finite channel; every incoming frame is capped to 4 KiB before fragmenting.
-    init(rpc: Bool, fragmentSize: Int, delay: Duration, statistics: RunStatistics) throws {
+    /// - Parameters:
+    ///   - rpc: Selects production IPC framing rather than complete Activity tuples.
+    ///   - fragmentSize: Fixed maximum returned IPC fragment size.
+    ///   - delay: Cooperative per-complete-frame injected receive wait.
+    ///   - onReplyDelivery: Optional deterministic first released-reply read gate for tests.
+    ///   - statistics: Bounded adapter and wait populations, recorded after terminal timestamps.
+    /// - Throws: Invalid RPC frame-decoder capacity.
+    init(rpc: Bool, fragmentSize: Int, delay: Duration,
+         onReplyDelivery: (@Sendable () async -> Void)?, statistics: RunStatistics) throws {
         self.rpc = rpc; self.fragmentSize = fragmentSize; self.delay = delay; self.statistics = statistics
+        self.onReplyDelivery = onReplyDelivery
         decoder = try RPCFrameDecoder(maximumPayloadBytes: 4096)
     }
 
@@ -465,6 +585,10 @@ private actor ProtocolTimingPeer: IPCTransport, ActivityTransport {
             } onCancel: { Task { await self.close() } }
         }
         guard let entry else { return nil }
+        if entry.1 && repliesReleased && !observedReplyDelivery, let onReplyDelivery {
+            observedReplyDelivery = true
+            await onReplyDelivery()
+        }
         if entry.1 && delay > .zero {
             let start = ContinuousClock.now
             do {
@@ -496,6 +620,7 @@ private actor ProtocolTimingPeer: IPCTransport, ActivityTransport {
     /// Releases all finite replies in reverse order, with one optional strict command mismatch.
     func releaseReplies(mismatch: Bool) throws {
         holding = false
+        repliesReleased = true
         let replies = held.reversed(); held.removeAll()
         for var response in replies {
             if mismatch { response["cmd"] = .string("GET_VOICE_SETTINGS") }

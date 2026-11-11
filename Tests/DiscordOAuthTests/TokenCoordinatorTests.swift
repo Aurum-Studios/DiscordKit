@@ -71,6 +71,83 @@ struct TokenCoordinatorTests {
         await coordinator.close()
     }
 
+    /// Subscriber churn preserves per-key bounds, unrelated progress and failure cleanup for one owned exchange.
+    /// - Throws: Unexpected synthetic token, cancellation, storage or capacity failures.
+    @Test func failedRefreshWithSubscriberChurnReleasesOwnership() async throws {
+        let storage = TokenTestStorage()
+        let gate = TokenTestGate()
+        let counter = TokenTestCounter()
+        let identity = OAuthTokenIdentity(applicationID: .init(rawValue: 1))
+        let unrelated = OAuthTokenIdentity(applicationID: .init(rawValue: 2))
+        let coordinator = OAuthTokenCoordinator(storage: storage, now: { Date(timeIntervalSince1970: 0) },
+            maximumIdentities: 2, maximumWaiters: 256, maximumWaitersPerIdentity: 128,
+            refresh: { key, _ in
+                #expect(key == identity)
+                await counter.increment()
+                await gate.wait()
+                throw TokenTestFailure.ambiguous
+            }, revoke: { _, _ in Issue.record("Unexpected revocation") })
+        try await coordinator.install(tokenTestResponse("old", lifetime: 1), for: identity)
+        try await coordinator.install(tokenTestResponse("independent"), for: unrelated)
+        let generation = try #require(await storage.load(for: identity)).generation
+        let initialLoads = await storage.loads(for: identity)
+        let original = (0..<128).map { _ in Task { try await coordinator.accessToken(for: identity) } }
+        while await coordinator.snapshot().waiters < 128 { try Task.checkCancellation(); await Task.yield() }
+        while await gate.waiters == 0 { try Task.checkCancellation(); await Task.yield() }
+        #expect(await storage.loads(for: identity) == initialLoads + 1)
+        for task in original.prefix(64) { task.cancel() }
+        for task in original.prefix(64) {
+            await #expect(throws: CancellationError.self) { try await task.value }
+        }
+        #expect(await coordinator.snapshot().waiters == 64)
+        let replacements = (0..<64).map { _ in Task { try await coordinator.accessToken(for: identity) } }
+        while await coordinator.snapshot().waiters < 128 { try Task.checkCancellation(); await Task.yield() }
+        await #expect(throws: OAuthTokenFailure.capacityExceeded) { try await coordinator.accessToken(for: identity) }
+        #expect(try await coordinator.accessToken(for: unrelated).withUnsafeValue { $0 } == "independent")
+        #expect(await counter.value == 1)
+        #expect(await storage.loads(for: identity) == initialLoads + 1)
+        await gate.open()
+        for task in Array(original.dropFirst(64)) + replacements {
+            await #expect(throws: TokenTestFailure.ambiguous) { try await task.value }
+        }
+        #expect(await coordinator.snapshot().flights == 0)
+        #expect(await coordinator.snapshot().waiters == 0)
+        #expect(try await storage.load(for: identity)?.generation == generation)
+        await #expect(throws: TokenTestFailure.ambiguous) { try await coordinator.accessToken(for: identity) }
+        #expect(await counter.value == 2)
+        #expect(await coordinator.snapshot().flights == 0)
+        #expect(await coordinator.snapshot().waiters == 0)
+        await coordinator.close()
+    }
+
+    /// Completed child resolutions always reload the child and parent; local sharing never caches authorization.
+    /// - Throws: Unexpected token, lineage, storage or revocation-fence failures.
+    @Test func freshChildResolutionsReloadAuthoritativeLineage() async throws {
+        let storage = TokenTestStorage()
+        let instant = Date(timeIntervalSince1970: 0)
+        let coordinator = OAuthTokenCoordinator(storage: storage, now: { instant },
+            refresh: { _, _ in Issue.record("Unexpected refresh"); throw TokenTestFailure.ambiguous },
+            revoke: { _, _ in Issue.record("Unexpected revocation") })
+        let parent = OAuthTokenIdentity(applicationID: .init(rawValue: 1))
+        let child = OAuthTokenIdentity(applicationID: .init(rawValue: 2), authorizationID: parent.authorizationID)
+        try await coordinator.install(tokenTestResponse("parent"), for: parent)
+        try await coordinator.install(tokenTestResponse("child", refresh: nil), for: child, parent: parent)
+        let childLoads = await storage.loads(for: child)
+        let parentLoads = await storage.loads(for: parent)
+        for offset in 1...3 {
+            #expect(try await coordinator.accessToken(for: child).withUnsafeValue { $0 } == "child")
+            #expect(await storage.loads(for: child) == childLoads + offset)
+            #expect(await storage.loads(for: parent) == parentLoads + offset)
+        }
+        let ancestor = try #require(await storage.load(for: parent))
+        #expect(try await storage.compareExchange(for: parent, expectedGeneration: ancestor.generation,
+            replacement: nil, now: instant))
+        await #expect(throws: OAuthTokenFailure.missingToken) { try await coordinator.accessToken(for: child) }
+        #expect(await coordinator.snapshot().flights == 0)
+        #expect(await coordinator.snapshot().waiters == 0)
+        await coordinator.close()
+    }
+
     /// Final subscriber cancellation returns promptly while owned work durably preserves a received rotation.
     @Test func abandonedRefreshRemainsOwned() async throws {
         let storage = TokenTestStorage()
@@ -208,10 +285,17 @@ struct TokenCoordinatorTests {
         let child = OAuthTokenIdentity(applicationID: .init(rawValue: 2), authorizationID: parent.authorizationID)
         try await coordinator.install(tokenTestResponse("parent", lifetime: 1), for: parent)
         try await coordinator.install(tokenTestResponse("child", lifetime: 1, refresh: nil), for: child, parent: parent)
-        let task = Task { try await coordinator.accessToken(for: parent) }
+        let tasks = (0..<32).map { _ in Task { try await coordinator.accessToken(for: parent) } }
+        while await coordinator.snapshot().waiters < 32 { try Task.checkCancellation(); await Task.yield() }
         while await gate.waiters == 0 { try Task.checkCancellation(); await Task.yield() }
+        tasks[0].cancel()
+        await #expect(throws: CancellationError.self) { try await tasks[0].value }
         await #expect(throws: TokenTestFailure.ambiguous) { try await coordinator.revokeToken(for: parent) }
-        await #expect(throws: OAuthTokenFailure.conflict) { try await task.value }
+        for task in tasks.dropFirst() {
+            await #expect(throws: OAuthTokenFailure.conflict) { try await task.value }
+        }
+        #expect(await coordinator.snapshot().waiters == 0)
+        #expect(await coordinator.snapshot().flights == 1)
         #expect(try await storage.load(for: parent) == nil)
         #expect(try await storage.load(for: child) == nil)
         await gate.open()
@@ -433,11 +517,20 @@ private enum TokenTestFailure: Error { case ambiguous }
 /// Test-only actor store implementing atomic generation replacement and bounded-depth publisher cascades.
 private actor TokenTestStorage: OAuthTokenStorage {
     private var records: [OAuthTokenIdentity: OAuthStoredToken] = [:]
+    private var loadCounts: [OAuthTokenIdentity: Int] = [:]
 
     /// Loads one actor-consistent synthetic record without network or disk I/O.
     /// - Parameter identity: Exact application/grant key.
     /// - Returns: Present synthetic record or nil.
-    func load(for identity: OAuthTokenIdentity) async throws -> OAuthStoredToken? { records[identity] }
+    func load(for identity: OAuthTokenIdentity) async throws -> OAuthStoredToken? {
+        loadCounts[identity, default: 0] += 1
+        return records[identity]
+    }
+
+    /// Reports actual authoritative reads so local sharing cannot accidentally become a token cache.
+    /// - Parameter identity: Exact audience and grant being inspected.
+    /// - Returns: Number of completed storage load invocations for that identity.
+    func loads(for identity: OAuthTokenIdentity) -> Int { loadCounts[identity, default: 0] }
 
     /// Implements the production protocol transaction contract for deterministic race tests.
     /// - Parameters:

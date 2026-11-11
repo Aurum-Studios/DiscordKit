@@ -699,6 +699,90 @@ See [Phase 9](../../Docs/Tasks/latency-timing/PHASE-9.md) for the metric contrac
 
 ## Phase 8 optional service timing
 
+Performance phase 6 adds versioned controls while retaining the earlier cases:
+
+- `oauth.sharedRefreshV2`, `oauth.unrelatedRefreshV2` and
+  `oauth.partialCancellationV2` share one coordinator per finite cohort, with up
+  to 256 callers. The unrelated case gives each caller a distinct root grant;
+  the other cases join one grant. `--storage-delay-microseconds` and
+  `--backend-delay-microseconds` independently select zero through one second.
+  `--delay-microseconds` must be zero for these cases and defaults to zero when
+  omitted. The legacy cases retain their coupled `--delay-microseconds` policy.
+  Every expected backend owner and subscriber is admitted at a deliberate gate
+  before release. Partial cancellation joins half the admitted readers before
+  releasing the one refresh to surviving readers. This gate is a coalescing
+  experiment, not an arrival-capacity measurement. Backend arrival notification
+  avoids polling during injected storage waits; final subscriber snapshots can
+  still perturb caller scheduling. Native `measuredLookupNanoseconds` is the
+  exact sum of public caller durations, with `counts.completed` as its population.
+  The separate `oauth.refreshCohortV2` batch interval starts at cohort submission
+  and stops after every terminal reader joins, before subsequent coordinator
+  close and diagnostic snapshots. It has one observation per cohort, including
+  unrelated-grant cohorts with multiple refresh owners. V2 cases never emit
+  `oauth.refresh.joined`; the legacy metric retains its flight population and
+  inclusive coordinator-close endpoint.
+- `activities.subscriptionGroupsV1` independently varies
+  `--subscription-groups` and `--owners-per-group` in 1...4096, with at most
+  65,536 total tokens. One acknowledged token per distinct group is seeded
+  outside subscription timing. Every additional duplicate acquisition is then
+  timed while all groups remain active. Total tokens are
+  `subscriptionGroups * (ownersPerGroup + 1)`: a fixed 4096-token sweep can use
+  groups/duplicate-owners 1/4095, 16/255, 256/15 and 1024/3. Exact successful
+  admission nanoseconds/count are native `subscriptionAdmissionNanoseconds` and
+  `subscriptionAdmissions`; rejected capacity probes are separate histogram
+  outcomes. Compare this admission population for the count optimization. The
+  later generic `activities.request` primary and common throughput measure a
+  control request after subscriptions have been released. Provider subscription
+  and final full release remain exactly counted and verified.
+- `rpc.queuedRepliesV1` varies `--queue-depth` from zero through 4096 while one
+  synthetic write is held. A fixed cohort of 64 already-sent public requests
+  receives correlated replies while that unrelated backlog remains queued.
+  `rpc.queuedReplyCohortV1` starts before reply submission and ends when every
+  cohort caller returns. This is one **batch** observation per session; its
+  percentile is never a per-call percentile. Native
+  `queuedReplyCohortNanoseconds`/`queuedReplyCohorts` preserve the exact total
+  and population. Separate `rpc.request` durations retain public-call setup
+  residence. The fixture implements `RPCConnection`; it does not exercise IPC
+  framing or a native adapter. The existing request and framing cases retain
+  those distinct controls.
+
+For example, run each row in a fresh prebuilt process; keep warmup, policy and
+dimensions identical between baseline and candidate:
+
+```sh
+DiscordKitLoadTests service-timing --case oauth.sharedRefreshV2 --requests 1024 \
+  --concurrency 256 --storage-delay-microseconds 0 --backend-delay-microseconds 0 \
+  --warmup-requests 256 --duration-seconds 10 --output oauth-shared.json
+DiscordKitLoadTests service-timing --case activities.subscriptionGroupsV1 --requests 4 \
+  --concurrency 1 --subscription-groups 1024 --owners-per-group 3 \
+  --delay-microseconds 0 --warmup-requests 1 --output activity-groups.json
+DiscordKitLoadTests service-timing --case rpc.queuedRepliesV1 --requests 8 \
+  --concurrency 1 --queue-depth 4096 --delay-microseconds 0 \
+  --warmup-requests 1 --output rpc-queue.json
+```
+
+These synthetic workloads do not qualify native/browser/provider latency. The
+root `UnixRPCIntegrationTests.nativeUnixRPCHandshakeRequestControlAndCancellation`
+test separately exercises the actual `UnixIPCTransport` against a local Unix
+socket simulated peer, including handshake, correlation, control and cancellation.
+A timed test-process receipt includes test setup, framework work and cleanup; it
+is not an isolated adapter-latency distribution.
+
+The service matrix driver records all new dimensions and rejects a mismatched
+participant/native/common identity. Versioned OAuth caller sweeps explicitly
+select two cohorts at 1/64/256 callers with one cohort of warmup. The 256-caller
+rows select the supervisor's `soak` cap profile to permit one process with that
+cohort size; they retain explicit 10-second measurement and one-second warmup
+caps. This profile selection supplies no sustained-soak qualification. Fixed-4096-token
+Activity and parked-queue rows use two measured sessions and one warmup session
+to keep fixture setup and cleanup bounded; those row counts override the matrix
+driver's generic `--requests`/`--warmup-requests` values and remain explicit in
+the matrix receipt. Legacy rows retain their earlier request policy.
+Parent cancellation after reply release explicitly cancels and joins all primary
+and supporting public RPC/Activity callers before closing and joining actual
+fixture reads. Deterministic tests park the first released reply at the adapter
+read boundary, cancel the owner, then verify cancellation returns after cleanup.
+
 The separate `service-timing` command runs actual OAuth, RPC, Activities, Social,
 GameServices, Commerce and CertifiedDevices APIs with bounded injected storage,
 peers and backends. No credentials, desktop application, browser authorization or

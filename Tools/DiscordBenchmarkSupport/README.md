@@ -31,6 +31,24 @@ most 4,096 seeded Algorithm R examples across the entire input stream. Reservoir
 never stand in for full-population histograms. Profiles validate the combined
 16-MiB aggregate budget before allocation.
 
+Catalog eight also registers versioned performance-phase-six batch identities.
+`oauth.refreshCohortV2` runs from driver cohort submission through every terminal
+reader join, before coordinator close and subsequent diagnostic snapshots. It
+counts cohorts even when unrelated grants have multiple refresh owners; caller
+outcomes and actual refresh exchanges have separate populations. Legacy
+`oauth.refresh.joined` retains its flight population and inclusive close boundary
+and is never emitted by V2 workloads.
+
+`rpc.queuedReplyCohortV1` runs from first synthetic reply submission through
+all 64 already-sent public request results while an independently sized unsent
+backlog remains parked. It has one observation per cohort, with exact native
+duration sum and cohort count; neither its percentile nor its common cohort
+throughput is a per-call statistic. Setup, pending admission and final shutdown
+are outside this target interval. The separate `rpc.request` population retains
+whole public caller durations and remains unchanged. See the
+[service controls](../DiscordKitLoadTests/README.md#phase-8-optional-service-timing)
+for adapter distinctions and independent OAuth/storage/subscription controls.
+
 Set `DK_BENCHMARK_ENVELOPE` to a destination to enable shared collection in the
 existing tools. Without it, legacy sampling and JSON remain available. The new
 sidecar uses distinct `legacy.*.wholePopulation` metric identities. It preserves

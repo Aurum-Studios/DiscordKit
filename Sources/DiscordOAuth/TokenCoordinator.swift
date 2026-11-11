@@ -130,11 +130,25 @@ public enum OAuthTokenFailure: Error, Equatable, Sendable {
 /// the identity's application, and must not replay ambiguous token exchanges.
 /// Single-flight is process-local; storage fences prevent stale resurrection.
 public actor OAuthTokenCoordinator {
-    private struct Flight {
+    /// Actor-confined ownership prevents copying the subscriber dictionary on every
+    /// join, cancellation or invalidation. This reference never leaves the coordinator.
+    private final class Flight {
         let generation: UUID
         let task: Task<Void, Never>
         var waiters: [UUID: CheckedContinuation<BearerToken, any Error>]
         var invalidated = false
+
+        /// Retains one exchange and its first independently cancelable subscriber.
+        /// - Parameters:
+        ///   - generation: Local completion fence distinct from persistent token generations.
+        ///   - task: Owned exchange, retained through cancellation and durable rotation cleanup.
+        ///   - waiters: Bounded subscriber continuations, accessed only under coordinator isolation.
+        init(generation: UUID, task: Task<Void, Never>,
+             waiters: [UUID: CheckedContinuation<BearerToken, any Error>]) {
+            self.generation = generation
+            self.task = task
+            self.waiters = waiters
+        }
     }
 
     private let storage: any OAuthTokenStorage
@@ -350,7 +364,7 @@ public actor OAuthTokenCoordinator {
         guard waiterCount < maximumWaiters else {
             continuation.resume(throwing: OAuthTokenFailure.capacityExceeded); return
         }
-        if var flight = flights[identity] {
+        if let flight = flights[identity] {
             guard !flight.invalidated else { continuation.resume(throwing: OAuthTokenFailure.conflict); return }
             guard flight.waiters.count < maximumWaitersPerIdentity else {
                 continuation.resume(throwing: OAuthTokenFailure.capacityExceeded); return
@@ -358,7 +372,6 @@ public actor OAuthTokenCoordinator {
             DiscordLog.makeLogger("oauth.tokens").trace("Token resolution shared", metadata: ["dk.event": "oauth.token.shared",
                 "dk.waiters": .stringConvertible(flight.waiters.count), "dk.active_operations": .stringConvertible(flights.count)])
             flight.waiters[waiter] = continuation
-            flights[identity] = flight
         } else {
             guard flights.count + mutations.count < maximumIdentities else {
                 continuation.resume(throwing: OAuthTokenFailure.capacityExceeded); return
@@ -448,8 +461,7 @@ public actor OAuthTokenCoordinator {
     ///   - identity: Audience/grant flight.
     ///   - waiter: Subscriber token; already completed or canceled tokens are harmless.
     private func cancel(identity: OAuthTokenIdentity, waiter: UUID) {
-        guard var flight = flights[identity], let continuation = flight.waiters.removeValue(forKey: waiter) else { return }
-        flights[identity] = flight
+        guard let flight = flights[identity], let continuation = flight.waiters.removeValue(forKey: waiter) else { return }
         waiterCount -= 1
         DiscordLog.makeLogger("oauth.tokens").trace("Token subscriber released without replay", metadata: ["dk.event": "oauth.token.waiter.cancelled",
             "dk.waiters": .stringConvertible(waiterCount), "dk.active_operations": .stringConvertible(flights.count)])
@@ -469,12 +481,11 @@ public actor OAuthTokenCoordinator {
     ///   - identity: Audience/grant flight to fence, if present.
     ///   - error: Safe lifecycle or generation failure delivered to existing subscribers.
     private func invalidateFlight(_ identity: OAuthTokenIdentity, error: any Error) {
-        guard var flight = flights[identity] else { return }
+        guard let flight = flights[identity] else { return }
         waiterCount -= flight.waiters.count
         for continuation in flight.waiters.values { continuation.resume(throwing: error) }
         flight.waiters.removeAll()
         flight.invalidated = true
-        flights[identity] = flight
         flight.task.cancel()
     }
 

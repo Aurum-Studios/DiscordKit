@@ -69,11 +69,17 @@ enum Phase8TimingCommand {
         let delay = Duration.microseconds(configuration.delayMicroseconds)
         if let scenario = OAuthTimingScenario(rawValue: configuration.scenario) {
             return .oauth(try await OAuthTimingRunner().run(scenario: scenario, requests: requests,
-                concurrency: concurrency, delay: delay))
+                concurrency: concurrency, delay: delay, storageDelay: .microseconds(configuration.storageDelayMicroseconds),
+                backendDelay: .microseconds(configuration.backendDelayMicroseconds)))
+        }
+        if configuration.scenario == "rpc.queuedRepliesV1" {
+            return .rpcActivities(try await RPCQueueTimingRunner().run(requests: requests, concurrency: concurrency,
+                queueDepth: configuration.queueDepth, delay: delay))
         }
         if let scenario = RPCActivitiesTimingScenario(rawValue: configuration.scenario) {
             return .rpcActivities(try await RPCActivitiesTimingRunner().run(scenario: scenario, requests: requests,
-                concurrency: concurrency, fanOut: configuration.fanOut, delay: delay))
+                concurrency: concurrency, fanOut: configuration.fanOut, delay: delay,
+                subscriptionGroups: configuration.subscriptionGroups, ownersPerGroup: configuration.ownersPerGroup))
         }
         guard let scenario = ServiceTimingScenario(rawValue: configuration.scenario) else {
             throw Phase8TimingError.invalidConfiguration("Unknown service case")
@@ -88,7 +94,7 @@ enum Phase8TimingCommand {
         let metrics: [BenchmarkMetric], domain: String, counts: BenchmarkCounts, elapsed: UInt64
         let cleanup: BenchmarkCleanup
         let adapter: String
-        let scheduler = "bounded-service-cohort"
+        let scheduler = configuration.scenario == "rpc.queuedRepliesV1" ? "bounded-rpc-reply-cohort" : "bounded-service-cohort"
         switch measurement {
         case .oauth(let value):
             metrics = value.metrics; domain = value.clockDomain; counts = value.counts
@@ -97,7 +103,8 @@ enum Phase8TimingCommand {
         case .rpcActivities(let value):
             metrics = value.metrics; domain = value.clockDomain; counts = value.counts
             elapsed = value.durationNanoseconds; cleanup = value.cleanup
-            adapter = configuration.scenario.hasPrefix("rpc.") ? "injected-rpc-peer" : "injected-activity-bridge"
+            adapter = configuration.scenario == "rpc.queuedRepliesV1" ? "injected-rpc-correlation" :
+                configuration.scenario.hasPrefix("rpc.") ? "injected-rpc-peer" : "injected-activity-bridge"
         case .service(let value):
             metrics = value.metrics; domain = value.clockDomain; counts = value.counts
             elapsed = value.durationNanoseconds; cleanup = value.cleanup
@@ -119,10 +126,23 @@ enum Phase8TimingCommand {
             "processResidentBytes": .init(value: after.residentBytes, unit: "bytes", method: "native process probe",
                 scope: "after shutdown", unavailableReason: after.residentBytes == nil ? "Current RSS probe unavailable on this host." : nil),
         ]
-        var identity = ReportIdentity(scenario: configuration.scenario, profile: configuration.profile, seed: configuration.seed,
-            inputSizes: ["requests": UInt64(configuration.requests), "warmupRequests": UInt64(configuration.warmupRequests),
+        var inputSizes: [String: UInt64] = ["requests": UInt64(configuration.requests), "warmupRequests": UInt64(configuration.warmupRequests),
                 "configuredConcurrency": UInt64(configuration.concurrency), "fanOut": UInt64(configuration.fanOut),
-                "delayMicroseconds": UInt64(configuration.delayMicroseconds), "durationCapSeconds": configuration.durationSeconds],
+                "delayMicroseconds": UInt64(configuration.delayMicroseconds), "durationCapSeconds": configuration.durationSeconds]
+        if OAuthTimingScenario(rawValue: configuration.scenario)?.isScaling == true {
+            inputSizes["storageDelayMicroseconds"] = UInt64(configuration.storageDelayMicroseconds)
+            inputSizes["backendDelayMicroseconds"] = UInt64(configuration.backendDelayMicroseconds)
+        }
+        if configuration.scenario == "activities.subscriptionGroupsV1" {
+            inputSizes["subscriptionGroups"] = UInt64(configuration.subscriptionGroups)
+            inputSizes["ownersPerGroup"] = UInt64(configuration.ownersPerGroup)
+        }
+        if configuration.scenario == "rpc.queuedRepliesV1" {
+            inputSizes["queueDepth"] = UInt64(configuration.queueDepth)
+            inputSizes["replyCohort"] = 64
+        }
+        var identity = ReportIdentity(scenario: configuration.scenario, profile: configuration.profile, seed: configuration.seed,
+            inputSizes: inputSizes,
             instrumentation: "whole-population-aggregate", scheduler: scheduler,
             concurrency: UInt32(min(configuration.concurrency, configuration.requests)), warmupNanoseconds: warmup,
             requestedWarmupNanoseconds: configuration.warmupSeconds * 1_000_000_000, measuredNanoseconds: elapsed, repetitions: 1)
@@ -166,6 +186,7 @@ enum Phase8TimingCommand {
 
     /// Selects the primary completed-call population; overlapping child observations never multiply counts.
     static func primaryWorkload(_ scenario: String) -> BenchmarkWorkload {
+        if scenario == "rpc.queuedRepliesV1" { return .rpcQueuedReplyCohortV1 }
         if scenario == "oauth.storage" { return .oauthInstall }
         if scenario == "oauth.revoke" { return .oauthRevoke }
         if scenario.hasPrefix("oauth.") { return .oauthLookup }

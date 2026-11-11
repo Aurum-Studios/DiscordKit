@@ -17,6 +17,12 @@ enum OAuthTimingScenario: String, CaseIterable, Codable, Sendable {
     case conflict = "oauth.conflict"
     case revoke = "oauth.revoke"
     case joinedCancellation = "oauth.joinedCancellation"
+    case sharedRefreshV2 = "oauth.sharedRefreshV2"
+    case unrelatedRefreshV2 = "oauth.unrelatedRefreshV2"
+    case partialCancellationV2 = "oauth.partialCancellationV2"
+
+    /// Versioned cohorts share one coordinator and vary authoritative I/O independently.
+    var isScaling: Bool { self == .sharedRefreshV2 || self == .unrelatedRefreshV2 || self == .partialCancellationV2 }
 
     /// Whether every bounded cohort deliberately contends for one local grant.
     var sharesFlight: Bool { self == .singleFlight || self == .conflict || self == .joinedCancellation }
@@ -48,6 +54,8 @@ struct OAuthTimingReport: Codable, Sendable {
     let remainingBackendCalls: Int
     let remainingStorageRecords: Int
     let notes: [String]
+    /// Exact caller-duration sum only for versioned scaling workloads; no histogram approximation.
+    var measuredLookupNanoseconds: UInt64? = nil
 }
 
 /// Bounded coordinator workloads with synthetic values, injected delays and joined cleanup.
@@ -64,14 +72,22 @@ struct OAuthTimingRunner: Sendable {
     ///   - requests: Measured caller attempts, in 1...100,000, including a partial final cohort.
     ///   - concurrency: Maximum active callers in 1...256 and no greater than requests.
     ///   - delay: Explicit storage and backend delay in zero through one second; each has a separate metric.
+    ///   - storageDelay: Independent storage delay for V2 cases; zero for legacy cases.
+    ///   - backendDelay: Independent backend delay for V2 cases; zero for legacy cases.
     /// - Returns: Whole caller distributions, once-per-I/O child samples and exact empty cleanup.
     /// - Throws: Invalid dimensions, precancellation, allocation errors or a violated fixture invariant.
     ///   External cancellation stops new cohorts, cancels readers and returns exact joined partial evidence.
     ///   Public caller timestamps precede diagnostics. Nested metrics overlap and cannot be added.
     func run(scenario: OAuthTimingScenario, requests: Int = 16, concurrency: Int = 4,
-             delay: Duration = .zero) async throws -> OAuthTimingReport {
+             delay: Duration = .zero, storageDelay: Duration = .zero,
+             backendDelay: Duration = .zero) async throws -> OAuthTimingReport {
+        if scenario.isScaling {
+            guard delay == .zero else { throw LoadFailure.invalidArguments }
+            return try await OAuthScalingTimingRunner().run(scenario: scenario, requests: requests,
+                concurrency: concurrency, storageDelay: storageDelay, backendDelay: backendDelay)
+        }
         guard (1...100_000).contains(requests), (1...256).contains(concurrency), concurrency <= requests,
-              delay >= .zero, delay <= .seconds(1) else { throw LoadFailure.invalidArguments }
+              delay >= .zero, delay <= .seconds(1), storageDelay == .zero, backendDelay == .zero else { throw LoadFailure.invalidArguments }
         try Task.checkCancellation()
         let statistics = try RunStatistics(workloads: [.oauthLookup, .oauthInstall, .oauthRevoke, .oauthStorageLoad, .oauthStorageCAS,
             .oauthRefreshIO, .oauthRefreshJoined, .oauthRevokeIO, .oauthClose])
@@ -276,6 +292,7 @@ private struct OAuthTimingFixture: Sendable {
             valid = expectedError && record?.accessToken.withUnsafeValue({ $0 }) == "synthetic-winner"
         case .revoke: valid = outcome == .success && record == nil
         case .joinedCancellation: valid = expectedError
+        case .sharedRefreshV2, .unrelatedRefreshV2, .partialCancellationV2: valid = false
         }
         if scenario == .refresh {
             await close()

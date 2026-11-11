@@ -53,6 +53,8 @@ public actor ActivityClient<C: Clock> where C.Duration == Duration {
     private var events: [(ActivityClientEvent, Int)] = []
     private var eventBytes = 0
     private var groups: [String: Group] = [:]
+    /// Exact live token count, updated with group ownership before every suspension.
+    private var subscriptionCount = 0
     private var subscriptionTasks: [String: Task<Void, Never>] = [:]
 
     /// Transfers exclusive messaging ownership without opening a browser, sending a handshake or starting tasks.
@@ -159,7 +161,7 @@ public actor ActivityClient<C: Clock> where C.Duration == Duration {
               !event.rawValue.unicodeScalars.contains(where: CharacterSet.controlCharacters.contains) else {
             throw ActivityFailure.invalidConfiguration
         }
-        guard groups.values.reduce(0, { $0 + $1.tokens.count }) < limits.maximumSubscriptions else { throw ActivityFailure.overloaded }
+        guard subscriptionCount < limits.maximumSubscriptions else { throw ActivityFailure.overloaded }
         let key = try subscriptionKey(event, arguments: arguments)
         let token = ActivitySubscription(owner: owner, id: UUID(), key: key)
         if var group = groups[key] {
@@ -176,6 +178,7 @@ public actor ActivityClient<C: Clock> where C.Duration == Duration {
                 subscriptionTasks[key] = Task { await self.admitSubscription(key, timeout: timeout) }
             }
         }
+        subscriptionCount += 1
         let context = TransportContext(clock: clock, deadline: clock.now.advanced(by: timeout))
         do {
             try await context.run { try await self.waitForSubscription(token) }
@@ -198,6 +201,7 @@ public actor ActivityClient<C: Clock> where C.Duration == Duration {
         try Task.checkCancellation()
         guard subscription.owner == owner, timeout > .zero else { throw ActivityFailure.invalidConfiguration }
         guard var group = groups[subscription.key], group.tokens.remove(subscription.id) != nil else { return }
+        subscriptionCount -= 1
         if !group.tokens.isEmpty { groups[subscription.key] = group; return }
         if group.event == .ready { groups.removeValue(forKey: subscription.key); return }
         group.state = .unsubscribing; groups[subscription.key] = group
@@ -223,7 +227,7 @@ public actor ActivityClient<C: Clock> where C.Duration == Duration {
     /// Reports bounded ownership for deterministic diagnostics without identities or payload labels.
     /// - Returns: Counts of pending operations, retained outbound bytes, events, event bytes and subscription tokens.
     public func snapshot() -> (pending: Int, pendingBytes: Int, events: Int, eventBytes: Int, subscriptions: Int) {
-        (pending.count, pendingBytes, events.count, eventBytes, groups.values.reduce(0, { $0 + $1.tokens.count }))
+        (pending.count, pendingBytes, events.count, eventBytes, subscriptionCount)
     }
 
     /// Terminates the session, rejects all waiters and awaits transport cleanup; repeated calls share cleanup.
@@ -270,8 +274,9 @@ public actor ActivityClient<C: Clock> where C.Duration == Duration {
         }
         return try await withTaskCancellationHandler {
             try await withCheckedThrowingContinuation { continuation in
-                pending[nonce] = Pending(command: command, event: event?.rawValue, bytes: data.count, correlation: Self.correlationContext(), continuation: continuation)
-                pendingBytes += data.count; writes.append(Write(nonce: nonce, data: data, correlation: Self.correlationContext()))
+                let correlation = Self.correlationContext()
+                pending[nonce] = Pending(command: command, event: event?.rawValue, bytes: data.count, correlation: correlation, continuation: continuation)
+                pendingBytes += data.count; writes.append(Write(nonce: nonce, data: data, correlation: correlation))
                 DiscordLog.makeLogger("activities.client").trace("Activity command admitted to bounded queue", metadata: ["dk.event": "activities.command.admitted",
                     "dk.pending": .stringConvertible(pending.count), "dk.pending_bytes": .stringConvertible(pendingBytes),
                     "dk.queued": .stringConvertible(writes.count)])
@@ -427,7 +432,10 @@ public actor ActivityClient<C: Clock> where C.Duration == Duration {
                 for waiter in waiters.values { waiter.resume() }
             }
         } catch {
-            if let current = groups.removeValue(forKey: key) { for waiter in current.waiters.values { waiter.resume(throwing: error) } }
+            if let current = groups.removeValue(forKey: key) {
+                subscriptionCount -= current.tokens.count
+                for waiter in current.waiters.values { waiter.resume(throwing: error) }
+            }
             await fail(error)
         }
         subscriptionTasks.removeValue(forKey: key)
@@ -454,7 +462,7 @@ public actor ActivityClient<C: Clock> where C.Duration == Duration {
             do { try await unsubscribe(token) } catch { await fail(error) }
             return
         }
-        group.tokens.remove(token.id)
+        group.tokens.remove(token.id); subscriptionCount -= 1
         group.waiters.removeValue(forKey: token.id)?.resume(throwing: CancellationError())
         groups[token.key] = group
         if group.tokens.isEmpty { await fail(ActivityFailure.subscriptionTransition) }
@@ -520,7 +528,7 @@ public actor ActivityClient<C: Clock> where C.Duration == Duration {
             let operations = pending.values; pending.removeAll(); pendingBytes = 0; writes.removeAll()
             for operation in operations { operation.continuation.resume(throwing: error) }
             for group in groups.values { for waiter in group.waiters.values { waiter.resume(throwing: error) } }
-            groups.removeAll(); events.removeAll(); eventBytes = 0
+            groups.removeAll(); subscriptionCount = 0; events.removeAll(); eventBytes = 0
             let previousWriter = writer
             reader?.cancel(); writer?.cancel(); reader = nil; writer = nil
             for task in subscriptionTasks.values { task.cancel() }; subscriptionTasks.removeAll()
