@@ -68,9 +68,26 @@ extension VoiceSessionQualification {
     }
 
     /// Retains terminal observations after cleanup while preserving the original operation error.
+    /// - Parameters:
+    ///   - configuration: Validated identity and optional common destination; absent disables I/O.
+    ///   - statistics: Partial measured observations; no complete throughput/counts are invented.
+    ///   - error: Original operation error used for failure/cancellation classification.
+    ///   - cleanup: Native read-back receipts after joined closure, or nil before such receipts exist.
+    /// - Throws: Schema/atomic-write failures; the caller retains the original operation error.
     static func writeAttributedPartial(configuration: QualificationConfiguration, statistics: RunStatistics,
-        error: any Error) throws {
+        error: any Error, cleanup: BenchmarkCleanup? = nil) throws {
         guard let destination = configuration.commonReport else { return }
+        if let cleanup {
+            let report = DiscordBenchmarkReport(identity: configuration.identity(), provenance: .capture(),
+                adapter: "VoiceSessionQualification.v3", clockDomain: statistics.clockDomain,
+                status: error is CancellationError ? .interrupted : .failed, metrics: statistics.metrics(),
+                cleanup: cleanup, qualificationLimitations: [
+                    "Partial run: complete outcome, resource and throughput accounting unavailable.",
+                    "Cleanup receipts observe closed/empty media, closed/drained DAVE, UDP EOF and awaited contention workers; they do not establish successful media qualification.",
+                ])
+            try report.validatedData().write(to: URL(fileURLWithPath: destination), options: .atomic)
+            return
+        }
         try statistics.writePartialSidecar(identity: configuration.identity(), adapter: "VoiceSessionQualification.v3",
             cancelled: error is CancellationError, environment: ["DK_BENCHMARK_ENVELOPE": destination])
     }

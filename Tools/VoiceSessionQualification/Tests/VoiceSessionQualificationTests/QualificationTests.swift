@@ -193,3 +193,61 @@ private struct FailingTransformer: VoiceFrameTransformer {
         }
     }
 }
+
+/// The phase-eight loss/reorder/hold trigger now completes real encrypted localhost duplex and joined closure.
+@Test func emptyPLCAndReversedArrivalImpairmentRegression() async throws {
+    let configuration = try QualificationConfiguration.parse(["--seconds", "0.8", "--mode", "hybrid",
+        "--loss-every", "7", "--reorder-every", "5", "--jitter-ms", "20"], environment: [:])
+    let statistics = try RunStatistics(workloads: AttributionCapture.workloads)
+    let report = try await VoiceSessionQualification.runAttributed(configuration: configuration, statistics: statistics)
+    #expect(report.successful && report.framesPerDirection == 40)
+    #expect(report.totalSentPackets == 80 && report.totalReceivedPackets == 70)
+    #expect(report.decodedSampleFrames == 80 * 960 && report.concealedPackets > 0)
+    #expect(report.finalBufferedMediaBytes == 0)
+    #expect(report.closedMediaOwners == 2 && report.closedDAVEOwners == 2 && report.closedDatagramOwners == 2)
+    #expect(report.attributed?.emulatedDroppedPackets == 10)
+    #expect(report.attributed?.emulatedReorderSelections == 14)
+    #expect(report.attributed?.closedContentionWorkers == 0)
+    #expect(statistics.metrics().first { $0.id == "voice.tick" && $0.outcome == .success }?.distribution.observedCount == 40)
+}
+
+/// A deterministic measured failure retains its cause, one terminal observation and actual zero-owner receipts.
+@Test(arguments: [false, true])
+func attributedFailureJoinsOwnersAndRetainsPartialReceipts(cancelled: Bool) async throws {
+    let directory = FileManager.default.temporaryDirectory.appendingPathComponent("discordkit-voice-failure-\(UUID().uuidString)")
+    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    defer { try? FileManager.default.removeItem(at: directory) }
+    let destination = directory.appendingPathComponent("partial.json")
+    let configuration = try QualificationConfiguration.parse(["--seconds", "0.8", "--mode", "hybrid",
+        "--loss-every", "7", "--reorder-every", "5", "--jitter-ms", "20", "--contention-workers", "1",
+        "--common-report", destination.path], environment: [:])
+    let statistics = try RunStatistics(workloads: AttributionCapture.workloads)
+    let operation = Task {
+        try await VoiceSessionQualification.runAttributed(configuration: configuration, statistics: statistics,
+            measuredTick: { index in
+                if index == 30 {
+                    if cancelled {
+                        withUnsafeCurrentTask { $0?.cancel() }
+                        throw CancellationError()
+                    }
+                    throw FailingTransformer.Failure()
+                }
+            })
+    }
+    defer { operation.cancel() }
+    do {
+        _ = try await operation.value
+        Issue.record("The measured failure hook did not terminate the run.")
+    } catch let failure as AttributedRunFailure {
+        #expect(cancelled ? failure.operationError is CancellationError : failure.operationError is FailingTransformer.Failure)
+        #expect(failure.cleanup.completed == true && failure.cleanup.remainingOwners == 0)
+        try VoiceSessionQualification.writeAttributedPartial(configuration: configuration, statistics: statistics,
+            error: failure.operationError, cleanup: failure.cleanup)
+        let report = try JSONDecoder().decode(DiscordBenchmarkReport.self, from: Data(contentsOf: destination))
+        #expect(report.status == (cancelled ? .interrupted : .failed))
+        #expect(report.cleanup == failure.cleanup && report.counts == nil && report.throughputPerSecond == nil)
+        #expect(report.metrics.first { $0.id == "voice.tick" && $0.outcome == (cancelled ? .cancelled : .failure) }?
+            .distribution.observedCount == 1)
+        #expect(report.metrics.first { $0.id == "voice.tick" && $0.outcome == .success }?.distribution.observedCount == 30)
+    }
+}

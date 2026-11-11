@@ -13,9 +13,26 @@ import DiscordVoice
 import DiscordVoiceCrypto
 import Foundation
 
+/// Carries the original failed operation together with observed receipts after joined cleanup.
+/// The executable rethrows `operationError`; this wrapper never changes its classification.
+struct AttributedRunFailure: Error {
+    let operationError: any Error
+    let cleanup: BenchmarkCleanup
+}
+
 extension VoiceSessionQualification {
     /// Preserves production media ownership while observing declared overlapping public boundaries.
-    static func runAttributed(configuration: QualificationConfiguration, statistics: RunStatistics) async throws -> QualificationReport {
+    /// - Parameters:
+    ///   - configuration: Validated finite local profile and unchanged media/pacing geometry.
+    ///   - statistics: Bounded observation owner; warmup observations remain excluded.
+    ///   - measuredTick: Optional synchronous regression hook after measured playout and before
+    ///     terminal tick accounting. Nil performs no extra work. A thrown error follows the
+    ///     ordinary failure path and receives joined native closure receipts.
+    /// - Returns: Native success/failure accounting after awaited resource closure.
+    /// - Throws: Original setup/operation failures wrapped with observed cleanup once native
+    ///   owners exist. Early fixture failures precede ownership and propagate unchanged.
+    static func runAttributed(configuration: QualificationConfiguration, statistics: RunStatistics,
+        measuredTick: (@Sendable (Int) throws -> Void)? = nil) async throws -> QualificationReport {
         let capture = AttributionCapture(statistics: statistics)
         var contention = CPUContention(workers: 0)
         let clock = ContinuousClock()
@@ -168,6 +185,7 @@ extension VoiceSessionQualification {
                         }
                     }
                     if measuring {
+                        try measuredTick?(measuredIndex)
                         let duration = operationStart.duration(to: clock.now)
                         let milliseconds = seconds(duration) * 1_000
                         timings.append(milliseconds)
@@ -266,9 +284,39 @@ extension VoiceSessionQualification {
             await firstMedia?.close(); await secondMedia?.close(); await cipher?.close()
             await firstDAVE.close(); await secondDAVE.close()
             await firstSocket?.close(); await secondSocket?.close()
-            _ = await contention.close()
-            throw error
+            let closedWorkers = await contention.close()
+            var remaining = contention.tasks.count - closedWorkers
+            for media in [firstMedia, secondMedia].compactMap({ $0 }) {
+                let snapshot = await media.snapshot()
+                if !snapshot.closed || snapshot.bufferedBytes != 0 { remaining += 1 }
+            }
+            for dave in [firstDAVE, secondDAVE] {
+                let snapshot = await dave.snapshot()
+                if !snapshot.isClosed || snapshot.pendingOperationCount != 0 { remaining += 1 }
+            }
+            for socket in [firstSocket, secondSocket].compactMap({ $0 }) {
+                if await !observesClosedDatagram(socket) { remaining += 1 }
+            }
+            throw AttributedRunFailure(operationError: error,
+                cleanup: BenchmarkCleanup(completed: remaining == 0, remainingOwners: UInt64(remaining),
+                    reason: remaining == 0 ? nil : "Observed media, DAVE, UDP or contention closure receipts remain incomplete."))
         }
+    }
+
+    /// Observes EOF after awaited socket closure even when the operation task is cancelled.
+    /// - Parameter socket: An owned UDP adapter whose `close()` has already completed.
+    /// - Returns: True only for observed EOF; read failures or the bounded one-second
+    ///   diagnostic deadline return false. The fresh cancellation scope is explicitly
+    ///   owned and awaited here, starts no producer and cannot outlive this receipt.
+    private static func observesClosedDatagram(_ socket: NIODatagramTransport) async -> Bool {
+        let receipt = Task {
+            let clock = ContinuousClock()
+            do {
+                return try await socket.receiveDatagram(context: .init(clock: clock,
+                    deadline: clock.now.advanced(by: .seconds(1)))) == nil
+            } catch { return false }
+        }
+        return await receipt.value
     }
 
     /// Full receive public boundary includes transport AEAD, DAVE open, RTP/Opus validation and jitter insertion.

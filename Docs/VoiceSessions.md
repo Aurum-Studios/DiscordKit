@@ -122,6 +122,15 @@ Encoded storage and stream counts have aggregate caps; per-stream buffers have
 independent count/byte caps. Caller-owned source/sink queues remain separately
 budgeted. No consent, retention, file format or recording storage policy is inferred.
 
+During empty-buffer PLC, playout advances media time while retaining the next RTP
+sequence. Authenticated returning packets remain within a bounded sequence span
+and the existing byte budgets; playout resumes at the earliest buffered sequence
+when its timestamp is due. This preserves reversed arrival batches, long loss
+gaps and DTX without playing future media early. Byte accounting includes the
+complete validated plaintext RTP header, CSRCs, extensions, payload and padding
+without serializing packets solely to count bytes. [Phase 9](Tasks/performance-improvements/PHASE-9.md)
+records the regressions, local measurements and remaining qualification gates.
+
 ## Validation and remaining gates
 
 [Deterministic tests](../Tests/DiscordVoiceTests/VoiceSessionTests.swift) exercise

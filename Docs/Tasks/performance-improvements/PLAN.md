@@ -16,8 +16,9 @@ Stage 5 implementation and local validation are recorded in [Phase 5](PHASE-5.md
 Stage 6 implementation and local validation are recorded in [Phase 6](PHASE-6.md).
 Stage 7 implementation and local validation are recorded in [Phase 7](PHASE-7.md).
 Stage 8 implementation and local validation are recorded in [Phase 8](PHASE-8.md).
+Stage 9 implementation and local validation are recorded in [Phase 9](PHASE-9.md).
 Reserved-host numerical and allocation/executor profiler qualification remain open.
-Stages 9–10 remain planned. Source investigation and exploratory planning measurements were prepared against
+Stage 10 remains planned. Source investigation and exploratory planning measurements were prepared against
 `065e2b655c28250076ba53fca310f209be1d3fd5`. Stage 1 refines local admission;
 Stage 2 refines request work and NIO buffering; Stage 3 refines bounded event
 delivery; Stage 4 refines cache indexing and separates permission dimensions;
@@ -27,6 +28,10 @@ is deferred after measured tradeoffs. Stage 7 replaces serialized DSL payload
 accounting with exact byte counting and separates authoring/build populations.
 Stage 8 adds bounded immutable resampling phase plans, with separately measured
 construction, processing, flush and local duplex observations.
+Stage 9 replaces DAVE replay-set rebuilding with bounded bits, removes RTP
+serialization used only for byte charging, and fixes reordered resumption after
+empty-buffer PLC. Larger MLS and concurrent control/media workloads retain the
+existing cryptographic and actor boundaries.
 No numerical regression policy is selected.
 
 The first target is avoidable waiting in shared request admission, followed by
@@ -114,7 +119,8 @@ Stage 5 has its own [implementation, validation and observation record](PHASE-5.
 Stage 6 has its own [implementation and validation record](PHASE-6.md).
 Stage 7 has its own [implementation and validation record](PHASE-7.md).
 Stage 8 has its own [implementation and validation record](PHASE-8.md).
-Stages 9–10 remain **planned**.
+Stage 9 has its own [implementation and validation record](PHASE-9.md).
+Stage 10 remains **planned**.
 Stage 0 qualifies measurement before any numerical claim. Stages 1–5 prioritize common library paths. Stages 6–9 are independently
 adopted product tracks after Stage 0; source investigations can overlap, but host
 builds and performance captures run sequentially. Stage 10 follows the selected
@@ -366,12 +372,18 @@ batch timings cannot establish those properties.
 
 ### Stage 9 — Refine secure voice and key transitions
 
-Phase 8 retains a pre-existing integrated impairment failure: empty-buffer PLC
+Implementation and local evidence are recorded in [Phase 9](PHASE-9.md), including
+full-window replay comparisons, exact RTP charging, larger MLS controls and
+successful impaired local duplex. Reserved-host numerical acceptance, allocation
+and executor attribution, independent security review, live interoperability and
+other-platform qualification remain open.
+
+Phase 8 recorded a pre-existing integrated impairment failure: empty-buffer PLC
 followed by a same-tick reversed arrival pair reanchors jitter sequence to the later
 packet and rejects the still-due earlier packet. See [Phase 8](PHASE-8.md) for the
-loss/reorder/hold trigger and original-runtime reproduction. Add an integrated
-regression for sequence/timestamp preservation and joined failure cleanup before
-claiming impaired duplex qualification.
+loss/reorder/hold trigger and original-runtime reproduction. Phase 9 fixes arrival
+batch anchoring, adds sequence/timestamp regressions and records joined success,
+failure and cancellation cleanup. The original failure remains retained evidence.
 
 First fill the DAVE replay coverage gap: prefill long-lived receivers at windows
 64/1024/8192, then measure authenticated steady traffic, reorder/duplicates,

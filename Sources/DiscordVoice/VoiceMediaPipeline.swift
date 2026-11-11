@@ -436,17 +436,16 @@ public actor VoiceMediaPipeline<C: Clock> where C.Duration == Duration {
             }
             guard distance.isMultiple(of: 120) else { throw VoicePacketError.malformedPacket }
         }
-        if stream.concealedWhileEmpty, stream.jitter?.bufferedBytes == 0 {
-            guard let expectedSequence = stream.jitter?.nextSequence,
-                  packet.sequence &- expectedSequence < 0x8000 else { throw VoicePacketError.duplicateOrLate }
-            // Empty-window PLC already covered elapsed media time. RTP sequence advances
-            // only for transmitted packets, so DTX and lost packets require reanchoring.
-            stream.jitter?.reset(nextSequence: packet.sequence)
-            stream.concealedWhileEmpty = false
-        }
-        let count = packet.serialized().count
+        // Preserve the pre-PLC cursor through all arrivals in this playout interval.
+        // Choosing an anchor here would make the first member of a reversed batch
+        // reject an earlier, still-due packet authenticated immediately afterwards.
+        let count = packet.serializedByteCount
         guard count <= maximumBufferedBytes - bufferedBytes else { throw VoiceMediaPipelineError.capacityExceeded }
-        try stream.jitter?.insert(packet)
+        if stream.concealedWhileEmpty {
+            try stream.jitter?.insertAfterConcealment(packet)
+        } else {
+            try stream.jitter?.insert(packet)
+        }
         streams[id] = stream
         bufferedBytes += count
         if receivedPackets < .max { receivedPackets += 1 }
@@ -474,7 +473,12 @@ public actor VoiceMediaPipeline<C: Clock> where C.Duration == Duration {
         let before = jitter.bufferedBytes
         let slot: VoicePlayout
         var concealSampleCount = stream.packetSampleCount
-        if let packet = jitter.peek(), let timestamp = stream.nextTimestamp,
+        // Empty PLC cannot distinguish DTX from loss. Resolve that ambiguity at the
+        // next playout boundary using the earliest sequence from the whole arrival
+        // batch. A future packet cannot move the cursor yet: an earlier sequence
+        // may still arrive while PLC fills its timestamp gap.
+        let candidate = stream.concealedWhileEmpty ? jitter.firstBufferedPacket() : jitter.peek()
+        if let packet = candidate, let timestamp = stream.nextTimestamp,
            packet.timestamp &- timestamp > 0, packet.timestamp &- timestamp < 0x8000_0000 {
             let gap = Int(packet.timestamp &- timestamp)
             guard gap.isMultiple(of: 120) else {
@@ -489,6 +493,10 @@ public actor VoiceMediaPipeline<C: Clock> where C.Duration == Duration {
             slot = .missing(sequence: jitter.nextSequence)
             stream.concealedWhileEmpty = true
         } else {
+            if stream.concealedWhileEmpty, let packet = candidate {
+                jitter.resume(at: packet.sequence)
+                stream.concealedWhileEmpty = false
+            }
             slot = jitter.pop()
         }
         streams[ssrc]?.jitter = jitter

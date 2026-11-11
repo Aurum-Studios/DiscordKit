@@ -666,7 +666,9 @@ failures. Separate warmup owners join before measurement. Child intervals overla
 cleanup receipts independently cover manager/session/adapter/task ownership.
 
 The independent [media component tool](../DiscordMediaBenchmarks/README.md)
-provides 80 real DSP, codec, jitter, RTP, AEAD, MLS and DAVE batch cases.
+preserves 80 original DSP, codec, jitter, RTP, AEAD, MLS and DAVE batch cases
+and adds versioned controls (174 cases total), including fully prefilled DAVE
+receivers, generation expiry, bounded dense/sparse MLS transitions and RTP accounting.
 The [existing duplex runner](../VoiceSessionQualification/README.md) adds opt-in
 public-boundary attribution, supported frame/channel/codec profiles, DTX cadence,
 receiver-side impairment emulation and bounded CPU contention. The
@@ -692,7 +694,11 @@ then select `--family media` with its executable and receipt. The driver lists e
 finite case by default; repeat `--case` to select cases. It sweeps queue batch size
 and lifecycle concurrency, requires exact input/seed/outcome identity, validates
 common envelopes independently, compares native/common bytes semantically, and
-retains completed rows if a later capture fails. Sparse P99 remains insufficient
+retains completed rows if a later capture fails. Continuous version-two/three/four
+owner schedulers and the two-job mixed media/control scheduler remain explicit
+in supervisor receipts and compact reports; all version-four endpoint dimensions
+are checked before compaction. The media outer wrapper loop stays serial even
+when a selected wrapper joins concurrent jobs. Sparse P99 remains insufficient
 data. These local smoke captures establish no numerical baseline, universal
 realtime behavior, hardware, independent crypto or live-service qualification.
 See [Phase 9](../../Docs/Tasks/latency-timing/PHASE-9.md) for the metric contracts.

@@ -18,6 +18,56 @@ import sys
 from run_timing_suites import SuiteProcesses
 
 
+def media_execution(case: str, batch_size: int) -> tuple[str, int]:
+    """Keep actual native owners/jobs distinct from the serial outer wrapper loop."""
+    if case == "dave.transition.queue":
+        return "joined-concurrent-signaling-batches", batch_size
+    if case == "mls.v4.mixed.dense.members8":
+        return "joined-concurrent-transition-media-batches-v4", 2
+    if case.startswith("dave.v4.open."):
+        return "serial-population-stream-v4", 1
+    if case.startswith(("resample.v3.continuous.", "pcm.v3.queue.")):
+        return "serial-population-stream-v3", 1
+    if case.startswith(("resample.v2.continuous.", "opus.v2.continuous.", "dave.v2.frame.open.")):
+        return "serial-population-stream-v2", 1
+    return "serial-wrapper-batches", 1
+
+
+def versioned_media_dimensions(case: str) -> dict:
+    """Authenticate version-four endpoint/population policy before compacting its distribution."""
+    match = re.fullmatch(r"dave\.v4\.open\.(steady|reorderDuplicate|authenticationFailure)\.replay(64|1024|8192)", case)
+    if match:
+        policy, window = match[1], int(match[2])
+        return dict(fixtureVersion=4, payloadBytes=80, replayWindow=window, prefillFrames=window, continuousState=1,
+                    authenticatedFramesPerCall=2 if policy == "reorderDuplicate" else 1,
+                    duplicateRejectionsPerCall=int(policy == "reorderDuplicate"),
+                    authenticationFailuresPerCall=int(policy == "authenticationFailure"), frameIntervalNanoseconds=20_000_000)
+    match = re.fullmatch(r"dave\.v4\.expiry\.replay(64|1024|8192)", case)
+    if match:
+        return dict(fixtureVersion=4, payloadBytes=80, replayWindow=int(match[1]), prefillFrames=int(match[1]),
+                    continuousState=0, authenticatedFramesPerCall=1, generationExpiriesPerCall=1,
+                    generationRetentionSeconds=10, expiryOpenAtSeconds=11, startingGeneration=1, prefillGeneration=0)
+    match = re.fullmatch(r"mls\.v4\.(add1|remove1|remove3|mixed)\.(dense|sparse)\.members(4|8|16)", case)
+    if match:
+        action, shape, members = match[1], match[2], int(match[3])
+        removed, sparse, mixed = (3 if action == "remove3" else 0 if action == "add1" else 1), int(shape == "sparse"), action == "mixed"
+        return dict(fixtureVersion=4, startingMembers=members - sparse, initialTreeLeaves=members,
+                    endingMembers=members - sparse - removed + int(action == "add1"),
+                    cachedRemovalProposals=removed, cachedAddProposals=int(action == "add1"), startingBlankLeaves=sparse,
+                    welcomeJoinInsideTimer=0, proposalAdmissionInsideTimer=0, prepareCommitInsideTimer=1,
+                    allPeerAcceptanceInsideTimer=1, concurrentJobsPerCall=2 if mixed else 1,
+                    authenticatedMediaFramesPerCall=64 if mixed else 0, mediaReplayWindow=1024 if mixed else 0,
+                    mediaPrefillFrames=1024 if mixed else 0)
+    match = re.fullmatch(r"(rtp|jitter)\.v4\.accounting\.(serialize|insertPop)\.payload(80|1200|16000)", case)
+    if match:
+        jitter, payload = match[1] == "jitter", int(match[3])
+        return dict(fixtureVersion=4, packetsPerCall=8, payloadBytes=payload, contributingSources=2,
+                    extensionBytes=8, paddingBytes=4, serializedBytesPerPacket=payload + 36,
+                    jitterCapacity=8 if jitter else 0, jitterInsertAndPopInsideTimer=int(jitter),
+                    serializationOnlyForLength=int(not jitter))
+    return {}
+
+
 def matrix(family: str, cases: list[str]) -> list[dict]:
     """Keep every case and explicit batch/cohort sweeps in separate fresh processes."""
     if family not in ("media", "voice") or not cases:
@@ -28,8 +78,10 @@ def matrix(family: str, cases: list[str]) -> list[dict]:
             raise ValueError("unsafe case identity")
         base = dict(name=case, case=case, family=family, batch_size=2, concurrency=1,
                     profile="smoke", duration_seconds=10, warmup_seconds=1)
-        if family == "media" and case == "dave.transition.queue":
-            base["concurrency"] = base["batch_size"]
+        if family == "media":
+            base["scheduler"], base["concurrency"] = media_execution(case, base["batch_size"])
+        else:
+            base["scheduler"] = "bounded-scripted-voice-cohort"
         rows.append(base)
         if family == "media" and case in ("jitter.reorder.loss", "dave.transition.queue"):
             rows.append(dict(base, name=case + "-batch8", batch_size=8,
@@ -54,7 +106,8 @@ def compact(native: dict, row: dict) -> dict:
         primary = "mls.transition" if row["case"].startswith("mls.") or row["case"] == "dave.transition.queue" else "media.batch"
         dimensions = {"batchSize": row["batch_size"], "batchesCap": row["operations"],
                       "warmupBatchesCap": row["warmup_operations"], "durationCapSeconds": row["duration_seconds"]}
-        concurrency = row["batch_size"] if row["case"] == "dave.transition.queue" else 1
+        dimensions.update(versioned_media_dimensions(row["case"]))
+        scheduler, concurrency = media_execution(row["case"], row["batch_size"])
         if (native["completedBatches"] != row["operations"] or
                 native["completedCalls"] != row["operations"] * row["batch_size"] or
                 native["warmupBatches"] != row["warmup_operations"] or
@@ -66,6 +119,7 @@ def compact(native: dict, row: dict) -> dict:
         dimensions = {"requests": row["operations"], "warmupRequests": row["warmup_operations"],
                       "configuredConcurrency": row["concurrency"], "durationCapSeconds": row["duration_seconds"]}
         concurrency = min(row["concurrency"], row["operations"])
+        scheduler = "bounded-scripted-voice-cohort"
         if any(type(value) is not int or value != 0 for value in native["measurement"]["ownership"].values()):
             raise ValueError("retained fixture owners")
     if any(configuration.get(key) != value or type(configuration.get(key)) is not type(value) for key, value in expected.items()):
@@ -73,6 +127,8 @@ def compact(native: dict, row: dict) -> dict:
     if (common.get("format") != "DiscordBenchmarkReport" or common.get("schemaVersion") != 1 or
             identity.get("catalogVersion") != 9 or identity.get("scenario") != row["case"] or
             identity.get("profile") != row["profile"] or identity.get("concurrency") != concurrency or
+            identity.get("scheduler") != scheduler or row["scheduler"] != scheduler or
+            (media and row["concurrency"] != concurrency) or
             type(identity.get("seed")) is not int or identity["seed"] != row["seed"] or
             any(identity["inputSizes"].get(key) != value or type(identity["inputSizes"].get(key)) is not int
                 for key, value in dimensions.items())):
@@ -100,7 +156,8 @@ def compact(native: dict, row: dict) -> dict:
             raise ValueError("aggregate timing loss")
         if metric["clockDomain"] != common["clockDomain"]:
             raise ValueError("mixed monotonic clock domains")
-    return dict(row, counts=counts, metrics=[{key: metric[key] for key in ("id", "outcome", "p50", "p95", "p99", "maximum")}
+    return dict(row, inputSizes=identity["inputSizes"], scheduler=identity["scheduler"], counts=counts,
+                metrics=[{key: metric[key] for key in ("id", "outcome", "p50", "p95", "p99", "maximum")}
                                            for metric in metrics], gauges=common["gauges"],
                 nativeReport=str(Path(row["name"]) / "00-single" / "native-report.json"))
 
@@ -163,13 +220,16 @@ def main(argv: list[str] | None = None) -> int:
         supervised = [sys.executable, str(shared), "run", "--profile", row["profile"], "--scenario", row["name"],
                       "--receipt", str(arguments.receipt.resolve()), "--command", json.dumps(command),
                       "--output-dir", str(destination), "--concurrency", str(row["concurrency"]),
-                      "--scheduler-policy", (("joined-concurrent-signaling-batches" if row["case"] == "dave.transition.queue" else "serial-wrapper-batches")
-                                             if arguments.family == "media" else "bounded-scripted-voice-cohort"),
+                      "--scheduler-policy", row["scheduler"],
                       "--duration-seconds", str(row["duration_seconds"]), "--warmup-seconds", str(row["warmup_seconds"]),
                       "--warmup-policy", "participant-declared"]
-        fixture = (package.parent / "DiscordMediaBenchmarks" / "Sources" / "DiscordMediaBenchmarks" / "MediaWorkloads.swift"
-                   if arguments.family == "media" else package / "Sources" / "DiscordKitLoadTests" / "VoiceLifecycleTimingRunner.swift")
-        supervised += ["--fixture", str(fixture)]
+        if arguments.family == "media":
+            # The listed catalog spans several fixture owners; retain the complete finite source policy as provenance.
+            fixtures = sorted((package.parent / "DiscordMediaBenchmarks" / "Sources" / "DiscordMediaBenchmarks").glob("*.swift"))
+        else:
+            fixtures = [package / "Sources" / "DiscordKitLoadTests" / "VoiceLifecycleTimingRunner.swift"]
+        for fixture in fixtures:
+            supervised += ["--fixture", str(fixture)]
         status = processes.run(supervised).returncode
         if processes.cancelled:
             return 130

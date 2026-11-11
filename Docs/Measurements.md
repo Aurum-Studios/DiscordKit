@@ -52,6 +52,13 @@ cases include reverse/awkward rates and queue occupancy. Paired local paced dupl
 reports keep processing and schedule misses distinct from media batch cost. Plan
 payload accounting, process RSS and allocation-event profiling are different scopes.
 
+Performance [Phase 9](Tasks/performance-improvements/PHASE-9.md) adds continuously
+prefilled DAVE replay populations, actual generation expiry, matched RTP/jitter
+accounting and larger dense/sparse MLS transitions. Concurrent control/media has a
+joined batch endpoint; it does not measure queue residence or secure-ready.
+Separate impaired local UDP receipts retain losses, concealment, scheduling and
+joined cleanup, including the original-runtime failure.
+
 Legacy account profiles describe 100/10,000/1,000,000 logical identities with
 bounded active cohorts, not that many simultaneous connections. Avoid comparing
 different input sizes or instrumentation modes as though they were the same

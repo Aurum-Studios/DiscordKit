@@ -100,10 +100,12 @@ struct QualificationReport: Codable {
                 ? try await runAttributed(configuration: configuration, statistics: statistics!)
                 : try await run(seconds: seconds, statistics: statistics)
         } catch {
-            let operationError = error
+            let failure = error as? AttributedRunFailure
+            let operationError = failure?.operationError ?? error
             do {
                 if configuration.attributed {
-                    try writeAttributedPartial(configuration: configuration, statistics: statistics!, error: operationError)
+                    try writeAttributedPartial(configuration: configuration, statistics: statistics!,
+                        error: operationError, cleanup: failure?.cleanup)
                 } else {
                     try statistics?.writePartialSidecar(
                         identity: ReportIdentity(scenario: "local-duplex", profile: "voice-paced-50hz",

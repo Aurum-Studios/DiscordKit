@@ -25,7 +25,11 @@ recorded in [Phase 7](PHASE-7.md). F21 bounded immutable resampler plans, F09
 PCM queue occupancy controls and retained F22 codec workspace/Apple mailbox
 decisions are recorded in [Phase 8](PHASE-8.md), including construction/memory
 tradeoffs and separately paced local duplex observations.
-Later-stage candidates remain proposed. See [stage gates](PLAN.md) and
+F23 exact RTP byte charging, F24 bounded DAVE replay bits and the retained F25/F26
+actor/cryptographic boundaries are recorded in [Phase 9](PHASE-9.md). Its larger
+MLS populations and repaired impaired duplex remain local evidence; numerical,
+allocation/executor, security and live qualification gates stay open.
+Remaining integration work is proposed. See [stage gates](PLAN.md) and
 [planning evidence](EVIDENCE.md).
 
 ## Shared runtime paths

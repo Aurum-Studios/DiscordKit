@@ -169,7 +169,7 @@ public actor DAVEFrameCipher: CustomStringConvertible, CustomDebugStringConverti
         public let maximumFutureGenerations: Int
         /// Maximum cached keys and accounting states retained behind the newest generation.
         public let maximumRetainedGenerations: Int
-        /// Largest accepted distance behind the newest authenticated absolute nonce.
+        /// Number of retained nonce positions; accepted distance behind newest is strictly smaller.
         public let replayWindow: Int
         /// Old-generation retention in seconds, never greater than ten seconds.
         public let generationRetentionSeconds: TimeInterval
@@ -219,7 +219,7 @@ public actor DAVEFrameCipher: CustomStringConvertible, CustomDebugStringConverti
     private var oldestGeneration: UInt32 = 0
     private var expiries: [UInt32: TimeInterval] = [:]
     private var verifications: [UInt32: VerificationCounts] = [:]
-    private var acceptedNonces: Set<UInt64> = []
+    private var acceptedNonceBits: [UInt64]
     private var newestNonce: UInt64?
     private var lastTime: TimeInterval = 0
 
@@ -237,6 +237,7 @@ public actor DAVEFrameCipher: CustomStringConvertible, CustomDebugStringConverti
     /// - Throws: `invalidSecret`; the actor owns no transport, devices, clocks, or tasks.
     public init(baseSecret: Data, configuration: Configuration = .standard) throws {
         self.configuration = configuration
+        acceptedNonceBits = Array(repeating: 0, count: (configuration.replayWindow + 63) / 64)
         sendRatchet = try DAVEKeyRatchet(baseSecret: baseSecret, maximumForwardDistance: 0, maximumRetainedKeys: 1)
         receiveRatchet = try DAVEKeyRatchet(baseSecret: baseSecret, maximumForwardDistance: configuration.maximumFutureGenerations,
                                           maximumRetainedKeys: configuration.maximumRetainedGenerations)
@@ -251,6 +252,7 @@ public actor DAVEFrameCipher: CustomStringConvertible, CustomDebugStringConverti
     init(baseSecret: Data, configuration: Configuration, initialTransmitNonce: UInt64) throws {
         guard initialTransmitNonce <= configuration.maximumTransmitNonce else { throw DAVEError.invalidConfiguration }
         self.configuration = configuration; transmitNonce = initialTransmitNonce
+        acceptedNonceBits = Array(repeating: 0, count: (configuration.replayWindow + 63) / 64)
         sendRatchet = try DAVEKeyRatchet(baseSecret: baseSecret, maximumForwardDistance: 250, maximumRetainedKeys: 1)
         receiveRatchet = try DAVEKeyRatchet(baseSecret: baseSecret, maximumForwardDistance: configuration.maximumFutureGenerations,
                                           maximumRetainedKeys: configuration.maximumRetainedGenerations)
@@ -305,7 +307,7 @@ public actor DAVEFrameCipher: CustomStringConvertible, CustomDebugStringConverti
         guard UInt64(generation) <= UInt64(newestGeneration) + UInt64(configuration.maximumFutureGenerations) else { throw DAVEError.generationTooFarAhead }
         let bigNonce = UInt64(generation) << 24 | UInt64(envelope.nonce & 0xFF_FFFF)
         if let newestNonce, bigNonce <= newestNonce {
-            guard newestNonce - bigNonce < UInt64(configuration.replayWindow), !acceptedNonces.contains(bigNonce) else { throw DAVEError.replayedFrame }
+            guard newestNonce - bigNonce < UInt64(configuration.replayWindow), !containsAcceptedNonce(bigNonce) else { throw DAVEError.replayedFrame }
         }
         var counts = verifications[generation] ?? VerificationCounts()
         guard counts.total < configuration.maximumDecryptionsPerGeneration,
@@ -328,8 +330,7 @@ public actor DAVEFrameCipher: CustomStringConvertible, CustomDebugStringConverti
             for prior in oldestGeneration..<generation { expiries[prior] = min(expiries[prior] ?? .infinity, now + configuration.generationRetentionSeconds) }
             newestGeneration = generation; prune()
         }
-        acceptedNonces.insert(bigNonce); newestNonce = max(newestNonce ?? bigNonce, bigNonce)
-        if let newestNonce { acceptedNonces = acceptedNonces.filter { newestNonce - $0 < UInt64(configuration.replayWindow) } }
+        acceptNonce(bigNonce)
         return DAVEFrameEnvelope.merge(original: envelope.interleaved, transformed: plaintext, clearRanges: envelope.clearRanges)
     }
 
@@ -337,7 +338,41 @@ public actor DAVEFrameCipher: CustomStringConvertible, CustomDebugStringConverti
     /// No physical erasure of existing Swift `Data` copies is promised. Already executing
     /// transforms finish before this serialized call; later transformations fail `closed`.
     public func close() {
-        sendRatchet = nil; receiveRatchet = nil; expiries.removeAll(); verifications.removeAll(); acceptedNonces.removeAll(); newestNonce = nil
+        sendRatchet = nil; receiveRatchet = nil; expiries.removeAll(); verifications.removeAll(); acceptedNonceBits.removeAll(); newestNonce = nil
+    }
+
+    /// Reads one circular bit after the caller has checked the strict absolute-distance bound.
+    /// - Parameter nonce: Authenticated-domain absolute nonce at distance less than `replayWindow`.
+    /// - Returns: Whether this exact live position was accepted. No two positions in the
+    ///   window share a slot, including arbitrary non-power-of-two window sizes.
+    ///   This check never mutates replay or ratchet state and consumes no verification quota.
+    private func containsAcceptedNonce(_ nonce: UInt64) -> Bool {
+        let slot = Int(nonce % UInt64(configuration.replayWindow))
+        return acceptedNonceBits[slot / 64] & (UInt64(1) << (slot % 64)) != 0
+    }
+
+    /// Commits one successfully authenticated position without rebuilding retained history.
+    /// - Parameter nonce: Absolute nonce whose tag and candidate ratchet were just accepted.
+    ///   The actor has no suspension between authentication and this commit. Failed opens
+    ///   never call it. Forward motion clears passed circular slots; jumps spanning the
+    ///   complete window clear at most 128 words. Steady traffic touches a single slot.
+    ///   Replay storage is fixed at `ceil(replayWindow / 64)` words (at most 1024 bytes),
+    ///   released on close. No payload or key material is stored in these bits.
+    private func acceptNonce(_ nonce: UInt64) {
+        if let newestNonce, nonce > newestNonce {
+            let distance = nonce - newestNonce
+            if distance >= UInt64(configuration.replayWindow) {
+                for index in acceptedNonceBits.indices { acceptedNonceBits[index] = 0 }
+            } else {
+                for offset in 1...Int(distance) {
+                    let slot = Int((newestNonce + UInt64(offset)) % UInt64(configuration.replayWindow))
+                    acceptedNonceBits[slot / 64] &= ~(UInt64(1) << (slot % 64))
+                }
+            }
+        }
+        let slot = Int(nonce % UInt64(configuration.replayWindow))
+        acceptedNonceBits[slot / 64] |= UInt64(1) << (slot % 64)
+        newestNonce = max(newestNonce ?? nonce, nonce)
     }
 
     /// Reconstructs a full GCM nonce with eight zero bytes followed by the little-endian uint32.
@@ -369,10 +404,11 @@ public actor DAVEFrameCipher: CustomStringConvertible, CustomDebugStringConverti
     /// Removes expired or capacity-evicted keys and all matching accounting metadata.
     /// Future verification budgets remain retained within the configured forward gap, so
     /// retrying an unauthenticated future generation never resets its failure allowance.
+    /// Replay bits need no generation scan: the oldest-generation guard rejects expired
+    /// frames before consulting them, and forward nonce motion clears any reused slots.
     private func prune() {
         receiveRatchet?.erase(before: oldestGeneration)
         expiries = expiries.filter { $0.key >= oldestGeneration }
         verifications = verifications.filter { $0.key >= oldestGeneration }
-        acceptedNonces = acceptedNonces.filter { $0 >> 24 >= UInt64(oldestGeneration) }
     }
 }

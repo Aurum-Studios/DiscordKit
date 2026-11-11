@@ -106,6 +106,40 @@ import DiscordVoiceCrypto
         #expect(throws: VoicePacketError.invalidConfiguration) { try VoiceJitterBuffer(ssrc: 0, nextSequence: 0, maximumBytes: 0) }
     }
 
+    /// Exact accounting matches actual serialization for optional-section and UDP-size boundaries.
+    @Test func validatedRTPByteAccounting() throws {
+        for sources in [0, 1, 15] {
+            for extensionBytes in [-1, 0, 4, 256] {
+                for padding: UInt8 in [0, 1, 255] {
+                    let ext = try extensionBytes < 0 ? nil : RTPExtension(profile: .max, bytes: Data(count: extensionBytes))
+                    let overhead = 12 + sources * 4 + (extensionBytes < 0 ? 0 : 4 + extensionBytes) + Int(padding)
+                    for payloadBytes in [0, 3, 65_507 - overhead] {
+                        let packet = try RTPPacket(sequence: .max, timestamp: .max, ssrc: 9,
+                            contributingSources: Array(repeating: .max, count: sources), headerExtension: ext,
+                            payload: Data(count: payloadBytes), paddingCount: padding)
+                        let size = overhead + payloadBytes
+                        #expect(packet.serializedByteCount == size && packet.serialized().count == size)
+                        let parsed = try RTPPacket(bytes: packet.serialized())
+                        #expect(parsed.serializedByteCount == size)
+                        var jitter = try VoiceJitterBuffer(ssrc: 9, nextSequence: .max, maximumBytes: size)
+                        try jitter.insert(packet)
+                        #expect(jitter.bufferedBytes == size)
+                        var copy = jitter
+                        #expect(copy.pop() == .packet(packet) && copy.bufferedBytes == 0)
+                        #expect(jitter.bufferedBytes == size && jitter.peek() == packet)
+                        jitter.reset()
+                        #expect(jitter.bufferedBytes == 0)
+                        if size > 1 {
+                            var short = try VoiceJitterBuffer(ssrc: 9, nextSequence: .max, maximumBytes: size - 1)
+                            #expect(throws: VoicePacketError.capacityExceeded) { try short.insert(packet) }
+                            #expect(short.bufferedBytes == 0 && short.nextSequence == .max)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     /// Verifies current discovery framing, SSRC binding, IPv4/IPv6 literals and hostile address rejection.
     @Test func discovery() throws {
         let request = VoiceDiscovery.request(ssrc: 0x01020304)

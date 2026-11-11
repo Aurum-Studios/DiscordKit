@@ -129,6 +129,7 @@ enum MediaCatalog {
         }
         for window in [1_024, 8_192] { result.append("dave.v2.frame.open.replay\(window)") }
         result += phaseEightIDs
+        result += phaseNineIDs
         return result.sorted()
     }
 
@@ -136,6 +137,7 @@ enum MediaCatalog {
     static func selected(_ id: String) throws -> MediaCase {
         guard ids.contains(id) else { throw MediaBenchmarkError.invalidConfiguration("Unknown media case: \(id)") }
         let parts = id.split(separator: ".").map(String.init)
+        if parts.count > 1, parts[1] == "v4" { return phaseNineSelected(id, parts: parts) }
         if parts.count > 1, parts[1] == "v3" { return phaseEightSelected(id, parts: parts) }
         if parts.count > 1, parts[1] == "v2" {
             switch parts[0] {

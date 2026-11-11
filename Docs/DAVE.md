@@ -172,6 +172,16 @@ ratchet or accepted nonce window. Duplicate or stale accepted counters are
 rejected. Direct users must share one receive owner or coordinate aggregate
 attempt limits when duplicating owners for an exporter/key domain.
 
+Replay bookkeeping retains a fixed circular bitmap: 128 bytes at the default
+1,024-position window and at most 1,024 bytes at the 8,192-position maximum,
+excluding array allocation overhead and fixed metadata. Accepted distance behind
+the newest authenticated nonce remains strictly less than the selected window.
+Failed authentication changes verification quotas but cannot advance or clear the
+bitmap. Generation expiry is checked before replay admission. This representation
+changes no frame bytes, nonce rules, cryptographic algorithm or lifetime policy;
+the [phase 9 record](Tasks/performance-improvements/PHASE-9.md) retains its local
+performance and correctness evidence.
+
 AES-GCM is not key committing. The whitepaper records a sophisticated-participant
 attack in which a frame can produce different authenticated plaintexts under
 different retained transition keys. This known protocol property remains; local

@@ -45,11 +45,42 @@ public struct VoiceJitterBuffer: Sendable {
     /// - Throws: `VoicePacketError.wrongStream`, `.duplicateOrLate` or `.capacityExceeded`.
     ///   Failure leaves the window unchanged. Bytes include full plaintext RTP overhead.
     public mutating func insert(_ packet: RTPPacket) throws {
+        try insert(packet, afterConcealment: false)
+    }
+
+    /// Retains a returning stream's finite arrival batch before its media-time anchor is known.
+    /// - Parameter packet: Authenticated packet after empty PLC. Sequence must remain forward
+    ///   of the retained cursor, but may span a long already-concealed loss gap. All retained
+    ///   sequences together must fit one capacity-sized window; bytes retain the usual bound.
+    /// - Throws: The same failures as `insert(_:)`, leaving all state unchanged. Used only
+    ///   by the media owner while timestamp-based resumption is pending, never for ordinary
+    ///   playout. The cursor is preserved so reversed arrivals can precede the first arrival.
+    mutating func insertAfterConcealment(_ packet: RTPPacket) throws {
+        try insert(packet, afterConcealment: true)
+    }
+
+    /// Performs shared failure-atomic admission under the ordinary or returning-stream bound.
+    /// - Parameters:
+    ///   - packet: Immutable validated RTP geometry from an authenticated source.
+    ///   - afterConcealment: True bounds the whole retained sequence span rather than its
+    ///     distance from an ambiguous pre-PLC cursor; false enforces the public forward window.
+    /// - Throws: Stream, late/duplicate or finite capacity/byte errors before any mutation.
+    private mutating func insert(_ packet: RTPPacket, afterConcealment: Bool) throws {
         guard packet.ssrc == ssrc else { throw VoicePacketError.wrongStream }
         let distance = Int(packet.sequence &- nextSequence)
         guard distance < 32_768, packets[packet.sequence] == nil else { throw VoicePacketError.duplicateOrLate }
-        let bytes = packet.serialized().count
-        guard distance < capacity, bytes <= maximumBytes - bufferedBytes else { throw VoicePacketError.capacityExceeded }
+        let bytes = packet.serializedByteCount
+        guard bytes <= maximumBytes - bufferedBytes else { throw VoicePacketError.capacityExceeded }
+        if afterConcealment {
+            var first = distance, last = distance
+            for sequence in packets.keys {
+                let offset = Int(sequence &- nextSequence)
+                first = min(first, offset); last = max(last, offset)
+            }
+            guard last - first < capacity else { throw VoicePacketError.capacityExceeded }
+        } else {
+            guard distance < capacity else { throw VoicePacketError.capacityExceeded }
+        }
         packets[packet.sequence] = packet
         bufferedBytes += bytes
     }
@@ -61,7 +92,7 @@ public struct VoiceJitterBuffer: Sendable {
         let sequence = nextSequence
         nextSequence &+= 1
         if let packet = packets.removeValue(forKey: sequence) {
-            bufferedBytes -= packet.serialized().count
+            bufferedBytes -= packet.serializedByteCount
             return .packet(packet)
         }
         return .missing(sequence: sequence)
@@ -74,6 +105,22 @@ public struct VoiceJitterBuffer: Sendable {
     ///   asynchronous work or payload copies occur; lookup is bounded by the finite window.
     public func peek() -> RTPPacket? {
         packets[nextSequence]
+    }
+
+    /// Finds the earliest retained sequence without changing the current playout cursor.
+    /// - Returns: The nearest forward packet, or nil for an empty window. The scan is
+    ///   bounded by capacity and compares wrapping distances from the existing cursor.
+    ///   Media callers use this only after empty PLC, preserving batch arrival ordering.
+    func firstBufferedPacket() -> RTPPacket? {
+        packets.values.min { $0.sequence &- nextSequence < $1.sequence &- nextSequence }
+    }
+
+    /// Skips only absent positions before the earliest retained packet after elapsed PLC.
+    /// - Parameter sequence: The sequence returned by `firstBufferedPacket()` in this
+    ///   unchanged window. No packet or byte accounting is discarded. The media owner
+    ///   must establish that its timestamp is due before advancing this sequence cursor.
+    mutating func resume(at sequence: UInt16) {
+        nextSequence = sequence
     }
 
     /// Releases all retained media and optionally reanchors sequence ordering.

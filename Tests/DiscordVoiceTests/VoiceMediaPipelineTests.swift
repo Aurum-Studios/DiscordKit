@@ -766,6 +766,94 @@ import Testing
         await #expect(throws: VoicePacketError.duplicateOrLate) { try await pipeline.receive(late) }
     }
 
+    /// Empty PLC retains the whole reversed arrival batch until playout, including both RTP wraps.
+    @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
+    @Test(arguments: [UInt16(27), UInt16.max - 2], [UInt32(0), UInt32.max - 1_919])
+    func emptyPLCThenReversedBatchPreservesDuePackets(sequence: UInt16, timestamp: UInt32) async throws {
+        let clock = ManualClock()
+        let pipeline = try makePipeline(clock: clock, transport: PipelineDatagrams(), transformer: PipelineTransform())
+        await pipeline.setAuthorized(true)
+        try await pipeline.registerReceiveStream(ssrc: 7, capacity: 4, maximumBytes: 30)
+        let sender = try cipher(), silence = Data([0xF8, 0xFF, 0xFE])
+        try await pipeline.receive(wire(opus: silence, ssrc: 7, sequence: sequence,
+            timestamp: timestamp, cipher: sender))
+        #expect(try await pipeline.playout(ssrc: 7)?.sequence == sequence)
+        let loss = try #require(try await pipeline.playout(ssrc: 7))
+        #expect(loss.concealed && loss.sequence == sequence &+ 1 && loss.pcm.frameCount == 960)
+        // The lost next packet consumed media time. The still-due packet and its successor
+        // arrive together, later first, reproducing the measured tick-30 impairment failure.
+        let earlier = try await wire(opus: silence, ssrc: 7, sequence: sequence &+ 2,
+            timestamp: timestamp &+ 1_920, cipher: sender)
+        let later = try await wire(opus: silence, ssrc: 7, sequence: sequence &+ 3,
+            timestamp: timestamp &+ 2_880, cipher: sender)
+        try await pipeline.receive(later)
+        try await pipeline.receive(earlier)
+        #expect(await pipeline.snapshot().bufferedBytes == 30)
+        let first = try #require(try await pipeline.playout(ssrc: 7))
+        let second = try #require(try await pipeline.playout(ssrc: 7))
+        #expect(!first.concealed && first.sequence == sequence &+ 2 && first.encodedOpus == silence)
+        #expect(!second.concealed && second.sequence == sequence &+ 3 && second.encodedOpus == silence)
+        #expect(first.pcm.frameCount == 960 && second.pcm.frameCount == 960)
+        #expect(await pipeline.snapshot().bufferedBytes == 0)
+        let alreadyConcealed = try await wire(opus: silence, ssrc: 7, sequence: sequence &+ 1,
+            timestamp: timestamp &+ 960, cipher: sender)
+        await #expect(throws: VoicePacketError.duplicateOrLate) { try await pipeline.receive(alreadyConcealed) }
+        let next = try await wire(opus: silence, ssrc: 7, sequence: sequence &+ 4,
+            timestamp: timestamp &+ 3_840, cipher: sender)
+        try await pipeline.receive(next)
+        #expect(try await pipeline.playout(ssrc: 7)?.concealed == false)
+        #expect(await pipeline.snapshot().concealedPackets == 1)
+        await pipeline.close()
+        await sender.close()
+    }
+
+    /// Future arrivals after idle PLC cannot reject an earlier sequence while its timestamp is still due.
+    @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
+    @Test func futurePostPLCPacketDoesNotReanchorBeforeDue() async throws {
+        let pipeline = try makePipeline(clock: ManualClock(), transport: PipelineDatagrams(), transformer: PipelineTransform())
+        await pipeline.setAuthorized(true)
+        try await pipeline.registerReceiveStream(ssrc: 7)
+        let sender = try cipher(), silence = Data([0xF8, 0xFF, 0xFE])
+        try await pipeline.receive(wire(opus: silence, ssrc: 7, sequence: 0, timestamp: 0, cipher: sender))
+        _ = try await pipeline.playout(ssrc: 7)
+        _ = try await pipeline.playout(ssrc: 7)
+        try await pipeline.receive(wire(opus: silence, ssrc: 7, sequence: 3, timestamp: 3_840, cipher: sender))
+        let gap = try #require(try await pipeline.playout(ssrc: 7))
+        #expect(gap.concealed && gap.pcm.frameCount == 960)
+        try await pipeline.receive(wire(opus: silence, ssrc: 7, sequence: 2, timestamp: 2_880, cipher: sender))
+        #expect(try await pipeline.playout(ssrc: 7)?.sequence == 2)
+        let future = try #require(try await pipeline.playout(ssrc: 7))
+        #expect(future.sequence == 3 && !future.concealed)
+        #expect(await pipeline.snapshot().bufferedBytes == 0)
+        await pipeline.close()
+        await sender.close()
+    }
+
+    /// Long already-concealed losses still resume, while the returning batch obeys finite packet/byte bounds.
+    @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
+    @Test func longPostPLCLossRetainsBoundedResumption() async throws {
+        let pipeline = try makePipeline(clock: ManualClock(), transport: PipelineDatagrams(), transformer: PipelineTransform())
+        await pipeline.setAuthorized(true)
+        try await pipeline.registerReceiveStream(ssrc: 7, capacity: 2, maximumBytes: 45)
+        let sender = try cipher(), silence = Data([0xF8, 0xFF, 0xFE])
+        try await pipeline.receive(wire(opus: silence, ssrc: 7, sequence: 0, timestamp: 0, cipher: sender))
+        _ = try await pipeline.playout(ssrc: 7)
+        for _ in 0..<65 { _ = try await pipeline.playout(ssrc: 7) }
+        try await pipeline.receive(wire(opus: silence, ssrc: 7, sequence: 67, timestamp: 67 * 960, cipher: sender))
+        try await pipeline.receive(wire(opus: silence, ssrc: 7, sequence: 66, timestamp: 66 * 960, cipher: sender))
+        let tooWide = try await wire(opus: silence, ssrc: 7, sequence: 68, timestamp: 68 * 960, cipher: sender)
+        await #expect(throws: VoicePacketError.capacityExceeded) { try await pipeline.receive(tooWide) }
+        #expect(await pipeline.snapshot().bufferedBytes == 30)
+        let resumed = try #require(try await pipeline.playout(ssrc: 7))
+        let following = try #require(try await pipeline.playout(ssrc: 7))
+        #expect(!resumed.concealed && resumed.sequence == 66)
+        #expect(!following.concealed && following.sequence == 67)
+        #expect(await pipeline.snapshot().bufferedBytes == 0)
+        #expect(await pipeline.snapshot().concealedPackets == 65)
+        await pipeline.close()
+        await sender.close()
+    }
+
     /// A future DTX refresh waits in jitter while bounded PLC fills its timestamp gap.
     @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
     @Test func futureTimestampDoesNotPlayEarly() async throws {

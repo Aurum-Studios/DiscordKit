@@ -52,6 +52,14 @@ public struct RTPPacket: Sendable, Equatable, CustomStringConvertible, CustomDeb
     public let payload: Data
     public let paddingCount: UInt8
 
+    /// Exact plaintext wire size from immutable, constructor-validated RTP geometry.
+    /// Includes fixed fields, CSRC words, extension preamble/data, payload and padding.
+    /// The packet's UDP bound makes this arithmetic finite without allocating wire bytes.
+    var serializedByteCount: Int {
+        12 + contributingSources.count * 4 + (headerExtension.map { 4 + $0.bytes.count } ?? 0)
+            + payload.count + Int(paddingCount)
+    }
+
     /// Validates a plaintext RTP packet without I/O or codec interpretation.
     /// - Parameters:
     ///   - payloadType: Seven-bit negotiated media type; Discord Opus uses 120.
