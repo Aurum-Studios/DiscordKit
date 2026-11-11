@@ -67,6 +67,7 @@ Browse the public types and operations provided by DiscordGateway.
 ### Gateway Shard
 
 - ``DiscordGateway/GatewayBot``
+- ``DiscordGateway/GatewayReconnectBudgetPolicy``
 - ``DiscordGateway/GatewayShard``
 - ``DiscordGateway/GatewayShardConfiguration``
 - ``DiscordGateway/GatewayShardSnapshot``

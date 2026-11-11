@@ -2,11 +2,26 @@
 
 # ``DiscordGateway/GatewayShardConfiguration``
 
+## Overview
+
+Configure finite frame, queue, request and connection bounds before starting a
+shard. ``reconnectBudgetPolicy`` defaults to
+``GatewayReconnectBudgetPolicy/totalRun``; opt-in renewal retains the same owner,
+shared admission limits and terminal-failure checks. See
+<doc:GatewayReconnectBudgets> before selecting a healthy-session threshold.
+
 ## Topics
 
 ### Creating a value
 
-- ``DiscordGateway/GatewayShardConfiguration/init(maximumFrameBytes:maximumBufferedEvents:maximumBufferedBytes:maximumReconnectAttempts:helloTimeout:writeTimeout:leaseLifetime:retryBase:retryMaximum:maximumPendingRequests:maximumResponseEvents:maximumResponseBytes:maximumRequestKeys:)``
+- ``DiscordGateway/GatewayShardConfiguration/init(maximumFrameBytes:maximumBufferedEvents:maximumBufferedBytes:maximumReconnectAttempts:helloTimeout:writeTimeout:leaseLifetime:retryBase:retryMaximum:maximumPendingRequests:maximumResponseEvents:maximumResponseBytes:maximumRequestKeys:reconnectBudgetPolicy:)``
+
+### Recovery budget
+
+- ``DiscordGateway/GatewayShardConfiguration/maximumReconnectAttempts``
+- ``DiscordGateway/GatewayShardConfiguration/reconnectBudgetPolicy``
+- ``DiscordGateway/GatewayShardConfiguration/retryBase``
+- ``DiscordGateway/GatewayShardConfiguration/retryMaximum``
 
 ### Instance properties
 
@@ -16,12 +31,9 @@
 - ``DiscordGateway/GatewayShardConfiguration/maximumBufferedEvents``
 - ``DiscordGateway/GatewayShardConfiguration/maximumFrameBytes``
 - ``DiscordGateway/GatewayShardConfiguration/maximumPendingRequests``
-- ``DiscordGateway/GatewayShardConfiguration/maximumReconnectAttempts``
 - ``DiscordGateway/GatewayShardConfiguration/maximumRequestKeys``
 - ``DiscordGateway/GatewayShardConfiguration/maximumResponseBytes``
 - ``DiscordGateway/GatewayShardConfiguration/maximumResponseEvents``
-- ``DiscordGateway/GatewayShardConfiguration/retryBase``
-- ``DiscordGateway/GatewayShardConfiguration/retryMaximum``
 - ``DiscordGateway/GatewayShardConfiguration/writeTimeout``
 
 ## See Also

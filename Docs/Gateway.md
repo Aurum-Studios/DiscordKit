@@ -53,9 +53,10 @@ or exactly-once claim. New dispatches/opcodes survive as raw bounded JSON where 
 control contract permits. Outgoing application commands use the finite typed
 `GatewayCommand` contract.
 
-Disconnects use a finite lifetime retry budget and capped jittered backoff. Session
-IDs, last sequence and trusted resume URLs support Resume; invalid sessions choose
-Resume or fresh Identify according to the server's boolean. Fatal authentication,
+Disconnects use a finite total-run retry budget by default and capped jittered
+backoff. An explicit healthy-session policy can renew that local budget as described
+below. Session IDs, last sequence and trusted resume URLs support Resume; invalid
+sessions choose Resume or fresh Identify according to the server's boolean. Fatal authentication,
 intent, version and shard configuration close codes terminate instead of consuming
 starts indefinitely. Unknown codes follow conservative reconnect behavior.
 
@@ -66,6 +67,60 @@ close plus native cancellation. Generic injected connections use fresh Identify 
 ordinary graceful cleanup. Foundation peer-code delivery remains subject to native
 callback behavior; loopback tests cover representative Discord codes. NIO tests cover
 all documented Discord codes.
+
+## Reconnect budget policy
+
+`GatewayShardConfiguration.reconnectBudgetPolicy` defaults to `.totalRun`, preserving
+the existing lifetime bound for one `run` operation. `maximumReconnectAttempts`
+remains in `0...30`, defaults to `5`, and counts replacement connection attempts;
+zero permits only the original connection. The last, defaulted initializer argument
+is source-compatible with existing configuration calls.
+
+Consumers can explicitly select
+`.afterHealthySession(minimumDuration:minimumScheduledHeartbeatACKs:)`. Both values
+must be positive. A socket generation earns health only after its own accepted
+READY or RESUMED, a minimum monotonic healthy duration, and enough qualifying ACK
+observations for adapter-confirmed scheduled heartbeat writes. Evidence is local to
+that socket generation; earlier connections cannot contribute time or ACKs.
+Unsolicited, requested-heartbeat and pre-ready ACKs do not qualify. Neither do early
+ACKs received before scheduled write confirmation. An overlap between requested
+and scheduled heartbeats invalidates that sample, and more than two outstanding
+ambiguous observations can disable further health observations for
+the generation. The wire ACK has no nonce, so these are conservative observations,
+not proof of an exact heartbeat/ACK pairing.
+
+The owner freezes health time when the session fails, before joining cleanup.
+Cleanup, retry waits and disconnected time cannot mature the duration threshold.
+On the next recoverable failure, a healthy generation resets the retry count and
+backoff progression before ordinary bounded recovery. Fatal/terminal failures,
+ownership or coordinator failures, malformed input and overflow retain precedence;
+health never converts them into retries. READY, RESUMED and ACK receipt do not
+themselves reset the budget or start replacement work.
+
+```swift
+let configuration = try GatewayShardConfiguration(
+    maximumReconnectAttempts: 5,
+    reconnectBudgetPolicy: .afterHealthySession(
+        minimumDuration: .seconds(300),
+        minimumScheduledHeartbeatACKs: 2
+    )
+)
+```
+
+The 300-second/two-ACK example is MiniCarson's proposed service policy, not a
+Discord requirement or DiscordKit default. Repeated qualifying sessions can permit
+more replacement attempts across a long run, while each unhealthy interval retains
+the configured bound. This option uses the existing socket owner and heartbeat
+schedule: it creates no timer, history, outer restart or new authority. Identify,
+session-start and opcode admission, ownership fencing, joined cleanup and
+fail-closed continuity remain unchanged.
+
+This supplemental protocol review was verified **2026-11-11** against Discord's
+[heartbeat and Resume guidance](https://docs.discord.com/developers/events/gateway)
+and [Gateway close-code reference](https://docs.discord.com/developers/topics/opcodes-and-status-codes).
+It does not replace the historical discovery baseline or establish live Discord
+qualification. The [DocC reconnect-budget guide](../Sources/DiscordGateway/DiscordGateway.docc/Guides/GatewayReconnectBudgets.md)
+contains the same configuration choice alongside the shard API reference.
 
 ## Coordination and budgets
 

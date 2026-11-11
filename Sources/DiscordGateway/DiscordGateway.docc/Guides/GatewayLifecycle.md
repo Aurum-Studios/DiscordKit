@@ -41,6 +41,10 @@ The shard bounds received envelopes, queued bytes, pending requests and sends. H
 
 ``GatewayCloseDisposition`` classifies authentication/configuration errors as fatal, invalid-session/normal closures as requiring Identify and other recoverable closures as candidates for Resume when retained state permits it. Do not restart a fatal configuration unchanged or reset shared quotas by constructing new authorities.
 
+### Choose a reconnect budget explicitly
+
+``GatewayShardConfiguration/reconnectBudgetPolicy`` defaults to ``GatewayReconnectBudgetPolicy/totalRun``, preserving the finite replacement-attempt budget for one run. An explicit ``GatewayReconnectBudgetPolicy/afterHealthySession(minimumDuration:minimumScheduledHeartbeatACKs:)`` can renew retries and backoff after a qualifying same-generation session, only when its next failure is recoverable. Health time stops before cleanup; disconnected time and unrelated ACKs cannot qualify it. Fatal failures, ownership loss, coordinator failures, malformed input and overflow remain terminal. See <doc:GatewayReconnectBudgets> for the conservative ACK evidence rules and an opt-in configuration example.
+
 ### End ownership explicitly
 
 Cancellation must stop discovery/connect/read/write work, close the active connection and release leases before handoff. Inspect the run task's failure after shutdown, because cancellation of a sibling does not make another cleanup failure irrelevant. Sessions and credentials can be sensitive; snapshots and ordinary error descriptions avoid exposing them.
