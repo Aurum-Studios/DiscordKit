@@ -236,6 +236,26 @@ struct GatewayReconnectBudgetTests {
         #expect(heldWrite.waitingCount == 0)
     }
 
+    /// Overflowing the bounded unacknowledged-observation window disables later health credit for that generation.
+    /// Three requested beats precede all ACKs; a later sole confirmed scheduled beat must still earn no certificate.
+    @Test func ambiguousOverflowCannotLaterEarnHealth() async throws {
+        let sockets = [BudgetSocket(), BudgetSocket()]
+        let fixture = try BudgetFixture(sockets: sockets, retries: 1, policy: .afterHealthySession(
+            minimumDuration: .seconds(1), minimumScheduledHeartbeatACKs: 1))
+        try await fixture.withRun { run in
+            try await fixture.spendFirstRetry()
+            for _ in 0..<3 { await sockets[1].enqueue(.text(#"{"op":1,"d":null}"#)) }
+            for _ in 0..<3 { await sockets[1].enqueue(.text(#"{"op":11,"d":null}"#)) }
+            try await fixture.synchronize(1)
+            #expect(await sockets[1].count(opcode: 1) == 3)
+            try await fixture.scheduledACK(1)
+            #expect(await sockets[1].count(opcode: 1) == 4)
+            await sockets[1].enqueue(.text(#"{"op":7,"d":null}"#))
+            try await fixture.expectFailure(.retryLimitExceeded, run: run)
+            #expect(await fixture.transport.connectionCount == 2)
+        }
+    }
+
     /// Fatal close and terminal protocol/continuity failures retain precedence after a session qualifies as healthy.
     /// - Parameter terminal: Exact terminal cause that must escape without opening a replacement socket.
     @Test(arguments: BudgetHealthTerminal.allCases)
@@ -258,6 +278,32 @@ struct GatewayReconnectBudgetTests {
                 : terminal == .malformed ? .invalidPayload : .eventCapacityExceeded
             try await fixture.expectFailure(expected, run: run)
             #expect(await fixture.transport.connectionCount == 1)
+        }
+    }
+
+    /// Actual revoked ownership and injected coordinator loss remain terminal after a certified healthy session.
+    /// - Parameter unavailable: True injects unavailable validation; false removes the real currently issued lease.
+    @Test(arguments: [false, true])
+    func healthySessionCannotRetryLostAuthority(_ unavailable: Bool) async throws {
+        let socket = BudgetSocket()
+        let fixture = try BudgetFixture(sockets: [socket], policy: .afterHealthySession(
+            minimumDuration: .seconds(2), minimumScheduledHeartbeatACKs: 2))
+        try await fixture.withRun { run in
+            try await fixture.ready(0)
+            try await fixture.scheduledACK(0)
+            try await fixture.scheduledACK(0)
+            if unavailable {
+                await fixture.leases.makeUnavailable()
+            } else {
+                try await fixture.leases.revokeCurrent()
+                #expect(await fixture.leases.retainedLeaseCount() == 0)
+            }
+            // The next real receive fence encounters the lost authority before handling this reconnect request.
+            await socket.enqueue(.text(#"{"op":7,"d":null}"#))
+            let expected: ShardOwnershipFailure = unavailable ? .coordinatorUnavailable : .staleLease
+            try await fixture.expectFailure(expected, run: run)
+            #expect(await fixture.transport.connectionCount == 1)
+            #expect(await fixture.startup.remainingStarts() == 99)
         }
     }
 
@@ -374,7 +420,7 @@ enum BudgetCancellation: Sendable, CaseIterable {
 
 /// Concrete real-runtime specialization; only clock, ownership and transport boundaries are injected.
 @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
-private typealias BudgetShard = GatewayShard<ManualClock, InProcessShardLeaseStore<ManualClock>>
+private typealias BudgetShard = GatewayShard<ManualClock, BudgetLeases>
 
 /// Records run termination so observation loops fail promptly when the supervised owner already ended.
 @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
@@ -396,8 +442,8 @@ private struct BudgetFixture: Sendable {
     let shard: BudgetShard
     /// Monotonic virtual time; tests advance only after observing the required suspension.
     let clock: ManualClock
-    /// Real atomic in-process lease authority, retained for release assertions.
-    let leases: InProcessShardLeaseStore<ManualClock>
+    /// Forwarded real atomic authority, with explicit test-only revocation/outage controls and release assertions.
+    let leases: BudgetLeases
     /// Shared Identify authority; Resume and episode reset must not replenish it.
     let startup: InProcessGatewayStartupCoordinator<ManualClock>
     /// Finite adapter recording actual upgrade URLs and connection attempts.
@@ -421,7 +467,7 @@ private struct BudgetFixture: Sendable {
          startupLimit: GatewaySessionStartLimit? = nil, connectGate: TestBarrier? = nil,
          policy: GatewayReconnectBudgetPolicy = .totalRun) throws {
         let clock = ManualClock()
-        let leases = try InProcessShardLeaseStore(clock: clock, maximumLeases: 1)
+        let leases = try BudgetLeases(clock: clock)
         let discovery = try makeDiscovery()
         let limit = try startupLimit ?? GatewaySessionStartLimit(total: 100, remaining: 100,
             resetAfter: .zero, maxConcurrency: 2)
@@ -587,12 +633,32 @@ private struct BudgetFixture: Sendable {
         }
     }
 
+    /// Asserts an exact Gateway failure and detects an erroneous extra retry without advancing another clock deadline.
+    /// - Parameters:
+    ///   - expected: Exact Gateway failure that must escape after structured cleanup.
+    ///   - run: Actual single-use run task created by this fixture.
+    /// - Throws: Caller cancellation; unexpected retry scheduling records a failure before joined cleanup.
+    func expectFailure(_ expected: GatewayFailure, run: Task<Void, any Error>) async throws {
+        try await expectTerminalFailure(expected, run: run)
+    }
+
+    /// Asserts an exact authority failure after health without granting reconnect admission or replacing the owner.
+    /// - Parameters:
+    ///   - expected: Backing stale-lease or injected coordinator failure required at the public boundary.
+    ///   - run: Actual single-use run task created by this fixture.
+    /// - Throws: Caller cancellation; unexpected retry scheduling records a failure before joined cleanup.
+    func expectFailure(_ expected: ShardOwnershipFailure, run: Task<Void, any Error>) async throws {
+        try await expectTerminalFailure(expected, run: run)
+    }
+
     /// Asserts the exact terminal result and detects an erroneous extra retry without waiting on an unadvanced clock.
     /// - Parameters:
     ///   - expected: Exact public failure that must escape after structured cleanup.
     ///   - run: Actual single-use run task created by this fixture.
     /// - Throws: Caller cancellation; unexpected retry scheduling records a failure and returns for joined cleanup.
-    func expectFailure(_ expected: GatewayFailure, run: Task<Void, any Error>) async throws {
+    private func expectTerminalFailure<Failure: Error & Equatable>(
+        _ expected: Failure, run: Task<Void, any Error>
+    ) async throws {
         while !completion.finished {
             let phase = await shard.snapshot().phase
             if phase == .reconnecting && clock.pendingSleepCount >= 2 {
@@ -604,6 +670,84 @@ private struct BudgetFixture: Sendable {
         }
         await #expect(throws: expected) { try await run.value }
     }
+}
+
+/// Forwards real lease fencing while allowing deterministic authority loss only after the scenario certifies health.
+/// No production visibility changes or clock-driven revocation timers are required.
+@available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
+private actor BudgetLeases: ShardLeaseStore {
+    /// Lease instants belong to the same explicitly advanced clock as the real shard.
+    typealias LeaseClock = ManualClock
+    /// Actual bounded ownership records; revocation removes a real issued ticket here.
+    private let backing: InProcessShardLeaseStore<ManualClock>
+    /// Latest ticket returned to the shard, including any renewed fencing generation.
+    private var current: ShardLease<ManualClock>?
+    /// When enabled, validation fails closed while cancellation-safe release remains available.
+    private var unavailable = false
+
+    /// Creates one real in-process lease authority without issuing a ticket or launching work.
+    /// - Parameter clock: Test-owned monotonic clock shared with the shard.
+    /// - Throws: Invalid backing capacity; the fixed one-record bound is valid.
+    init(clock: ManualClock) throws {
+        backing = try InProcessShardLeaseStore(clock: clock, maximumLeases: 1)
+    }
+
+    /// Acquires and records the actual authority returned by the real atomic backing store.
+    /// - Parameters:
+    ///   - shard: Exact fixed-topology ownership key.
+    ///   - owner: Fresh nonsecret shard worker identity.
+    ///   - lifetime: Positive requested duration in the injected clock domain.
+    /// - Returns: Newly issued backing ticket; no authority is invented by this wrapper.
+    /// - Throws: Backing cancellation, ownership, capacity, lifetime or generation failures.
+    func acquire(_ shard: ShardIdentity, owner: UUID, lifetime: Duration) async throws -> ShardLease<ManualClock> {
+        let ticket = try await backing.acquire(shard, owner: owner, lifetime: lifetime)
+        current = ticket
+        return ticket
+    }
+
+    /// Preserves real owner/generation/expiry validation unless the scenario explicitly injects an outage.
+    /// - Parameter lease: Current ticket offered by the real shard at an actual ownership fence.
+    /// - Throws: Cancellation, injected coordinator unavailability or the backing store's stale-lease failure.
+    func validate(_ lease: ShardLease<ManualClock>) async throws {
+        try Task.checkCancellation()
+        if unavailable { throw ShardOwnershipFailure.coordinatorUnavailable }
+        try await backing.validate(lease)
+    }
+
+    /// Renews through real atomic fencing and records the replacement so later revocation targets the current owner.
+    /// - Parameters:
+    ///   - lease: Current unexpired ticket; a stale predecessor never gains renewed authority.
+    ///   - lifetime: Positive replacement lifetime from the backing clock's current instant.
+    /// - Returns: Backing store's newly fenced replacement.
+    /// - Throws: Cancellation, injected outage or backing stale/lifetime/generation failures.
+    func renew(_ lease: ShardLease<ManualClock>, lifetime: Duration) async throws -> ShardLease<ManualClock> {
+        try await validate(lease)
+        let ticket = try await backing.renew(lease, lifetime: lifetime)
+        current = ticket
+        return ticket
+    }
+
+    /// Forwards cancellation-safe release even during an injected validation outage, without affecting newer owners.
+    /// - Parameter lease: Ticket retained by the shard; releasing a revoked/stale ticket is a harmless no-op.
+    func release(_ lease: ShardLease<ManualClock>) async {
+        await backing.release(lease)
+        if current?.generation == lease.generation { current = nil }
+    }
+
+    /// Removes the actual current ticket without replacing the shard or changing its private runtime state.
+    /// The next real ownership fence therefore receives the backing store's `staleLease` failure.
+    /// - Throws: Fixed support failure if no ticket has been acquired; no revocation is fabricated in that case.
+    func revokeCurrent() async throws {
+        guard let current else { throw TestSupportFailure.scripted("revocation requires an issued ticket") }
+        await backing.release(current)
+    }
+
+    /// Makes subsequent validation/renewal fail closed; acquisition history and cleanup release remain unchanged.
+    func makeUnavailable() { unavailable = true }
+
+    /// Reports actual retained records rather than wrapper receipts, including real revocation and cleanup effects.
+    /// - Returns: Zero or one backing ownership records.
+    func retainedLeaseCount() async -> Int { await backing.retainedLeaseCount() }
 }
 
 /// Finite upgrade adapter; a cancelled partial connection remains adapter-owned and is closed before throwing.
