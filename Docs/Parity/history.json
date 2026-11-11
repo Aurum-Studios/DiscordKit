@@ -1891,6 +1891,39 @@
       ],
       "details": "changes/2026-11-05-api-docs.md",
       "remainingGates": "coverage.md"
+    },
+    {
+      "id": "2026-11-11-gateway-reconnect-budget",
+      "recordedOn": "2026-11-11",
+      "upstreamVersions": {
+        "rest": "10",
+        "gateway": "10",
+        "voice": "8"
+      },
+      "upstreamAnnouncementDate": "unknown",
+      "upstreamEffectiveDate": "unknown",
+      "verifiedOn": "2026-11-11",
+      "localSupportDate": "2026-11-11",
+      "localRelease": "unknown",
+      "localCommit": "unknown",
+      "changeType": "local_recovery_policy",
+      "previousBehavior": "Every recoverable failure consumed one finite total-run allowance; READY, RESUMED and healthy uptime never replenished it.",
+      "currentBehavior": "The total-run default remains. Explicit healthy-session policy can replenish retries/backoff at the next recoverable failure after same-generation monotonic uptime and conservative adapter-confirmed scheduled-heartbeat ACK observations. Storms remain bounded; terminal and shared admission protections retain precedence.",
+      "affectedSymbols": [
+        "GatewayReconnectBudgetPolicy",
+        "GatewayShardConfiguration.reconnectBudgetPolicy",
+        "GatewayShardConfiguration.init",
+        "GatewayShard.run"
+      ],
+      "affectedPayloads": "No Gateway v10 payload, opcode, discovery record or retained session format changes. ACKs remain nonce-free observational evidence.",
+      "breakingChanges": [],
+      "migration": "Existing ordinary configuration calls retain total-run behavior. Rebuild consumers for the additive configuration policy; opt in explicitly with positive thresholds. This task supplies no binary ABI guarantee or live-service qualification.",
+      "sources": [
+        "https://docs.discord.com/developers/events/gateway",
+        "https://docs.discord.com/developers/topics/opcodes-and-status-codes"
+      ],
+      "details": "changes/2026-11-11-gateway-reconnect-budget.md",
+      "remainingGates": "../Tasks/MC-33-Gateway-Recovery/EVIDENCE.md"
     }
   ]
 }

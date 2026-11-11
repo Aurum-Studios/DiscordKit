@@ -14,6 +14,8 @@ public struct GatewayShardConfiguration: Sendable {
     public let maximumBufferedEvents: Int
     public let maximumBufferedBytes: Int
     public let maximumReconnectAttempts: Int
+    /// Replenishment policy; total-run preserves existing lifetime retry accounting.
+    public let reconnectBudgetPolicy: GatewayReconnectBudgetPolicy
     public let helloTimeout: Duration
     public let writeTimeout: Duration
     public let leaseLifetime: Duration
@@ -29,8 +31,9 @@ public struct GatewayShardConfiguration: Sendable {
     ///   - maximumFrameBytes: Positive inbound JSON UTF-8 limit, default 1 MiB.
     ///   - maximumBufferedEvents: Positive raw event count limit, default 128.
     ///   - maximumBufferedBytes: Positive total retained wire byte limit, default 4 MiB.
-    ///   - maximumReconnectAttempts: Total retries for one run in 0...30, including reconnect
-    ///     storms; default five. Zero permits only the original connection attempt.
+    ///   - maximumReconnectAttempts: Replacement allowance in 0...30, default five; total-run
+    ///     by default, or per healthy-separated episode when explicitly configured. Zero permits
+    ///     only the original connection attempt under every policy.
     ///   - helloTimeout: Positive timeout for connection/Hello, default 15 seconds.
     ///   - writeTimeout: Positive bound on one control write, default ten seconds.
     ///   - leaseLifetime: Lease duration of at least two milliseconds, renewed halfway through;
@@ -41,19 +44,26 @@ public struct GatewayShardConfiguration: Sendable {
     ///   - maximumResponseEvents: Maximum unique chunks per response, default 4,096.
     ///   - maximumResponseBytes: Aggregate retained pending-response wire bytes, default 8 MiB.
     ///   - maximumRequestKeys: Generation-local active/retired correlation key cap, default 4,096.
-    /// - Throws: `invalidConfiguration` for zero/negative bounds or more than 30 retries.
+    ///   - reconnectBudgetPolicy: Default total-run, or explicit healthy-session replenishment.
+    ///     Both health thresholds must be strictly positive; no policy changes Identify authority.
+    /// - Throws: `invalidConfiguration` for zero/negative bounds, more than 30 retries or invalid health thresholds.
     public init(maximumFrameBytes: Int = 1_048_576, maximumBufferedEvents: Int = 128,
                 maximumBufferedBytes: Int = 4_194_304, maximumReconnectAttempts: Int = 5,
                 helloTimeout: Duration = .seconds(15), writeTimeout: Duration = .seconds(10),
                 leaseLifetime: Duration = .seconds(60), retryBase: Duration = .seconds(1),
                 retryMaximum: Duration = .seconds(30), maximumPendingRequests: Int = 16,
                 maximumResponseEvents: Int = 4_096, maximumResponseBytes: Int = 8_388_608,
-                maximumRequestKeys: Int = 4_096) throws {
+                maximumRequestKeys: Int = 4_096,
+                reconnectBudgetPolicy: GatewayReconnectBudgetPolicy = .totalRun) throws {
         guard maximumFrameBytes > 0, maximumBufferedEvents > 0, maximumBufferedBytes > 0,
               (0...30).contains(maximumReconnectAttempts), helloTimeout > .zero,
               writeTimeout > .zero, leaseLifetime >= .milliseconds(2),
               retryBase > .zero, retryMaximum >= retryBase, maximumPendingRequests > 0,
               maximumResponseEvents > 0, maximumResponseBytes > 0, maximumRequestKeys > 0 else { throw GatewayFailure.invalidConfiguration }
+        if case .afterHealthySession(let duration, let acknowledgements) = reconnectBudgetPolicy {
+            guard duration > .zero, acknowledgements > 0 else { throw GatewayFailure.invalidConfiguration }
+        }
+        self.reconnectBudgetPolicy = reconnectBudgetPolicy
         self.maximumFrameBytes = maximumFrameBytes; self.maximumBufferedEvents = maximumBufferedEvents
         self.maximumBufferedBytes = maximumBufferedBytes; self.maximumReconnectAttempts = maximumReconnectAttempts
         self.helloTimeout = helloTimeout; self.writeTimeout = writeTimeout; self.leaseLifetime = leaseLifetime
@@ -105,6 +115,8 @@ public actor GatewayShard<C: Clock, Leases: ShardLeaseStore> where C.Duration ==
     private var resumeURL: URL?
     private var sequence: Int64?
     private var heartbeatPending = false
+    /// Optional bounded same-generation certificate; absent under the compatible total-run default.
+    private var recoveryHealth: GatewayRecoveryHealth<C.Instant>?
     private struct QueuedEvent: Sendable {
         let event: GatewayEvent
         let interval: DiscordInterval?
@@ -429,7 +441,8 @@ public actor GatewayShard<C: Clock, Leases: ShardLeaseStore> where C.Duration ==
         requests.rateLimited(opcode: opcode, guild: guild, nonce: nonce, retryAfter: retryAfter)
     }
 
-    /// Owns sequential socket generations and a finite reconnect budget for the whole run.
+    /// Owns sequential socket generations and a finite retry allowance under the explicitly selected policy.
+    /// Healthy-session credit never bypasses fatal/ownership/continuity classification or shared startup admission.
     /// - Throws: Cancellation or terminal protocol/ownership failures; transient errors consume retries.
     private func connectionLoop() async throws {
         var retries = 0
@@ -440,6 +453,7 @@ public actor GatewayShard<C: Clock, Leases: ShardLeaseStore> where C.Duration ==
             DiscordLog.makeLogger("gateway.session").debug("Gateway connection attempt started", metadata: ["dk.event": "gateway.connection.started"])
             requests.reset(); sentAt.removeAll(); presenceSentAt.removeAll()
             let active = generation
+            recoveryHealth = GatewayRecoveryHealth(policy: configuration.reconnectBudgetPolicy)
             _ = try state.apply(.start)
             do {
                 try await fence(active)
@@ -454,6 +468,8 @@ public actor GatewayShard<C: Clock, Leases: ShardLeaseStore> where C.Duration ==
                 try await supervise(socket, generation: active)
                 throw GatewayFailure.disconnected
             } catch {
+                // Capture before any peer-close query or socket cleanup can advance monotonic time.
+                let healthySession = recoveryHealth?.permitsReset(at: clock.now) ?? false
                 let socket = connection
                 let code = await (socket as? any WebSocketSessionConnection)?.peerCloseCode()
                 if let resumable = socket as? any WebSocketSessionConnection {
@@ -479,6 +495,7 @@ public actor GatewayShard<C: Clock, Leases: ShardLeaseStore> where C.Duration ==
                     default: break
                     }
                 }
+                if healthySession { retries = 0 }
                 guard retries < configuration.maximumReconnectAttempts else { throw GatewayFailure.retryLimitExceeded }
                 if reconnectInterval == nil {
                     reconnectInterval = intervals?.begin(.gatewaySession, stage: .reconnect, parent: sessionContext)
@@ -517,7 +534,10 @@ public actor GatewayShard<C: Clock, Leases: ShardLeaseStore> where C.Duration ==
         try await withThrowingTaskGroup(of: Bool.self) { group in
             group.addTask { try await self.receiveLoop(socket, generation: active); return true }
             group.addTask { try await self.heartbeatLoop(interval: interval, generation: active); return true }
-            group.addTask { try await self.authenticate(resuming: resume, generation: active); return false }
+            group.addTask {
+                do { try await self.authenticate(resuming: resume, generation: active); return false }
+                catch { await self.endRecoveryHealth(generation: active); throw error }
+            }
             defer { group.cancelAll() }
             // Authentication is finite; a stopped control loop cancels its sleeping sibling immediately.
             for try await stopped in group { if stopped { break } }
@@ -535,6 +555,7 @@ public actor GatewayShard<C: Clock, Leases: ShardLeaseStore> where C.Duration ==
     ///   or adapter errors. Known control opcodes execute on this owner without entering handler queues;
     ///   duplicate sequences are discarded, while admitted events retain complete-shard ordering.
     private func receiveLoop(_ socket: any WebSocketConnection, generation active: UInt64) async throws {
+        defer { endRecoveryHealth(generation: active) }
         while running {
             guard let message = try await socket.receive(context: TransportContext(clock: clock)) else {
                 throw GatewayFailure.disconnected
@@ -577,7 +598,10 @@ public actor GatewayShard<C: Clock, Leases: ShardLeaseStore> where C.Duration ==
                 _ = try state.apply(.ready)
                 DiscordLog.makeLogger("gateway.session").notice("Gateway session resumed", metadata: ["dk.event": "gateway.session.resumed"])
             }
-            if name == "READY" || name == "RESUMED" { reconnectInterval?.end(); reconnectInterval = nil }
+            if name == "READY" || name == "RESUMED" {
+                recoveryHealth?.ready(at: clock.now)
+                reconnectInterval?.end(); reconnectInterval = nil
+            }
             sequence = next
             try append(envelope, receivedAt: receivedAt, parent: parent)
             requests.ingest(GatewayEvent(shard: identity, envelope: envelope, socketGeneration: active))
@@ -592,6 +616,7 @@ public actor GatewayShard<C: Clock, Leases: ShardLeaseStore> where C.Duration ==
             if !resumable { clearSession() }
             throw GatewayFailure.reconnectRequested
         case 11:
+            recoveryHealth?.acknowledgeHeartbeat()
             heartbeatPending = false
             heartbeatInterval?.end(); heartbeatInterval = nil
             DiscordLog.makeLogger("gateway.heartbeat").trace("Gateway heartbeat acknowledged", metadata: ["dk.event": "gateway.heartbeat.acknowledged"])
@@ -616,6 +641,7 @@ public actor GatewayShard<C: Clock, Leases: ShardLeaseStore> where C.Duration ==
     ///   - generation: Socket fence protecting all timer completions.
     /// - Throws: Missing ACK before the next scheduled beat, cancellation or send/ownership failures.
     private func heartbeatLoop(interval: Duration, generation active: UInt64) async throws {
+        defer { endRecoveryHealth(generation: active) }
         var deadline = clock.now.advanced(by: interval * jitter())
         while running {
             DiscordLog.makeLogger("gateway.heartbeat").trace("Gateway heartbeat waiting for schedule", metadata: ["dk.event": "gateway.heartbeat.wait"])
@@ -642,7 +668,16 @@ public actor GatewayShard<C: Clock, Leases: ShardLeaseStore> where C.Duration ==
             heartbeatPending = true
         }
         DiscordLog.makeLogger("gateway.heartbeat").trace("Gateway heartbeat sending", metadata: ["dk.event": "gateway.heartbeat.send", "dk.scheduled": .stringConvertible(scheduled)])
+        recoveryHealth?.beginHeartbeat(scheduled: scheduled)
         try await send(opcode: 1, data: sequence.map(gatewayNumber) ?? .null, generation: active, observeHeartbeat: scheduled)
+        recoveryHealth?.completeHeartbeat(scheduled: scheduled)
+    }
+
+    /// Freezes the current optional certificate at a child ending before siblings or transports join.
+    /// - Parameter generation: Original socket generation; retired child completions cannot affect a replacement.
+    private func endRecoveryHealth(generation active: UInt64) {
+        guard generation == active else { return }
+        recoveryHealth?.end(at: clock.now)
     }
 
     /// Obtains shared Identify allowance, or resumes without consuming startup quota.
@@ -810,7 +845,7 @@ public actor GatewayShard<C: Clock, Leases: ShardLeaseStore> where C.Duration ==
         for entry in events { entry.interval?.end(.cancelled) }
         heartbeatInterval?.end(.cancelled); heartbeatInterval = nil
         reconnectInterval?.end(interruptedOutcome); reconnectInterval = nil
-        events.removeAll(); bufferedBytes = 0; heartbeatPending = false; clearSession()
+        events.removeAll(); bufferedBytes = 0; heartbeatPending = false; recoveryHealth = nil; clearSession()
         if state.phase == .draining { _ = try? state.apply(.closed) }
         else if state.phase != .stopped { _ = try? state.apply(.fatal) }
         DiscordLog.makeLogger("gateway.session").trace("Gateway local shard cleanup completed", metadata: ["dk.event": "gateway.cleanup.completed", "dk.queued": .stringConvertible(events.count), "dk.bytes": .stringConvertible(bufferedBytes), "dk.release_failed": .stringConvertible(releaseFailure != nil)])

@@ -68615,7 +68615,11 @@
         "symbol.6.GatewayShard.decl640",
         "symbol.6.GatewayShard.decl653",
         "symbol.6.GatewayShard.decl663",
-        "symbol.6.GatewayEvent.decodeDispatch"
+        "symbol.6.GatewayEvent.decodeDispatch",
+        "symbol.6.GatewayReconnectBudgetPolicy",
+        "symbol.6.GatewayReconnectBudgetPolicy.totalRun",
+        "symbol.6.GatewayReconnectBudgetPolicy.afterHealthySession",
+        "symbol.6.GatewayShardConfiguration.reconnectBudgetPolicy"
       ],
       "evidenceIDs": [
         "evidence.6.GatewayRequestTests.rawSendCorrelationFences",
@@ -68650,11 +68654,24 @@
         "evidence.6.GatewayRuntimeTests.requestConfigurationAndPreCancellation",
         "evidence.6.GatewayRuntimeTests.rollingBoundariesAndControlHeadroom",
         "evidence.6.GatewayRuntimeTests.activeWriteCapacityAndCleanup",
-        "evidence.6.GatewayRuntimeTests.commandCoordinatorErrorsAreSanitized"
+        "evidence.6.GatewayRuntimeTests.commandCoordinatorErrorsAreSanitized",
+        "evidence.6.GatewayReconnectBudgetTests.configurationCompatibilityAndValidation",
+        "evidence.6.GatewayReconnectBudgetTests.totalRunRemainsFinite",
+        "evidence.6.GatewayReconnectBudgetTests.healthySessionsPermitMoreThanFiveRecoveries",
+        "evidence.6.GatewayReconnectBudgetTests.briefReadyStormExhaustsEpisode",
+        "evidence.6.GatewayReconnectBudgetTests.healthObservationsStayWithinOneGeneration",
+        "evidence.6.GatewayReconnectBudgetTests.previousHealthCannotCertifyFollowingStorm",
+        "evidence.6.GatewayReconnectBudgetTests.healthDurationBoundary",
+        "evidence.6.GatewayReconnectBudgetTests.zeroRemainsZeroAfterHealth",
+        "evidence.6.GatewayReconnectBudgetTests.invalidACKObservationsCannotReset",
+        "evidence.6.GatewayReconnectBudgetTests.healthySessionCannotRetryTerminalFailures",
+        "evidence.6.GatewayReconnectBudgetTests.cleanupTimeCannotEarnHealth",
+        "evidence.6.GatewayReconnectBudgetTests.cancellationJoinsEveryBoundary",
+        "evidence.6.GatewayReconnectBudgetTests.healthyRecoveryCannotRefillSharedIdentifyQuota"
       ],
-      "notes": "Gateway API v10 verified 2026-10-16. Current written source hashes are recorded in Docs/Parity/gateway-current-sources.json separately from unchanged original discovery provenance. JSON/uncompressed transport remains explicit. Named event coverage is separate from complete typed child-resource schemas. Privileged intent approval, live Discord, other-host/device, distributed storage adapters and sustained-capacity qualification remain separate.",
+      "notes": "Gateway API v10 verified 2026-10-16. Current written source hashes are recorded in Docs/Parity/gateway-current-sources.json separately from unchanged original discovery provenance. JSON/uncompressed transport remains explicit. Named event coverage is separate from complete typed child-resource schemas. Privileged intent approval, live Discord, other-host/device, distributed storage adapters and sustained-capacity qualification remain separate. MC-33 adds an opt-in local reconnect-budget policy; the default total-run bound remains unchanged. Healthy-session renewal requires same-socket-generation READY/RESUMED, positive monotonic uptime and conservative adapter-confirmed scheduled-heartbeat ACK observations. Discord ACKs have no nonce, so observations do not prove exact pairing. The 300-second/two-ACK service example is not an upstream requirement.",
       "manual": {
-        "behavior": "Fenced ready-session sends, bounded pending/retained results, nonce/chunk member completion, exclusive no-nonce guild keys with generation-scoped poisoning after failed/raw sends and documented ambiguity for successful-key reuse, explicit partial failures, cancellation/deadline/disconnect cleanup and separate bot/resource command admission. No implicit replay or invented server correlation identity. Gateway API v10 verified and locally added 2026-10-16. Current written source hashes are recorded in Docs/Parity/gateway-current-sources.json separately from unchanged original discovery provenance. JSON/uncompressed transport remains explicit. Named event coverage is separate from complete typed child-resource schemas. Privileged intent approval, live Discord, other-host/device, distributed storage adapters and sustained-capacity qualification remain separate."
+        "behavior": "Fenced ready-session sends, bounded pending/retained results, nonce/chunk member completion, exclusive no-nonce guild keys with generation-scoped poisoning after failed/raw sends and documented ambiguity for successful-key reuse, explicit partial failures, cancellation/deadline/disconnect cleanup and separate bot/resource command admission. No implicit replay or invented server correlation identity. Gateway API v10 verified and locally added 2026-10-16. Current written source hashes are recorded in Docs/Parity/gateway-current-sources.json separately from unchanged original discovery provenance. JSON/uncompressed transport remains explicit. Named event coverage is separate from complete typed child-resource schemas. Privileged intent approval, live Discord, other-host/device, distributed storage adapters and sustained-capacity qualification remain separate. MC-33 reconnect budgets remain total-run by default, with unchanged default five and range 0...30; zero denies every replacement. Explicit healthy-session renewal resets retry count and backoff only on a subsequent eligible recoverable failure. Session failure freezes health before joined cleanup; terminal, malformed-input, overflow, ownership and coordinator failures retain precedence. Retry renewal grants no Identify/session-start allowance and adds no outer restart, timer, history or application-effect replay."
       }
     },
     {
@@ -91774,6 +91791,26 @@
       "id": "symbol.api20261105.UnfurledMediaContentScanFlags.isSelfHarmContent",
       "path": "Sources/DiscordModels/ComponentContentScan.swift",
       "declaration": "public static let isSelfHarmContent = Self(rawValue: 1 << 2)"
+    },
+    {
+      "id": "symbol.6.GatewayReconnectBudgetPolicy",
+      "path": "Sources/DiscordGateway/GatewayReconnectBudgetPolicy.swift",
+      "declaration": "public enum GatewayReconnectBudgetPolicy: Sendable, Equatable {"
+    },
+    {
+      "id": "symbol.6.GatewayReconnectBudgetPolicy.totalRun",
+      "path": "Sources/DiscordGateway/GatewayReconnectBudgetPolicy.swift",
+      "declaration": "    case totalRun"
+    },
+    {
+      "id": "symbol.6.GatewayReconnectBudgetPolicy.afterHealthySession",
+      "path": "Sources/DiscordGateway/GatewayReconnectBudgetPolicy.swift",
+      "declaration": "    case afterHealthySession(minimumDuration: Duration, minimumScheduledHeartbeatACKs: Int)"
+    },
+    {
+      "id": "symbol.6.GatewayShardConfiguration.reconnectBudgetPolicy",
+      "path": "Sources/DiscordGateway/GatewayShard.swift",
+      "declaration": "    public let reconnectBudgetPolicy: GatewayReconnectBudgetPolicy"
     }
   ],
   "evidence": [
@@ -98306,6 +98343,71 @@
       "id": "evidence.api20261105.PermissionResolverTests.voiceStatusExceptionRespectsOtherRestrictions",
       "path": "Tests/DiscordCacheTests/PermissionResolverTests.swift",
       "anchor": "voiceStatusExceptionRespectsOtherRestrictions"
+    },
+    {
+      "id": "evidence.6.GatewayReconnectBudgetTests.configurationCompatibilityAndValidation",
+      "path": "Tests/DiscordGatewayTests/GatewayReconnectBudgetTests.swift",
+      "anchor": "configurationCompatibilityAndValidation"
+    },
+    {
+      "id": "evidence.6.GatewayReconnectBudgetTests.totalRunRemainsFinite",
+      "path": "Tests/DiscordGatewayTests/GatewayReconnectBudgetTests.swift",
+      "anchor": "totalRunRemainsFinite"
+    },
+    {
+      "id": "evidence.6.GatewayReconnectBudgetTests.healthySessionsPermitMoreThanFiveRecoveries",
+      "path": "Tests/DiscordGatewayTests/GatewayReconnectBudgetTests.swift",
+      "anchor": "healthySessionsPermitMoreThanFiveRecoveries"
+    },
+    {
+      "id": "evidence.6.GatewayReconnectBudgetTests.briefReadyStormExhaustsEpisode",
+      "path": "Tests/DiscordGatewayTests/GatewayReconnectBudgetTests.swift",
+      "anchor": "briefReadyStormExhaustsEpisode"
+    },
+    {
+      "id": "evidence.6.GatewayReconnectBudgetTests.healthObservationsStayWithinOneGeneration",
+      "path": "Tests/DiscordGatewayTests/GatewayReconnectBudgetTests.swift",
+      "anchor": "healthObservationsStayWithinOneGeneration"
+    },
+    {
+      "id": "evidence.6.GatewayReconnectBudgetTests.previousHealthCannotCertifyFollowingStorm",
+      "path": "Tests/DiscordGatewayTests/GatewayReconnectBudgetTests.swift",
+      "anchor": "previousHealthCannotCertifyFollowingStorm"
+    },
+    {
+      "id": "evidence.6.GatewayReconnectBudgetTests.healthDurationBoundary",
+      "path": "Tests/DiscordGatewayTests/GatewayReconnectBudgetTests.swift",
+      "anchor": "healthDurationBoundary"
+    },
+    {
+      "id": "evidence.6.GatewayReconnectBudgetTests.zeroRemainsZeroAfterHealth",
+      "path": "Tests/DiscordGatewayTests/GatewayReconnectBudgetTests.swift",
+      "anchor": "zeroRemainsZeroAfterHealth"
+    },
+    {
+      "id": "evidence.6.GatewayReconnectBudgetTests.invalidACKObservationsCannotReset",
+      "path": "Tests/DiscordGatewayTests/GatewayReconnectBudgetTests.swift",
+      "anchor": "invalidACKObservationsCannotReset"
+    },
+    {
+      "id": "evidence.6.GatewayReconnectBudgetTests.healthySessionCannotRetryTerminalFailures",
+      "path": "Tests/DiscordGatewayTests/GatewayReconnectBudgetTests.swift",
+      "anchor": "healthySessionCannotRetryTerminalFailures"
+    },
+    {
+      "id": "evidence.6.GatewayReconnectBudgetTests.cleanupTimeCannotEarnHealth",
+      "path": "Tests/DiscordGatewayTests/GatewayReconnectBudgetTests.swift",
+      "anchor": "cleanupTimeCannotEarnHealth"
+    },
+    {
+      "id": "evidence.6.GatewayReconnectBudgetTests.cancellationJoinsEveryBoundary",
+      "path": "Tests/DiscordGatewayTests/GatewayReconnectBudgetTests.swift",
+      "anchor": "cancellationJoinsEveryBoundary"
+    },
+    {
+      "id": "evidence.6.GatewayReconnectBudgetTests.healthyRecoveryCannotRefillSharedIdentifyQuota",
+      "path": "Tests/DiscordGatewayTests/GatewayReconnectBudgetTests.swift",
+      "anchor": "healthyRecoveryCannotRefillSharedIdentifyQuota"
     }
   ]
 }

@@ -1,0 +1,13 @@
+# Gateway reconnect budget policy — November 11, 2026
+
+This is a local recovery-policy addition, reviewed against Discord's Gateway v10 [heartbeat and Resume guidance](https://docs.discord.com/developers/events/gateway) and [close-code reference](https://docs.discord.com/developers/topics/opcodes-and-status-codes). Upstream announcement/effective dates and local release identity are unknown. Historical discovery sources/hashes and support dates are preserved; this supplemental review does not refresh unrelated inventory freshness.
+
+The default `GatewayReconnectBudgetPolicy.totalRun` retains the existing finite replacement allowance, including the default five and zero-denies-replacement behavior. Explicit `afterHealthySession(minimumDuration:minimumScheduledHeartbeatACKs:)` requires both thresholds to be positive. The same socket generation must accept READY/RESUMED, remain healthy for the minimum monotonic duration and observe enough qualifying scheduled ACKs. No new wire field, endpoint, opcode, session persistence or generator-owned runtime is added.
+
+Only one post-readiness adapter-confirmed scheduled heartbeat can qualify the next ACK once. Pre-ready, unsolicited, requested, overlapping and pre-confirmation ACK observations confer no credit. Further ambiguity beyond two outstanding observations disables new credit for that generation. ACKs have no nonce, so this policy does not promise exact heartbeat/ACK pairing. Earlier qualifying samples remain facts about that session.
+
+The first terminal child boundary freezes duration before joined cleanup; disconnected/cleanup/backoff time cannot mature health. The certificate is consumed only by the next otherwise recoverable failure, resetting the existing retry/backoff count before its normal cap/increment. Cancellation, fatal close, malformed protocol, ownership/coordinator failures and overflow/continuity retain precedence. Identify/session-start authority, Resume, capped full jitter and joined socket ownership remain unchanged; no uncertain command/effect is replayed.
+
+Existing ordinary initializer calls retain total-run behavior. Rebuild consumers and select the policy explicitly to adopt healthy-separated recovery. The 300-second/two-ACK guide example is a MiniCarson service choice, not a DiscordKit default or Discord requirement. Binary ABI/function-reference compatibility is not established by default-argument call compatibility.
+
+The [task evidence](../../Tasks/MC-33-Gateway-Recovery/EVIDENCE.md) distinguishes source preparation, exact-input local checks, independent review and main integration. These stages do not establish native Linux, hosted CI, production deployment, live Discord or the original overnight incident's cause.
