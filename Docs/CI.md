@@ -236,7 +236,7 @@ evidence cannot silently pass. Numerical checks begin in the reviewed policy's
 reporting mode; promoting a required workload gate requires a separate review.
 The workflow never refreshes a baseline or rewrites a policy.
 
-[Periodic offline stress and soak](../.github/workflows/timing-periodic.yml)
+[Periodic offline stress, soak and integration](../.github/workflows/timing-periodic.yml)
 runs weekly or by explicit manual invocation on the existing macOS ARM pool. The
 stress job supervises three fresh instrumentation-contention processes at 4/8/16
 workers, each with a 60-second measured cap. Operation limits can finish earlier;
@@ -245,7 +245,15 @@ uses the existing cache/broadcast loop with 64 minimum rounds and 600 seconds of
 minimum actual wall time, with bounded live cache/checkpoint state and joined
 shutdown assertions. It preserves the legacy adapter's explicit unqualified
 common envelope: this is continuity/resource evidence, not a timing baseline or
-product SLO. Both jobs use source/pin/executable-bound release receipts and the
+product SLO. The integration job runs the
+[performance Phase 10](Tasks/performance-improvements/PHASE-10.md) mixed
+request/cache/event workload for at least 1,800 measured seconds, repeating
+independently scheduled load and recovery bands with the same retained owners.
+It builds an independently receipt-bound common-schema validator and checks
+duration, full terminal accounting, bounded cycle state, control progress,
+resource ceilings and joined shutdown. A cap hit or shortened run fails integrity;
+latency and throughput remain reporting only. Its 110-minute job ceiling includes
+two bounded release builds and the soak. All three jobs use source/pin/executable-bound release receipts and the
 shared supervisor's RSS, diagnostic, report and process ownership bounds. They
 retain failures and partial results for 14 days and do not gate offline
 certification. The helper is [timing_jobs.py](../Tools/ci/timing_jobs.py).

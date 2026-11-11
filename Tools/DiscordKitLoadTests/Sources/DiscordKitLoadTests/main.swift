@@ -174,6 +174,10 @@ enum LoadCommand {
             try await EventHubTimingCommand.run(arguments: Array(arguments.dropFirst()))
             return
         }
+        if arguments.first == "integration-timing" {
+            try await Phase10TimingCommand.run(arguments: Array(arguments.dropFirst()))
+            return
+        }
         if arguments.first == "voice-timing" {
             try await Phase9TimingCommand.run(arguments: Array(arguments.dropFirst()))
             return
@@ -323,7 +327,12 @@ enum LoadCommand {
 }
 
 // Process entry owns diagnostic routing; reusable runners never bootstrap SwiftLog.
-LoggingSystem.bootstrap(StreamLogHandler.standardError)
+LoggingSystem.bootstrap { label in
+    var handler = StreamLogHandler.standardError(label: label)
+    // Long integration runs retain failure evidence in their report without unbounded info logs.
+    if CommandLine.arguments.dropFirst().first == "integration-timing" { handler.logLevel = .critical }
+    return handler
+}
 
 do {
     try await LoadCommand.run(arguments: Array(CommandLine.arguments.dropFirst()))

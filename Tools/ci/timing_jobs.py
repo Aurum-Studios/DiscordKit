@@ -27,9 +27,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "DiscordBenchmarkSu
 import run_benchmarks as runner
 
 
-def build_product(repository, package, product, output, report):
+def build_product(repository, package, product, output, report, *, receipt_name="release.json"):
     """Use the common pinned release builder and verify its exact executable receipt."""
-    receipt = output / "release.json"
+    receipt = output / receipt_name
     command = linux_ci.Command("release-build", (sys.executable, str(repository / SUPPORT / "scripts/run_benchmarks.py"),
         "build", "--repository", str(repository), "--package", str(repository / package),
         "--product", product, "--receipt", str(receipt)), 1860)
@@ -40,9 +40,17 @@ def build_product(repository, package, product, output, report):
     return executable, receipt
 
 
-def periodic_command(repository, profile, executable, receipt, output, duration):
-    """Select a real CPU contention sweep or minimum-duration cache/broadcast soak."""
+def periodic_command(repository, profile, executable, receipt, output, duration, *, validator=None):
+    """Select a bounded CPU sweep, cache soak or integrated load/recovery soak."""
     shared = repository / SUPPORT / "scripts/run_benchmarks.py"
+    if profile == "integration":
+        if validator is None:
+            raise ValueError("periodic integration requires the prebuilt shared schema validator")
+        wrapper = repository / "Tools/DiscordKitLoadTests/scripts/run_integration_timing_suites.py"
+        return linux_ci.Command("integration-capture", (sys.executable, str(wrapper),
+            "--profile", "soak", "--executable", str(executable), "--receipt", str(receipt),
+            "--validator", str(validator),
+            "--duration-seconds", str(duration), "--output-dir", str(output / "capture")), duration + 60)
     if profile == "stress":
         participant = [str(executable), "--mode", "callbackContention", "--profile", "{profile}",
             "--concurrency", "{concurrency}", "--seed", "{seed}", "--iterations", "1000000",
@@ -58,7 +66,7 @@ def periodic_command(repository, profile, executable, receipt, output, duration)
         fixture = "Tools/DiscordKitLoadTests/Profiles/accounts-10000.json"
         scenario, scheduler, warmup = "cache-broadcast-continuity", "legacy-bounded-cohort", 0
     else:
-        raise ValueError("periodic workloads support stress or soak only")
+        raise ValueError("periodic workloads support stress, soak or integration only")
     return linux_ci.Command("periodic-capture", (sys.executable, str(shared), "run", "--profile", profile,
         "--scenario", scenario, "--fixture", str(repository / fixture), "--receipt", str(receipt),
         "--command", json.dumps(participant), "--output-dir", str(output / "capture"),
@@ -73,11 +81,29 @@ def verify_periodic(output, profile, duration):
     expected = 3 if profile == "stress" else 1
     if manifest.get("status") != "completed" or len(manifest.get("processes", [])) != expected:
         raise ValueError("periodic workload has missing or failed observations")
+    if profile == "integration":
+        summary = native_jobs.read_timing_json(output / "capture/integration-summary.json")
+        if (summary.get("format") != "DiscordKitLoadTests.integration-matrix"
+                or type(summary.get("schemaVersion")) is not int or summary["schemaVersion"] != 1
+                or summary.get("status") != "completed" or summary.get("informationalOnly") is not True
+                or summary.get("policyMode") != "reporting-only" or summary.get("failures") != []
+                or summary.get("sharedSchemaValidation") != "available"
+                or summary.get("profile") != "soak" or summary.get("durationSeconds") != duration
+                or len(summary.get("cases", [])) != 1):
+            raise ValueError("integrated soak is incomplete or lacks reporting-only integrity evidence")
+        case = summary["cases"][0]
+        if (case.get("status") != "completed" or case.get("requestedDurationSeconds") != duration
+                or case.get("durationNanoseconds", -1) < duration * 1_000_000_000):
+            raise ValueError("integrated soak did not complete the requested measured duration")
     for index, process in enumerate(manifest["processes"]):
         if process.get("status") != "completed":
             raise ValueError("periodic child did not complete")
         directory = output / f"capture/{index:02}-single"
-        if profile == "stress":
+        if profile == "integration":
+            # The integration wrapper validates each native report's measured
+            # duration, resource ceilings, terminal accounting and joined owners.
+            continue
+        elif profile == "stress":
             native_jobs.verify_common_smoke(native_jobs.read_timing_json(directory / "benchmark-envelope.json"))
         else:
             native = native_jobs.read_timing_json(directory / "stdout.log")
@@ -127,7 +153,7 @@ def main(argv=None):
     parser.add_argument("operation", choices=("periodic", "controlled"))
     parser.add_argument("--repository", type=Path, default=Path(__file__).resolve().parents[2])
     parser.add_argument("--output", required=True, type=Path)
-    parser.add_argument("--profile", choices=("stress", "soak"))
+    parser.add_argument("--profile", choices=("stress", "soak", "integration"))
     parser.add_argument("--stage", choices=("capture", "evaluate"))
     parser.add_argument("--duration-seconds", type=int)
     parser.add_argument("--spec", type=Path)
@@ -153,16 +179,23 @@ def main(argv=None):
         output.mkdir(parents=True, exist_ok=False)
         native_jobs.write_json(output / "commands.json", report)
         if args.operation == "periodic":
-            cap = 60 if args.profile == "stress" else 600
-            duration = cap if args.duration_seconds is None else args.duration_seconds
-            if not 1 <= duration <= cap:
-                raise ValueError("duration must be positive and no greater than this job's reviewed cap")
+            minimum, default, cap = {"stress": (1, 60, 60), "soak": (1, 600, 600),
+                                     "integration": (1800, 1800, 3600)}[args.profile]
+            duration = default if args.duration_seconds is None else args.duration_seconds
+            if not minimum <= duration <= cap:
+                raise ValueError(f"duration must be between {minimum} and {cap} seconds for this job")
             package, product = (("Tools/DiscordTimingBenchmarks", "DiscordTimingBenchmarks") if args.profile == "stress"
                                 else ("Tools/DiscordKitLoadTests", "DiscordKitLoadTests"))
             executable, receipt = build_product(repository, package, product, output, report)
-            command = periodic_command(repository, args.profile, executable, receipt, output, duration)
+            validator = validator_receipt = None
+            if args.profile == "integration":
+                validator, validator_receipt = build_product(repository, SUPPORT, "DiscordBenchmarkReports", output,
+                    report, receipt_name="schema-validator-release.json")
+            command = periodic_command(repository, args.profile, executable, receipt, output, duration, validator=validator)
             native_jobs.execute_commands([command], repository, output, report)
             verify_periodic(output, args.profile, duration)
+            if validator_receipt is not None:
+                runner.validate_receipt(validator_receipt, [str(validator)])
         else:
             executable, receipt = build_product(repository, SUPPORT, "DiscordBenchmarkReports", output, report)
             if args.stage == "capture":

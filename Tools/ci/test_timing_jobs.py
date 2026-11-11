@@ -59,6 +59,85 @@ class TimingJobTests(unittest.TestCase):
                 with self.subTest(field=key), self.assertRaises(ValueError):
                     jobs.verify_periodic(output, "soak", 600)
 
+    def test_integration_uses_receipt_bound_soak_without_numeric_policy_adoption(self):
+        """The separate integrated job invokes the supervised native soak with literal paths."""
+        command = jobs.periodic_command(Path("/checkout"), "integration", Path("/binary $ literal"),
+                                        Path("/receipt $ literal.json"), Path("/output"), 1800,
+                                        validator=Path("/validator $ literal"))
+        self.assertEqual(command.timeout, 1860)
+        self.assertEqual(command.arguments[command.arguments.index("--profile") + 1], "soak")
+        self.assertEqual(command.arguments[command.arguments.index("--executable") + 1], "/binary $ literal")
+        self.assertEqual(command.arguments[command.arguments.index("--receipt") + 1], "/receipt $ literal.json")
+        self.assertEqual(command.arguments[command.arguments.index("--validator") + 1], "/validator $ literal")
+        self.assertEqual(command.arguments[command.arguments.index("--duration-seconds") + 1], "1800")
+        self.assertNotIn("--policy", command.arguments)
+        with self.assertRaises(ValueError):
+            jobs.periodic_command(Path("/checkout"), "integration", Path("/binary"), Path("/receipt"), Path("/output"), 1800)
+
+    def test_integrated_soak_refuses_short_runs_missing_evidence_and_numeric_promotion(self):
+        """Partial, shortened or numerically promoted integrated reports never pass periodic integrity."""
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory)
+            capture = output / "capture"
+            capture.mkdir()
+            manifest = {"status": "completed", "processes": [{"status": "completed"}]}
+            (capture / "orchestration.json").write_text(json.dumps(manifest))
+            case = {"status": "completed", "requestedDurationSeconds": 1800,
+                    "durationNanoseconds": 1_800_000_000_000}
+            valid = {"format": "DiscordKitLoadTests.integration-matrix", "schemaVersion": 1,
+                     "status": "completed", "informationalOnly": True, "policyMode": "reporting-only",
+                     "sharedSchemaValidation": "available",
+                     "profile": "soak", "durationSeconds": 1800, "failures": [], "cases": [case]}
+            report = capture / "integration-summary.json"
+            report.write_text(json.dumps(valid))
+            jobs.verify_periodic(output, "integration", 1800)
+            for change in ({"status": "failed"}, {"informationalOnly": False}, {"policyMode": "required"},
+                           {"sharedSchemaValidation": "unavailable"},
+                           {"profile": "smoke"}, {"durationSeconds": 1799}, {"failures": ["resource cap"]},
+                           {"cases": []}, {"cases": [{**case, "status": "cancelled"}]},
+                           {"cases": [{**case, "requestedDurationSeconds": 1799}]},
+                           {"cases": [{**case, "durationNanoseconds": 1_799_999_999_999}]}):
+                report.write_text(json.dumps({**valid, **change}))
+                with self.subTest(change=change), self.assertRaises(ValueError):
+                    jobs.verify_periodic(output, "integration", 1800)
+            report.write_text(json.dumps(valid))
+            (capture / "orchestration.json").write_text(json.dumps({**manifest, "processes": [{"status": "failed"}]}))
+            with self.assertRaises(ValueError):
+                jobs.verify_periodic(output, "integration", 1800)
+
+    def test_integrated_soak_rejects_under_duration_and_excessive_duration_before_build(self):
+        """A short smoke or an oversized soak cannot masquerade as the scheduled 30-minute job."""
+        with tempfile.TemporaryDirectory() as directory:
+            for duration in (1799, 3601):
+                output = Path(directory) / str(duration)
+                with patch.object(jobs, "build_product") as build, redirect_stderr(io.StringIO()):
+                    self.assertEqual(jobs.main(["periodic", "--profile", "integration", "--duration-seconds",
+                                                str(duration), "--output", str(output)]), 1)
+                    build.assert_not_called()
+                self.assertEqual(json.loads((output / "commands.json").read_text())["status"], "failed")
+
+    def test_integrated_job_keeps_distinct_build_receipts_and_defaults_to_thirty_minutes(self):
+        """The validator cannot replace the workload receipt, and both binaries are rechecked after capture."""
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory).resolve() / "output"
+            binary, receipt = Path(directory) / "load", output / "release.json"
+            validator, validator_receipt = Path(directory) / "validator", output / "schema-validator-release.json"
+            with patch.object(jobs, "build_product", side_effect=[(binary, receipt), (validator, validator_receipt)]) as build, \
+                    patch.object(jobs.native_jobs, "execute_commands") as execute, \
+                    patch.object(jobs, "verify_periodic") as verify, \
+                    patch.object(jobs.runner, "validate_receipt") as recheck:
+                self.assertEqual(jobs.main(["periodic", "--profile", "integration", "--output", str(output)]), 0)
+            self.assertEqual(build.call_args_list[0].args[2], "DiscordKitLoadTests")
+            self.assertEqual(build.call_args_list[1].args[2], "DiscordBenchmarkReports")
+            self.assertEqual(build.call_args_list[1].kwargs["receipt_name"], "schema-validator-release.json")
+            command = execute.call_args.args[0][0]
+            self.assertEqual(command.arguments[command.arguments.index("--duration-seconds") + 1], "1800")
+            self.assertEqual(command.arguments[command.arguments.index("--receipt") + 1], str(receipt))
+            self.assertEqual(command.arguments[command.arguments.index("--validator") + 1], str(validator))
+            verify.assert_called_once_with(output, "integration", 1800)
+            self.assertEqual([call.args for call in recheck.call_args_list],
+                             [(validator_receipt, [str(validator)]), (receipt, [str(binary)])])
+
     def test_standard_comparison_requires_controlled_host_and_explicit_independent_noise(self):
         """Prepared paths remain literal, retained inputs stay reviewable and no policy gets rewritten."""
         with tempfile.TemporaryDirectory(prefix="timing $ literal ") as directory:

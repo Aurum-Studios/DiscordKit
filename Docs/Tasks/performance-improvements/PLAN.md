@@ -18,7 +18,8 @@ Stage 7 implementation and local validation are recorded in [Phase 7](PHASE-7.md
 Stage 8 implementation and local validation are recorded in [Phase 8](PHASE-8.md).
 Stage 9 implementation and local validation are recorded in [Phase 9](PHASE-9.md).
 Reserved-host numerical and allocation/executor profiler qualification remain open.
-Stage 10 remains planned. Source investigation and exploratory planning measurements were prepared against
+Stage 10 implementation and local integration/soak evidence are recorded in
+[Phase 10](PHASE-10.md); its broader qualification gates remain explicit. Source investigation and exploratory planning measurements were prepared against
 `065e2b655c28250076ba53fca310f209be1d3fd5`. Stage 1 refines local admission;
 Stage 2 refines request work and NIO buffering; Stage 3 refines bounded event
 delivery; Stage 4 refines cache indexing and separates permission dimensions;
@@ -120,7 +121,8 @@ Stage 6 has its own [implementation and validation record](PHASE-6.md).
 Stage 7 has its own [implementation and validation record](PHASE-7.md).
 Stage 8 has its own [implementation and validation record](PHASE-8.md).
 Stage 9 has its own [implementation and validation record](PHASE-9.md).
-Stage 10 remains **planned**.
+Stage 10 has its own [implementation and local validation record](PHASE-10.md);
+controlled-host policies and remaining platform/workflow gates stay open.
 Stage 0 qualifies measurement before any numerical claim. Stages 1–5 prioritize common library paths. Stages 6–9 are independently
 adopted product tracks after Stage 0; source investigations can overlap, but host
 builds and performance captures run sequentially. Stage 10 follows the selected
@@ -409,6 +411,10 @@ available independent wire/oracle checks. Security review and live interoperabil
 remain distinct from timing, and performance never justifies weakened checks.
 
 ### Stage 10 — Integrate, test recovery and promote narrow policies
+
+Local implementation and the completed 30-minute REST/cache/Gateway soak are
+recorded in [Phase 10](PHASE-10.md). Numerical-policy review, simultaneous secure
+media/rekey stress and target-platform/live receipts remain separate gates.
 
 Re-run the representative workflows after combining accepted changes. Sweep
 offered load below/near/above the saturation knee, then recovery; retain successful

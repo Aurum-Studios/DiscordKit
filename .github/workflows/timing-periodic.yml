@@ -3,7 +3,7 @@
 # Copyright (c) 2026 Aurum Studios.
 # https://aurum-studios.com
 
-name: Periodic offline stress and soak
+name: Periodic offline stress, soak and integration
 
 on:
   schedule:
@@ -26,11 +26,17 @@ jobs:
     name: Informational ${{ matrix.profile }} / macOS ARM64
     runs-on:
       group: MacOS-26-5
-    timeout-minutes: 55
+    timeout-minutes: ${{ matrix.timeout }}
     strategy:
       fail-fast: false
       matrix:
-        profile: [stress, soak]
+        include:
+          - profile: stress
+            timeout: 55
+          - profile: soak
+            timeout: 55
+          - profile: integration
+            timeout: 110
     steps:
       - uses: actions/checkout@v6
         with:

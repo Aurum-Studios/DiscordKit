@@ -59,6 +59,13 @@ joined batch endpoint; it does not measure queue residence or secure-ready.
 Separate impaired local UDP receipts retain losses, concealment, scheduling and
 joined cleanup, including the original-runtime failure.
 
+Performance [Phase 10](Tasks/performance-improvements/PHASE-10.md) combines
+default-policy request admission, fixed cache state and bounded event delivery
+in independent scheduled load/recovery cycles. Its supervised integration soak
+requires the full requested duration and zero final owners. Shared-host numbers
+remain informational; immutable comparison policies retain their existing
+controlled-host, independent-noise and explicit-review requirements.
+
 Legacy account profiles describe 100/10,000/1,000,000 logical identities with
 bounded active cohorts, not that many simultaneous connections. Avoid comparing
 different input sizes or instrumentation modes as though they were the same

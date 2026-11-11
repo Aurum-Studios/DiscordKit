@@ -26,10 +26,11 @@ struct ArrivalTimingProfile: Codable, Equatable, Sendable {
     let maximumActive: Int
     let maximumPending: Int
     let measureGenerator: Bool
+    let measureQueueAge: Bool
 
     /// Validates limits before the scheduler, workers or aggregate cells are created.
     init(arrivals: Int, intervalNanoseconds: UInt64, maximumActive: Int, maximumPending: Int,
-        measureGenerator: Bool = false) throws {
+        measureGenerator: Bool = false, measureQueueAge: Bool = false) throws {
         guard (1...100_000).contains(arrivals), intervalNanoseconds > 0,
             (1...256).contains(maximumActive), (0...1_024).contains(maximumPending),
             maximumActive + maximumPending <= 1_024,
@@ -41,10 +42,11 @@ struct ArrivalTimingProfile: Codable, Equatable, Sendable {
         self.maximumActive = maximumActive
         self.maximumPending = maximumPending
         self.measureGenerator = measureGenerator
+        self.measureQueueAge = measureQueueAge
     }
 
     private enum CodingKeys: String, CodingKey {
-        case arrivals, intervalNanoseconds, maximumActive, maximumPending, measureGenerator
+        case arrivals, intervalNanoseconds, maximumActive, maximumPending, measureGenerator, measureQueueAge
     }
 
     /// Reads historical profiles with generator observation disabled and validates all finite bounds.
@@ -54,13 +56,14 @@ struct ArrivalTimingProfile: Codable, Equatable, Sendable {
             intervalNanoseconds: container.decode(UInt64.self, forKey: .intervalNanoseconds),
             maximumActive: container.decode(Int.self, forKey: .maximumActive),
             maximumPending: container.decode(Int.self, forKey: .maximumPending),
-            measureGenerator: container.decodeIfPresent(Bool.self, forKey: .measureGenerator) ?? false)
+            measureGenerator: container.decodeIfPresent(Bool.self, forKey: .measureGenerator) ?? false,
+            measureQueueAge: container.decodeIfPresent(Bool.self, forKey: .measureQueueAge) ?? false)
     }
 
     /// Revalidates decoded numeric fields before any work is started.
     func validate() throws {
         _ = try Self(arrivals: arrivals, intervalNanoseconds: intervalNanoseconds,
-            maximumActive: maximumActive, maximumPending: maximumPending, measureGenerator: measureGenerator)
+            maximumActive: maximumActive, maximumPending: maximumPending, measureGenerator: measureGenerator, measureQueueAge: measureQueueAge)
     }
 }
 
@@ -126,6 +129,7 @@ struct ArrivalTimingMeasurement: Codable, Sendable {
     let cancelledBeforeSubmission: Int
     let peakActive: Int
     let peakPending: Int
+    let peakPendingAgeNanoseconds: UInt64?
     let remainingActive: Int
     let remainingPending: Int
     let maximumHarnessTasks: Int
@@ -208,7 +212,7 @@ struct ArrivalTimingRunner: Sendable {
 
 /// Serializes only finite driver state and statistics; there is no task or continuation per arrival.
 private actor ArrivalTimingOwner {
-    struct Job: Sendable { let ordinal: Int; let scheduled: UInt64 }
+    struct Job: Sendable { let ordinal: Int; let scheduled: UInt64; let offered: UInt64? }
     private let profile: ArrivalTimingProfile
     private let clockDomain: String
     private let clock: ArrivalTimingClock
@@ -227,6 +231,7 @@ private actor ArrivalTimingOwner {
     private var active = 0
     private var peakActive = 0
     private var peakPending = 0
+    private var peakPendingAge: UInt64 = 0
     private var offered = 0
     private var submitted = 0
     private var deferred = 0
@@ -270,6 +275,10 @@ private actor ArrivalTimingOwner {
     func next() async -> Job? {
         if !pending.isEmpty {
             let job = pending.removeFirst()
+            if let offered = job.offered {
+                let now = clock.nowNanoseconds()
+                if now >= offered { peakPendingAge = max(peakPendingAge, now - offered) }
+            }
             active += 1
             peakActive = max(peakActive, active)
             return job
@@ -301,7 +310,7 @@ private actor ArrivalTimingOwner {
             outcomeCounts[.cancelled]! += 1
             return
         }
-        let job = Job(ordinal: ordinal, scheduled: scheduled)
+        let job = Job(ordinal: ordinal, scheduled: scheduled, offered: profile.measureQueueAge ? clock.nowNanoseconds() : nil)
         if !idle.isEmpty {
             active += 1
             peakActive = max(peakActive, active)
@@ -416,7 +425,7 @@ private actor ArrivalTimingOwner {
             offeredArrivals: offered, submittedArrivals: submitted, submittedCompletions: submitted,
             unofferedArrivals: profile.arrivals - offered, deferredArrivals: deferred,
             missedArrivals: missed, rejectedRequests: rejected, cancelledBeforeSubmission: cancelledPending,
-            peakActive: peakActive, peakPending: peakPending, remainingActive: active,
+            peakActive: peakActive, peakPending: peakPending, peakPendingAgeNanoseconds: profile.measureQueueAge ? peakPendingAge : nil, remainingActive: active,
             remainingPending: pending.count, maximumHarnessTasks: min(profile.maximumActive, profile.arrivals) + 1,
             invalidOperationTimestamps: invalidTimestamps,
             clockRegressed: clockRegressed || end < start || end < finalTerminal, cancelled: cancelled,

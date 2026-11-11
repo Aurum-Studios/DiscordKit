@@ -213,3 +213,15 @@ observation remains explicit. The impaired hybrid control fails in both the orig
 and candidate runtimes; its trigger and Stage 9 follow-up are retained separately.
 These results establish no controlled-host numerical,
 physical audio, Linux/hosted or live Discord qualification.
+
+## Phase 10 implementation evidence
+
+The combined default-policy REST/cache/Gateway workload, bounded independent
+arrival/recovery cycles, genuine 30-minute soak, reporting-only supervisor and
+periodic CI integration are recorded in [Phase 10](PHASE-10.md). Its
+[capture index](phase-10-observations.json) preserves 23 mixed-load processes,
+120 representative repeatability processes, three observer controls, impaired
+voice under two CPU workers, validation and immutable artifact identities.
+Same-executable comparisons establish repeatability rather than an optimization
+speedup. Reserved-host policy/noise review, simultaneous secure rekey/media
+stress, profiler, Linux Swift/native-platform and live qualification stay open.

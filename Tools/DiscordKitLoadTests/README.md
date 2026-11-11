@@ -1045,3 +1045,74 @@ explicit refill budget. Run serial fresh-process no-change controls and
 alternating baseline/candidate pairs. Local distributions remain informational;
 reserved-host noise-floor/profiler qualification and existing tail-population rules
 remain required before accepting numerical performance budgets.
+
+## Performance phase 10 integration and recovery
+
+`integration-timing` combines real default-policy ordered REST admission with an
+injected 25 ms provider, a fixed 64-key entity cache and two Gateway hubs sharing
+one bounded authority. One slow subscriber and one draining subscriber receive
+payload bursts while independent control publication/pull continues. Cache expiry,
+cooperative cancellation and bounded CPU arithmetic overlap the same owners.
+The workload opens no external sockets and needs no credentials.
+
+Each cycle contains independently scheduled 20/40/160/20 arrivals per second in
+`below`, `near`, `above` and `recovery` bands. These names refer to the scripted
+single-partition provider control, not an established machine saturation knee.
+Every band drains its eight-worker/eight-pending queue. REST, cache and hub owners
+persist across cycles, with bounded scalar cycle receipts and aggregate histograms.
+Successful throughput, all terminal outcomes, generator lateness, queue depth/age,
+recovery, control progress and joined final owner snapshots remain distinct.
+Rejected arrivals retain exact counts without fabricated response latencies.
+Cancellation after a mutation may have been sent retains the real uncertain
+outcome; the fixture never retries that ambiguous operation. Queue age means
+driver pending-queue residence, independently of REST owner admission. The CLI
+uses a fixed critical-level runtime log filter to bound long-run diagnostic
+output; explicit command errors remain visible.
+
+Build the release receipt after all edits, then run a bounded smoke:
+
+```sh
+python3 Tools/DiscordBenchmarkSupport/scripts/run_benchmarks.py build \
+  --repository . --package Tools/DiscordKitLoadTests --product DiscordKitLoadTests \
+  --receipt .build/integration/load-release.json
+python3 Tools/DiscordKitLoadTests/scripts/run_integration_timing_suites.py \
+  --profile smoke --executable Tools/DiscordKitLoadTests/.build/release/DiscordKitLoadTests \
+  --receipt .build/integration/load-release.json --duration-seconds 8 --cycle-seconds 4 \
+  --validator Tools/DiscordBenchmarkSupport/.build/debug/DiscordBenchmarkReports \
+  --output-dir .build/integration/smoke
+```
+
+The validator executable in this example is produced by the shared-support package
+build/test command. The wrapper also permits omission of `--validator`, recording
+common-schema validation as unavailable; the periodic integration job requires it.
+`--observer-mode aggregate|disabled` controls operation-wrapper histograms while
+mandatory driver accounting stays enabled. Modes have different report identities.
+This is an observation control, not a clock-free or instrumentation-free run.
+
+For the full supervised soak, the existing CI helper builds both the load tool
+and the common-schema validator with independent release receipts:
+
+```sh
+python3 Tools/ci/timing_jobs.py periodic --profile integration \
+  --duration-seconds 1800 --output .build/integration/periodic
+```
+
+Soak requests must cover 1,800...3,600 measured seconds. Complete load/recovery
+cycles continue until the actual target duration; cycle receipts are bounded at
+256. The wrapper selects a valid cycle length, or accepts `--cycle-seconds` in
+multiples of four that divide the target. Sampled RSS, cumulative CPU, process
+wall time and diagnostic/report bytes have explicit ceilings. A ceiling hit,
+short duration, missing outcome, control failure or retained owner fails integrity.
+Failed and partial artifacts remain available; existing output is never replaced.
+`integration-summary.json` records reporting-only status and exact native/common
+artifact hashes. Reports are written after joined shutdown.
+
+`--profile standard` requires explicit baseline and candidate executable/receipt
+arguments and captures five alternating fresh-process pairs. Use the same frozen
+release in both arms for a separately captured no-change series. Build before
+captures and run them serially. The existing hash-bound comparison evaluator
+retains its controlled-host, independent calibration and policy-review checks;
+this wrapper never selects noise floors, adopts baselines or promotes a numerical
+gate. Crypto/rekey/media, real network and actual application/platform workflows
+retain their separate workload receipts. See the
+[phase record](../../Docs/Tasks/performance-improvements/PHASE-10.md).
