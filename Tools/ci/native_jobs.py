@@ -16,6 +16,7 @@ from contextlib import suppress
 import argparse
 import hashlib
 import json
+import math
 import os
 from pathlib import Path, PurePosixPath
 import platform
@@ -31,10 +32,15 @@ import linux_ci
 
 
 PLATFORMS = linux_ci.PLATFORMS
-COMPONENTS = ("root", "macros", "extensions", "tooling", "load", "benchmarks", "consumers", "release")
+TIMING_PACKAGES = {"timing-support": "Tools/DiscordBenchmarkSupport",
+                   "timing": "Tools/DiscordTimingBenchmarks",
+                   "foundation": "Tools/DiscordFoundationBenchmarks", "media": "Tools/DiscordMediaBenchmarks"}
+TIMING_PRODUCTS = {"load": "DiscordKitLoadTests", "timing": "DiscordTimingBenchmarks",
+                   "foundation": "DiscordFoundationBenchmarks", "media": "DiscordMediaBenchmarks"}
+COMPONENTS = ("root", "macros", "extensions", "tooling", "load", "benchmarks", *TIMING_PACKAGES, "consumers", "release")
 PACKAGES = {"root": ".", "macros": "Packages/DiscordDSLMacros",
             "extensions": "Packages/DiscordDSLExtensions", "tooling": "Tools/DiscordKitTools",
-            "load": "Tools/DiscordKitLoadTests", "benchmarks": "Tools/DiscordDSLBenchmarks"}
+            "load": "Tools/DiscordKitLoadTests", "benchmarks": "Tools/DiscordDSLBenchmarks", **TIMING_PACKAGES}
 CONSUMER_TESTS = ("LoggingApp", "CommandsApp", "DSLCommands", "DSLEvents", "DSLBot", "ActivityHost")
 CONSUMER_SMOKES = ("LoggingApp", "CommandsApp", "DSLCommands", "DSLEvents", "DSLBot", "VoiceBot", "SocialApp")
 CONSUMER_SUITES = tuple(sorted(set(CONSUMER_TESTS) | set(CONSUMER_SMOKES)))
@@ -91,11 +97,16 @@ def matrices(root_targets, native_platform=None):
         raise ValueError("unsupported root test-target name")
     builds, tests = [], []
     for native_platform in PLATFORMS if native_platform is None else (native_platform,):
+        # These development probes implement Darwin/Glibc only. Windows remains
+        # excluded by the current CI callers and gains no timing qualification.
+        timing_components = () if native_platform == "windows-x64" else tuple(TIMING_PACKAGES)
         for component in COMPONENTS:
+            if component in TIMING_PACKAGES and component not in timing_components:
+                continue
             builds.append({**runner_entry(native_platform, True), "component": component})
         for suite in active_targets(sorted(root_targets), native_platform):
             tests.append({**runner_entry(native_platform, False), "component": "root", "suite": suite})
-        for component in ("macros", "extensions", "tooling", "load", "benchmarks"):
+        for component in ("macros", "extensions", "tooling", "load", "benchmarks", *timing_components):
             tests.append({**runner_entry(native_platform, False), "component": component, "suite": component})
         for suite in CONSUMER_SUITES:
             tests.append({**runner_entry(native_platform, False), "component": "consumers", "suite": suite})
@@ -208,6 +219,9 @@ def compile_commands(component, jobs):
     if component == "benchmarks":
         commands.append(swift_command("optimized-benchmark", "build", PACKAGES[component], jobs,
                                       "--configuration", "release", "--product", "DiscordDSLBenchmarks"))
+    if component in TIMING_PRODUCTS:
+        commands.append(swift_command("optimized-timing", "build", PACKAGES[component], jobs,
+                                      "--configuration", "release", "--product", TIMING_PRODUCTS[component]))
     return commands
 
 
@@ -439,7 +453,114 @@ def test_commands(component, suite, jobs, metadata):
     if component == "benchmarks":
         commands.append(swift_command("runtime-smoke", "run", package, jobs, "--skip-build", "--configuration", "release",
             "DiscordDSLBenchmarks", "--invocations", "1000", "--output", ".build/dsl-measurements/runtime-smoke.json"))
+    commands.extend(timing_smoke_commands(component, jobs))
     return commands
+
+
+def timing_smoke_commands(component, jobs):
+    """Run finite offline correctness smokes; shared-runner timing numbers never gate budgets."""
+    if component not in TIMING_PRODUCTS:
+        return []
+    cases = {
+        "timing": [(mode, ["--mode", mode, "--iterations", "128", "--warmup-iterations", "16", "--concurrency", "2"])
+                   for mode in ("disabled", "aggregate", "scalarAggregate")],
+        "foundation": [("json", ["--case", "json.parse.1024.depth1.ascii", "--batches", "16", "--batch-size", "4", "--warmup-batches", "2"])],
+        "media": [("rtp", ["--case", "rtp.packetize.roundtrip", "--batches", "16", "--batch-size", "4", "--warmup-batches", "2"])],
+        "load": [("rest", ["timing", "--case", "rest.cacheFresh", "--adapter", "scripted", "--requests", "16", "--warmup-requests", "2", "--concurrency", "2"]),
+                 ("loopback", ["timing", "--case", "transport.smallBody", "--adapter", "nio", "--requests", "16", "--warmup-requests", "2", "--concurrency", "2"])],
+    }[component]
+    result = []
+    for name, arguments in cases:
+        destination = f".build/timing-smoke/{component}/{name}"
+        command = swift_command(f"timing-smoke-{name}", "run", PACKAGES[component], jobs,
+            "--skip-build", "--configuration", "release", TIMING_PRODUCTS[component], *arguments,
+            "--profile", "smoke", "--seed", "1", "--duration-seconds", "3", "--warmup-seconds", "1",
+            "--output", destination + ".json", "--common-report", destination + "-common.json")
+        result.append(linux_ci.Command(command.name, command.arguments, 120))
+    return result
+
+
+def verify_timing_smokes(repository, commands):
+    """Require readable nonempty completed reports and joined cleanup, without numerical thresholds."""
+    for command in commands:
+        if not command.name.startswith("timing-smoke-"):
+            continue
+        documents = []
+        for option in ("--output", "--common-report"):
+            path = repository / command.arguments[command.arguments.index(option) + 1]
+            if not 0 < path.stat().st_size <= 32 * 1024 * 1024:
+                raise ValueError("timing smoke report is empty or exceeds the report ceiling")
+            documents.append(read_timing_json(path))
+        native, common = documents
+        if not isinstance(native, dict) or not isinstance(common, dict) or native.get("common") != common:
+            raise ValueError("timing smoke requires matching completed reports, observations and zero-owner cleanup")
+        verify_common_smoke(common)
+
+
+def read_timing_json(path):
+    """Reject nonfinite JSON numbers instead of accepting Python's permissive NaN extension."""
+    def finite(value):
+        result = float(value)
+        if not math.isfinite(result):
+            raise ValueError("nonfinite timing report number")
+        return result
+
+    def invalid(_):
+        raise ValueError("nonstandard timing report number")
+
+    return json.loads(path.read_bytes(), parse_float=finite, parse_constant=invalid)
+
+
+def verify_common_smoke(common):
+    """Check this success-only smoke's population and loss accounting without latency budgets.
+
+    Counted underflow/overflow and sparse p99 are retained informational evidence.
+    Unknown loss, counter overflow and malformed histogram populations cannot pass.
+    The producer's validatedData additionally validates the full shared schema.
+    """
+    def natural(value):
+        return type(value) is int and value >= 0
+
+    if not isinstance(common, dict):
+        raise ValueError("timing smoke requires a structured common report")
+    counts = common.get("counts", {})
+    if not isinstance(counts, dict) or not isinstance(counts.get("outcomes"), dict) or not isinstance(common.get("cleanup"), dict):
+        raise ValueError("timing smoke requires structured population and cleanup accounting")
+    completed = counts.get("completed")
+    outcomes = counts.get("outcomes", {})
+    if (common.get("format") != "DiscordBenchmarkReport" or type(common.get("schemaVersion")) is not int
+            or common["schemaVersion"] != 1 or common.get("status") != "completed"
+            or not natural(completed) or completed == 0
+            or any(not natural(counts.get(key)) or counts[key] != completed for key in ("offered", "admitted"))
+            or counts.get("deadlineMisses") != 0 or type(counts.get("deadlineMisses")) is not int
+            or set(outcomes) != {"success", "failure", "timedOut", "cancelled", "rejected", "uncertain"}
+            or any(not natural(value) or value != (completed if key == "success" else 0) for key, value in outcomes.items())
+            or not isinstance(common.get("metrics"), list) or not common["metrics"]
+            or common.get("cleanup", {}).get("completed") is not True
+            or common.get("cleanup", {}).get("remainingOwners") != 0
+            or type(common.get("cleanup", {}).get("remainingOwners")) is not int):
+        raise ValueError("timing smoke requires completed successful observations and zero-owner cleanup")
+    for metric in common["metrics"]:
+        if not isinstance(metric, dict) or not isinstance(metric.get("distribution"), dict):
+            raise ValueError("timing smoke requires a structured metric distribution")
+        distribution = metric.get("distribution", {})
+        population = ("observedCount", "inRangeCount", "underflowCount", "overflowCount", "droppedCount")
+        cells = distribution.get("bucketCounts", [])
+        configuration = distribution.get("configuration", {})
+        if not isinstance(configuration, dict) or not isinstance(cells, list):
+            raise ValueError("timing smoke requires a structured finite histogram")
+        lower, upper, width = (configuration.get(key) for key in
+                              ("lowerBoundNanoseconds", "upperBoundNanoseconds", "bucketWidthNanoseconds"))
+        if (metric.get("outcome") != "success" or not metric.get("id")
+                or any(not natural(distribution.get(key)) for key in population)
+                or distribution["observedCount"] != completed
+                or distribution.get("counterOverflow") is not False or distribution["droppedCount"] != 0
+                or not cells or any(not natural(value) for value in cells)
+                or any(not natural(value) for value in (lower, upper, width)) or width == 0 or upper < lower
+                or len(cells) != (upper - lower) // width + 1
+                or sum(cells) != distribution["inRangeCount"]
+                or sum(distribution[key] for key in population[1:]) != distribution["observedCount"]):
+            raise ValueError("timing smoke histogram has missing observations, loss or inconsistent accounting")
 
 
 def run_tests(repository, component, suite, native_platform, jobs, output, archive):
@@ -457,7 +578,11 @@ def run_tests(repository, component, suite, native_platform, jobs, output, archi
             raise ValueError("restored tests differ from the compiled test inventory")
     if component == "benchmarks":
         (repository / ".build/dsl-measurements").mkdir(parents=True, exist_ok=True)
+    if component in TIMING_PRODUCTS:
+        (repository / ".build/timing-smoke" / component).mkdir(parents=True, exist_ok=True)
+        report["numericalQualification"] = "informational shared-runner smoke; no baseline comparison or product SLO"
     execute_commands(commands, repository, output, report)
+    verify_timing_smokes(repository, commands)
     if identity(repository, native_platform) != metadata["identity"]:
         raise ValueError("tracked source or compiler changed during test execution")
     report["status"] = "passed"
@@ -493,7 +618,7 @@ def main():
             restore_archive(repository, arguments.component, arguments.platform, arguments.archive.resolve(), output)
         else:
             run_tests(repository, arguments.component, arguments.suite, arguments.platform, arguments.jobs, output, arguments.archive.resolve())
-    except (ValueError, OSError, KeyError, tarfile.TarError, subprocess.SubprocessError) as error:
+    except (ValueError, OSError, KeyError, TypeError, AttributeError, RecursionError, tarfile.TarError, subprocess.SubprocessError) as error:
         write_json(output / "failure.json", {"status": "failed", "operation": arguments.operation, "error": str(error)})
         print(f"Native job failed: {error}", file=sys.stderr)
         return 1

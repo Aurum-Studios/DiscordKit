@@ -902,3 +902,69 @@ measurements. Every missed actual-frame processing/schedule deadline remains
 visible. They establish no numerical baseline, universal realtime guarantee,
 hardware/render/acoustic result, other-platform qualification, live Discord
 acceptance, independent cryptographic review, publication or later-stage completion.
+
+## Phase 10 validation
+
+Implementation: [baseline comparison, regression policy and CI](PHASE-10.md),
+prepared from Phase 9 revision `a0703a47` on 2026-11-10, macOS arm64 with Apple
+Swift 6.4. Changes cover development tooling, CI, tests and documentation; root
+runtime sources, manifest and dependency pins remain unchanged.
+
+| Check | Completed local evidence |
+| --- | --- |
+| Root build and strict tests | Pinned native `swift build` and serial `SWIFTNIO_STRICT=1 swift test` passed; 2,613 tests across 34 test-module runs |
+| Shared comparison and DSL tests | 60 shared Swift tests in six suites, 44 shared Python tests, 19 DSL Swift tests in three suites and 29 DSL Python tests passed |
+| Repository and CI tooling | 106 tooling Swift tests, 234 tooling Python tests, 183 CI Python tests, 37 load-driver Python tests and three Foundation-driver Python tests passed |
+| Inventory, generation and parity | Passed: 18,245 inventory records, 290 sources, 951 reviewed definitions, 255 mapped endpoints and five byte-identical generated artifacts |
+| Release graph | Full command passed, including 33 runtime products/targets, 362 runtime sources, 838 imports, eight runtime pins, all 13 example consumers, DSL benchmark consumer, two authoring packages and dependency-free shared development package |
+| Documentation and workflows | Callable audit passed: 942 Swift files, 10,096 explicit callables, zero missing comments; 402 local links/anchors in 23 documents resolve; all four changed/new workflows passed `actionlint` |
+| Fresh optimized preparation | Shared release builder produced source/pin/executable-bound Foundation and evaluator receipts; both build owners reaped with no remaining process-group members |
+| Paired capture | Five measured pairs plus five independent no-change pairs, all fresh and alternating; 20 strict common reports with 10,000 observations each, 200,000 measured batches / 800,000 calls and 160 separate warmup batches / 640 calls |
+| Capture integrity | All native/common projections agree exactly and checksums match; zero censored or dropped observations, counter overflow, rejected calls, deadline misses or truncated artifact bytes |
+| Shutdown | All 20 owners reaped; zero live process groups, unexpected descendants or remaining runtime owners; every participant reports completed cleanup |
+| Actual evaluation | Canonical report/noise hashing and strict series decoding passed; reporting evaluation returned `hostFailure` for recorded host contention and `requiredGatePassed: false` |
+
+Deterministic evaluator tests cover known latency/throughput/resource regressions,
+the three-run investigation rule, sparse P99, censored tail stalls, hard
+error/deadline/loss/cleanup failures, incompatible hardware/schema/fixtures,
+missing provenance, policy hash changes, measured no-change noise floors,
+alternating order and independent process receipts. Required-mode CLI checks pass
+unchanged synthetic evidence and fail a known slowdown. These fixtures establish
+evaluator behavior, not host performance.
+
+The real pilot uses `json.parse.1024.depth1.ascii`, batch size four, 10,000 measured
+batches and eight independent warmup batches per process. Its spec requests a
+one-second warmup cap and ten-second measured cap; actual durations remain in each
+report and the finite work cap ends these short observations earlier. Both arms
+intentionally use the same optimized executable. The local host declaration is
+uncontrolled with known contention from unrelated workspace validation. The
+reporting policy is an integrity pilot only; its illustrative budget is not a
+reviewed noise floor or numerical baseline. The evaluator refuses qualification
+before numerical budget evaluation, as required.
+
+An initial real twenty-report capture exposed indentation expanding the inline
+series beyond its 32-MiB serialized ceiling. Compact series serialization fixes
+that problem without changing the schema or raising the cap. A regression test
+retains all twenty 100,001-cell histograms, proves pretty output exceeds the
+ceiling, and confirms compact output still rejects oversized artifacts. After
+this fix, both optimized receipts and all twenty observations were produced
+again from the final frozen source; the successful series is 4,151,008 bytes.
+Initial failure artifacts remain retained separately in ignored build output.
+
+The development-package graph policy also repairs the existing DSL audit
+limitation recorded under Phase 9. It admits only the exact dependency-free
+shared support products, targets, source paths and imports. New tests reject
+unaudited dependencies, product/type/path drift and runtime dependency leakage.
+The runtime package policy retains its prior dependency restrictions.
+
+Only this validation ledger was updated after the final captures. All 3,468
+other recorded source-file contents, including executable/test/build inputs,
+remain identical. Artifacts and pilot policy stay in ignored build output;
+no baseline or required workload policy is adopted. Reproduce preparation,
+capture, canonical hashing and separate policy evaluation using the
+[shared guide](../../../Tools/DiscordBenchmarkSupport/README.md#paired-capture-and-reviewed-regression-policies).
+
+Local checks do not qualify hosted CI, Linux execution, periodic stress/soak,
+controlled-host noise calibration, required numerical gate promotion, live
+Discord or physical audio. The new workflows are prepared but were not
+dispatched. Publication, deployment and Stage 11 remain separate work.

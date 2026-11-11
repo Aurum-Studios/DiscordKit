@@ -1,0 +1,99 @@
+# File: .github/workflows/timing-comparison.yml
+# Created by Carson Rau.
+# Copyright (c) 2026 Aurum Studios.
+# https://aurum-studios.com
+
+name: Controlled timing comparison
+
+# Operator prepares immutable baseline/candidate checkouts, receipts and a fresh
+# no-change series on the selected host. This never runs as ordinary PR CI.
+on:
+  workflow_dispatch:
+    inputs:
+      stage:
+        description: Capture frozen evidence, then evaluate that same evidence after policy review
+        type: choice
+        options: [capture, evaluate]
+        required: true
+      runner-group:
+        description: Existing isolated runner group with the prepared receipts
+        type: string
+        required: true
+      platform:
+        description: Native platform of that controlled host
+        type: choice
+        options: [linux-x64, macos-arm64]
+        required: true
+      spec:
+        description: Capture only - absolute prepared standard comparison spec path
+        type: string
+      noise-series:
+        description: Capture only - absolute independent five-pair no-change series path
+        type: string
+      series:
+        description: Evaluate only - exact frozen captured series path outside workflow checkout
+        type: string
+      policy:
+        description: Evaluate only - policy reviewed against the frozen series hashes
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: controlled-timing-${{ inputs.runner-group }}
+  cancel-in-progress: false
+
+env:
+  SWIFTNIO_STRICT: '1'
+  PYTHONUNBUFFERED: '1'
+
+jobs:
+  comparison:
+    name: Controlled timing / ${{ inputs.stage }}
+    runs-on:
+      group: ${{ inputs.runner-group }}
+    timeout-minutes: 110
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-native
+      - name: Verify selected native platform and pinned compiler
+        env:
+          NATIVE_PLATFORM: ${{ inputs.platform }}
+        run: python3 Tools/ci/platform_probe.py --platform "$NATIVE_PLATFORM" --output .build/controlled-platform
+      - name: Capture frozen evidence or evaluate the reviewed immutable series
+        shell: python
+        env:
+          COMPARISON_STAGE: ${{ inputs.stage }}
+          COMPARISON_SPEC: ${{ inputs.spec }}
+          NO_CHANGE_SERIES: ${{ inputs.noise-series }}
+          REVIEWED_SERIES: ${{ inputs.series }}
+          REVIEWED_POLICY: ${{ inputs.policy }}
+        run: |
+          import os, subprocess, sys
+          stage = os.environ['COMPARISON_STAGE']
+          command = [sys.executable, 'Tools/ci/timing_jobs.py', 'controlled', '--stage', stage,
+                     '--output', '.build/controlled-timing']
+          inputs = ([('--spec', 'COMPARISON_SPEC'), ('--noise-series', 'NO_CHANGE_SERIES')]
+                    if stage == 'capture' else
+                    [('--series', 'REVIEWED_SERIES'), ('--policy', 'REVIEWED_POLICY')])
+          for option, variable in inputs:
+              if not os.environ[variable]:
+                  raise SystemExit(variable + ' is required for ' + stage)
+              command.extend([option, os.environ[variable]])
+          subprocess.run(command, check=True)
+      - name: Require unchanged sources and dependency pins
+        run: git diff --exit-code
+      - name: Retain comparison, failure logs and partial observations
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: controlled-timing-${{ inputs.platform }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            .build/controlled-platform
+            .build/controlled-timing
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 14

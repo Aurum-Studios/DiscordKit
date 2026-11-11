@@ -119,10 +119,33 @@ struct BenchmarkEnvironment: Codable, Equatable, Sendable {
                 model = String(decoding: bytes.prefix { $0 != 0 }.map { UInt8(bitPattern: $0) }, as: UTF8.self)
             }
         }
+        #elseif os(Linux)
+        model = linuxHardwareModel { path in
+            guard let handle = FileHandle(forReadingAtPath: path) else { return nil }
+            defer { try? handle.close() }
+            guard let data = try? handle.read(upToCount: 16_385), data.count <= 16_384 else { return nil }
+            return String(data: data, encoding: .utf8)
+        }
         #endif
         return Self(operatingSystem: ProcessInfo.processInfo.operatingSystemVersionString,
             architecture: architecture, processorCount: ProcessInfo.processInfo.processorCount,
             compiler: compiler, hardwareModel: model, physicalMemoryBytes: ProcessInfo.processInfo.physicalMemory)
+    }
+
+    /// Reads Linux model evidence without treating an architecture or hostname as hardware.
+    /// DMI product names serve ordinary machines; device-tree models serve ARM boards.
+    /// Missing, oversized or placeholder evidence remains unavailable and blocks baselines.
+    /// The shared comparison driver separately binds the named host and effective allocation.
+    /// - Parameter read: Bounded file reader; injected fixtures permit deterministic platform tests.
+    /// - Returns: Source-qualified model text, or the explicit unavailable sentinel.
+    static func linuxHardwareModel(read: (String) -> String?) -> String {
+        for path in ["/sys/class/dmi/id/product_name", "/sys/firmware/devicetree/base/model"] {
+            guard let raw = read(path), raw.utf8.count <= 16_384 else { continue }
+            let value = raw.replacingOccurrences(of: "\0", with: "").trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !value.isEmpty, !["unavailable", "unknown", "default string", "system product name", "to be filled by o.e.m."].contains(value.lowercased()) else { continue }
+            return "linux-model-v1:" + value
+        }
+        return "unavailable"
     }
 }
 

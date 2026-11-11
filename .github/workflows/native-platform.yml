@@ -201,6 +201,7 @@ jobs:
           path: |
             .build/test-ci/${{ matrix.platform }}-${{ matrix.suite }}
             .build/dsl-measurements/runtime-smoke.json
+            .build/timing-smoke/${{ matrix.component }}
           if-no-files-found: warn
           include-hidden-files: true
           retention-days: 14

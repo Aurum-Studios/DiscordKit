@@ -36,12 +36,15 @@ class NativePlanTests(unittest.TestCase):
             "windows-x64": set(modules) - {"DiscordFoundationTransportTests", "DiscordUnixPlatformTests"},
         }
         builds, tests = jobs.matrices(modules)
-        self.assertEqual(len(builds["include"]), len(jobs.PLATFORMS) * len(jobs.COMPONENTS))
+        self.assertEqual(len(builds["include"]), len(jobs.PLATFORMS) * len(jobs.COMPONENTS) - len(jobs.TIMING_PACKAGES))
         self.assertEqual(len({(entry["platform"], entry["component"]) for entry in builds["include"]}), len(builds["include"]))
         for native_platform in jobs.PLATFORMS:
             build_entries = [entry for entry in builds["include"] if entry["platform"] == native_platform]
             test_entries = [entry for entry in tests["include"] if entry["platform"] == native_platform]
-            self.assertEqual({entry["component"] for entry in build_entries}, set(jobs.COMPONENTS))
+            expected_components = set(jobs.COMPONENTS) - (set(jobs.TIMING_PACKAGES) if native_platform == "windows-x64" else set())
+            self.assertEqual({entry["component"] for entry in build_entries}, expected_components)
+            self.assertEqual({entry["component"] for entry in test_entries if entry["component"] in jobs.TIMING_PACKAGES},
+                             set() if native_platform == "windows-x64" else set(jobs.TIMING_PACKAGES))
             self.assertEqual({entry["suite"] for entry in test_entries if entry["component"] == "root"},
                              expected_modules[native_platform])
             self.assertEqual({entry["suite"] for entry in test_entries if entry["component"] == "consumers"},
@@ -92,8 +95,9 @@ class NativePlanTests(unittest.TestCase):
         modules = [f"Module{number}Tests" for number in range(90)]
         for native_platform in jobs.PLATFORMS:
             builds, tests = jobs.matrices(modules, native_platform)
-            self.assertEqual(len(builds["include"]), len(jobs.COMPONENTS))
-            self.assertEqual(len(tests["include"]), len(modules) + 5 + len(jobs.CONSUMER_SUITES))
+            timing_count = 0 if native_platform == "windows-x64" else len(jobs.TIMING_PACKAGES)
+            self.assertEqual(len(builds["include"]), len(jobs.COMPONENTS) - len(jobs.TIMING_PACKAGES) + timing_count)
+            self.assertEqual(len(tests["include"]), len(modules) + 5 + timing_count + len(jobs.CONSUMER_SUITES))
             with self.subTest(platform=native_platform), self.assertRaisesRegex(ValueError, "matrix limit"):
                 jobs.matrices([f"Module{number}Tests" for number in range(256)], native_platform)
 
@@ -113,7 +117,7 @@ class NativePlanTests(unittest.TestCase):
         root = jobs.test_commands("root", "CoreTests", 8, metadata)
         self.assertEqual(root[0].arguments[-2:], ("--filter", "^CoreTests[./]"))
         planned = root
-        for component in ("macros", "extensions", "tooling", "load", "benchmarks"):
+        for component in ("macros", "extensions", "tooling", "load", "benchmarks", *jobs.TIMING_PACKAGES):
             planned += jobs.test_commands(component, component, 8, metadata)
         for example in jobs.CONSUMER_SUITES:
             planned += jobs.test_commands("consumers", example, 8, metadata)
@@ -146,6 +150,27 @@ class NativePlanTests(unittest.TestCase):
         self.assertEqual(len(set(jobs.build_roots("consumers"))), len(jobs.linux_ci.EXAMPLES))
         self.assertTrue(all("--scratch-path" not in command.arguments for command in consumers))
         self.assertIn("--configuration", jobs.compile_commands("benchmarks", 12)[-1].arguments)
+        for component, product in jobs.TIMING_PRODUCTS.items():
+            with self.subTest(component=component):
+                optimized = jobs.compile_commands(component, 12)[-1].arguments
+                self.assertEqual(optimized[optimized.index("--configuration") + 1], "release")
+                self.assertEqual(optimized[optimized.index("--product") + 1], product)
+                self.assertEqual(jobs.build_roots(component), [jobs.PACKAGES[component] + "/.build"])
+
+    def test_timing_smoke_covers_cpu_observer_scripted_rest_and_local_io_with_finite_caps(self):
+        """Short shared-runner numbers are informational while missing artifacts and leaks remain failures."""
+        commands = [command for component in jobs.TIMING_PRODUCTS
+                    for command in jobs.timing_smoke_commands(component, 8)]
+        self.assertEqual(len(commands), 7)
+        self.assertTrue(any("scalarAggregate" in command.arguments for command in commands))
+        self.assertTrue(any("json.parse.1024.depth1.ascii" in command.arguments for command in commands))
+        self.assertTrue(any("nio" in command.arguments for command in commands))
+        for command in commands:
+            self.assertEqual(command.timeout, 120)
+            self.assertIn("--skip-build", command.arguments)
+            for option, value in (("--configuration", "release"), ("--duration-seconds", "3"), ("--profile", "smoke")):
+                self.assertEqual(command.arguments[command.arguments.index(option) + 1], value)
+        self.assertEqual(jobs.timing_smoke_commands("root", 8), [])
 
     def test_test_discovery_rejects_empty_foreign_duplicate_and_prefix_collisions(self):
         """A successful SwiftPM invocation with zero selected tests must not produce a green suite."""
@@ -172,7 +197,8 @@ class NativePlanTests(unittest.TestCase):
             output = Path(directory) / "plan"
             with patch.object(sys, "argv", ["native_jobs.py", "plan", "--output", str(output)]), patch.object(jobs, "dump_targets", return_value=["CoreTests"]):
                 self.assertEqual(jobs.main(), 0)
-            self.assertEqual(len(json.loads((output / "build-matrix.json").read_text())["include"]), 24)
+            self.assertEqual(len(json.loads((output / "build-matrix.json").read_text())["include"]),
+                             len(jobs.COMPONENTS) * len(jobs.PLATFORMS) - len(jobs.TIMING_PACKAGES))
             self.assertTrue(json.loads((output / "test-matrix.json").read_text())["include"])
             with patch.object(sys, "argv", ["native_jobs.py", "restore", "--output", str(output),
                     "--platform", "linux-x64", "--component", "root", "--archive", str(Path(directory) / "missing.tar.gz")]), patch.object(jobs, "identity", side_effect=ValueError("wrong compiler")), patch.object(sys, "stderr", io.StringIO()):
@@ -453,6 +479,56 @@ class NativeSourceTests(unittest.TestCase):
                 else:
                     with self.assertRaises(ValueError):
                         jobs.identity(Path.cwd(), "linux-x64")
+
+
+class TimingSmokeEvidenceTests(unittest.TestCase):
+    """Reject silent empty/missing/incomplete timing evidence after an otherwise successful child."""
+
+    def test_nonempty_matching_completed_reports_and_cleanup_are_required(self):
+        """Correctness and cleanup remain hard checks even though latency has no shared-runner budget."""
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            commands = jobs.timing_smoke_commands("foundation", 2)
+            command = commands[0]
+            native_path, common_path = [root / command.arguments[command.arguments.index(option) + 1]
+                                        for option in ("--output", "--common-report")]
+            native_path.parent.mkdir(parents=True)
+            common = {"format": "DiscordBenchmarkReport", "schemaVersion": 1, "status": "completed",
+                      "counts": {"completed": 64, "offered": 64, "admitted": 64, "deadlineMisses": 0,
+                                 "outcomes": {"success": 64, "failure": 0, "timedOut": 0, "cancelled": 0, "rejected": 0, "uncertain": 0}},
+                      "metrics": [{"id": "cpu.batch", "outcome": "success", "distribution": {
+                          "observedCount": 64, "inRangeCount": 64, "underflowCount": 0, "overflowCount": 0,
+                          "droppedCount": 0, "counterOverflow": False, "bucketCounts": [32, 32],
+                          "configuration": {"lowerBoundNanoseconds": 0, "upperBoundNanoseconds": 10, "bucketWidthNanoseconds": 10}}}],
+                      "cleanup": {"completed": True, "remainingOwners": 0}}
+            with self.assertRaises(OSError):
+                jobs.verify_timing_smokes(root, commands)
+            for field, value in (("status", "failed"), ("counts", {"completed": 0}), ("metrics", []),
+                                 ("cleanup", {"completed": False, "remainingOwners": 1})):
+                incomplete = {**common, field: value}
+                native_path.write_text(json.dumps({"common": incomplete}))
+                common_path.write_text(json.dumps(incomplete))
+                with self.subTest(field=field), self.assertRaises(ValueError):
+                    jobs.verify_timing_smokes(root, commands)
+            native_path.write_text(json.dumps({"common": common}))
+            common_path.write_text(json.dumps({**common, "status": "failed"}))
+            with self.assertRaises(ValueError):
+                jobs.verify_timing_smokes(root, commands)
+            common_path.write_text(json.dumps(common))
+            jobs.verify_timing_smokes(root, commands)
+            for key, value in (("observedCount", 0), ("droppedCount", 1), ("counterOverflow", True),
+                               ("inRangeCount", 63), ("bucketCounts", [32, 31]), ("overflowCount", 1)):
+                malformed = copy.deepcopy(common)
+                malformed["metrics"][0]["distribution"][key] = value
+                with self.subTest(field=key), self.assertRaises(ValueError):
+                    jobs.verify_common_smoke(malformed)
+            censored = copy.deepcopy(common)
+            censored["metrics"][0]["distribution"].update(inRangeCount=63, overflowCount=1, bucketCounts=[32, 31])
+            jobs.verify_common_smoke(censored)
+            for number in ("NaN", "Infinity", "1e999"):
+                common_path.write_text('{"counter":' + number + '}')
+                with self.subTest(number=number), self.assertRaises(ValueError):
+                    jobs.read_timing_json(common_path)
 
 
 if __name__ == "__main__":

@@ -345,6 +345,14 @@ def validate_consumer(repository, relative, manifest, policy):
         require(identity.lower() not in local_packages, "Duplicate consumer package identity")
         local_packages[identity.lower()] = package_root
         authoring_packages[identity.lower()] = policy["authoringPackages"][path]
+    development_packages = {}
+    for identity, path in expected.get("developmentPackages", {}).items():
+        require(path in policy.get("developmentPackages", {}), "Consumer selects unaudited development package")
+        package_root = (repository / path).resolve()
+        require(package_root.is_relative_to(repository.resolve()) and package_root.is_dir(), "Unsafe development package path")
+        require(identity.lower() not in local_packages, "Duplicate consumer package identity")
+        local_packages[identity.lower()] = package_root
+        development_packages[identity.lower()] = policy["developmentPackages"][path]
     paths, requirements = [], {}
     for dependency in manifest.get("dependencies", []):
         require(len(dependency) == 1, "Ambiguous consumer package dependency")
@@ -384,6 +392,8 @@ def validate_consumer(repository, relative, manifest, policy):
                     require(product in authoring["products"], "Consumer selects unknown authoring product")
                     reached = closure(authoring["targets"], authoring["products"][product])
                     root_products.update(value.split("/", 1)[1] for value in reached if value.lower().startswith("discordkit/"))
+                elif package.lower() in development_packages:
+                    require(product in development_packages[package.lower()]["products"], "Consumer selects unknown development product")
                 else:
                     require(package in requirements and product in expected.get("externalProducts", {}).get(package, []), "Consumer selects unknown external product")
             else:
@@ -403,6 +413,58 @@ def validate_consumer(repository, relative, manifest, policy):
     selected = set().union(*(closure(policy["targets"], policy["products"][product]) for product in root_products))
     require(not selected.intersection(expected["forbidden"]), f"Consumer isolation violation: {relative}")
     return {"targets": len(targets), "sourceFiles": source_files, "selectedProducts": sorted(root_products), "reachableTargets": sorted(name for name in selected if "/" not in name)}
+
+
+def validate_development_package(repository, relative, manifest, policy):
+    """Audit exact standalone development graphs without adding a runtime dependency allowance.
+
+    This policy admits only dependency-free packages with reviewed library/executable
+    products, targets, paths and direct imports. Plugins, external packages and
+    filesystem dependencies are refused. Consumer adoption still names an exact local
+    package and product; root runtime policy remains independent and unchanged.
+    """
+    require(relative in policy.get("developmentPackages", {}), "Unknown development package")
+    expected = policy["developmentPackages"][relative]
+    package_root = (repository / relative).resolve()
+    require(package_root.is_relative_to(repository.resolve()) and package_root.is_dir(), "Unsafe development package path")
+    require(manifest.get("dependencies", []) == [], "Standalone development package cannot select dependencies")
+    targets = {target["name"]: target for target in manifest["targets"]}
+    require(len(targets) == len(manifest["targets"]), "Duplicate development target")
+    graph = {name: manifest_dependencies(target) for name, target in targets.items()}
+    require(graph == expected["targets"], "Development target dependencies changed")
+    require(set(targets) == set(expected["targetTypes"]) == set(expected["targetPaths"]), "Development target policy mismatch")
+    products = {}
+    for product in manifest["products"]:
+        kind = list(product["type"])
+        require(len(kind) == 1 and kind[0] in {"library", "executable"}, "Unsupported development product type")
+        require(product["name"] not in products, "Duplicate development product")
+        products[product["name"]] = {"type": kind[0], "targets": sorted(product["targets"])}
+    require(products == expected["products"], "Development products changed")
+    system = expected.get("targetSystemImports", {})
+    permitted = set(policy["systemImports"]) | {"Darwin", "Glibc", "Testing"}
+    require(set(system) <= set(targets) and all(isinstance(values, list) and all(value in permitted for value in values)
+        for values in system.values()), "Malformed development system imports")
+    source_files = 0
+    for name, target in targets.items():
+        require(target.get("type") in {"regular", "executable", "test"}
+            and target["type"] == expected["targetTypes"][name], "Development target type changed")
+        default = ("Tests/" if target["type"] == "test" else "Sources/") + name
+        relative_source = target.get("path", default)
+        require(relative_source == expected["targetPaths"][name], "Development target source path changed")
+        source_root = (package_root / relative_source).resolve()
+        require(source_root.is_relative_to(package_root) and source_root.is_dir(), "Unsafe development source path")
+        require(all(dependency in targets for dependency in graph[name]), "Development target selects nonlocal dependency")
+        allowed = set(graph[name]) | set(policy["systemImports"]) | set(system.get(name, []))
+        sources = list(source_root.rglob("*.swift"))
+        require(bool(sources), "Development target has no Swift sources")
+        for source in sources:
+            require(source.resolve().is_relative_to(source_root), "Development source symlink escapes target")
+            require(not swift_imports(source.read_text()) - allowed, "Undeclared development import")
+            source_files += 1
+    closure(graph, graph)
+    for product in products.values():
+        closure(graph, product["targets"])
+    return {"products": len(products), "targets": len(targets), "sourceFiles": source_files, "resolvedPackages": 0}
 
 
 def validate_authoring_package(repository, relative, manifest, policy, resolved):
@@ -614,6 +676,10 @@ def main():
     try:
         if args.command == "graph":
             result = validate_graph(repository, dump_manifest(repository), policy, read_json(repository / "Package.resolved"))
+            if policy.get("developmentPackages"):
+                result["developmentPackages"] = {relative: validate_development_package(
+                    repository, relative, dump_manifest(repository / relative), policy)
+                    for relative in sorted(policy["developmentPackages"])}
             result["consumers"] = {relative: validate_consumer(repository, relative, dump_manifest(repository / relative), policy) for relative in sorted(policy.get("consumers", {}))}
             if policy.get("authoringPackages"):
                 result["authoringPackages"] = {relative: validate_authoring_package(

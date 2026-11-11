@@ -460,13 +460,17 @@ public struct DiscordBenchmarkReport: Codable, Equatable, Sendable {
     /// Compares semantics and complete actual allocation/build receipts, permitting code changes.
     /// Source revision, dirty-content fingerprint and executable hash must exist but intentionally
     /// need not equal. Run-local clock identifiers also need not equal across fresh processes.
-    /// - Parameter other: Baseline or candidate evidence; direction does not change compatibility.
+    /// - Parameters:
+    ///   - other: Baseline or candidate evidence; direction does not change compatibility.
+    ///   - accepted: Exact reviewed scope notes accepted by a hash-bound evaluation policy; defaults to none.
     /// - Returns: Every known incompatibility; an empty reason list never establishes numerical gates.
-    public func comparison(with other: Self) -> BenchmarkCompatibility {
+    public func comparison(with other: Self, acceptingQualificationLimitations accepted: Set<String> = []) -> BenchmarkCompatibility {
         var reasons: [String] = []
         do { try validate(); try other.validate() } catch { reasons.append("Invalid or unsupported report: \(error)") }
         if status != .completed || other.status != .completed { reasons.append("Both runs must have completed qualification scope.") }
-        if !qualificationLimitations.isEmpty || !other.qualificationLimitations.isEmpty { reasons.append("Qualification limitations remain.") }
+        if !Set(qualificationLimitations + other.qualificationLimitations).isSubset(of: accepted) {
+            reasons.append("Unreviewed qualification limitations remain.")
+        }
         let missing = Set(provenance.missingFields() + other.provenance.missingFields())
         for field in missing.sorted() { reasons.append("Unavailable provenance: \(field)") }
         let semanticIdentity = identity.catalog == other.identity.catalog && identity.catalogVersion == other.identity.catalogVersion
@@ -502,9 +506,15 @@ public struct DiscordBenchmarkReport: Codable, Equatable, Sendable {
                 reasons.append("Histogram precision/range differs for \(metric.id).")
             }
             if metric.distribution.droppedCount > 0 || metric.distribution.counterOverflow { reasons.append("Aggregate loss or counter overflow blocks qualification.") }
+            if metric.distribution.underflowCount > 0 || metric.distribution.overflowCount > 0 {
+                reasons.append("Censored histogram population blocks qualification.")
+            }
         }
         if other.metrics.contains(where: { $0.distribution.droppedCount > 0 || $0.distribution.counterOverflow }) {
             reasons.append("Aggregate loss or counter overflow blocks qualification.")
+        }
+        if other.metrics.contains(where: { $0.distribution.underflowCount > 0 || $0.distribution.overflowCount > 0 }) {
+            reasons.append("Censored histogram population blocks qualification.")
         }
         if counts == nil || other.counts == nil || throughputPerSecond == nil || other.throughputPerSecond == nil {
             reasons.append("Outcome accounting or throughput unavailable.")

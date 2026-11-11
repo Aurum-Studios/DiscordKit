@@ -474,6 +474,9 @@
       }
     },
     "Tools/DiscordDSLBenchmarks": {
+      "developmentPackages": {
+        "DiscordBenchmarkSupport": "Tools/DiscordBenchmarkSupport"
+      },
       "forbidden": [
         "DiscordActivities",
         "DiscordApplePlatform",
@@ -507,6 +510,7 @@
       },
       "targets": {
         "DiscordDSLBenchmarks": [
+          "DiscordBenchmarkSupport/DiscordBenchmarkSupport",
           "DiscordKit/DiscordCommandDSL",
           "DiscordKit/DiscordCommands",
           "DiscordKit/DiscordCore",
@@ -514,6 +518,52 @@
           "DiscordKit/DiscordInteractions",
           "DiscordKit/DiscordLogging",
           "DiscordKit/DiscordModels"
+        ]
+      }
+    }
+  },
+  "developmentPackages": {
+    "Tools/DiscordBenchmarkSupport": {
+      "products": {
+        "DiscordBenchmarkReports": {
+          "targets": [
+            "DiscordBenchmarkReports"
+          ],
+          "type": "executable"
+        },
+        "DiscordBenchmarkSupport": {
+          "targets": [
+            "DiscordBenchmarkSupport"
+          ],
+          "type": "library"
+        }
+      },
+      "targetPaths": {
+        "DiscordBenchmarkReports": "Sources/DiscordBenchmarkReports",
+        "DiscordBenchmarkSupport": "Sources/DiscordBenchmarkSupport",
+        "DiscordBenchmarkSupportTests": "Tests/DiscordBenchmarkSupportTests"
+      },
+      "targetSystemImports": {
+        "DiscordBenchmarkSupport": [
+          "Darwin",
+          "Glibc"
+        ],
+        "DiscordBenchmarkSupportTests": [
+          "Testing"
+        ]
+      },
+      "targetTypes": {
+        "DiscordBenchmarkReports": "executable",
+        "DiscordBenchmarkSupport": "regular",
+        "DiscordBenchmarkSupportTests": "test"
+      },
+      "targets": {
+        "DiscordBenchmarkReports": [
+          "DiscordBenchmarkSupport"
+        ],
+        "DiscordBenchmarkSupport": [],
+        "DiscordBenchmarkSupportTests": [
+          "DiscordBenchmarkSupport"
         ]
       }
     }

@@ -434,5 +434,22 @@ class BaselineTests(unittest.TestCase):
                 baseline.read(path)
 
 
+class LinuxHardwareIdentityTests(unittest.TestCase):
+    """Hardware models carry native evidence instead of silently aliasing architectures."""
+
+    def test_dmi_and_device_tree_sources(self):
+        """DMI is preferred; ARM models strip NUL bytes only after bounded admission."""
+        self.assertEqual(compiler.linux_hardware_model(
+            lambda path: "Board A\n" if "dmi" in path else "Board B"), "linux-model-v1:Board A")
+        self.assertEqual(compiler.linux_hardware_model(
+            lambda path: "Unknown" if "dmi" in path else "Board B\u0000\n"), "linux-model-v1:Board B")
+
+    def test_unknown_oversized_or_missing_remain_unavailable(self):
+        """No fallback to a CPU architecture can qualify an absent machine model."""
+        for value in (None, "", "\n", "Unavailable", "To Be Filled By O.E.M.", "x" * 16385):
+            with self.subTest(value_type=type(value).__name__):
+                self.assertEqual(compiler.linux_hardware_model(lambda _path: value), "unavailable")
+
+
 if __name__ == "__main__":
     unittest.main()

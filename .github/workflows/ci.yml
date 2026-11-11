@@ -61,6 +61,10 @@ jobs:
             directory: Tools/DiscordKitLoadTests/scripts
           - suite: benchmarks-python
             directory: Tools/DiscordDSLBenchmarks/scripts
+          - suite: timing-support-python
+            directory: Tools/DiscordBenchmarkSupport/scripts
+          - suite: foundation-timing-python
+            directory: Tools/DiscordFoundationBenchmarks/scripts
           - suite: ci-python
             directory: Tools/ci
           - suite: browser

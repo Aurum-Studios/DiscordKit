@@ -449,5 +449,98 @@ class ReleaseChecks(unittest.TestCase):
             audit.validate_maintenance(self.root, record, dt.date(2026, 10, 18), prefix)
 
 
+class DevelopmentPackageChecks(unittest.TestCase):
+    """Dependency-free benchmark support stays reviewed without entering runtime policy."""
+
+    def setUp(self):
+        """Build one inert standalone library, CLI and independent reviewed consumer."""
+        self.temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temporary.cleanup)
+        self.root = Path(self.temporary.name)
+        self.relative = "Tools/Support"
+        self.package = self.root / self.relative
+        for name, source in {"Support": "import Foundation", "Reporter": "import Support"}.items():
+            path = self.package / "Sources" / name / "Source.swift"
+            path.parent.mkdir(parents=True)
+            path.write_text(source)
+        self.expected = {"products": {"Support": {"type": "library", "targets": ["Support"]},
+            "Reporter": {"type": "executable", "targets": ["Reporter"]}},
+            "targets": {"Support": [], "Reporter": ["Support"]},
+            "targetTypes": {"Support": "regular", "Reporter": "executable"},
+            "targetPaths": {"Support": "Sources/Support", "Reporter": "Sources/Reporter"}}
+        self.policy = {"systemImports": ["Foundation"], "developmentPackages": {self.relative: self.expected}}
+        self.manifest = {"dependencies": [], "products": [
+            {"name": "Support", "targets": ["Support"], "type": {"library": ["automatic"]}},
+            {"name": "Reporter", "targets": ["Reporter"], "type": {"executable": None}}],
+            "targets": [{"name": "Support", "type": "regular", "dependencies": []},
+                {"name": "Reporter", "type": "executable", "dependencies": [{"byName": ["Support", None]}]}]}
+
+    def check(self, manifest=None):
+        """Evaluate a candidate graph against the unchanged reviewed policy."""
+        return audit.validate_development_package(self.root, self.relative, manifest or self.manifest, self.policy)
+
+    def test_reviewed_standalone_graph(self):
+        """A real CLI and library are admitted with no runtime or external package dependency."""
+        self.assertEqual(self.check(), {"products": 2, "targets": 2, "sourceFiles": 2, "resolvedPackages": 0})
+
+    def test_package_target_product_and_path_mutations_fail(self):
+        """Dependency, product, plugin, missing-source and escaping-path changes all fail closed."""
+        variants = []
+        for dependency in ({"fileSystem": [{"path": str(self.root)}]}, {"sourceControl": []}):
+            value = copy.deepcopy(self.manifest)
+            value["dependencies"] = [dependency]
+            variants.append(value)
+        for kind in ("macro", "plugin"):
+            value = copy.deepcopy(self.manifest)
+            value["targets"][0]["type"] = kind
+            variants.append(value)
+        value = copy.deepcopy(self.manifest)
+        value["products"][0]["type"] = {"plugin": None}
+        variants.append(value)
+        for path in ("../outside", "Sources/Missing"):
+            value = copy.deepcopy(self.manifest)
+            value["targets"][0]["path"] = path
+            variants.append(value)
+        value = copy.deepcopy(self.manifest)
+        value["targets"][0]["dependencies"] = [{"product": ["Runtime", "DiscordKit", None, None]}]
+        variants.append(value)
+        for variant in variants:
+            with self.subTest(variant=variant), self.assertRaises(ValueError):
+                self.check(variant)
+
+    def test_undeclared_import_and_source_symlink_fail(self):
+        """Policy cannot hide a dependency in inactive Swift branches or an escaping file."""
+        path = self.package / "Sources/Support/Source.swift"
+        path.write_text("#if os(Linux)\nimport DiscordKit\n#endif")
+        with self.assertRaisesRegex(ValueError, "Undeclared development import"):
+            self.check()
+        outside = self.root / "outside.swift"
+        outside.write_text("import Foundation")
+        path.unlink()
+        path.symlink_to(outside)
+        with self.assertRaisesRegex(ValueError, "symlink"):
+            self.check()
+
+    def test_consumer_selects_only_reviewed_local_product(self):
+        """A consumer must name both the exact standalone package path and an existing product."""
+        relative = "Examples/Consumer"
+        source = self.root / relative / "Sources/Consumer/Main.swift"
+        source.parent.mkdir(parents=True)
+        source.write_text("import Support")
+        self.policy.update({"products": {}, "targets": {}, "consumers": {relative: {
+            "targets": {"Consumer": ["Support/Support"]}, "forbidden": [],
+            "developmentPackages": {"Support": self.relative}}}})
+        manifest = {"dependencies": [{"fileSystem": [{"path": str(self.root)}]},
+            {"fileSystem": [{"path": str(self.package)}]}],
+            "targets": [{"name": "Consumer", "type": "executable", "dependencies": [
+                {"product": ["Support", "Support", None, None]}]}]}
+        result = audit.validate_consumer(self.root, relative, manifest, self.policy)
+        self.assertEqual(result["selectedProducts"], [])
+        self.assertEqual(result["sourceFiles"], 1)
+        self.policy["consumers"][relative]["developmentPackages"]["Support"] = "Tools/Unknown"
+        with self.assertRaisesRegex(ValueError, "unaudited development"):
+            audit.validate_consumer(self.root, relative, manifest, self.policy)
+
+
 if __name__ == "__main__":
     unittest.main()

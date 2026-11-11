@@ -1,0 +1,57 @@
+# File: .github/workflows/timing-periodic.yml
+# Created by Carson Rau.
+# Copyright (c) 2026 Aurum Studios.
+# https://aurum-studios.com
+
+name: Periodic offline stress and soak
+
+on:
+  schedule:
+    - cron: '41 7 * * 0'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: periodic-timing-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  SWIFTNIO_STRICT: '1'
+  PYTHONUNBUFFERED: '1'
+
+jobs:
+  workloads:
+    name: Informational ${{ matrix.profile }} / macOS ARM64
+    runs-on:
+      group: MacOS-26-5
+    timeout-minutes: 55
+    strategy:
+      fail-fast: false
+      matrix:
+        profile: [stress, soak]
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-native
+      - name: Check native host and pinned compiler
+        run: python3 Tools/ci/platform_probe.py --platform macos-arm64 --output .build/periodic-platform
+      - name: Build a verified release and capture the bounded offline workload
+        run: >-
+          python3 Tools/ci/timing_jobs.py periodic --profile ${{ matrix.profile }}
+          --output .build/periodic-timing
+      - name: Require unchanged sources and dependency pins
+        run: git diff --exit-code
+      - name: Retain reports, failure logs and partial observations
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: periodic-${{ matrix.profile }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            .build/periodic-platform
+            .build/periodic-timing
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 14

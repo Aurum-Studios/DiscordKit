@@ -64,6 +64,14 @@ Accounted state records finite retained JSON bytes and cardinality limits, not e
 Swift object or exact heap size. macOS reports actual current/peak RSS and live malloc
 blocks/bytes. Linux currently reports actual peak RSS; unsupported current RSS/live
 allocator gauges are omitted. Live allocations are not cumulative allocation events.
+
+Linux hardware-model receipts use bounded DMI product-name or ARM device-tree
+model evidence. Unsupported, missing and placeholder models remain `unavailable`;
+the architecture string cannot qualify a numerical baseline. The shared
+[Phase 10 comparison driver](../DiscordBenchmarkSupport/README.md) separately
+records the named host and effective CPU/memory allocation. Legacy v1 environment
+keys remain unchanged, and historical architecture-only Linux artifacts are not
+new controlled-host baselines.
 CPU and peak RSS are process-wide, and earlier matrix rows affect later observations.
 All owned active handler/worker/acknowledgement counters must be zero after cleanup;
 allocator page retention is reported separately.

@@ -150,3 +150,157 @@ gauges remain explicitly unavailable. Process high-water RSS is never a row gaug
 No live Discord, hardware audio, Linux qualification or numerical performance
 baseline is implied by a successful local capture. See the task's
 [validation procedure](../../Docs/Tasks/latency-timing/VALIDATION.md).
+
+## Paired capture and reviewed regression policies
+
+[Stage 10](../../Docs/Tasks/latency-timing/PHASE-10.md) adds explicit series capture
+and offline evaluation. Preparation, capture, policy review and required-gate
+promotion are separate operations. Nothing adopts or refreshes a baseline when
+a candidate fails. Ordinary shared-runner smoke remains informational.
+
+Finish source edits, resolve pinned dependencies and build optimized executables
+before capture. Use separate unchanged source checkouts for distinct baseline and
+candidate revisions; modifying a checkout invalidates its prior build receipt.
+Prepare the evaluator outside capture too:
+
+```sh
+python3 Tools/DiscordBenchmarkSupport/scripts/run_benchmarks.py build \
+  --repository . --package Tools/DiscordFoundationBenchmarks \
+  --product DiscordFoundationBenchmarks --receipt .build/phase10/foundation-release.json
+swift build --package-path Tools/DiscordBenchmarkSupport -c release \
+  --product DiscordBenchmarkReports --force-resolved-versions --jobs 4 \
+  --build-system native --disable-experimental-prebuilts
+```
+
+The following creates a real Foundation no-change recipe in an ignored build
+directory. Both arms intentionally use the same receipt and binary. Its host
+declaration starts uncontrolled with unknown contention; change that declaration
+only after reserving and inspecting a named controlled host. A local recipe alone
+does not establish exclusivity or platform qualification. Select warmup and finite
+duration/batch counts from a pilot; the example requests 10,000 **batches** for the
+batch-level p99 population, which must finish before the cap to supply that count.
+
+```sh
+python3 - <<'PY'
+import json
+from pathlib import Path
+root = Path.cwd().resolve()
+directory = root / '.build/phase10'
+directory.mkdir(parents=True, exist_ok=True)
+arm = {
+    'receipt': str(directory / 'foundation-release.json'),
+    'command': [str(root / 'Tools/DiscordFoundationBenchmarks/.build/release/DiscordFoundationBenchmarks'),
+                '--case', 'json.parse.1024.depth1.ascii', '--batches', '10000',
+                '--batch-size', '16', '--warmup-batches', '64', '--output', '{output}'],
+}
+spec = {
+    'format': 'discordkit.benchmark-comparison-spec', 'version': 1,
+    'profile': 'standard', 'scenario': 'json.parse.1024.depth1.ascii', 'seed': 1,
+    'fixtures': [str(root / 'Tools/DiscordFoundationBenchmarks/Package.resolved')],
+    'host': {'name': 'replace-with-reserved-host-name', 'controlled': False,
+             'contention': 'unknown', 'notes': 'Recipe only; allocation and contention not qualified.'},
+    'baseline': arm, 'candidate': arm, 'concurrency': 1,
+    'scheduler_policy': 'serial-synchronous-batches',
+    'warmup_seconds': 1, 'warmup_policy': 'participant-declared', 'duration_seconds': 30,
+}
+path = directory / 'no-change-spec.json'
+with path.open('x') as output:
+    json.dump(spec, output, indent=2)
+PY
+python3 Tools/DiscordBenchmarkSupport/scripts/run_comparison.py capture \
+  --spec .build/phase10/no-change-spec.json --output-dir .build/phase10/no-change
+```
+
+The spec requires `format`/integer `version`, `profile`, `scenario`, integer `seed`,
+`fixtures`, `host`, explicit `baseline`/`candidate` command arrays and receipts,
+integer `concurrency`, `scheduler_policy`, integer `warmup_seconds`, `warmup_policy`
+and integer `duration_seconds`. Host fields are a finite `name`, boolean
+`controlled`, `contention` (`none`, `known` or `unknown`) and nonempty observed
+allocation/contention `notes`. Paths resolve relative to the spec file; absolute
+paths make distinct-checkout recipes unambiguous. JSON command arguments retain
+literal values; shell substitutions do not run. Shared-driver environment variables
+supply native profile, pair seed, warmup, duration, concurrency and common-report
+destination. Tools that do not honor them must receive the corresponding CLI
+arguments with the driver's substitutions.
+
+Capture validates build/source/executable/input receipts before and after runs,
+records host allocation and load indicators around every process, and refuses an
+allocation change. Linux allocation requires visible affinity, cgroup-v2 CPU quota
+and memory-limit state; an unavailable controller remains unavailable. Host load
+indicators do not prove exclusivity. Unknown/known contention or an uncontrolled
+host marks pairs contended and blocks controlled numerical qualification.
+
+Five standard pairs run in fresh owned processes with deterministic initial order
+and alternating A/B, B/A order. Source reports and process artifacts remain in
+`capture/`; `comparison-report.json` adds verified build/host receipts in a separate
+copy. Participant fixture digests and explicit file digests retain their values
+under separate `participant:` and `capture:` namespaces in both schema fixture
+maps. Scope notes, status, actual populations and actual measured values remain
+unchanged. A missing report, timeout, stale input or failed cleanup retains bounded
+partial artifacts and fails capture. Every output directory and release receipt
+must be new.
+
+For a candidate comparison, prepare a separate explicit spec selecting the same
+baseline receipt and the candidate receipt, matching native settings and the same
+host/seed schedule. Keep the independently captured no-change series, then run:
+
+```sh
+python3 Tools/DiscordBenchmarkSupport/scripts/run_comparison.py capture \
+  --spec .build/phase10/candidate-spec.json --noise-series .build/phase10/no-change/series.json \
+  --output-dir .build/phase10/candidate
+Tools/DiscordBenchmarkSupport/.build/release/DiscordBenchmarkReports \
+  hash-series .build/phase10/candidate/series.json
+python3 Tools/DiscordBenchmarkSupport/scripts/run_comparison.py evaluate \
+  --series .build/phase10/candidate/series.json --policy .build/phase10/reviewed-policy.json \
+  --evaluator Tools/DiscordBenchmarkSupport/.build/release/DiscordBenchmarkReports \
+  --output-dir .build/phase10/evaluation
+```
+
+`hash-series` outputs canonical `baselineHashes` and `noiseSeriesHash`; `hash FILE`
+returns one canonical report SHA-256. These use validated Swift encoding rather
+than a hash of Python JSON presentation. Copy reviewed receipts into a separately
+authored `DiscordBenchmarkPolicy` schema-1 file with `mode` (`reporting` initially),
+`acceptedQualificationLimitations` (exact reviewed scope-note strings),
+`maximumErrors`, `maximumDeadlineMisses` and `budgets`. No helper generates or
+updates this policy. Accepting a scope note does not waive structural validation,
+complete outcome accounting, zero aggregate loss or joined cleanup.
+
+Baseline hashes cover each measured reference report's complete canonical bytes,
+including its distribution. A new capture produces new receipts even for the
+same executable. The controlled workflow therefore separates capture from
+evaluation: retain the series, review its hashes and thresholds, then evaluate
+those exact artifacts. An existing policy can be replayed against its frozen
+reference evidence; adopting a newly captured reference requires explicit review.
+These hashes do not act as reusable build-identity-only budgets.
+
+Series use `format: DiscordBenchmarkSeries`, `schemaVersion: 1`, `pairs` and
+`noisePairs`. Each pair supplies `id`, `order` (`baselineFirst` or
+`candidateFirst`), unique `baselineProcess`/`candidateProcess` receipts,
+`hostContended`, and inline strict `baseline`/`candidate` common reports. Both
+arrays require 5–10 pairs for qualification with alternating order and matching
+seed schedules. The entire series is bounded to 32 MiB; policies are bounded to
+1 MiB, ten baseline hashes and 64 budgets. Runtime reports require release
+optimization; explicitly configured compiler workloads retain debug builds.
+
+Each budget declares a unique `id`, `statistic`, `direction`, `relativeTolerance`
+and measured `absoluteNoiseFloor`. Duration statistics (`p50`, `p95`, `p99`,
+`maximum`) also select exact `metricID`, `metricVersion` and `outcome` and use
+direction `maximum`. Throughput uses `throughput`/`minimum`; resource bounds use
+`gauge`/`maximum` and a named `gauge`. Optional `absoluteLimit` is a hard ceiling or
+floor. Floors must cover the independently observed no-change deltas, in the
+selected statistic's units; existing DSL floors are not defaults for other
+workloads. A reviewed p99 budget requires at least 10,000 observations in every
+selected population. Calibrate each budget before promoting a workload.
+
+Evaluation classifies `passed`, `regression`, `incompatible`, `insufficientSamples`,
+`hostFailure` and `harnessFailure` separately. It retains individual paired
+distribution bounds, sample counts, deltas and independent-run spread; it does not
+average marginal percentiles or invent operation-level confidence intervals.
+Greater-than-10% adverse change reproduced in three matching pairs still requests
+investigation. Reporting mode exits successfully after a readable numerical
+decision, including unavailable or regression classifications; inspect its JSON.
+An explicitly reviewed `required` policy exits nonzero unless its gate passes.
+Malformed documents and process failures fail in either mode. The Python wrapper
+retains the evaluator JSON decision, exit status and logs without changing policy
+or baseline files. Hosted qualification requires completed jobs at the implemented
+revision; preparing workflows or local tests does not establish it.

@@ -116,9 +116,10 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
-def atomic_json(path: Path, value: Any, cap: int = MAX_REPORT_BYTES) -> None:
+def atomic_json(path: Path, value: Any, cap: int = MAX_REPORT_BYTES, *, compact: bool = False) -> None:
     """Serialize outside measurement and reject oversize rather than truncate JSON."""
-    payload = json.dumps(value, indent=2, sort_keys=True, allow_nan=False).encode() + b"\n"
+    payload = json.dumps(value, indent=None if compact else 2, separators=(",", ":") if compact else None,
+                         sort_keys=True, allow_nan=False).encode() + b"\n"
     if len(payload) > cap:
         raise ValueError("serialized manifest exceeds the report ceiling")
     temporary = path.with_name(path.name + ".partial")
@@ -186,17 +187,19 @@ def optional_capture(command: list[str]) -> str | None:
         return None
 
 
-def linux_cgroup_limits() -> dict[str, Any]:
+def linux_cgroup_limits(root: Path = Path("/sys/fs/cgroup"),
+                        membership_path: Path = Path("/proc/self/cgroup")) -> dict[str, Any]:
     """Read effective finite cgroup-v2 ancestor caps instead of only mount-root caps.
 
     Namespace-relative mount layouts fall back to the visible mount root. Missing
     v1/controller support is unavailable; an explicitly unlimited v2 quota is
     distinguished from a failed read.
     """
-    root = Path("/sys/fs/cgroup")
-    result: dict[str, Any] = {"cpu_quota": None, "memory_limit_bytes": None}
+    root = root.resolve()
+    result: dict[str, Any] = {"cpu_quota": None, "memory_limit_bytes": None,
+                              "memory_limit_state": "unavailable"}
     try:
-        membership = next(line.split(":", 2)[2] for line in Path("/proc/self/cgroup").read_text().splitlines()
+        membership = next(line.split(":", 2)[2] for line in membership_path.read_text().splitlines()
                           if line.startswith("0::"))
         location = (root / membership.lstrip("/")).resolve()
         candidates = []
@@ -211,16 +214,25 @@ def linux_cgroup_limits() -> dict[str, Any]:
         quotas = []
         memories = []
         quota_seen = False
+        memory_seen = False
         for candidate in candidates:
             quota = candidate / "cpu.max"
             if quota.is_file():
                 tokens = quota.read_text().split()
+                if len(tokens) != 2 or not tokens[1].isdigit() or int(tokens[1]) <= 0:
+                    raise ValueError("invalid cpu.max")
                 quota_seen = True
-                if len(tokens) == 2 and tokens[0] != "max":
-                    quotas.append(int(tokens[0]) / int(tokens[1]))
+                if tokens[0] != "max":
+                    amount = int(tokens[0])
+                    if amount <= 0:
+                        raise ValueError("invalid cpu.max quota")
+                    quotas.append(amount / int(tokens[1]))
             limit = candidate / "memory.max"
             if limit.is_file():
                 value = limit.read_text().strip()
+                if value != "max" and (not value.isdigit() or int(value) <= 0):
+                    raise ValueError("invalid memory.max")
+                memory_seen = True
                 if value.isdigit():
                     memories.append(int(value))
         if quota_seen:
@@ -228,6 +240,8 @@ def linux_cgroup_limits() -> dict[str, Any]:
                                    "state": "finite" if quotas else "unlimited",
                                    "method": "visible cgroup-v2 cpu.max hierarchy"}
         result["memory_limit_bytes"] = min(memories) if memories else None
+        if memory_seen:
+            result["memory_limit_state"] = "finite" if memories else "unlimited"
     except (OSError, ValueError, StopIteration, ZeroDivisionError):
         pass
     return result
@@ -266,12 +280,16 @@ def environment() -> dict[str, Any]:
         "operating_system": platform.platform(), "architecture": platform.machine() or None,
         "logical_cpu_count": os.cpu_count(), "cpu_affinity": None, "cpu_quota": None,
         "cpu_model": None, "hardware_model": None, "memory_bytes": None,
-        "memory_limit_bytes": None, "unavailability_reasons": {},
+        "memory_limit_bytes": None, "memory_limit_state": "not-applicable" if system == "Darwin" else "unavailable",
+        "unavailability_reasons": {},
         "runner_identity_sha256": hashlib.sha256(os.environ["RUNNER_NAME"].encode()).hexdigest()
             if os.environ.get("RUNNER_NAME") else None,
     }
     if hasattr(os, "sched_getaffinity"):
-        result["cpu_affinity"] = sorted(os.sched_getaffinity(0))
+        try:
+            result["cpu_affinity"] = sorted(os.sched_getaffinity(0))
+        except OSError:
+            pass
     if system == "Darwin":
         result["hardware_model"] = optional_capture(["sysctl", "-n", "hw.model"])
         result["cpu_model"] = optional_capture(["sysctl", "-n", "machdep.cpu.brand_string"])
@@ -295,6 +313,16 @@ def environment() -> dict[str, Any]:
         if value is None:
             result["unavailability_reasons"][key] = f"not available from {system} host APIs"
     return result
+
+
+def host_observation() -> dict[str, Any]:
+    """Retain inexpensive contention indicators, never a claim of host exclusivity."""
+    try:
+        load = list(os.getloadavg())
+    except (AttributeError, OSError):
+        load = None
+    return {"load_average_1_5_15_minutes": load,
+            "method": "os.getloadavg; host-level indicator, not exclusive-allocation proof"}
 
 
 def process_rss(pid: int) -> int | None:
@@ -593,12 +621,15 @@ def release_build(package: Path, product: str, receipt_path: Path, swift: str,
                   repository: Path, cancellation: Cancellation, timeout: float = 1800) -> dict[str, Any]:
     """Build an optimized product and bind its binary to stable source/compiler evidence."""
     package, repository, receipt_path = package.resolve(), repository.resolve(), receipt_path.resolve()
+    if receipt_path.exists():
+        raise ValueError("release receipt already exists; select a new artifact path")
     if not (package / "Package.swift").is_file():
         raise ValueError("package has no Package.swift")
     before = source_identity(repository)
     compiler = capture([swift, "--version"])
     target = json.loads(capture([swift, "-print-target-info"]))
-    flags = ["-c", "release", "--product", product, "--force-resolved-versions", "-j", "4"]
+    flags = ["-c", "release", "--product", product, "--force-resolved-versions", "-j", "4",
+             "--build-system", "native", "--disable-experimental-prebuilts"]
     command = [swift, "build", "--package-path", str(package), *flags]
     sdk = {"version": optional_capture(["xcrun", "--show-sdk-version"]) if platform.system() == "Darwin" else None,
            "path": optional_capture(["xcrun", "--show-sdk-path"]) if platform.system() == "Darwin" else None}
@@ -617,7 +648,8 @@ def release_build(package: Path, product: str, receipt_path: Path, swift: str,
         if before != after:
             receipt["status"] = "source_changed_during_build"
         else:
-            binary_directory = capture([swift, "build", "--package-path", str(package), "-c", "release", "--show-bin-path"])
+            binary_directory = capture([swift, "build", "--package-path", str(package), "-c", "release",
+                                        "--build-system", "native", "--disable-experimental-prebuilts", "--show-bin-path"])
             executable = Path(binary_directory) / product
             if not executable.is_file():
                 receipt["status"] = "missing_executable"
@@ -631,7 +663,7 @@ def validate_receipt(path: Path, command: list[str]) -> dict[str, Any]:
     """Reject stale, modified, debug or unbound binaries before measurement."""
     if path.stat().st_size > MAX_REPORT_BYTES:
         raise ValueError("release receipt exceeds report ceiling")
-    receipt = json.loads(path.read_bytes())
+    receipt = strict_json(path.read_bytes())
     version = receipt.get("version")
     if receipt.get("format") != RECEIPT_FORMAT or type(version) is not int or version != 1:
         raise ValueError("unsupported release-build receipt")
@@ -737,11 +769,16 @@ def run_suite(args: argparse.Namespace, cancellation: Cancellation) -> dict[str,
         child_environment.update({"DK_BENCHMARK_" + key.upper(): value for key, value in tokens.items()})
         child_environment["DK_BENCHMARK_ENVELOPE"] = str(envelope)
         stdout_report = not any("{output}" in item for item in command)
+        before_environment, before_host = environment(), host_observation()
         result = run_process(expanded, directory,
                              ProcessLimits(warmup + duration + 30, rss_bytes=profile.rss_cap_bytes),
                              cancellation, env=child_environment,
                              report_paths=([envelope] if stdout_report else [native, envelope]),
                              stdout_is_report=stdout_report, require_json=True)
+        result["environment_before"] = before_environment
+        result["environment_after"] = environment()
+        result["host_observation_before"] = before_host
+        result["host_observation_after"] = host_observation()
         try:
             if envelope.stat().st_size > MAX_REPORT_BYTES:
                 raise ValueError("oversize envelope")

@@ -282,6 +282,33 @@ def run_incremental(source, command, timeout, repository, log_path, timed=run_ti
         source.write_bytes(original)
 
 
+def linux_hardware_model(read=None):
+    """Read bounded Linux hardware evidence; architecture alone cannot identify a machine model.
+
+    A named controlled host and effective allocation remain separate comparison-driver
+    receipts. Missing DMI/device-tree evidence stays unavailable, refusing numerical
+    baselines. An injectable reader makes Linux and unavailable cases testable on macOS.
+    """
+    def bounded_read(path):
+        try:
+            with Path(path).open("rb") as source:
+                payload = source.read(16385)
+            return payload.decode("utf-8") if len(payload) <= 16384 else None
+        except (OSError, UnicodeError):
+            return None
+
+    reader = read or bounded_read
+    placeholders = {"unavailable", "unknown", "default string", "system product name", "to be filled by o.e.m."}
+    for path in ("/sys/class/dmi/id/product_name", "/sys/firmware/devicetree/base/model"):
+        raw = reader(path)
+        if raw is None or len(raw.encode("utf-8")) > 16384:
+            continue
+        value = raw.replace("\u0000", "").strip()
+        if value and value.lower() not in placeholders:
+            return "linux-model-v1:" + value
+    return "unavailable"
+
+
 def environment(swift, repository):
     """Record current compiler and hardware; compiler evidence must establish Swift 6.4+."""
     compiler = capture([swift, "--version"], repository)
@@ -294,7 +321,7 @@ def environment(swift, repository):
         value["hardwareModel"] = capture(["/usr/sbin/sysctl", "-n", "hw.model"], repository)
         value["physicalMemoryBytes"] = int(capture(["/usr/sbin/sysctl", "-n", "hw.memsize"], repository))
     else:
-        value["hardwareModel"] = platform.machine()
+        value["hardwareModel"] = linux_hardware_model() if platform.system() == "Linux" else "unavailable"
         value["physicalMemoryBytes"] = os.sysconf("SC_PHYS_PAGES") * os.sysconf("SC_PAGE_SIZE")
     return value
 

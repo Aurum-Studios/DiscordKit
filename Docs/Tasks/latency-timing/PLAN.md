@@ -7,7 +7,8 @@ https://aurum-studios.com
 
 # Latency instrumentation and timing suites
 
-Status: Stages 0–9 implemented; stages 10–11 remain proposed.
+Status: Stages 0–10 implemented; stage 11 remains proposed. Controlled-host
+baseline review, numerical gate promotion and hosted execution remain unqualified.
 Runtime owner hooks are opt-in; no performance qualification is implied. The original
 plan was prepared 2026-11-10 against source revision
 `27cd73f335b2b3058dfa317677c71991292706b8`; the Stage 0 checkpoint uses
@@ -25,6 +26,7 @@ Stage 6 implementation: [Gateway, interactions and command timing suites](PHASE-
 Stage 7 implementation: [cache, client and authoring timing suites](PHASE-7.md).
 Stage 8 implementation: [OAuth, RPC, Activities and service timing suites](PHASE-8.md).
 Stage 9 implementation: [media, voice, MLS and DAVE timing suites](PHASE-9.md).
+Stage 10 implementation: [baseline comparison, regression policy and CI](PHASE-10.md).
 
 ## Outcome and scope
 
@@ -497,6 +499,11 @@ Exit gate: known synthetic slowdowns and tail stalls are detected; incompatible
 hardware/schema/fixtures are refused; a no-change comparison establishes the noise
 floor; supported native hosts produce readable artifacts. Hosted execution is
 qualified only by completed runs at the exact implemented revision.
+
+Stage 10 implementation: [comparison and capture ownership](PHASE-10.md) preserve
+per-run evidence and reviewed baseline/noise hashes. Native smoke remains
+informational; controlled-host baselines and required gate promotion need their
+own completed qualification and review.
 
 ## Stage 11 — Documentation, qualification and optimization handoff
 

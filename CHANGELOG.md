@@ -9,6 +9,18 @@ https://aurum-studios.com
 
 ## Unreleased
 
+### Timing baselines and CI — 2026-11-10
+
+- Add versioned policies bound to immutable baseline and no-change evidence,
+  per-run paired deltas, measured noise floors and explicit regression,
+  compatibility, insufficient-data and harness/host classifications.
+- Add supervised paired capture, native release integrity smoke, and separate
+  controlled comparison and periodic stress/soak workflows. Keep shared-runner
+  numbers informational and numerical gate promotion explicit.
+- Repair Linux model evidence and audit the benchmark support dependency without
+  extending runtime dependencies. See the
+  [Phase 10 record](Docs/Tasks/latency-timing/PHASE-10.md).
+
 ### Cache, client and authoring timing suites — 2026-11-10
 
 - Add opt-in cache and client lifecycle hooks with separate caller/owner/loader

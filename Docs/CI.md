@@ -7,9 +7,10 @@ https://aurum-studios.com
 
 # Continuous validation and upstream review
 
-The repository defines four workflow entry points: offline CI validation,
-documentation publication, manual GitHub releases and weekly official upstream
-review. CI also calls one reusable native-platform workflow, which has no push,
+The repository defines six workflow entry points: offline CI validation,
+documentation publication, manual GitHub releases, weekly official upstream
+review, manual controlled timing comparisons and periodic offline stress/soak.
+CI also calls one reusable native-platform workflow, which has no push,
 pull-request, schedule or manual trigger of its own.
 A workflow definition does not establish that a hosted runner
 has executed. Review actual artifacts before changing support claims.
@@ -54,9 +55,10 @@ Linux uses separate 64-core build and 8-core runtime pools.
 
 After its platform check, a small native job evaluates the root manifest and plans
 independent builds for the root, macros, extensions, tooling, load tools,
-benchmarks, consumers and optimized library products for that platform. Builds
+DSL benchmarks, shared timing support, instrumentation/Foundation/media timing
+harnesses, consumers and optimized library products for that platform. Builds
 use `swift build --build-tests` where applicable and do not execute test suites.
-The benchmark build also produces its optimized smoke executable. Consumer
+The DSL benchmark, load and timing harness builds also produce optimized smoke executables. Consumer
 examples keep separate build directories so one example's metadata cannot
 replace another example's test executable. Apple SDK module emissions run in
 this build phase after the macOS platform check.
@@ -75,7 +77,7 @@ suites are the exception: their positive and negative cases must invoke the
 compiler, so each authoring fixture suite runs as a separate job on the build
 pools. They still require the expected semantic diagnostics; infrastructure
 crashes do not count as successful negative tests. Python tooling, load,
-benchmark and CI helpers and the browser bridge run as five independent small
+benchmark, shared timing support, Foundation timing and CI helpers and the browser bridge run as seven independent small
 Linux jobs without native-build dependencies. Source audits run separately on
 each platform and reuse its compiled tooling executable.
 Public API and DocC checks reuse public symbol graphs emitted during the macOS
@@ -190,6 +192,63 @@ commands and are compared only with matching hardware, toolchain and workload.
 API checks compare fresh compiler output to the applicable reviewed root, macro
 and extension baselines; changing an existing baseline requires compatibility
 review. None of these checks establishes publication or production capacity.
+
+## Timing regression and periodic workloads
+
+Ordinary native CI builds and tests `DiscordBenchmarkSupport`,
+`DiscordTimingBenchmarks`, `DiscordFoundationBenchmarks` and
+`DiscordMediaBenchmarks` independently. Their test discovery uses the same
+nonempty exact-attempt compiled-artifact receipt as the existing suites. Seven
+short release smoke cases cover disabled/aggregate/scalar instrumentation, a JSON
+CPU batch, RTP roundtrip, scripted REST and actual local NIO HTTP. These commands
+run with `--skip-build`, committed pins, finite operation and wall caps and a
+120-second outer process-group timeout. Native/common reports must match, contain
+successful nonempty populations, consistent finite histogram accounting, no
+unknown dropped observations and awaited zero-owner cleanup. Counted histogram
+underflow/overflow and sparse p99 remain visible. Shared-runner numerical values
+are informational and have no latency or throughput regression budget. Smoke
+reports and failure/partial logs expire after 14 days.
+
+[Controlled timing comparison](../.github/workflows/timing-comparison.yml) is
+manual only and has no dependency from ordinary CI. Select an existing isolated
+runner group and matching native platform, then supply paths to a prepared
+standard comparison spec and independent five-pair no-change series for the
+**capture** stage. Prepare immutable baseline/candidate checkouts,
+release receipts and fixtures outside the workflow checkout: checkout cleanup
+must not remove those inputs. The spec identifies the actual controlled host,
+contention, workload, warmup and duration chosen from a pilot. Both revisions
+must already have pinned optimized receipts compatible with that host. The job
+builds the current release evaluator, captures five fresh-process pairs in
+counterbalanced order and emits immutable series plus canonical baseline/noise
+hashes for review. Review workload-specific budgets against those exact frozen
+reports, then invoke the separate **evaluate** stage with that same retained
+series and the reviewed hash-bound policy. Evaluation never recaptures the
+baseline: fresh timings would have different report hashes. Keep the captured
+series outside the workflow checkout before a subsequent dispatch. Both stages
+retain original inputs, per-run reports, process/host receipts and partial
+failure evidence for 14 days. Missing, incompatible, contended or insufficient
+evidence cannot silently pass. Numerical checks begin in the reviewed policy's
+reporting mode; promoting a required workload gate requires a separate review.
+The workflow never refreshes a baseline or rewrites a policy.
+
+[Periodic offline stress and soak](../.github/workflows/timing-periodic.yml)
+runs weekly or by explicit manual invocation on the existing macOS ARM pool. The
+stress job supervises three fresh instrumentation-contention processes at 4/8/16
+workers, each with a 60-second measured cap. Operation limits can finish earlier;
+the artifacts retain actual populations and elapsed time. The separate soak job
+uses the existing cache/broadcast loop with 64 minimum rounds and 600 seconds of
+minimum actual wall time, with bounded live cache/checkpoint state and joined
+shutdown assertions. It preserves the legacy adapter's explicit unqualified
+common envelope: this is continuity/resource evidence, not a timing baseline or
+product SLO. Both jobs use source/pin/executable-bound release receipts and the
+shared supervisor's RSS, diagnostic, report and process ownership bounds. They
+retain failures and partial results for 14 days and do not gate offline
+certification. The helper is [timing_jobs.py](../Tools/ci/timing_jobs.py).
+
+These workflow definitions have not been dispatched as part of Phase 10.
+Hosted qualification requires completed runs at the exact implemented revision;
+local synthetic tests and locally readable reports establish only their stated
+offline scope.
 
 The runtime API compatibility candidate is 0.20.0. Encoder injection adds the
 `OpusPCMEncoding` contract, packet construction and timing diagnostics, and changes
