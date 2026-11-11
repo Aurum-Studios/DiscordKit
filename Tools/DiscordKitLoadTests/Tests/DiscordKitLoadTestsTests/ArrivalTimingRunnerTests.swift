@@ -230,6 +230,46 @@ struct ArrivalTimingRunnerTests {
         }
     }
 
+    /// Historical profile JSON retains the original disabled generator observation policy.
+    @Test func legacyProfileDecode() throws {
+        let data = Data("{\"arrivals\":3,\"intervalNanoseconds\":100,\"maximumActive\":1,\"maximumPending\":2}".utf8)
+        let profile = try JSONDecoder().decode(ArrivalTimingProfile.self, from: data)
+        #expect(!profile.measureGenerator)
+        #expect(profile.arrivals == 3)
+    }
+
+    /// A late driver clock exposes generator deadline pressure separately from service/queue lateness.
+    @Test func noOpGeneratorControlRetainsLatenessAndHeadroom() async throws {
+        let time = ManualArrivalTime()
+        let profile = try ArrivalTimingProfile(arrivals: 3, intervalNanoseconds: 100,
+            maximumActive: 1, maximumPending: 2, measureGenerator: true)
+        let task = Task { try await ArrivalTimingRunner().run(profile: profile, clock: time.clock) { _ in
+            let now = time.now()
+            return ArrivalOperationResult(outcome: .success, admittedNanoseconds: now,
+                serviceStartedNanoseconds: now, serviceCompletedNanoseconds: now)
+        } }
+        var ticks = time.requests.makeAsyncIterator()
+        #expect(await ticks.next() == 0)
+        #expect(await ticks.next() == 100)
+        time.advance(to: 250)
+        #expect(await ticks.next() == 200)
+        let result = try await task.value
+        let generator = try #require(result.generator)
+        #expect(generator.offeredTimestamps.count == 3)
+        #expect(generator.schedulerLateness.observedCount == 3)
+        #expect(generator.schedulerLateness.maxInRangeNanoseconds == 150)
+        #expect(generator.nextSlotHeadroom.observedCount == 2)
+        #expect(generator.nextSlotHeadroom.maxInRangeNanoseconds == 100)
+        #expect(generator.lateArrivals == 2)
+        #expect(generator.noHeadroomArrivals == 1)
+        #expect(result.offeredArrivals == 3 && result.submittedArrivals == 3)
+        #expect(result.missedArrivals == 0 && result.rejectedRequests == 0)
+        #expect(result.admittedTimestamps.count == 3)
+        #expect(result.remainingActive == 0 && result.remainingPending == 0)
+        #expect(!result.clockRegressed)
+        _ = try JSONDecoder().decode(ArrivalTimingMeasurement.self, from: JSONEncoder().encode(result))
+    }
+
     /// Finds one finite identity/outcome without merging populations or averaging their quantiles.
     private func metric(_ result: ArrivalTimingMeasurement, _ id: String,
         outcome: BenchmarkOutcome = .success) -> BenchmarkMetric? {

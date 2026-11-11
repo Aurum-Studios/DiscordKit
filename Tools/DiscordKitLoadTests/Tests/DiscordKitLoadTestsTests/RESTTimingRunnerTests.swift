@@ -4,6 +4,7 @@
 // https://aurum-studios.com
 
 import DiscordBenchmarkSupport
+import DiscordHTTP
 import Foundation
 import Testing
 @testable import DiscordKitLoadTests
@@ -63,7 +64,7 @@ struct RESTTimingRunnerTests {
             #expect(report.wireExchanges == 6)
             #expect(count(report, "rest.headers", outcome: .uncertain) == 6)
             #expect(count(report, "rest.orderWait") == 6)
-        case .orderedMutation:
+        case .orderedMutation, .orderedMutationDefaultV1:
             #expect(count(report, "rest.orderWait") == 6)
             #expect(report.wireExchanges == 6)
         default:
@@ -108,6 +109,35 @@ struct RESTTimingRunnerTests {
         let partial = try await task.value
         #expect(partial.counts.offered == 0 && partial.counts.completed == 0)
         #expect(partial.cleanup.isEmpty)
+    }
+
+    /// The new workload constructs the complete production scheduler and retains legacy tuning separately.
+    @Test func defaultSchedulingHasDistinctReceipt() async throws {
+        let defaults = SchedulingPolicy()
+        let tuned = try RESTArrivalFixture(concurrency: 4, delay: .zero)
+        let shared = try RESTArrivalFixture(concurrency: 4, delay: .zero, orderedDefault: true,
+            observeAdmission: true)
+        let legacy = await tuned.schedulingReceipt()
+        let production = await shared.schedulingReceipt()
+        #expect(legacy.profile == "legacy-tuned-v1")
+        #expect(legacy.fairnessIntervalNanoseconds == 100_000)
+        #expect(legacy.provisionalWindowNanoseconds == 1_000)
+        #expect(legacy.initialGlobalRequestsPerSecond == 1_000_000)
+        #expect(production == RESTSchedulingReceipt(policy: defaults, usesDefaults: true))
+        #expect(production.profile == "SchedulingPolicy-default-v1")
+        #expect(production.fairnessIntervalNanoseconds == 10_000_000)
+        #expect(production.provisionalWindowNanoseconds == 1_000_000_000)
+        #expect(production.initialGlobalRequestsPerSecond == 50)
+        let before = DispatchTime.now().uptimeNanoseconds
+        let result = await shared.executeMeasured(ordinal: 0)
+        let after = DispatchTime.now().uptimeNanoseconds
+        #expect(result.outcome == .success)
+        let admitted = try #require(result.admittedNanoseconds)
+        #expect(admitted >= before && admitted <= after)
+        let unobserved = await tuned.executeMeasured(ordinal: 0)
+        #expect(unobserved.admittedNanoseconds == nil)
+        #expect(await tuned.shutdown().isEmpty)
+        #expect(await shared.shutdown().isEmpty)
     }
 
     /// Adds observed histogram mass for a finite identity and optional outcome without reading percentiles.

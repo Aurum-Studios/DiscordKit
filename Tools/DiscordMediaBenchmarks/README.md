@@ -29,7 +29,8 @@ Tools/DiscordMediaBenchmarks/.build/release/DiscordMediaBenchmarks \
 swift test --package-path Tools/DiscordMediaBenchmarks --jobs 4
 ```
 
-The finite 80-case catalog covers bandlimited 16/44.1 kHz to 48 kHz resampling
+The finite catalog preserves its 80 original cases and adds 18 version-two
+continuous cases. Original cases cover bandlimited 16/44.1 kHz to 48 kHz resampling
 in mono/stereo; Opus encode/decode/conceal/recover in CELT 120/240/480/960 and
 SILK/hybrid 480/960 samples in mono/stereo; reordered jitter insertion/playout with
 one explicit lost slot; RTP packetization/serialization/parsing; AES256-GCM and
@@ -39,8 +40,34 @@ CELT recovery intentionally selects the API's documented PLC fallback. SILK and
 hybrid fixtures enable in-band FEC. These fixtures do not establish recovered
 audio quality or external codec interoperability.
 
+Version-two cases have distinct IDs and workload dimensions:
+
+- `resample.v2.continuous.{16000,44100}.48000.{mono,stereo}` uses one FIR owner
+  across a complete population. Eight 20 ms blocks prefill actual filter history;
+  only `process` runs inside batch timers. A final untimed flush checks exact
+  stream duration and bounded retained history against an independent owner.
+- `opus.v2.continuous.{encode,decode}.{celt,silk,hybrid}.960.{mono,stereo}` retains
+  encoder/decoder state after eight contiguous 20 ms prefill frames. Inputs advance
+  on the actual sample clock, stereo channels differ, and every packet/PCM output
+  is compared with a separately owned continuous reference. Decode packet creation
+  stays outside timing; these cases make no loss-recovery quality claim.
+- `dave.v2.frame.open.replay{1024,8192}` fills the production-default or supported
+  maximum replay window before timing, then keeps the same receive owner while
+  unique authenticated frames advance through successive batches. Logical 20 ms
+  receive timestamps describe deterministic media progression without pacing.
+  Complete plaintext checks and a final exact replay rejection are untimed.
+
+Each warmup/measured population creates and closes its own version-two owner;
+individual batch result release does not reset stream state. Cancellation and
+failure close the long-lived owner before returning. Preparation that hits a wall
+cap can be discarded without advancing DSP reference state. These are new workload
+identities, not comparable replacements for the original cold/per-batch cases.
+The scheduler identity is `serial-population-stream-v2`; input sizes record fixture
+version, prefill and continuous-state policy. Fixture descriptor hashing includes
+the exact new case identity and retains the original hash recipe for old cases.
+
 Each timed batch invokes only its selected bounded wrapper and retains the full
-results for untimed verification. Codec/resampler cases copy prepared initial or
+results for untimed verification. Original codec/resampler cases copy prepared initial or
 warmed state per call; their batch includes those value copies and complete output
 materialization. Resampling includes process and finish. Jitter covers three
 reordered packets and four playout slots. RTP covers packetize, serialize and parse.

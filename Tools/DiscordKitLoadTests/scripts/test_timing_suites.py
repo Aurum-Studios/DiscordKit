@@ -115,6 +115,19 @@ raise SystemExit(130 if processes.cancelled else 0)
         self.assertTrue(all(row["pending"] + row["concurrency"] <= 1024 for row in rows))
         self.assertEqual(len(suites.matrix(["transport.smallBody"], native=False)), 1)
 
+    def test_versioned_arrival_controls_match_service_load_dimensions(self):
+        """Driver/no-op and mutation controls share offered load while legacy names remain stable."""
+        cases = ["arrival.rest", "arrival.noopV1", "arrival.orderedMutationDefaultSharedV1",
+                 "arrival.orderedMutationDefaultIndependentV1"]
+        rows = suites.matrix(cases)
+        self.assertEqual(len(rows), 36)
+        self.assertEqual(len({row["name"] for row in rows}), 36)
+        dimensions = lambda case: {(row["concurrency"], row["rate"], row["pending"])
+                                   for row in rows if row["case"] == case}
+        self.assertTrue(all(dimensions(case) == dimensions("arrival.rest") for case in cases))
+        self.assertIn("arrival-c4-r2000", {row["name"] for row in rows})
+        self.assertIn("arrival.noopV1-c4-r2000", {row["name"] for row in rows})
+
     def test_partial_cleanup_is_never_indexed_as_success(self):
         native = dict(common=dict(status="completed", cleanup=dict(completed=True, remainingOwners=1)))
         with self.assertRaises(ValueError):

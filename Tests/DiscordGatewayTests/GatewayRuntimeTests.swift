@@ -285,6 +285,53 @@ struct GatewayRuntimeTests {
         if failRelease { #expect(await socket.closed) }
     }
 
+    /// A real suspended lease callback ends once as failed or cancelled before joined authority cleanup.
+    /// - Parameter cancel: Whether cancellation interrupts the callback instead of a returned coordinator failure.
+    /// - Throws: Unexpected setup, virtual-clock or barrier error.
+    @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
+    @Test(arguments: [false, true])
+    func leaseValidationFailureAndCancellationIntervals(_ cancel: Bool) async throws {
+        let clock = ManualClock(), origin = clock.now, entered = TestBarrier()
+        let validationGate = TestBarrier(onWaitScheduled: { entered.open() })
+        let events = GatewayLeaseIntervalEvents()
+        let observer = DiscordIntervalTiming(clockDomain: 6_115, sink: events.record,
+            now: { origin.duration(to: clock.now) })
+        let backing = try InProcessShardLeaseStore(clock: clock, maximumLeases: 2)
+        let leases = GatewayOutageLeases(backing: backing, failValidation: !cancel, failRelease: false,
+            validationGate: validationGate)
+        let transport = GatewayTestTransport(sockets: []), discovery = try makeDiscovery()
+        let startup = InProcessGatewayStartupCoordinator(botID: UserID(rawValue: 1), limit: discovery.sessionStartLimit, clock: clock)
+        let shard = GatewayShard(identity: try ShardIdentity(botID: UserID(rawValue: 1), topologyGeneration: 0, index: 0, count: 2),
+            token: try BotToken("test-token"), intents: 1, discovery: discovery, transport: transport,
+            clock: clock, leases: leases, startup: startup,
+            configuration: try GatewayShardConfiguration(maximumReconnectAttempts: 0), intervals: observer, random: { 1 })
+        let task = Task { try await shard.run() }
+        try await entered.wait()
+        #expect(events.values.filter { $0.stage == .leaseValidation && $0.kind == .began }.count == 1)
+        #expect(events.values.filter { $0.stage == .leaseValidation && $0.kind == .ended }.isEmpty)
+        try clock.advance(by: .milliseconds(17))
+        if cancel {
+            task.cancel()
+            await #expect(throws: CancellationError.self) { try await task.value }
+        } else {
+            validationGate.open()
+            await #expect(throws: ShardOwnershipFailure.coordinatorUnavailable) { try await task.value }
+        }
+        let observed = events.values
+        let validation = try #require(observed.first { $0.stage == .leaseValidation && $0.kind == .ended })
+        let session = try #require(observed.first { $0.stage == .operation && $0.operation == .gatewaySession })
+        #expect(validation.elapsedNanoseconds == 17_000_000)
+        #expect(validation.outcome == (cancel ? .cancelled : .failed))
+        #expect(validation.context.parentID == session.context.operationID)
+        #expect(observed.filter { $0.stage == .leaseValidation && $0.kind == .ended }.count == 1)
+        #expect(observed.filter { $0.kind == .began }.count == observed.filter { $0.kind == .ended }.count)
+        #expect(await transport.connectionCount == 0)
+        #expect(await backing.retainedLeaseCount() == 0)
+        #expect(await shard.snapshot().phase == .stopped)
+        #expect(validationGate.waitingCount == 0)
+        #expect(clock.pendingSleepCount == 0)
+    }
+
     /// Credential-bearing custom errors at acquisition, validation, renewal, release and startup
     /// become one fixed category; cleanup still releases local timers, sockets and valid tickets.
     /// - Parameter boundary: Zero-based injected failure boundary in the order listed above.
@@ -502,6 +549,7 @@ private actor GatewayOutageLeases: ShardLeaseStore {
     let failValidation: Bool
     let failRelease: Bool
     let untrustedBoundary: Int?
+    let validationGate: TestBarrier?
 
     /// Selects an outage boundary while retaining a real, observable atomic backing store.
     /// - Parameters:
@@ -509,9 +557,12 @@ private actor GatewayOutageLeases: ShardLeaseStore {
     ///   - failValidation: Whether authority checks fail closed.
     ///   - failRelease: Whether cleanup reports uncertainty and leaves the record retained.
     ///   - untrustedBoundary: Optional acquire/validate/renew/release failure index; nil by default.
-    init(backing: InProcessShardLeaseStore<ManualClock>, failValidation: Bool, failRelease: Bool, untrustedBoundary: Int? = nil) {
+    ///   - validationGate: Optional cancellation-aware hold before validation returns or fails.
+    init(backing: InProcessShardLeaseStore<ManualClock>, failValidation: Bool, failRelease: Bool,
+         untrustedBoundary: Int? = nil, validationGate: TestBarrier? = nil) {
         self.backing = backing; self.failValidation = failValidation; self.failRelease = failRelease
         self.untrustedBoundary = untrustedBoundary
+        self.validationGate = validationGate
     }
 
     /// Reserves real ownership before the injected later operation can fail.
@@ -530,6 +581,7 @@ private actor GatewayOutageLeases: ShardLeaseStore {
     /// - Parameter lease: Current candidate ticket.
     /// - Throws: Injected outage or backing expiry/stale-generation errors.
     func validate(_ lease: ShardLease<ManualClock>) async throws {
+        if let validationGate { try await validationGate.wait() }
         if untrustedBoundary == 1 { throw GatewaySecretFailure() }
         if failValidation { throw ShardOwnershipFailure.coordinatorUnavailable }
         try await backing.validate(lease)
@@ -554,6 +606,19 @@ private actor GatewayOutageLeases: ShardLeaseStore {
         if failRelease { throw ShardOwnershipFailure.coordinatorUnavailable }
         await backing.release(lease)
     }
+}
+
+/// Small test-owned receipt for the finite lease-validation failure cohort.
+private final class GatewayLeaseIntervalEvents: @unchecked Sendable {
+    private let lock = NSLock()
+    private var events: [DiscordIntervalEvent] = []
+
+    /// Copies endpoints after synchronous delivery without retaining runtime owners.
+    var values: [DiscordIntervalEvent] { lock.withLock { events } }
+
+    /// Retains one content-free lifecycle event under a concurrent-safe lock.
+    /// - Parameter event: Actual observer endpoint from this test's bounded shard run.
+    func record(_ event: DiscordIntervalEvent) { lock.withLock { events.append(event) } }
 }
 
 /// Simulates an untrusted dependency whose textual diagnostics contain a credential.

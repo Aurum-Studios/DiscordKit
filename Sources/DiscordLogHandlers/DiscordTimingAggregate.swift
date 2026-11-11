@@ -273,7 +273,7 @@ public final class DiscordTimingAggregate: @unchecked Sendable {
 /// Shared closed identity mapping for optional outputs; no application content enters these tables.
 enum TimingOutputNames {
     static let operations = ["rest", "httpExchange", "httpSubscriber", "gatewayDispatch", "interactionResponse", "gatewaySession", "gatewayFrame", "gatewayPublication", "signedIngress", "interactionHTTP", "commandRouting", "entityCache", "clientLifecycle"]
-    static let stages = ["operation", "admission", "headers", "body", "subscriber", "localQueue", "handler", "initialResponse", "originalEdit", "socketReceipt", "decode", "ingestionQueue", "hubResidence", "heartbeatACK", "reconnect", "shutdown", "signatureVerification", "replayAdmission", "preparation", "firstResponse", "cacheLookup", "cacheMerge", "cacheProjection", "cacheInvalidation", "cacheRefresh", "cacheLoader", "construction", "discovery", "ingestion", "localReady"]
+    static let stages = ["operation", "admission", "headers", "body", "subscriber", "localQueue", "handler", "initialResponse", "originalEdit", "socketReceipt", "decode", "ingestionQueue", "hubResidence", "heartbeatACK", "reconnect", "shutdown", "signatureVerification", "replayAdmission", "preparation", "firstResponse", "cacheLookup", "cacheMerge", "cacheProjection", "cacheInvalidation", "cacheRefresh", "cacheLoader", "construction", "discovery", "ingestion", "localReady", "leaseValidation"]
 
     /// Maps a finite scalar phase directly without allocating an all-cases array on the hot path.
     /// - Parameter phase: Legacy scalar owner boundary.
@@ -365,6 +365,7 @@ enum TimingOutputNames {
         case .discovery: 27
         case .ingestion: 28
         case .localReady: 29
+        case .leaseValidation: 30
         }
     }
 

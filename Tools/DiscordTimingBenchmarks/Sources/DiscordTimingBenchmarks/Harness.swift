@@ -64,10 +64,10 @@ enum TimingHarness {
     /// Executes one real optional lifecycle around the CPU fixture or a separate filtered diagnostic scope.
     /// - Parameters:
     ///   - configuration: Fixed mode selected before measurement.
-    ///   - outputs: Application-owned sinks; nil interval mode performs no hook clock/callback work.
+    ///   - timing: Application-owned observer; nil performs no hook clock/identity/callback work.
     ///   - seed: Observable fixture input.
     /// - Returns: Deterministic work result; empty-harness control returns its unchanged input.
-    static func operation(_ configuration: TimingConfiguration, outputs: TimingOutputs, seed: UInt64) -> UInt64 {
+    static func operation(_ configuration: TimingConfiguration, timing: DiscordIntervalTiming?, seed: UInt64) -> UInt64 {
         if configuration.mode == .emptyHarness { return seed }
         if configuration.mode == .clockRead {
             let observed = DispatchTime.now().uptimeNanoseconds
@@ -77,7 +77,7 @@ enum TimingHarness {
         if configuration.mode == .filtered {
             return DiscordLog.withOperation("timing.benchmark", event: "fixture", operation: { fixture(seed) })
         }
-        let interval = outputs.timing?.begin(.rest, stage: .operation, parent: nil)
+        let interval = timing?.begin(.rest, stage: .operation, parent: nil)
         let result = fixture(seed)
         interval?.end()
         return result
@@ -90,7 +90,7 @@ enum TimingHarness {
     ///   - warmup: Selects warmup iteration/time caps; false selects measured work.
     /// - Returns: Joined per-worker exact counts, distributions, wall time and process gauges.
     /// - Throws: REST fixture, cancellation, histogram budget or integrity failures; existing child tasks are joined.
-    private static func population(_ configuration: TimingConfiguration, outputs: TimingOutputs, warmup: Bool) async throws
+    private static func population(_ configuration: TimingConfiguration, outputs: TimingOutputCohort, warmup: Bool) async throws
         -> (workers: [TimingWorkerResult], elapsed: UInt64, gauges: [String: BenchmarkGauge]) {
         let histogramConfiguration = try HistogramConfiguration(lowerBoundNanoseconds: 0,
             upperBoundNanoseconds: 2_000_000, bucketWidthNanoseconds: 100)
@@ -107,36 +107,39 @@ enum TimingHarness {
         let deadline = started.advanced(by: .seconds(Int64(duration)))
         var workers: [TimingWorkerResult] = []
         do {
-            workers = try await DiscordLog.$loggerFactory.withValue({ _ in outputs.logger }) {
-                try await withThrowingTaskGroup(of: TimingWorkerResult.self) { group in
-                    for worker in 0..<configuration.concurrency {
-                        group.addTask {
-                            var histogram = histograms[worker]
-                            var checksum: UInt64 = 0, count: UInt64 = 0
-                            for index in 0..<iterations {
-                                try Task.checkCancellation()
-                                if clock.now >= deadline { break }
-                                let seed = input(configuration, worker: worker, index: UInt64(index))
-                                let start = DispatchTime.now().uptimeNanoseconds
-                                let value: UInt64
-                                if configuration.mode.usesREST {
-                                    let status = try await rest[worker].client.execute(rest[worker].endpoint)
-                                    guard status == 204 else { throw TimingBenchmarkError.integrityFailure("Invalid REST result") }
-                                    value = fixture(seed)
-                                } else { value = operation(configuration, outputs: outputs, seed: seed) }
-                                let end = DispatchTime.now().uptimeNanoseconds
-                                guard end >= start else { throw TimingBenchmarkError.integrityFailure("Regressing measurement clock") }
-                                histogram.record(end - start)
-                                checksum &+= value
-                                count += 1
+            workers = try await withThrowingTaskGroup(of: TimingWorkerResult.self) { group in
+                for worker in 0..<configuration.concurrency {
+                    group.addTask {
+                        let owner = outputs.owner(for: worker)
+                        return try await DiscordLog.$loggerFactory.withValue({ _ in owner.logger }) {
+                            try await TimingWorkerScope.$outputs.withValue(owner) {
+                                var histogram = histograms[worker]
+                                var checksum: UInt64 = 0, count: UInt64 = 0
+                                for index in 0..<iterations {
+                                    try Task.checkCancellation()
+                                    if clock.now >= deadline { break }
+                                    let seed = input(configuration, worker: worker, index: UInt64(index))
+                                    let start = DispatchTime.now().uptimeNanoseconds
+                                    let value: UInt64
+                                    if configuration.mode.usesREST {
+                                        let status = try await rest[worker].client.execute(rest[worker].endpoint)
+                                        guard status == 204 else { throw TimingBenchmarkError.integrityFailure("Invalid REST result") }
+                                        value = fixture(seed)
+                                    } else { value = operation(configuration, timing: outputs.timing, seed: seed) }
+                                    let end = DispatchTime.now().uptimeNanoseconds
+                                    guard end >= start else { throw TimingBenchmarkError.integrityFailure("Regressing measurement clock") }
+                                    histogram.record(end - start)
+                                    checksum &+= value
+                                    count += 1
+                                }
+                                return TimingWorkerResult(worker: worker, count: count, checksum: checksum, histogram: histogram)
                             }
-                            return TimingWorkerResult(worker: worker, count: count, checksum: checksum, histogram: histogram)
                         }
                     }
-                    var result: [TimingWorkerResult] = []
-                    for try await worker in group { result.append(worker) }
-                    return result
                 }
+                var result: [TimingWorkerResult] = []
+                for try await worker in group { result.append(worker) }
+                return result
             }
         } catch {
             for fixture in rest { _ = await fixture.close() }
@@ -167,14 +170,16 @@ enum TimingHarness {
         defer { try? FileManager.default.removeItem(at: directory) }
         let warmDirectory = directory.appendingPathComponent("warmup")
         try FileManager.default.createDirectory(at: warmDirectory, withIntermediateDirectories: true)
-        let warmOutputs = try TimingOutputs(configuration: configuration, directory: warmDirectory)
         let warmup: (workers: [TimingWorkerResult], elapsed: UInt64, gauges: [String: BenchmarkGauge])
         do {
-            warmup = try await population(configuration, outputs: warmOutputs, warmup: true)
-            _ = try warmOutputs.close(exportDirectory: nil)
-        } catch {
-            _ = try? warmOutputs.close(exportDirectory: nil)
-            throw error
+            let warmOutputs = try TimingOutputCohort(configuration: configuration, directory: warmDirectory)
+            do {
+                warmup = try await population(configuration, outputs: warmOutputs, warmup: true)
+                _ = try warmOutputs.close(exportDirectory: nil)
+            } catch {
+                _ = try? warmOutputs.close(exportDirectory: nil)
+                throw error
+            }
         }
         let measuredDirectory = configuration.artifactDirectory.map { URL(fileURLWithPath: $0, isDirectory: true) }
             ?? directory.appendingPathComponent("measured")
@@ -183,7 +188,7 @@ enum TimingHarness {
             throw TimingBenchmarkError.invalidConfiguration("Artifact directory already exists")
         }
         try FileManager.default.createDirectory(at: measuredDirectory, withIntermediateDirectories: true)
-        let outputs = try TimingOutputs(configuration: configuration, directory: measuredDirectory)
+        let outputs = try TimingOutputCohort(configuration: configuration, directory: measuredDirectory)
         let measured: (workers: [TimingWorkerResult], elapsed: UInt64, gauges: [String: BenchmarkGauge])
         do { measured = try await population(configuration, outputs: outputs, warmup: false) }
         catch {
@@ -208,14 +213,16 @@ enum TimingHarness {
         guard count > 0, checksum == expected, histogram.snapshot().observedCount == count else {
             throw TimingBenchmarkError.integrityFailure("Whole-population fixture accounting failed")
         }
-        try verifyOutputs(configuration.mode, count: count, counters: counters)
+        let saturationDropped = measured.workers.reduce(UInt64(0)) { $0 + $1.count * 2 - min(3, $1.count * 2) }
+        try verifyOutputs(configuration.mode, count: count, counters: counters, outputOwners: UInt64(outputs.owners.count),
+            saturationDropped: configuration.collectorScope == .perWorker ? saturationDropped : nil)
         let domain = "instrumentation-monotonic"
         let metric = BenchmarkMetric(id: BenchmarkWorkload.instrumentation.rawValue, clockDomain: domain, distribution: histogram.snapshot())
         var identity = ReportIdentity(scenario: configuration.mode.usesREST ? "instrumentation.local-rest" : "instrumentation.cpu-fixture",
             profile: configuration.profile, seed: configuration.seed, fixtureHashes: ["fixture-v1": fixtureHash],
             inputSizes: ["lanes": 64, "iterationsPerWorkerCap": UInt64(configuration.iterations),
                 "warmupIterationsPerWorkerCap": UInt64(configuration.warmupIterations), "durationCapSeconds": configuration.durationSeconds],
-            instrumentation: configuration.mode.rawValue, scheduler: "finite-structured-worker-cohort",
+            instrumentation: configuration.mode.rawValue + (configuration.collectorScope == .shared ? "" : ".per-worker-collectors-v1"), scheduler: "finite-structured-worker-cohort",
             concurrency: UInt32(configuration.concurrency), warmupNanoseconds: warmup.elapsed,
             requestedWarmupNanoseconds: configuration.warmupSeconds * 1_000_000_000,
             measuredNanoseconds: measured.elapsed, repetitions: 1)
@@ -230,7 +237,9 @@ enum TimingHarness {
             throughputPerSecond: Double(count) * 1_000_000_000 / Double(measured.elapsed),
             qualificationLimitations: ["Informational overhead evidence; no controlled-host noise study or numerical qualification.",
                 "Per-call timers report gross cost; wall throughput also includes cohort scheduling and histogram/checksum bookkeeping.",
-                "Process peak RSS covers warmup and output setup; allocation gauges are live footprint, not allocation-event counts."])
+                "Process peak RSS covers warmup and output setup; allocation gauges are live footprint, not allocation-event counts."]
+                + (configuration.collectorScope == .shared ? [] : [
+                    "Per-worker collectors divide the total capture/signpost caps and add task-local sink routing; aggregate storage sums are explicit and the observer identity source remains shared."]))
         try report.validate()
         return TimingBenchmarkResult(configuration: configuration, completedOperations: count, checksum: checksum,
             expectedChecksum: expected, warmupOperations: warmup.workers.reduce(0) { $0 + $1.count },
@@ -243,8 +252,11 @@ enum TimingHarness {
     ///   - mode: Fixed output mode determining expected endpoint and scalar counts.
     ///   - count: Successfully completed fixture operations; every enabled lifecycle has two endpoints.
     ///   - counters: Closed adapter snapshots taken after all workers joined.
+    ///   - outputOwners: Number of independently closed collector owners, one in the original shared topology.
+    ///   - saturationDropped: Exact per-worker saturation expectation; nil uses the original shared three-endpoint bound.
     /// - Throws: Integrity error on missing, duplicated or silently dropped observations.
-    static func verifyOutputs(_ mode: TimingMode, count: UInt64, counters: [String: UInt64]) throws {
+    static func verifyOutputs(_ mode: TimingMode, count: UInt64, counters: [String: UInt64],
+                              outputOwners: UInt64 = 1, saturationDropped: UInt64? = nil) throws {
         if mode == .aggregate || mode == .combined || mode == .scalarAggregate {
             guard counters["aggregateAccepted"] == count * (mode.usesREST ? 4 : 1),
                 counters["aggregateDropped"] == 0, counters["aggregateInvalid"] == 0 else {
@@ -263,12 +275,22 @@ enum TimingHarness {
                 counters["captureActiveAfterClose"] == 0 else {
                 throw TimingBenchmarkError.integrityFailure("Capture endpoint accounting mismatch")
             }
-            if mode == .saturation, counters["captureDropped"] != count * 2 - min(3, count * 2) {
+            if mode == .saturation, counters["captureDropped"] != (saturationDropped ?? (count * 2 - min(3, count * 2))) {
                 throw TimingBenchmarkError.integrityFailure("Capture saturation mismatch")
+            }
+            if mode != .saturation {
+                guard counters["captureMissingParent"] == 0, counters["captureLate"] == 0 else {
+                    throw TimingBenchmarkError.integrityFailure("Capture correlation or cleanup mismatch")
+                }
+                if counters["captureDropped"] == 0 {
+                    guard counters["captureIncomplete"] == 0, counters["captureUnmatched"] == 0 else {
+                        throw TimingBenchmarkError.integrityFailure("Lossless capture pairing mismatch")
+                    }
+                }
             }
         }
         if mode == .rotatingFile {
-            guard counters["fileWritten"] == count * 2, counters["fileDropped"] == 0, counters["fileClosed"] == 1 else {
+            guard counters["fileWritten"] == count * 2, counters["fileDropped"] == 0, counters["fileClosed"] == outputOwners else {
                 throw TimingBenchmarkError.integrityFailure("Rotating file accounting mismatch")
             }
         }
@@ -281,7 +303,7 @@ enum TimingHarness {
         }
         if mode == .sinkFailure {
             guard counters["fileWritten"] == 0, counters["fileDropped"] == count * 2,
-                counters["fileFailures"] == count * 2, counters["fileClosed"] == 1 else {
+                counters["fileFailures"] == count * 2, counters["fileClosed"] == outputOwners else {
                 throw TimingBenchmarkError.integrityFailure("Closed-sink failure accounting mismatch")
             }
         }

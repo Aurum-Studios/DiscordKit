@@ -31,6 +31,7 @@ final class TimingOutputs: @unchecked Sendable {
     let file: DiscordFileLogSink?
     let callbacks: CallbackCounter
     let logger: Logger
+    let recordInterval: @Sendable (DiscordIntervalEvent) -> Void
     #if canImport(os)
     let signposts: DiscordIntervalSignposts?
     #endif
@@ -44,14 +45,18 @@ final class TimingOutputs: @unchecked Sendable {
         let mode = configuration.mode
         let callbacks = CallbackCounter()
         self.callbacks = callbacks
+        let collectorCount = configuration.collectorScope == .shared ? 1 : configuration.concurrency
+        let activeIntervalLimit = 256 / collectorCount
         let usesAggregate = mode == .aggregate || mode == .combined || mode == .scalarAggregate
-        let aggregate = usesAggregate ? try DiscordTimingAggregate() : nil
+        let aggregateConfiguration = configuration.collectorScope == .shared ? DiscordTimingAggregateConfiguration()
+            : DiscordTimingAggregateConfiguration(maximumKeys: mode == .scalarAggregate ? 4 : 1)
+        let aggregate = usesAggregate ? try DiscordTimingAggregate(configuration: aggregateConfiguration) : nil
         self.aggregate = aggregate
         let capture: DiscordIntervalCapture?
         if mode == .sampled || mode == .combined || mode == .saturation {
             capture = try DiscordIntervalCapture(configuration: .init(
-                maximumRecords: mode == .saturation ? 3 : 65_536,
-                maximumBytes: 8 * 1_024 * 1_024, maximumActiveIntervals: 256,
+                maximumRecords: mode == .saturation ? 3 : 65_536 / collectorCount,
+                maximumBytes: 8 * 1_024 * 1_024 / collectorCount, maximumActiveIntervals: activeIntervalLimit,
                 sampleEvery: mode == .saturation ? 1 : 16, seed: configuration.seed))
         } else { capture = nil }
         self.capture = capture
@@ -91,7 +96,7 @@ final class TimingOutputs: @unchecked Sendable {
         self.logger = logger
         #if canImport(os)
         let signposts = mode == .signposts
-            ? try DiscordIntervalSignposts(maximumActiveIntervals: 256,
+            ? try DiscordIntervalSignposts(maximumActiveIntervals: activeIntervalLimit,
                 subsystem: "DiscordKit.Benchmarks", category: "Intervals") : nil
         self.signposts = signposts
         #else
@@ -99,19 +104,21 @@ final class TimingOutputs: @unchecked Sendable {
         #endif
         let logAdapter = DiscordTimingLogAdapter(logger: logger)
         let logEvents: Set<TimingMode> = [.callback, .callbackContention, .console, .rotatingFile, .sinkFailure, .unifiedLog, .combined]
+        let recordInterval: @Sendable (DiscordIntervalEvent) -> Void = { event in
+            aggregate?.record(event)
+            capture?.record(event)
+            if logEvents.contains(mode) { logAdapter.record(event) }
+            #if canImport(os)
+            signposts?.record(event)
+            #endif
+        }
+        self.recordInterval = recordInterval
         if mode == .disabled || mode == .emptyHarness || mode == .clockRead || mode == .filtered || mode.usesREST {
             timing = nil
         } else if mode == .noop {
             timing = DiscordIntervalTiming(clockDomain: 1, sink: { _ in })
         } else {
-            timing = DiscordIntervalTiming(clockDomain: 1, sink: { event in
-                aggregate?.record(event)
-                capture?.record(event)
-                if logEvents.contains(mode) { logAdapter.record(event) }
-                #if canImport(os)
-                signposts?.record(event)
-                #endif
-            })
+            timing = DiscordIntervalTiming(clockDomain: 1, sink: recordInterval)
         }
         switch mode {
         case .scalarNoop: scalar = OperationTiming(sink: { _ in })
@@ -137,6 +144,7 @@ final class TimingOutputs: @unchecked Sendable {
             values["aggregateDropped"] = state.droppedCount
             values["aggregateInvalid"] = state.invalidCount
             values["aggregateIgnoredBegin"] = state.ignoredBeginCount
+            values["aggregateStorageUpperBoundBytes"] = UInt64(state.storageUpperBoundBytes)
             if let exportDirectory {
                 let encoder = JSONEncoder(); encoder.outputFormatting = [.sortedKeys]
                 try encoder.encode(state).write(to: exportDirectory.appendingPathComponent("aggregate.json"), options: .atomic)
@@ -149,7 +157,12 @@ final class TimingOutputs: @unchecked Sendable {
             values["captureSampledOut"] = state.sampledOutRecords
             values["captureIncomplete"] = state.incompleteIntervals
             values["captureUnmatched"] = state.unmatchedEndpoints
+            values["captureMissingParent"] = state.missingParentRecords
+            values["captureLate"] = state.lateRecords
             values["captureActiveAfterClose"] = UInt64(state.activeIntervals)
+            values["captureMaximumRecords"] = UInt64(capture.configuration.maximumRecords)
+            values["captureMaximumBytes"] = UInt64(capture.configuration.maximumBytes)
+            values["captureMaximumActiveIntervals"] = UInt64(capture.configuration.maximumActiveIntervals)
             let ndjson = try capture.ndjson(), timeline = try capture.chromeTrace()
             values["ndjsonBytes"] = UInt64(ndjson.count)
             values["timelineBytes"] = UInt64(timeline.count)

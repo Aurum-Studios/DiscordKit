@@ -101,6 +101,32 @@ public actor SignedRequestVerifier {
     /// - Throws: Sanitized malformed header, invalid signature, stale timestamp, oversized body,
     ///   replay or capacity errors. This synchronous actor operation never suspends midway.
     public func verify(headers: [HTTPHeader], body: Data) throws -> VerifiedDiscordRequest {
+        try verifyAdmitted(headers: headers, body: body, admission: nil)
+    }
+
+    /// Authenticates the same exact bytes while also observing caller-to-verifier actor admission.
+    /// - Parameters:
+    ///   - headers: Original ordered signature fields, with the same validation as `verify`.
+    ///   - body: Complete original bytes, with the same body bound as `verify`.
+    /// - Returns: The authenticated request after atomic signature and replay checks.
+    /// - Throws: The same sanitized authentication/replay errors as `verify`. Admission success
+    ///   means actor entry only; authentication can still fail. Nil timing reads no observation
+    ///   clock or identity. The existing synchronous isolated `verify` API remains available.
+    public nonisolated func verifyWithAdmissionTiming(headers: [HTTPHeader], body: Data) async throws -> VerifiedDiscordRequest {
+        let admission = intervals?.begin(.signedIngress, stage: .admission)
+        return try await verifyAdmitted(headers: headers, body: body, admission: admission)
+    }
+
+    /// Ends caller-to-actor admission before authenticating bytes and mutating the replay window.
+    /// - Parameters:
+    ///   - headers: Original untrusted ordered fields, validated without suspension.
+    ///   - body: Original bounded request body.
+    ///   - admission: Optional caller-started token from this observer, ended exactly once at entry.
+    /// - Returns: The same authenticated request as the unobserved actor operation.
+    /// - Throws: Existing sanitized authentication or replay errors; admission itself is not acceptance.
+    private func verifyAdmitted(headers: [HTTPHeader], body: Data,
+                                admission: DiscordInterval?) throws -> VerifiedDiscordRequest {
+        admission?.end()
         let signatureInterval = intervals?.begin(.signedIngress, stage: .signatureVerification)
         defer { signatureInterval?.end(.failed) }
         guard body.count <= maximumBodyBytes else { throw SignedIngressFailure.bodyTooLarge }

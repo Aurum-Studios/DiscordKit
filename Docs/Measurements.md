@@ -281,6 +281,11 @@ does not dispatch or qualify it. See [native CI](Tasks/latency-timing/PHASE-10.m
 
 ## Hand off an optimization
 
+The [performance refinement plan](Tasks/performance-improvements/PLAN.md) applies
+these tools to source findings, causal experiments and staged optimization gates.
+Its [planning evidence](Tasks/performance-improvements/EVIDENCE.md) retains current
+local observations separately from the historical measurements below.
+
 Create a separate change only after reproducing the cost with a defined boundary.
 Attach the exact case, catalog/metric/profile versions, fixture hashes, command
 and release receipts; keep baseline, no-change and candidate series plus policy

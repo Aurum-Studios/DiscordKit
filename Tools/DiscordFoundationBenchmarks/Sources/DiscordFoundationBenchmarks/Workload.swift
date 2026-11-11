@@ -41,7 +41,7 @@ enum FoundationWorkloads {
     static func selected(_ id: String) throws -> FoundationWorkload {
         let cases: [FoundationWorkload]
         switch id.split(separator: ".").first {
-        case "json": cases = try JSONWorkloads.make()
+        case "json": cases = try id.hasPrefix("json.v2.") ? JSONDimensionWorkloads.make() : JSONWorkloads.make()
         case "bits", "identifier": cases = try BitsWorkloads.make()
         case "model": cases = try ModelWorkloads.make()
         case "builder": cases = try BuilderWorkloads.make()
@@ -59,7 +59,7 @@ enum FoundationWorkloads {
     /// - Returns: All uniquely named cases, retaining their fixtures for catalog listing or deterministic tests.
     /// - Throws: Fixture construction or duplicate/absent identity errors; callers own the returned fixture lifetime.
     static func make() throws -> [FoundationWorkload] {
-        let cases = try JSONWorkloads.make() + BitsWorkloads.make() + ModelWorkloads.make()
+        let cases = try JSONWorkloads.make() + JSONDimensionWorkloads.make() + BitsWorkloads.make() + ModelWorkloads.make()
             + BuilderWorkloads.make() + PermissionWorkloads.make() + RPCWorkloads.make()
         guard Set(cases.map(\.id)).count == cases.count, !cases.isEmpty else {
             throw FoundationBenchmarkError.integrityFailure("Duplicate or absent workload IDs")

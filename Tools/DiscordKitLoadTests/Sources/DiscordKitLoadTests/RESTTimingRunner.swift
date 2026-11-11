@@ -13,8 +13,52 @@ import Foundation
 /// Finite offline REST policy fixtures; each case has its own comparable input identity.
 enum RESTTimingScenario: String, Codable, CaseIterable, Sendable {
     case noCache, cacheMiss, cacheFresh, cacheExpiry, coalesced, independentKeys
-    case delayedHeaders, delayedBody, streamedBody, largeBody, orderedMutation
+    case delayedHeaders, delayedBody, streamedBody, largeBody, orderedMutation, orderedMutationDefaultV1
     case rateLimitRetry, serverRetry, retryExhausted, malformed, cancelled, uncertainMutation
+}
+
+/// Reviewed scheduler identity, kept separately from the scripted peer's learned rate headers.
+struct RESTSchedulingReceipt: Codable, Equatable, Sendable {
+    let profile: String
+    let fairnessIntervalNanoseconds: UInt64
+    let provisionalWindowNanoseconds: UInt64
+    let initialGlobalRequestsPerSecond: Int
+    let maximumConcurrentRequests: Int
+    let maximumConcurrentRequestsPerIdentity: Int
+    let maximumQueuedRequests: Int
+    let maximumQueuedRequestsPerIdentity: Int
+    let maximumQueuedBytes: Int
+    let maximumQueuedBytesPerIdentity: Int
+    let maximumMetadata: Int
+    let maximumQueueAgeNanoseconds: UInt64
+    let reservationLifetimeNanoseconds: UInt64
+    let invalidRequestThreshold: Int
+    let invalidRequestWindowNanoseconds: UInt64
+
+    /// Captures the exact constructed scheduler policy outside all operation timers.
+    init(policy: SchedulingPolicy, usesDefaults: Bool) {
+        profile = usesDefaults ? "SchedulingPolicy-default-v1" : "legacy-tuned-v1"
+        fairnessIntervalNanoseconds = Self.nanoseconds(policy.fairnessInterval)
+        provisionalWindowNanoseconds = Self.nanoseconds(policy.provisionalWindow)
+        initialGlobalRequestsPerSecond = policy.initialGlobalRequestsPerSecond
+        maximumConcurrentRequests = policy.maximumConcurrentRequests
+        maximumConcurrentRequestsPerIdentity = policy.maximumConcurrentRequestsPerIdentity
+        maximumQueuedRequests = policy.maximumQueuedRequests
+        maximumQueuedRequestsPerIdentity = policy.maximumQueuedRequestsPerIdentity
+        maximumQueuedBytes = policy.maximumQueuedBytes
+        maximumQueuedBytesPerIdentity = policy.maximumQueuedBytesPerIdentity
+        maximumMetadata = policy.maximumMetadata
+        maximumQueueAgeNanoseconds = Self.nanoseconds(policy.maximumQueueAge)
+        reservationLifetimeNanoseconds = Self.nanoseconds(policy.reservationLifetime)
+        invalidRequestThreshold = policy.invalidRequestThreshold
+        invalidRequestWindowNanoseconds = Self.nanoseconds(policy.invalidRequestWindow)
+    }
+
+    /// Converts known positive bounded policy durations without reading a clock.
+    private static func nanoseconds(_ duration: Duration) -> UInt64 {
+        let parts = duration.components
+        return UInt64(parts.seconds) * 1_000_000_000 + UInt64(parts.attoseconds / 1_000_000_000)
+    }
 }
 
 /// Exact final ownership receipt, captured after all caller tasks and fixture cleanup join.
@@ -53,6 +97,7 @@ struct RESTTimingReport: Codable, Sendable {
     let clockDomain: String
     let durationNanoseconds: UInt64
     let cleanup: RESTTimingCleanup
+    let scheduling: RESTSchedulingReceipt?
     let notes: [String]
 }
 
@@ -153,6 +198,7 @@ struct RESTTimingRunner: Sendable {
             setupWireExchanges: wire.calls - measuredCalls, subscribers: Int(subscriberCount), peakActive: wire.peakActive,
             seconds: seconds, metrics: metrics, clockDomain: statistics.clockDomain,
             durationNanoseconds: try BenchmarkTime.nanoseconds(duration: measuredDuration), cleanup: cleanup,
+            scheduling: owner.scheduling,
             notes: ["Offline scripted adapter: zero sockets and credentials. Real RESTClient owns rate, order, retry, cache, decode and subscriber semantics.",
                 "Caller timers stop at execute result/error before aggregation and owner snapshots. Setup cache priming and expiry waits are excluded from operation distributions.",
                 "Throughput spans first measured submission through last measured terminal, including inter-wave setup, driver work and expiry gaps; initial setup and final diagnostics are excluded.",
@@ -182,30 +228,73 @@ private struct RESTCallResult: Sendable {
 /// Reusable real REST fixture for the separately scheduled bounded arrival driver.
 actor RESTArrivalFixture {
     private let owner: RESTTimingOwner
+    private let scenario: RESTTimingScenario
+    private let independentPartitions: Int
 
     /// Prepares one bounded shared scheduler and adapter without starting requests.
     /// - Parameters:
     ///   - concurrency: Positive maximum admitted operations, no greater than 256.
     ///   - delay: Artificial per-exchange header delay, in 0...1 second.
+    ///   - orderedDefault: Selects actual default scheduling and whole-operation mutation ordering.
+    ///   - independentPartitions: Bounded partition count; one means a shared mutation partition.
+    ///   - observeAdmission: Enables direct RESTClient.execute entry observation for a versioned fixture.
     /// - Throws: Invalid bounds before allocating runtime owners.
-    init(concurrency: Int, delay: Duration) throws {
-        guard (1...256).contains(concurrency), delay >= .zero, delay <= .seconds(1) else {
+    init(concurrency: Int, delay: Duration, orderedDefault: Bool = false,
+        independentPartitions: Int = 1, observeAdmission: Bool = false) throws {
+        guard (1...256).contains(concurrency), (1...256).contains(independentPartitions),
+            delay >= .zero, delay <= .seconds(1) else {
             throw LoadFailure.invalidArguments
         }
-        owner = RESTTimingOwner(scenario: .delayedHeaders, concurrency: concurrency, delay: delay, statistics: nil)
+        scenario = orderedDefault ? .orderedMutationDefaultV1 : .delayedHeaders
+        self.independentPartitions = independentPartitions
+        owner = RESTTimingOwner(scenario: scenario, concurrency: concurrency, delay: delay,
+            statistics: nil, observeAdmission: observeAdmission)
     }
 
     /// Executes one actual no-cache request through the shared bounded admission owner.
     /// - Parameter ordinal: Bounded driver ordinal, used only to separate request representations.
     /// - Returns: Existing finite terminal classification; no exception description or request data is retained.
     func execute(ordinal: Int) async -> BenchmarkOutcome {
-        do { _ = try await owner.client.execute(restEndpoint(scenario: .delayedHeaders, ordinal: ordinal)); return .success }
+        do { _ = try await owner.client.execute(restEndpoint(scenario: scenario, ordinal: ordinal,
+            partition: independentPartitions > 1 ? String(ordinal % independentPartitions) : nil)); return .success }
         catch { return restOutcome(error) }
     }
+
+    /// Executes one request while a task-local bounded cell records genuine RESTClient.execute entry.
+    /// - Parameter ordinal: Finite driver ordinal; correlation never enters reports or runtime keys.
+    /// - Returns: The actual terminal outcome and directly observed admission when the hook is enabled.
+    func executeMeasured(ordinal: Int) async -> ArrivalOperationResult {
+        let admission = RESTArrivalAdmission()
+        let result = await RESTArrivalAdmissionContext.$current.withValue(admission) { await execute(ordinal: ordinal) }
+        return ArrivalOperationResult(outcome: result, admittedNanoseconds: admission.timestamp())
+    }
+
+    /// Returns the scheduler policy receipt after setup, without starting a request.
+    func schedulingReceipt() -> RESTSchedulingReceipt { owner.scheduling }
 
     /// Closes separately owned resources after the arrival driver has joined its tasks.
     /// - Returns: Exact final ownership counts; this work belongs outside service clocks.
     func shutdown() async -> RESTTimingCleanup { await owner.shutdown() }
+}
+
+/// Per-worker task-local correlation, inherited through the execute call without a shared map.
+private enum RESTArrivalAdmissionContext {
+    @TaskLocal static var current: RESTArrivalAdmission?
+}
+
+/// A single transient timestamp cell; it is released before the worker takes its next arrival.
+private final class RESTArrivalAdmission: @unchecked Sendable {
+    private let lock = NSLock()
+    private var value: UInt64?
+
+    /// Records only the first actual RESTClient.execute entry in the operation's clock domain.
+    func include(_ offset: Duration) {
+        guard let timestamp = try? BenchmarkTime.nanoseconds(duration: offset) else { return }
+        lock.withLock { if value == nil { value = timestamp } }
+    }
+
+    /// Reads the directly captured timestamp after execute has returned.
+    func timestamp() -> UInt64? { lock.withLock { value } }
 }
 
 /// Fixed owners and observer adapters, prepared outside measured caller operations.
@@ -216,21 +305,25 @@ private struct RESTTimingOwner: Sendable {
     let transport: RESTScriptTransport
     let client: RESTClient<ContinuousClock>
     let setupClient: RESTClient<ContinuousClock>
+    let scheduling: RESTSchedulingReceipt
 
     /// Prepares bounded owners and optional full-population observers; setup uses an unobserved client.
     /// - Parameters:
     ///   - scenario: Finite scripted wire behavior.
     ///   - concurrency: Validated positive maximum admitted cohort.
     ///   - delay: Validated artificial phase delay.
-    ///   - statistics: Shared fixed-storage collector; nil disables both runtime observers.
-    init(scenario: RESTTimingScenario, concurrency: Int, delay: Duration, statistics: RunStatistics?) {
+    ///   - statistics: Shared fixed-storage collector; nil disables legacy phase observers.
+    ///   - observeAdmission: Enables genuine RESTClient.execute entry in the shared uptime clock domain.
+    init(scenario: RESTTimingScenario, concurrency: Int, delay: Duration, statistics: RunStatistics?,
+        observeAdmission: Bool = false) {
         let clock = ContinuousClock()
-        let policy = SchedulingPolicy(maximumQueuedRequests: concurrency * 2,
+        let policy = scenario == .orderedMutationDefaultV1 ? SchedulingPolicy() : SchedulingPolicy(maximumQueuedRequests: concurrency * 2,
             maximumQueuedRequestsPerIdentity: concurrency * 2, maximumQueuedBytes: 1_048_576,
             maximumQueuedBytesPerIdentity: 1_048_576, maximumConcurrentRequests: concurrency,
             maximumConcurrentRequestsPerIdentity: concurrency, maximumMetadata: 4_096,
             maximumQueueAge: .seconds(10), fairnessInterval: .microseconds(100),
             provisionalWindow: .microseconds(1), initialGlobalRequestsPerSecond: 1_000_000)
+        scheduling = RESTSchedulingReceipt(policy: policy, usesDefaults: scenario == .orderedMutationDefaultV1)
         coordinator = RateLimitCoordinator(clock: clock, policy: policy)
         cache = ReadCache(clock: clock, policy: ReadCachePolicy(maximumEntries: max(128, concurrency),
             maximumBytes: 1_048_576, maximumEntriesPerIdentity: max(128, concurrency), maximumBytesPerIdentity: 1_048_576))
@@ -277,11 +370,14 @@ private struct RESTTimingOwner: Sendable {
             if let elapsed = sample.elapsed { statistics.record(elapsed, workload: workload, outcome: outcome) }
             else { statistics.record(.seconds(-1), workload: workload, outcome: outcome) }
         }, now: { origin.duration(to: clock.now) }) }
+        let arrivalPhases: RESTTiming? = observeAdmission ? RESTTiming(sink: { _ in }, onOwnerAdmission: {
+            RESTArrivalAdmissionContext.current?.include($0)
+        }) : nil
         let identity = RateLimitIdentity()
         let retry = RetryPolicy(maximumAttempts: 2, initialBackoff: delay, maximumBackoff: delay)
         client = RESTClient(credential: .none, identity: identity, transport: transport, coordinator: coordinator,
             clock: clock, cache: cache, coalescer: coalescer, retryPolicy: retry,
-            maximumResponseBytes: 262_144, maximumExchangeDuration: .seconds(10), timing: timing, phaseTiming: phases)
+            maximumResponseBytes: 262_144, maximumExchangeDuration: .seconds(10), timing: timing, phaseTiming: arrivalPhases ?? phases)
         setupClient = RESTClient(credential: .none, identity: identity, transport: transport, coordinator: coordinator,
             clock: clock, cache: cache, coalescer: coalescer, retryPolicy: retry,
             maximumResponseBytes: 262_144, maximumExchangeDuration: .seconds(10))
@@ -305,7 +401,7 @@ private struct RESTTimingOwner: Sendable {
 ///   - ordinal: Bounded run-local request number.
 /// - Returns: Immutable descriptor prepared before caller measurement.
 /// - Throws: Descriptor or JSON body validation errors.
-private func restEndpoint(scenario: RESTTimingScenario, ordinal: Int) throws -> Endpoint<Data> {
+private func restEndpoint(scenario: RESTTimingScenario, ordinal: Int, partition: String? = nil) throws -> Endpoint<Data> {
     let reuse: ReadPolicy?
     switch scenario {
     case .cacheMiss, .cacheFresh: reuse = ReadPolicy(coalescing: false, timeToLive: .seconds(60))
@@ -313,10 +409,10 @@ private func restEndpoint(scenario: RESTTimingScenario, ordinal: Int) throws -> 
     case .coalesced, .independentKeys: reuse = ReadPolicy()
     default: reuse = nil
     }
-    let unsafe = scenario == .orderedMutation || scenario == .uncertainMutation
+    let unsafe = scenario == .orderedMutation || scenario == .orderedMutationDefaultV1 || scenario == .uncertainMutation
     return try Endpoint(method: unsafe ? "POST" : "GET", path: ["timing", "fixture"],
         route: "/timing/fixture", query: [QueryItem(name: "ordinal", value: String(scenario == .cacheFresh ? 0 : ordinal))],
-        authentication: .none, body: unsafe ? RequestBody.json(JSONValue.object(["fixture": .bool(true)])) : nil,
+        authentication: .none, majorParameter: partition, body: unsafe ? RequestBody.json(JSONValue.object(["fixture": .bool(true)])) : nil,
         retrySafety: unsafe ? .unsafe : .safe, readPolicy: reuse, decode: { data in
             _ = try JSONValue.parse(data); return data
         })
@@ -369,7 +465,7 @@ private actor RESTScriptTransport: HTTPTransport {
         calls += 1; active += 1; peakActive = max(peakActive, active)
         do {
             if held { await withCheckedContinuation { headerWaiters.append($0) } }
-            if scenario == .delayedHeaders, delay > .zero { try await context.clock.sleep(for: delay) }
+            if scenario == .delayedHeaders || scenario == .orderedMutationDefaultV1, delay > .zero { try await context.clock.sleep(for: delay) }
             try context.check()
             if scenario == .uncertainMutation { throw TransportFailure.closed }
             let key = request.url.query ?? ""

@@ -25,9 +25,11 @@ struct ArrivalTimingProfile: Codable, Equatable, Sendable {
     let intervalNanoseconds: UInt64
     let maximumActive: Int
     let maximumPending: Int
+    let measureGenerator: Bool
 
     /// Validates limits before the scheduler, workers or aggregate cells are created.
-    init(arrivals: Int, intervalNanoseconds: UInt64, maximumActive: Int, maximumPending: Int) throws {
+    init(arrivals: Int, intervalNanoseconds: UInt64, maximumActive: Int, maximumPending: Int,
+        measureGenerator: Bool = false) throws {
         guard (1...100_000).contains(arrivals), intervalNanoseconds > 0,
             (1...256).contains(maximumActive), (0...1_024).contains(maximumPending),
             maximumActive + maximumPending <= 1_024,
@@ -38,12 +40,27 @@ struct ArrivalTimingProfile: Codable, Equatable, Sendable {
         self.intervalNanoseconds = intervalNanoseconds
         self.maximumActive = maximumActive
         self.maximumPending = maximumPending
+        self.measureGenerator = measureGenerator
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case arrivals, intervalNanoseconds, maximumActive, maximumPending, measureGenerator
+    }
+
+    /// Reads historical profiles with generator observation disabled and validates all finite bounds.
+    init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        try self.init(arrivals: container.decode(Int.self, forKey: .arrivals),
+            intervalNanoseconds: container.decode(UInt64.self, forKey: .intervalNanoseconds),
+            maximumActive: container.decode(Int.self, forKey: .maximumActive),
+            maximumPending: container.decode(Int.self, forKey: .maximumPending),
+            measureGenerator: container.decodeIfPresent(Bool.self, forKey: .measureGenerator) ?? false)
     }
 
     /// Revalidates decoded numeric fields before any work is started.
     func validate() throws {
         _ = try Self(arrivals: arrivals, intervalNanoseconds: intervalNanoseconds,
-            maximumActive: maximumActive, maximumPending: maximumPending)
+            maximumActive: maximumActive, maximumPending: maximumPending, measureGenerator: measureGenerator)
     }
 }
 
@@ -85,6 +102,15 @@ struct ArrivalTimestampRange: Codable, Equatable, Sendable {
     }
 }
 
+/// Optional versioned generator control, measuring its own offer boundary for every scheduled slot.
+struct ArrivalGeneratorMeasurement: Codable, Sendable {
+    let offeredTimestamps: ArrivalTimestampRange
+    let schedulerLateness: HistogramSnapshot
+    let nextSlotHeadroom: HistogramSnapshot
+    let lateArrivals: Int
+    let noHeadroomArrivals: Int
+}
+
 /// Whole-run arrival evidence, separate from the historical closed-loop cohort format.
 struct ArrivalTimingMeasurement: Codable, Sendable {
     let profile: ArrivalTimingProfile
@@ -120,6 +146,7 @@ struct ArrivalTimingMeasurement: Codable, Sendable {
     let serviceCompletedTimestamps: ArrivalTimestampRange
     let responseTimestamps: ArrivalTimestampRange
     let metrics: [BenchmarkMetric]
+    let generator: ArrivalGeneratorMeasurement?
 }
 
 /// Schedules independently of completions; overload creates counts rather than more tasks or storage.
@@ -134,7 +161,7 @@ struct ArrivalTimingRunner: Sendable {
     func run(profile: ArrivalTimingProfile, clock: ArrivalTimingClock = .continuous,
         operation: @escaping @Sendable (ArrivalSubmission) async -> ArrivalOperationResult) async throws -> ArrivalTimingMeasurement {
         try profile.validate()
-        let owner = try ArrivalTimingOwner(profile: profile, clockDomain: UUID().uuidString)
+        let owner = try ArrivalTimingOwner(profile: profile, clockDomain: UUID().uuidString, clock: clock)
         let start = clock.nowNanoseconds()
         let span = UInt64(profile.arrivals - 1) * profile.intervalNanoseconds
         guard !start.addingReportingOverflow(span).overflow else { throw LoadFailure.invalidArguments }
@@ -184,6 +211,12 @@ private actor ArrivalTimingOwner {
     struct Job: Sendable { let ordinal: Int; let scheduled: UInt64 }
     private let profile: ArrivalTimingProfile
     private let clockDomain: String
+    private let clock: ArrivalTimingClock
+    private var generatorLateness: BoundedHistogram?
+    private var generatorHeadroom: BoundedHistogram?
+    private var offeredRange = ArrivalTimestampRange()
+    private var lateArrivals = 0
+    private var noHeadroomArrivals = 0
     private var pending: [Job] = []
     private var idle: [CheckedContinuation<Job?, Never>] = []
     private var workerReadiness: (count: Int, continuation: CheckedContinuation<Void, Never>)?
@@ -212,13 +245,18 @@ private actor ArrivalTimingOwner {
         "arrival.lateness", "arrival.admissionWait", "arrival.service"]
 
     /// Preallocates every outcome cell and checks the combined budget before measured arrivals.
-    init(profile: ArrivalTimingProfile, clockDomain: String) throws {
+    init(profile: ArrivalTimingProfile, clockDomain: String, clock: ArrivalTimingClock) throws {
         let configuration = try HistogramConfiguration(lowerBoundNanoseconds: 0,
             upperBoundNanoseconds: 1_000_000_000, bucketWidthNanoseconds: 100_000)
         try AggregateStatisticsBudget.validate(histograms: Array(repeating: configuration,
-            count: Self.metricIDs.count * BenchmarkOutcome.allCases.count), additionalBytes: 131_072)
+            count: Self.metricIDs.count * BenchmarkOutcome.allCases.count + (profile.measureGenerator ? 2 : 0)), additionalBytes: 131_072)
         self.profile = profile
         self.clockDomain = clockDomain
+        self.clock = clock
+        if profile.measureGenerator {
+            generatorLateness = BoundedHistogram(configuration: configuration)
+            generatorHeadroom = BoundedHistogram(configuration: configuration)
+        }
         pending.reserveCapacity(profile.maximumPending)
         idle.reserveCapacity(profile.maximumActive)
         for id in Self.metricIDs {
@@ -254,6 +292,8 @@ private actor ArrivalTimingOwner {
 
     /// Counts each scheduled slot immediately, independently of service completion.
     func offer(ordinal: Int, scheduled: UInt64) {
+        let observed = profile.measureGenerator ? clock.nowNanoseconds() : nil
+        defer { if let observed { recordGenerator(ordinal: ordinal, scheduled: scheduled, observed: observed) } }
         offered += 1
         scheduledRange.include(scheduled)
         if finished {
@@ -274,6 +314,32 @@ private actor ArrivalTimingOwner {
             missed += 1
             outcomeCounts[.rejected]! += 1
         }
+    }
+
+    /// Captures generator lateness and remaining time to the next configured slot independently of service.
+    /// Headroom ends after bounded offer bookkeeping. A missed next deadline contributes zero headroom
+    /// and an explicit count; unavailable negative chronology contributes histogram loss instead.
+    private func recordGenerator(ordinal: Int, scheduled: UInt64, observed: UInt64) {
+        offeredRange.include(observed)
+        if observed >= scheduled {
+            generatorLateness!.record(observed - scheduled)
+            if observed > scheduled { lateArrivals += 1 }
+        } else {
+            clockRegressed = true
+            generatorLateness!.recordLoss()
+        }
+        guard ordinal + 1 < profile.arrivals else { return }
+        let completed = clock.nowNanoseconds()
+        guard completed >= observed else {
+            clockRegressed = true
+            generatorHeadroom!.recordLoss()
+            return
+        }
+        let next = scheduled + profile.intervalNanoseconds
+        if completed >= next {
+            noHeadroomArrivals += 1
+            generatorHeadroom!.record(0)
+        } else { generatorHeadroom!.record(next - completed) }
     }
 
     /// Captures terminal populations after the operation body has returned and released its resources.
@@ -361,7 +427,10 @@ private actor ArrivalTimingOwner {
             successfulPerSecond: Double(outcomeCounts[.success]!) * 1_000_000_000 / Double(max(1, elapsed)),
             scheduledTimestamps: scheduledRange, submittedTimestamps: submittedRange,
             admittedTimestamps: admissionRange, serviceStartedTimestamps: serviceStartRange,
-            serviceCompletedTimestamps: serviceEndRange, responseTimestamps: responseRange, metrics: metrics)
+            serviceCompletedTimestamps: serviceEndRange, responseTimestamps: responseRange, metrics: metrics,
+            generator: generatorLateness.map { lateness in ArrivalGeneratorMeasurement(offeredTimestamps: offeredRange,
+                schedulerLateness: lateness.snapshot(), nextSlotHeadroom: generatorHeadroom!.snapshot(),
+                lateArrivals: lateArrivals, noHeadroomArrivals: noHeadroomArrivals) })
     }
 
     /// Records unknown negative chronology as loss, preserving the operation's original result.

@@ -382,15 +382,50 @@ coalesced subscribers each retain a logical result while sharing one exchange.
 Setup priming and expiry waits are outside individual request timers. Inter-wave
 gaps remain in the whole throughput denominator.
 
+Stage 0 adds explicit versioned scheduling controls. `rest.orderedMutationDefaultV1`
+uses an unmodified `SchedulingPolicy()` (10 ms polling, one-second provisional
+window, initial global allowance 50 requests/second, and the production capacity
+limits). `rest.orderedMutation` retains its tuned policy and workload name: 100 µs
+polling, 1 µs provisional window and enlarged allowance. Every new REST native
+receipt includes the complete constructed scheduling policy; scripted peer rate
+headers remain injected fixture behavior and do not establish Discord quotas.
+The default closed-loop variant injects the configured header-service delay.
+
+`arrival.orderedMutationDefaultSharedV1` exercises POST mutation ordering in one
+partition with the actual default scheduler. `arrival.orderedMutationDefaultIndependentV1`
+uses the configured worker count of major-resource partitions, selected by ordinal
+modulo worker count, while retaining one shared identity and its global budgets.
+Both preserve cold discovery in each measured/warmup fixture. They directly record
+RESTClient.execute entry through a bounded task-local cell and the opt-in admission
+callback, in the same uptime clock domain as driver submission. This is entry to RESTClient.execute
+after descriptor construction, before ordering/rate admission; it does not claim
+wire-service admission.
+`arrival.rest` retains its tuned GET rate-admission control and unknown owner entry.
+
+`arrival.noopV1` substitutes an immediate successful service for REST at identical
+worker/queue/rate settings. It ignores the configured peer delay. Every versioned
+arrival control additionally records actual offer-time lateness and headroom until
+the next configured slot, using two bounded native histograms. The offer timestamp
+is captured on driver-owner entry; headroom ends after bounded offer bookkeeping.
+An offer completing after its next slot records zero headroom and increments an
+explicit count. The final configured slot has no next-slot sample. All offered
+slots, including queue-overflow misses, contribute generator lateness. These
+controls expose driver deadline pressure independently of service/queue lateness;
+they do not turn generator ceilings into service-capacity claims. The original
+arrival identity incurs no generator-clock reads. The serial wrapper sweeps all
+arrival controls over the same 1/4/16 workers and 200/2,000/20,000 arrivals/second.
+
 Arrival policy uses one scheduler and persistent fixed workers. It retains no
 task or timestamp record per offered arrival. Queue overflow counts a missed
 arrival as terminal rejection; it has no invented submission/latency. Queued
 cancellation is counted likewise. Metrics separately retain scheduled→response,
 submitted→response, lateness and closure service. Optional actual owner admission
-is unavailable in the current REST fixture. Service includes the REST owner hop
+is unavailable in the legacy REST fixture and directly captured by the versioned
+mutation controls. Service includes the REST owner hop
 and any admission. Native counts distinguish submitted completions, missed and
-rejected work, deferred arrivals, queue peaks, recovery and unoffered slots after
-cancellation. Common throughput counts all terminal outcomes, including missed
+rejected work, deferred arrivals, queue peaks, recovery/drain and unoffered slots
+after cancellation. Driver admission means a slot was assigned to a worker;
+`admittedTimestamps` counts directly observed service-owner entries separately. Common throughput counts all terminal outcomes, including missed
 rejections; native completion throughput counts submitted service returns.
 
 Histograms cover every observed outcome with 100-microsecond buckets over

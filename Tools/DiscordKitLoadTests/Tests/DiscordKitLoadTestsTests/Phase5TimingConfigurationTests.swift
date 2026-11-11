@@ -32,6 +32,34 @@ import Testing
         #expect(throws: (any Error).self) { try Phase5TimingConfiguration.parse(arguments, environment: [:]) }
     }
 
+    /// New controls are explicit versioned identities; historical tuned cases retain their names.
+    @Test func versionedControlCasesAreIndependent() async throws {
+        #expect(Phase5TimingCommand.cases.contains("rest.orderedMutation"))
+        #expect(Phase5TimingCommand.cases.contains("rest.orderedMutationDefaultV1"))
+        #expect(Phase5TimingCommand.cases.contains("arrival.rest"))
+        for name in Phase5TimingCommand.arrivalCases where name != "arrival.rest" {
+            var configuration = try Phase5TimingConfiguration.parse(["--case", name,
+                "--requests", "1", "--concurrency", "1", "--warmup-requests", "0",
+                "--warmup-seconds", "0", "--delay-microseconds", "0"], environment: [:])
+            configuration.durationSeconds = 2
+            let result = try await Phase5TimingCommand.measure(configuration)
+            #expect(result.common.counts?.completed == 1)
+            #expect(result.common.cleanup.remainingOwners == 0)
+            #expect(result.common.identity.scenario == name)
+            let details = try #require(result.measurement.arrivalDetails)
+            #expect(details.0.generator?.offeredTimestamps.count == 1)
+            #expect(details.0.admittedTimestamps.count == 1)
+            if name == "arrival.noopV1" {
+                #expect(result.common.adapter == "noop-service")
+                #expect(details.1 == nil && details.2 == nil)
+            } else {
+                #expect(details.1?.isEmpty == true)
+                #expect(details.2?.profile == "SchedulingPolicy-default-v1")
+            }
+            _ = try DiscordBenchmarkReport.decode(result.common.validatedData())
+        }
+    }
+
     /// Real cold native runs require a serial cohort; TLS retains strict NIO trust configuration.
     @Test func explicitNativePolicies() throws {
         let cold = try Phase5TimingConfiguration.parse(["--case", "transport.smallBody", "--adapter", "nio",

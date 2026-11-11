@@ -11,6 +11,16 @@ enum Phase5Measurement: Codable, Sendable {
     case transport(TransportTimingMeasurement)
     case rest(RESTTimingReport)
     case arrival(ArrivalTimingMeasurement, RESTTimingCleanup)
+    case arrivalControl(ArrivalTimingMeasurement, RESTTimingCleanup?, RESTSchedulingReceipt?)
+
+    /// Reads joined arrival data while preserving the historical native arrival enum shape.
+    var arrivalDetails: (ArrivalTimingMeasurement, RESTTimingCleanup?, RESTSchedulingReceipt?)? {
+        switch self {
+        case .arrival(let value, let cleanup): return (value, cleanup, nil)
+        case .arrivalControl(let value, let cleanup, let scheduling): return (value, cleanup, scheduling)
+        default: return nil
+        }
+    }
 }
 
 /// Full native evidence plus a common, strictly validated distribution envelope.
@@ -26,10 +36,13 @@ struct Phase5TimingReport: Codable, Sendable {
 private enum Phase5Race<Value: Sendable>: Sendable { case result(Value), deadline, timerCancelled }
 
 enum Phase5TimingCommand {
+    /// Versioned controls keep the tuned GET arrival fixture's existing identity intact.
+    static let arrivalCases = ["arrival.rest", "arrival.noopV1", "arrival.orderedMutationDefaultSharedV1",
+        "arrival.orderedMutationDefaultIndependentV1"]
     /// Finite workload names are inspectable without starting any fixture or opening outputs.
     static var cases: [String] {
         /// Lists independent transport, REST and arrival policies; arbitrary labels are rejected.
-        get { TransportTimingCase.allCases.map(\.rawValue) + RESTTimingScenario.allCases.map { "rest." + $0.rawValue } + ["arrival.rest"] }
+        get { TransportTimingCase.allCases.map(\.rawValue) + RESTTimingScenario.allCases.map { "rest." + $0.rawValue } + arrivalCases }
     }
 
     /// Caps asynchronous work, cancels the losing child and awaits the entire task group.
@@ -84,7 +97,7 @@ enum Phase5TimingCommand {
             warmupNanoseconds = transport.warmupNanoseconds
             capped = transport.counts.offered < UInt64(configuration.requests)
             measured = .transport(transport)
-        } else if configuration.scenario == "arrival.rest" {
+        } else if arrivalCases.contains(configuration.scenario) {
             if configuration.warmupRequests > 0 && configuration.warmupSeconds > 0 {
                 let start = clock.now
                 _ = try await bounded(seconds: configuration.warmupSeconds) {
@@ -127,15 +140,30 @@ enum Phase5TimingCommand {
     /// - Returns: Joined driver population and policy shutdown receipt.
     /// - Throws: Invalid bounds or setup errors; setup failures create no fabricated operations.
     private static func arrival(_ configuration: Phase5TimingConfiguration, requests: Int) async throws -> Phase5Measurement {
-        let fixture = try RESTArrivalFixture(concurrency: configuration.concurrency,
-            delay: .microseconds(configuration.delayMicroseconds))
-        do {
-            let value = try await ArrivalTimingRunner().run(profile: try .init(arrivals: requests,
-                intervalNanoseconds: UInt64(1_000_000_000 / configuration.rate),
-                maximumActive: configuration.concurrency, maximumPending: configuration.pending)) { submission in
-                ArrivalOperationResult(outcome: await fixture.execute(ordinal: submission.ordinal))
+        let controlled = configuration.scenario != "arrival.rest"
+        let profile = try ArrivalTimingProfile(arrivals: requests,
+            intervalNanoseconds: UInt64(1_000_000_000 / configuration.rate),
+            maximumActive: configuration.concurrency, maximumPending: configuration.pending,
+            measureGenerator: controlled)
+        if configuration.scenario == "arrival.noopV1" {
+            let value = try await ArrivalTimingRunner().run(profile: profile) { _ in
+                let admitted = DispatchTime.now().uptimeNanoseconds
+                return ArrivalOperationResult(outcome: .success, admittedNanoseconds: admitted,
+                    serviceStartedNanoseconds: admitted, serviceCompletedNanoseconds: admitted)
             }
-            return .arrival(value, await fixture.shutdown())
+            return .arrivalControl(value, nil, nil)
+        }
+        let fixture = try RESTArrivalFixture(concurrency: configuration.concurrency,
+            delay: .microseconds(configuration.delayMicroseconds), orderedDefault: controlled,
+            independentPartitions: configuration.scenario == "arrival.orderedMutationDefaultIndependentV1" ? configuration.concurrency : 1,
+            observeAdmission: controlled)
+        do {
+            let value = try await ArrivalTimingRunner().run(profile: profile) { submission in
+                if controlled { return await fixture.executeMeasured(ordinal: submission.ordinal) }
+                return ArrivalOperationResult(outcome: await fixture.execute(ordinal: submission.ordinal))
+            }
+            let cleanup = await fixture.shutdown()
+            return controlled ? .arrivalControl(value, cleanup, await fixture.schedulingReceipt()) : .arrival(value, cleanup)
         } catch {
             _ = await fixture.shutdown()
             throw error
@@ -170,18 +198,37 @@ enum Phase5TimingCommand {
             metrics = value.metrics; domain = value.clockDomain; counts = value.counts
             elapsed = value.durationNanoseconds; adapter = "scripted-rest"; scheduler = "closed-loop-policy"
             owners = UInt64(value.cleanup.remainingOwners)
-        case .arrival(let value, let cleanup):
+        case .arrival, .arrivalControl:
+            let (value, cleanup, scheduling) = measurement.arrivalDetails!
             guard !value.clockRegressed, value.invalidOperationTimestamps == 0 else {
                 throw Phase5TimingError.integrityFailure("Invalid arrival clock or owner timestamps")
             }
             metrics = value.metrics; domain = value.clockDomain; counts = value.counts
-            elapsed = value.elapsedNanoseconds; adapter = "scripted-rest"; scheduler = "bounded-independent-arrivals"
-            owners = UInt64(value.remainingActive + value.remainingPending + cleanup.remainingOwners)
+            elapsed = value.elapsedNanoseconds
+            adapter = configuration.scenario == "arrival.noopV1" ? "noop-service" : "scripted-rest"
+            scheduler = "bounded-independent-arrivals"
+            owners = UInt64(value.remainingActive + value.remainingPending + (cleanup?.remainingOwners ?? 0))
+            if let scheduling {
+                gauges["schedulerFairnessInterval"] = .init(value: scheduling.fairnessIntervalNanoseconds,
+                    unit: "nanoseconds", method: "constructed SchedulingPolicy", scope: "fixture policy")
+                gauges["schedulerInitialGlobalRequestsPerSecond"] = .init(value: UInt64(scheduling.initialGlobalRequestsPerSecond),
+                    unit: "requests/second", method: "constructed SchedulingPolicy", scope: "fixture policy")
+            }
+            gauges["arrivalDrain"] = .init(value: value.recoveryNanoseconds, unit: "nanoseconds",
+                method: "last scheduled slot through last observed response", scope: "post-offer drain")
+            if let generator = value.generator {
+                gauges["schedulerLateArrivals"] = .init(value: UInt64(generator.lateArrivals), unit: "count",
+                    method: "actual offer timestamp > scheduled timestamp", scope: "all offered arrivals")
+                gauges["schedulerNoHeadroomArrivals"] = .init(value: UInt64(generator.noHeadroomArrivals), unit: "count",
+                    method: "offer bookkeeping completed at or after next scheduled slot", scope: "offers before final configured slot")
+            }
             gauges["offeredArrivalsPerSecond"] = .init(value: UInt64(value.offeredPerSecond), unit: "arrivals/second",
                 method: "offered / scheduled-window", scope: "scheduled-window")
             for (key, count) in [("peakActive", value.peakActive), ("peakPending", value.peakPending),
                 ("missedArrivals", value.missedArrivals), ("deferredArrivals", value.deferredArrivals),
-                ("submittedCompletions", value.submittedCompletions)] {
+                ("submittedCompletions", value.submittedCompletions), ("offeredArrivals", value.offeredArrivals),
+                ("admittedArrivals", value.submittedArrivals), ("rejectedRequests", value.rejectedRequests),
+                ("unofferedArrivals", value.unofferedArrivals)] {
                 gauges[key] = .init(value: UInt64(count), unit: "count", method: "exact driver owner counter", scope: "measured-population")
             }
         }
@@ -212,7 +259,7 @@ enum Phase5TimingCommand {
             qualificationLimitations: ["Local informational timing; no controlled-host numerical baseline, other-platform or live Discord qualification.",
                 "Warmup uses a separate population. Diagnostic snapshots and report writes follow terminal timestamps; transport byte validation is inside its body/request boundary.",
                 "Whole workflow and child percentiles overlap; they must not be added or subtracted.",
-                "Unavailable native DNS/TLS/pool/upload internals and REST owner admission timestamps are not inferred from aggregate timings.",
+                "Unavailable native DNS/TLS/pool/upload internals are not inferred. Versioned arrival controls observe REST owner entry directly; the legacy arrival.rest owner entry remains unknown.",
                 "Process gauges include fixture setup/warmup/teardown; workflow histograms and throughput use their declared measured boundaries."])
         try report.validate()
         return report

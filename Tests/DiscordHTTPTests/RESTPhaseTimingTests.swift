@@ -28,6 +28,35 @@ private final class RESTPhaseObservations: @unchecked Sendable {
 /// Confirms the new pipeline observer is opt-in and measures actual endpoints without changing policies.
 @Suite("REST pipeline phase timing", .timeLimit(.minutes(1)))
 struct RESTPhaseTimingTests {
+    /// Explicit owner entry is observed before pipeline work without changing legacy phase populations.
+    /// - Parameter enabled: Whether the separate admission callback is requested.
+    /// - Throws: Unexpected fixture or request failure.
+    @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
+    @Test(arguments: [false, true]) func actualOwnerAdmissionIsIndependent(enabled: Bool) async throws {
+        let clock = ManualClock(), origin = clock.now, admissions = RESTOwnerAdmissions()
+        let observations = RESTPhaseObservations()
+        let callback: (@Sendable (Duration) -> Void)? = enabled ? { @Sendable instant in admissions.record(instant) } : nil
+        let observer = RESTTiming(sink: observations.record, now: {
+            observations.read(); return origin.duration(to: clock.now)
+        }, onOwnerAdmission: callback)
+        #expect(observations.snapshot().reads == 0)
+        let transport = try ScriptedHTTPTransport(steps: [{ _ in
+            #expect(admissions.values == (enabled ? [.nanoseconds(17)] : []))
+            return HTTPResponse(status: 204)
+        }])
+        let coordinator = RateLimitCoordinator(clock: clock)
+        let client = RESTClient(credential: .none, identity: RateLimitIdentity(), transport: transport,
+            coordinator: coordinator, clock: clock, phaseTiming: observer)
+        let endpoint = try Endpoint<Data>(method: "HEAD", path: ["admission"], authentication: .none,
+            successStatuses: [204], decode: { $0 })
+        try clock.advance(by: .nanoseconds(17))
+        #expect(try await client.execute(endpoint).isEmpty)
+        #expect(observations.snapshot().samples.map(\.phase) == [.ordering, .construction, .decode, .decode])
+        #expect(observations.snapshot().reads == (enabled ? 9 : 8))
+        #expect(await coordinator.snapshot().activeCount == 0)
+        await coordinator.close()
+    }
+
     /// Construction and decoder clocks stop before their callback; ordering ends before service.
     /// - Parameter enabled: Explicit observer opt-in; nil performs no instrumentation reads.
     /// - Throws: Unexpected virtual-clock advance, setup or execution failure.
@@ -154,4 +183,15 @@ struct RESTPhaseTimingTests {
         #expect(snapshot.samples[0].elapsed == nil && snapshot.samples[0].outcome == .succeeded)
         _ = observer
     }
+}
+
+/// Bounded test recorder for absolute admission offsets; no submitted request data is retained.
+private final class RESTOwnerAdmissions: @unchecked Sendable {
+    private let lock = NSLock()
+    private var stored: [Duration] = []
+    /// Copies admission endpoints after synchronous callback delivery.
+    var values: [Duration] { lock.withLock { stored } }
+    /// Retains one absolute observer-clock endpoint for the finite test.
+    /// - Parameter instant: Actual REST execution entry offset.
+    func record(_ instant: Duration) { lock.withLock { stored.append(instant) } }
 }

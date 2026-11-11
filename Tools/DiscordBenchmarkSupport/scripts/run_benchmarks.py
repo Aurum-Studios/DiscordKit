@@ -316,13 +316,79 @@ def environment() -> dict[str, Any]:
 
 
 def host_observation() -> dict[str, Any]:
-    """Retain inexpensive contention indicators, never a claim of host exclusivity."""
+    """Retain bounded peer CPU and power observations outside measured child lifetimes.
+
+    Process snapshots omit arguments and environment. Percent CPU is the platform's
+    process estimate, not an interval delta; exited or hidden peers remain unknown.
+    Neither these observations nor thermal status prove exclusive allocation.
+    """
     try:
         load = list(os.getloadavg())
     except (AttributeError, OSError):
         load = None
+    peers = []
+    raw = optional_capture(["ps", "-axo", "pid=,ppid=,pcpu=,time=,comm="])
+    if raw is not None:
+        for line in raw.splitlines():
+            fields = line.split(None, 4)
+            if len(fields) != 5:
+                continue
+            try:
+                cpu = float(fields[2])
+                if not math.isfinite(cpu) or cpu < 0:
+                    continue
+                peers.append({"pid": int(fields[0]), "ppid": int(fields[1]),
+                    "cpu_percent_estimate": cpu, "cpu_time": fields[3][:64],
+                    "executable_basename": Path(fields[4]).name[:128]})
+            except ValueError:
+                continue
+    peers.sort(key=lambda item: (-item["cpu_percent_estimate"], item["pid"]))
+    thermal = optional_capture(["pmset", "-g", "therm"]) if platform.system() == "Darwin" else None
     return {"load_average_1_5_15_minutes": load,
-            "method": "os.getloadavg; host-level indicator, not exclusive-allocation proof"}
+            "peer_processes": peers[:64], "visible_process_count": len(peers) if raw is not None else None,
+            "peer_processes_truncated": len(peers) > 64,
+            "peer_processes_unavailable_reason": None if raw is not None else "ps process accounting unavailable",
+            "thermal_power_observation": thermal[:4096] if thermal is not None else None,
+            "thermal_power_unavailable_reason": None if thermal is not None else "no available native thermal/power observation",
+            "cgroup_cpu_stat": cgroup_cpu_stat() if platform.system() == "Linux" else
+                {"available": False, "reason": "not applicable outside Linux cgroup v2"},
+            "method": "os.getloadavg; ps CPU-time and percent estimates (64 busiest visible peers); pmset -g therm on macOS; Linux cgroup-v2 cpu.stat. Boundary snapshots, not exclusive-allocation proof."}
+
+
+def cgroup_cpu_stat(root: Path = Path("/sys/fs/cgroup"),
+                    membership: Path = Path("/proc/self/cgroup")) -> dict[str, Any]:
+    """Read visible ancestor throttling counters, preserving missing controllers as unknown.
+
+    Only numeric cpu.stat fields are retained, up to 64 visible ancestors. These
+    cumulative observations require matching before/after paths for deltas and
+    cannot attribute throttling to this benchmark alone.
+    """
+    try:
+        root = root.resolve()
+        relative = next(line.split(":", 2)[2] for line in membership.read_text().splitlines()
+                        if line.startswith("0::"))
+        location = (root / relative.lstrip("/")).resolve()
+        if location != root and root not in location.parents:
+            raise ValueError("cgroup membership escapes visible root")
+        if not location.is_dir():
+            location = root
+        records = []
+        for _ in range(64):
+            path = location / "cpu.stat"
+            if path.is_file():
+                fields = {}
+                for line in path.read_text().splitlines():
+                    key, value = line.split()
+                    if value.isdigit():
+                        fields[key] = int(value)
+                records.append({"path": str(path), "counters": fields})
+            if location == root:
+                return {"available": bool(records), "ancestors": records,
+                    "reason": None if records else "visible cpu.stat controller unavailable"}
+            location = location.parent
+        return {"available": False, "reason": "visible ancestry exceeds 64 levels"}
+    except (OSError, ValueError, StopIteration):
+        return {"available": False, "reason": "cgroup-v2 membership or cpu.stat unreadable"}
 
 
 def process_rss(pid: int) -> int | None:

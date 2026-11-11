@@ -12,6 +12,15 @@ strict common reports, a bounded compact report view and a Python process driver
 tools adopt it; runtime products do not. It implements latency-plan
 [Stage 1](../../Docs/Tasks/latency-timing/PHASE-1.md).
 
+Performance [Phase 0](../../Docs/Tasks/performance-improvements/PHASE-0.md) adds
+bounded before/after host observations: the 64 busiest visible process CPU-time
+and percentage estimates (no arguments or environment), available macOS
+thermal/power observations and visible Linux cgroup-v2 ancestor `cpu.stat`
+throttling counters. Snapshots occur outside child measurement. Missing probes
+remain unavailable; process snapshots do not prove host reservation, interval
+peer CPU deltas or process-tree peak memory. Controlled comparison still requires
+an explicit reviewed host declaration and independent no-change pairs.
+
 ## Collection and reports
 
 `BoundedHistogram` uses checked integer nanoseconds, fixed absolute bucket widths

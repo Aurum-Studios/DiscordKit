@@ -7,6 +7,7 @@
 ### Creating a value
 
 - ``DiscordHTTP/RESTTiming/init(sink:now:)``
+- ``DiscordHTTP/RESTTiming/init(sink:now:onOwnerAdmission:)``
 
 ## See Also
 

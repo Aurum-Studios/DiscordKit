@@ -115,7 +115,7 @@ public actor DiscordSignedIngress {
             bodyInterval?.end()
             DiscordLog.makeLogger("interactions.ingress").trace("Request body read and closed", metadata: ["dk.event": "interactions.ingress.body_read", "dk.bytes": .stringConvertible(bytes.count)])
             DiscordLog.makeLogger("interactions.ingress").trace("Verifying request signature and replay admission", metadata: ["dk.event": "interactions.ingress.verifying"])
-            let verified = try await verifier.verify(headers: request.headers, body: bytes)
+            let verified = try await verifier.verifyWithAdmissionTiming(headers: request.headers, body: bytes)
             try context.check()
             authenticated = true
             DiscordLog.makeLogger("interactions.ingress").trace("Signed request authenticated", metadata: ["dk.event": "interactions.ingress.authenticated"])

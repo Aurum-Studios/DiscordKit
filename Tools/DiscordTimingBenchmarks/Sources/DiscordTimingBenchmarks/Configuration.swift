@@ -23,6 +23,11 @@ enum TimingBenchmarkError: Error, Equatable {
     case invalidConfiguration(String), integrityFailure(String), unsupportedPlatform(String)
 }
 
+/// Development collector ownership; the default retains the original shared-observer workload.
+enum TimingCollectorScope: String, Codable, CaseIterable, Sendable {
+    case shared, perWorker
+}
+
 /// Finite workload and output ownership policy, passed by value to every bounded worker.
 struct TimingConfiguration: Codable, Sendable {
     var mode: TimingMode = .disabled
@@ -31,6 +36,7 @@ struct TimingConfiguration: Codable, Sendable {
     var iterations = 1_000
     var warmupIterations = 128
     var concurrency = 1
+    var collectorScope: TimingCollectorScope = .shared
     var durationSeconds: UInt64 = 10
     var warmupSeconds: UInt64 = 1
     var output: String?
@@ -75,11 +81,17 @@ struct TimingConfiguration: Codable, Sendable {
             }
         }
         let known: Set<String> = ["--mode", "--profile", "--seed", "--iterations", "--warmup-iterations",
-            "--concurrency", "--duration-seconds", "--warmup-seconds", "--output", "--common-report", "--artifact-directory"]
+            "--concurrency", "--collector-scope", "--duration-seconds", "--warmup-seconds", "--output", "--common-report", "--artifact-directory"]
         guard Set(options.keys).isSubset(of: known) else { throw TimingBenchmarkError.invalidConfiguration("Unknown option") }
         if let value = options["--mode"] {
             guard let mode = TimingMode(rawValue: value) else { throw TimingBenchmarkError.invalidConfiguration("Unknown mode") }
             result.mode = mode
+        }
+        if let value = options["--collector-scope"] {
+            guard let scope = TimingCollectorScope(rawValue: value) else {
+                throw TimingBenchmarkError.invalidConfiguration("Unknown collector scope")
+            }
+            result.collectorScope = scope
         }
         result.profile = options["--profile"] ?? environment["DK_BENCHMARK_PROFILE"] ?? result.profile
         for (key, fallback) in [("--seed", "DK_BENCHMARK_SEED"), ("--duration-seconds", "DK_BENCHMARK_DURATION_SECONDS"),

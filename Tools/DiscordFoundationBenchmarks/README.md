@@ -32,7 +32,7 @@ python3 Tools/DiscordFoundationBenchmarks/scripts/run_cases.py \
   --receipt .build/timing-phase4/release.json --output-dir .build/timing-phase4/cases
 ```
 
-The wrapper runs all 77 cases sequentially, in separate processes. Repeated
+The wrapper runs all 101 cases sequentially, in separate processes. Repeated
 `--case` options select a subset. Defaults are 100 measured batches, 16 calls per
 batch, eight warmup batches and one fresh process per case. Finite native limits
 for `--batches` / `--batch-size` / `--warmup-batches` are 100,000 / 1,024 / 10,000.
@@ -67,11 +67,22 @@ use the shared driver for retained performance evidence.
 | Family | Cases | Dimensions and independent semantic oracle |
 | --- | ---: | --- |
 | Lossless JSON | 17 | Parse/serialize × 1/16/256 KiB × ASCII/Unicode; paired depths 1/8/64, widths 4/32/256. Authored canonical bytes and trees preserve huge numbers, exponent spelling and negative zero. Five exact malformed/size/depth rejections include parser offsets. |
+| Independent JSON v2 | 24 | One-factor controls around 16 KiB/depth 2/width 4/16 string leaves: bytes 1/16/256 KiB, depth 2/8/32, width 4/32/128, string leaves 1/16/128, escaped-content byte share 0/25/100%, or ASCII/Unicode. Every control changes one dimension and retains exact document bytes. |
 | Identifiers/bitsets | 14 | Snowflake parse/format includes zero, leading zeroes and UInt64 maximum. Parse/serialize/algebra/mutation × 64/256/4096 bits. Decimal-digit doubling and position sets independently prove every bit. |
 | Models | 9 | Message decode, lossless model encode, field/unknown roundtrip × three sizes. Mentions 0/4/32, embeds 0/2/10, unknown fields 1/16/64, nesting 1/8/16; absent/null/value references and future numeric tokens remain distinct. |
 | Builders | 10 | Legacy messages and V2 components × three sizes, plus contribution/node/row/text-size rejections. Independent wire trees, component grammar and safe mention policy accompany every case. |
 | Permissions | 10 | Allow/deny × paired 1/16/128 assigned roles and overwrites, 64/256/4096-bit width. Owner/admin bypass and resource-limit/unknown-overwrite refusals have independently known results. |
 | RPC frames | 17 | Encode × 1/16/256 KiB; incremental decode × those sizes × 7/256/4096-byte fragments. Independent little-endian wire bytes plus malformed-opcode, announced-size, append-size, truncation and encode-size rejections. |
+
+The 24 new `json.v2.parse.*` / `json.v2.serialize.*` cases keep all 77 original
+case identities and fixture bytes. Root member count, nesting, string leaf count,
+escaping and literal Unicode vary independently at fixed 16 KiB; byte controls
+keep the baseline shape fixed. The root contains numeric markers, one nested
+string array and numeric filler members. `escapePercent` assigns that share of
+each leaf's encoded content bytes to two-byte quote escapes, rounded down per
+leaf; remaining bytes use ASCII or literal Unicode plus exact-byte ASCII padding.
+Full tree equality, canonical bytes and inspected shape/escaping are correctness
+evidence. These cases do not select an optimization or numerical budget.
 
 Each case rotates four prepared variants using the recorded seed and wrapping
 call index. SHA-256 binds prepared inputs; dimensions retain actual sizes/caps.

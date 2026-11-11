@@ -57,10 +57,11 @@ def matrix(cases: list[str], *, native: bool = True) -> list[dict]:
     """Select finite corrected cohorts and a 3-by-3 bounded overload/recovery sweep."""
     rows = []
     for case in cases:
-        if case == "arrival.rest":
+        if case.startswith("arrival."):
             for concurrency in (1, 4, 16):
                 for rate in (200, 2_000, 20_000):
-                    rows.append(dict(name=f"arrival-c{concurrency}-r{rate}", case=case,
+                    prefix = "arrival" if case == "arrival.rest" else case
+                    rows.append(dict(name=f"{prefix}-c{concurrency}-r{rate}", case=case,
                                      adapter="scripted", concurrency=concurrency, rate=rate,
                                      pending=concurrency * 2, connection="warm", tls=False))
         elif case.startswith("rest."):
@@ -141,7 +142,7 @@ def main(argv: list[str] | None = None) -> int:
                       "--fixture", str(package / "Sources" / "DiscordKitLoadTests" / "RESTTimingRunner.swift"),
                       "--receipt", str(arguments.receipt.resolve()), "--command", json.dumps(command),
                       "--output-dir", str(destination), "--concurrency", str(row["concurrency"]),
-                      "--scheduler-policy", "bounded-independent-arrivals" if row["case"] == "arrival.rest" else "closed-loop-cohort",
+                      "--scheduler-policy", "bounded-independent-arrivals" if row["case"].startswith("arrival.") else "closed-loop-cohort",
                       "--warmup-seconds", "1", "--warmup-policy", "participant-declared"]
         status = processes.run(supervised).returncode
         if processes.cancelled:

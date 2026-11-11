@@ -60,6 +60,7 @@ public struct RESTTimingSample: Sendable, Equatable {
 public struct RESTTiming: Sendable {
     private let sink: @Sendable (RESTTimingSample) -> Void
     private let now: @Sendable () -> Duration
+    private let onOwnerAdmission: (@Sendable (Duration) -> Void)?
 
     /// Stores an explicit observer without reading its clock or invoking its sink.
     /// - Parameters:
@@ -70,7 +71,30 @@ public struct RESTTiming: Sendable {
                     let value = DispatchTime.now().uptimeNanoseconds
                     return .seconds(Int64(value / 1_000_000_000)) + .nanoseconds(Int64(value % 1_000_000_000))
                 }) {
-        self.sink = sink; self.now = now
+        self.sink = sink; self.now = now; self.onOwnerAdmission = nil
+    }
+
+    /// Stores separate scalar and execution-entry observers without reading clocks or invoking callbacks.
+    /// - Parameters:
+    ///   - sink: Application-owned bounded synchronous consumer of content-free phase observations.
+    ///   - now: Concurrent-safe monotonic offset source, default system uptime.
+    ///   - onOwnerAdmission: Optional prompt callback at actual RESTClient execute entry, before
+    ///     pipeline work. Receives an absolute offset from `now`, not an elapsed duration or
+    ///     quota grant. Callers may correlate it with their own submission in the same clock
+    ///     domain. Nil adds no clock read and leaves existing scalar populations unchanged.
+    public init(sink: @escaping @Sendable (RESTTimingSample) -> Void,
+                now: @escaping @Sendable () -> Duration = {
+                    let value = DispatchTime.now().uptimeNanoseconds
+                    return .seconds(Int64(value / 1_000_000_000)) + .nanoseconds(Int64(value % 1_000_000_000))
+                }, onOwnerAdmission: (@Sendable (Duration) -> Void)?) {
+        self.sink = sink; self.now = now; self.onOwnerAdmission = onOwnerAdmission
+    }
+
+    /// Reports actual execution-owner admission only when a caller explicitly requests the boundary.
+    /// The callback runs synchronously before request work and must not recursively enter the client.
+    func ownerAdmitted() {
+        guard let onOwnerAdmission else { return }
+        onOwnerAdmission(now())
     }
 
     /// Captures one real owner entry; only explicitly enabled clients call this method.

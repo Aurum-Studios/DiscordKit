@@ -58,6 +58,10 @@ struct RuntimeIntervalGatewayTests {
             #expect(retained.count == 2)
             #expect(retained.allSatisfy { $0.elapsedNanoseconds == 17_000_000 && $0.outcome == .succeeded })
             #expect(events.last?.stage == .operation && events.last?.operation == .gatewaySession)
+            let validations = events.filter { $0.kind == .ended && $0.stage == .leaseValidation }
+            let session = events.first { $0.kind == .began && $0.operation == .gatewaySession && $0.stage == .operation }
+            #expect(!validations.isEmpty)
+            #expect(validations.allSatisfy { $0.outcome == .succeeded && $0.context.parentID == session?.context.operationID })
             #expect(events.filter { $0.kind == .began }.count == events.filter { $0.kind == .ended }.count)
         } else { #expect(events.isEmpty && result.reads == 0) }
         #expect(await fixture.leases.retainedLeaseCount() == 0)

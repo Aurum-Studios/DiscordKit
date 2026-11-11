@@ -15,6 +15,32 @@ import Testing
 
 /// Actual HTTP application boundaries remain distinct from receipt provenance and final handler work.
 @Suite(.timeLimit(.minutes(1))) struct RuntimeIntervalIngressTests {
+    /// Caller admission ends before signature service, including requests subsequently refused as replays.
+    /// - Throws: Unexpected fixture signing or verification failure.
+    @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
+    @Test func verifierAdmissionPrecedesAtomicService() async throws {
+        let clock = ManualClock(), origin = clock.now, events = IngressIntervalEvents()
+        let intervals = DiscordIntervalTiming(clockDomain: 611, sink: { event in
+            events.record(event)
+            if event.kind == .began && event.stage == .admission {
+                try? clock.advance(by: .nanoseconds(7))
+            }
+        }, now: { origin.duration(to: clock.now) })
+        let verifier = try SignedRequestVerifier(publicKey: SignedIngressTests.hex(SignedIngressTests.key().publicKey.rawRepresentation),
+            now: { 1000 }, intervals: intervals)
+        let body = Data("fixture".utf8), headers = try SignedIngressTests.headers(body)
+        _ = try await verifier.verifyWithAdmissionTiming(headers: headers, body: body)
+        await #expect(throws: SignedIngressFailure.replay) { try await verifier.verifyWithAdmissionTiming(headers: headers, body: body) }
+        let admissions = events.values.filter { $0.kind == .ended && $0.stage == .admission }
+        #expect(admissions.count == 2)
+        #expect(admissions.allSatisfy { $0.elapsedNanoseconds == 7 && $0.outcome == .succeeded })
+        let first = Array(events.values.prefix(4))
+        #expect(first.map(\.stage) == [.admission, .admission, .signatureVerification, .signatureVerification])
+        #expect(first[1].timestampNanoseconds == first[2].timestampNanoseconds)
+        #expect(events.values.filter { $0.kind == .began }.count == events.values.filter { $0.kind == .ended }.count)
+        #expect(await verifier.replayEntryCount() == 1)
+    }
+
     /// Proves first confirmation remains successful while later handler failure ends the joined workflow.
     @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
     @Test(arguments: [false, true]) func firstResponsePrecedesJoinedWorkflow(enabled: Bool) async throws {

@@ -18,7 +18,8 @@ private final class Counts: @unchecked Sendable {
 @Suite struct MediaBenchmarkTests {
     /// Confirms every supported ID is finite/unique and configuration parsing rejects malformed or aliased inputs.
     @Test func finiteCatalogAndConfiguration() throws {
-        #expect(MediaCatalog.ids.count == 80)
+        #expect(MediaCatalog.ids.count == 98)
+        #expect(MediaCatalog.ids.filter { !$0.contains(".v2.") }.count == 80)
         #expect(Set(MediaCatalog.ids).count == MediaCatalog.ids.count)
         #expect(throws: MediaBenchmarkError.self) { try MediaCatalog.selected("opus.encode.unknown") }
         for arguments in [["--batch-size", "65"], ["--batch-size", "0"], ["--batches", "0"],
@@ -31,9 +32,9 @@ private final class Counts: @unchecked Sendable {
         #expect(config.seed == 9 && config.profile == "stress" && config.durationSeconds == 12 && config.commonReport == "common.json")
     }
 
-    /// Every finite case executes real public wrappers and complete untimed oracles, including all codec layouts.
+    /// Every legacy finite case executes real public wrappers and complete untimed oracles, including all codec layouts.
     @Test func everyCatalogCaseRoundtripsAndCloses() async throws {
-        for id in MediaCatalog.ids {
+        for id in MediaCatalog.ids.filter({ !$0.contains(".v2.") }) {
             let workload = try MediaCatalog.selected(id)
             let batch: MediaBatch
             do { batch = try await workload.prepare(2, 65_535) }

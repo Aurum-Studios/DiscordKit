@@ -99,6 +99,9 @@ public enum DiscordIntervalStage: Sendable, Equatable {
     case ingestion
     /// Run entry through the documented local readiness milestone.
     case localReady
+    /// One injected Gateway lease-store validation call, including its await and error return.
+    /// This excludes the subsequent local generation fence and does not establish socket latency.
+    case leaseValidation
 }
 
 /// Result of this boundary only; successful headers do not promise successful API execution.

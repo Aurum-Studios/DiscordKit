@@ -229,6 +229,7 @@ Contributions are welcome; see [CONTRIBUTING.md](CONTRIBUTING.md).
 - [Game services and Commerce contracts](Docs/ServiceContracts.md)
 - [Integrated diagnostics](Docs/Logging.md)
 - [Latency measurement and comparison](Docs/Measurements.md)
+- [Performance refinement plan](Docs/Tasks/performance-improvements/PLAN.md)
 - [Dependencies and third-party notices](Docs/Dependencies.md)
 - [Platform support](Docs/PlatformSupport.md)
 - [Scalability and measurements](Docs/Scalability.md)

@@ -36,7 +36,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--mode", action="append", default=[])
     parser.add_argument("--iterations", type=int, default=1_000)
     parser.add_argument("--warmup-iterations", type=int, default=128)
-    parser.add_argument("--concurrency", type=int, default=2)
+    cohort_options = parser.add_mutually_exclusive_group()
+    cohort_options.add_argument("--concurrency", type=int)
+    cohort_options.add_argument("--cohort", type=int, choices=[1, 4, 16], action="append", default=[])
+    parser.add_argument("--collector-scope", choices=["shared", "perWorker"], action="append", default=[])
     arguments = parser.parse_args(argv)
     executable = arguments.executable.resolve()
     listed = subprocess.run([str(executable), "--list-modes"], check=True, text=True,
@@ -50,21 +53,29 @@ def main(argv: list[str] | None = None) -> int:
         modes = [mode for mode in modes if mode not in {"unifiedLog", "signposts"}]
     if not 1 <= arguments.iterations <= 1_000_000 or not 0 <= arguments.warmup_iterations <= 1_000_000:
         parser.error("invalid finite iteration budget")
-    if not 2 <= arguments.concurrency <= 64:
-        parser.error("cohort must be in 2...64 so callbackContention is meaningful")
+    cohorts = list(dict.fromkeys(arguments.cohort or [arguments.concurrency if arguments.concurrency is not None else 2]))
+    scopes = list(dict.fromkeys(arguments.collector_scope or ["shared"]))
+    if any(not 1 <= cohort <= 64 for cohort in cohorts):
+        parser.error("cohort must be in 1...64")
+    if modes == ["callbackContention"] and cohorts == [1]:
+        parser.error("callbackContention requires at least two workers")
     arguments.output_dir.mkdir(parents=True, exist_ok=False)
     shared = Path(__file__).resolve().parents[2] / "DiscordBenchmarkSupport" / "scripts" / "run_benchmarks.py"
     fixture = Path(__file__).resolve().parents[1] / "fixture.txt"
-    for mode in modes:
+    matrix = bool(arguments.cohort) or len(scopes) > 1 or scopes != ["shared"]
+    for cohort, scope, mode in [(cohort, scope, mode) for cohort in cohorts for scope in scopes for mode in modes
+                                if mode != "callbackContention" or cohort >= 2]:
+        destination = arguments.output_dir / (f"cohort-{cohort}/{scope}/{mode}" if matrix else mode)
         command = [str(executable), "--mode", mode, "--output", "{output}",
                    "--profile", "{profile}", "--seed", "{seed}", "--concurrency", "{concurrency}",
+                   "--collector-scope", scope,
                    "--duration-seconds", "{duration_seconds}", "--warmup-seconds", "{warmup_seconds}",
                    "--iterations", str(arguments.iterations), "--warmup-iterations", str(arguments.warmup_iterations)]
         supervised = [sys.executable, str(shared), "run", "--profile", arguments.profile,
                       "--scenario", "instrumentation-" + mode, "--fixture", str(fixture),
                       "--receipt", str(arguments.receipt.resolve()), "--command", json.dumps(command),
-                      "--output-dir", str((arguments.output_dir / mode).resolve()),
-                      "--concurrency", str(arguments.concurrency), "--scheduler-policy", "finite-structured-worker-cohort",
+                      "--output-dir", str(destination.resolve()),
+                      "--concurrency", str(cohort), "--scheduler-policy", "finite-structured-worker-cohort",
                       "--warmup-seconds", "1", "--warmup-policy", "participant-declared"]
         status = subprocess.run(supervised, check=False).returncode
         if status:

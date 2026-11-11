@@ -123,6 +123,19 @@ import Testing
         #expect(summary.storageUpperBoundBytes < 16 * 1_024 * 1_024)
     }
 
+    /// The new high ordinal lease boundary maps independently without shifting existing exported names.
+    /// - Throws: Unexpected bounded aggregate construction failure.
+    @Test func leaseValidationMapping() throws {
+        let aggregate = try DiscordTimingAggregate()
+        let timing = DiscordIntervalTiming(clockDomain: 6, sink: { aggregate.record($0) }, now: { .nanoseconds(4) })
+        timing.begin(.gatewaySession, stage: .leaseValidation).end(.failed)
+        let snapshot = aggregate.snapshot()
+        #expect(snapshot.acceptedCount == 1 && snapshot.droppedCount == 0)
+        #expect(snapshot.rows.map(\.operation) == ["gatewaySession"])
+        #expect(snapshot.rows.map(\.stage) == ["leaseValidation"])
+        #expect(snapshot.rows.map(\.outcome) == ["failed"])
+    }
+
     /// Cache and client identities map to independent bounded rows with their full finite stage set.
     /// - Throws: Unexpected aggregate admission or missing mapped row.
     @Test func phaseSevenOwnerMappings() throws {

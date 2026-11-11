@@ -39,11 +39,62 @@ struct MediaBatch: Sendable {
     }
 }
 
+/// One serial population owns these resources across all of its bounded batches.
+struct MediaSession: Sendable {
+    let prepare: @Sendable (_ count: Int, _ seed: UInt64) async throws -> MediaBatch
+    let verify: @Sendable () async throws -> Void
+    let close: @Sendable () async -> Void
+}
+
+/// Mutable value storage exclusively owned by the serial population, never shared across populations.
+final class SerialState<Value: Sendable>: @unchecked Sendable {
+    var value: Value
+    /// Takes ownership of prepared state without copying it inside each timed operation.
+    /// - Parameter value: Independently constructed state; only one serial runner may mutate this box.
+    init(_ value: Value) { self.value = value }
+}
+
 struct MediaCase: Sendable {
     let id: String
     let transition: Bool
     let dimensions: [String: UInt64]
     let prepare: @Sendable (_ count: Int, _ seed: UInt64) async throws -> MediaBatch
+    let preparePopulation: (@Sendable (_ seed: UInt64) async throws -> MediaSession)?
+
+    /// Describes an existing independently prepared batch or a versioned population-owned stream.
+    /// - Parameters:
+    ///   - id: Unique finite catalog identity; old identities keep their original preparation policy.
+    ///   - transition: Whether the distribution uses MLS transition rather than media batch semantics.
+    ///   - dimensions: Immutable public fixture policy and size metadata.
+    ///   - preparePopulation: Optional per-population owner factory, absent for all legacy cases.
+    ///   - prepare: Standalone finite-batch factory used by legacy harness paths and direct fixture tests.
+    /// Preparation is untimed and must release any created resources when it throws.
+    init(id: String, transition: Bool, dimensions: [String: UInt64],
+        preparePopulation: (@Sendable (_ seed: UInt64) async throws -> MediaSession)? = nil,
+        prepare: @escaping @Sendable (_ count: Int, _ seed: UInt64) async throws -> MediaBatch) {
+        self.id = id; self.transition = transition; self.dimensions = dimensions
+        self.preparePopulation = preparePopulation; self.prepare = prepare
+    }
+
+    /// Wraps a serial streaming owner with an independently closable standalone test batch.
+    /// - Parameters:
+    ///   - id: New versioned identity; may not replace an existing cold/per-batch identity.
+    ///   - dimensions: Public policy sizes including prefill and fixture version.
+    ///   - factory: Builds one new owner for each warmup/measured population or standalone batch.
+    /// - Returns: A media case whose harness owner survives batch verification and result release.
+    /// Preparation failures close the owner; verification checks the whole session before final closure.
+    static func continuous(id: String, dimensions: [String: UInt64],
+        factory: @escaping @Sendable (_ seed: UInt64) async throws -> MediaSession) -> Self {
+        Self(id: id, transition: false, dimensions: dimensions, preparePopulation: factory) { count, seed in
+            let session = try await factory(seed)
+            do {
+                let batch = try await session.prepare(count, seed)
+                return MediaBatch(run: batch.run, verify: {
+                    try await batch.verify(); try await session.verify()
+                }, close: { await batch.close(); await session.close() })
+            } catch { await session.close(); throw error }
+        }
+    }
 }
 
 enum MediaCatalog {
@@ -68,6 +119,15 @@ enum MediaCatalog {
         }
         result += ["dave.frame.seal", "dave.frame.open", "mls.group.create", "mls.group.join",
             "mls.epoch.rekey", "dave.transition.queue"]
+        for rate in [16_000, 44_100] {
+            for channels in ["mono", "stereo"] { result.append("resample.v2.continuous.\(rate).48000.\(channels)") }
+        }
+        for mode in ["celt", "silk", "hybrid"] {
+            for channels in ["mono", "stereo"] {
+                for action in ["encode", "decode"] { result.append("opus.v2.continuous.\(action).\(mode).960.\(channels)") }
+            }
+        }
+        for window in [1_024, 8_192] { result.append("dave.v2.frame.open.replay\(window)") }
         return result.sorted()
     }
 
@@ -75,6 +135,13 @@ enum MediaCatalog {
     static func selected(_ id: String) throws -> MediaCase {
         guard ids.contains(id) else { throw MediaBenchmarkError.invalidConfiguration("Unknown media case: \(id)") }
         let parts = id.split(separator: ".").map(String.init)
+        if parts.count > 1, parts[1] == "v2" {
+            switch parts[0] {
+            case "resample": return continuousResample(id, rate: Int(parts[3])!, channels: parts[5] == "mono" ? 1 : 2)
+            case "opus": return continuousOpus(id, action: parts[3], mode: parts[4], channels: parts[6] == "mono" ? 1 : 2)
+            default: return steadyDAVE(id, window: Int(parts[4].dropFirst(6))!)
+            }
+        }
         if parts[0] == "resample" { return try resample(id, rate: Int(parts[2])!, channels: parts[4] == "mono" ? 1 : 2) }
         if parts[0] == "opus" { return try opus(id, action: parts[1], mode: parts[2], frames: Int(parts[3])!, channels: parts[4] == "mono" ? 1 : 2) }
         switch id {

@@ -1,0 +1,2840 @@
+{
+  "environment": {
+    "architecture": "arm64",
+    "cpu_affinity": null,
+    "cpu_model": "Apple M3 Max",
+    "cpu_quota": null,
+    "hardware_model": "Mac15,10",
+    "logical_cpu_count": 14,
+    "machine_identity_sha256": "20bdda0609d5ea65e336979c5fc0c682633352b35793abf4faf8dbe605a192f4",
+    "memory_bytes": 38654705664,
+    "memory_limit_bytes": null,
+    "memory_limit_state": "not-applicable",
+    "operating_system": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
+    "runner_identity_sha256": null,
+    "unavailability_reasons": {
+      "cpu_affinity": "not available from Darwin host APIs",
+      "cpu_quota": "not available from Darwin host APIs",
+      "memory_limit_bytes": "not available from Darwin host APIs",
+      "runner_identity_sha256": "not available from Darwin host APIs"
+    }
+  },
+  "format": "DiscordKit.performance-planning-observations",
+  "foundation": [
+    {
+      "artifacts": {
+        "common": {
+          "path": ".build/performance-plan-20261110/foundation/json.parse.1024.depth1.ascii/00-single/benchmark-envelope.json",
+          "sha256": "2e1aab855b9c5ce9f021452be0acb3f89978ab27a3e1a3b1edbb25648490b9eb"
+        },
+        "native": {
+          "path": ".build/performance-plan-20261110/foundation/json.parse.1024.depth1.ascii/00-single/native-report.json",
+          "sha256": "ecc5416b8e5abb61f3a8d0387b79d102639a246e684639a911eb27abb89c7148"
+        },
+        "orchestration": {
+          "path": ".build/performance-plan-20261110/foundation/json.parse.1024.depth1.ascii/orchestration.json",
+          "sha256": "9f97422534f87848d3b50c5a13dcbb37895fdaf3cf529dabd0604b4bf9b8a476"
+        }
+      },
+      "case": "json.parse.1024.depth1.ascii",
+      "cleanup": {
+        "completed": true,
+        "remainingOwners": 0
+      },
+      "command": [
+        "/Users/carsonrau/Developer/DiscordKit/Tools/DiscordFoundationBenchmarks/.build/arm64-apple-macosx/release/DiscordFoundationBenchmarks",
+        "--case",
+        "json.parse.1024.depth1.ascii",
+        "--output",
+        "/Users/carsonrau/Developer/DiscordKit/.build/performance-plan-20261110/foundation/json.parse.1024.depth1.ascii/00-single/native-report.json",
+        "--profile",
+        "smoke",
+        "--seed",
+        "4705193143269049553",
+        "--duration-seconds",
+        "10",
+        "--warmup-seconds",
+        "1",
+        "--batches",
+        "32",
+        "--batch-size",
+        "8",
+        "--warmup-batches",
+        "4"
+      ],
+      "completedBatches": 32,
+      "completedCalls": 256,
+      "counts": {
+        "admitted": 32,
+        "completed": 32,
+        "deadlineMisses": 0,
+        "offered": 32,
+        "outcomes": {
+          "cancelled": 0,
+          "failure": 0,
+          "rejected": 0,
+          "success": 32,
+          "timedOut": 0,
+          "uncertain": 0
+        }
+      },
+      "createdAtUTC": "2026-11-11T03:53:34.433384+00:00",
+      "hostObservationAfter": {
+        "load_average_1_5_15_minutes": [
+          5.20458984375,
+          4.640625,
+          4.787109375
+        ],
+        "method": "os.getloadavg; host-level indicator, not exclusive-allocation proof"
+      },
+      "hostObservationBefore": {
+        "load_average_1_5_15_minutes": [
+          5.20458984375,
+          4.640625,
+          4.787109375
+        ],
+        "method": "os.getloadavg; host-level indicator, not exclusive-allocation proof"
+      },
+      "identity": {
+        "catalog": "discordkit.timing",
+        "catalogVersion": 4,
+        "concurrency": 1,
+        "fixtureHashes": {
+          "prepared-variants-v1": "a8ad2392a07bd05320281f2471addb832fb1aa4be04793c52c2f3c5775163276"
+        },
+        "inputSizes": {
+          "batchSize": 8,
+          "batchesCap": 32,
+          "depth": 1,
+          "durationCapSeconds": 10,
+          "payloadBytes": 1024,
+          "unicode": 0,
+          "variants": 4,
+          "warmupBatchesCap": 4,
+          "width": 4
+        },
+        "instrumentation": "external-batch",
+        "measuredNanoseconds": 1305792,
+        "profile": "smoke",
+        "profileVersion": 1,
+        "repetitions": 1,
+        "requestedWarmupNanoseconds": 1000000000,
+        "scenario": "json.parse.1024.depth1.ascii",
+        "scheduler": "serial-synchronous-batches",
+        "seed": 4705193143269049553,
+        "warmupNanoseconds": 183750
+      },
+      "metrics": [
+        {
+          "clockDomain": "foundation-monotonic",
+          "distribution": {
+            "configuration": {
+              "bucketWidthNanoseconds": 1000,
+              "lowerBoundNanoseconds": 0,
+              "upperBoundNanoseconds": 100000000
+            },
+            "counterOverflow": false,
+            "droppedCount": 0,
+            "inRangeCount": 32,
+            "maxInRangeNanoseconds": 49541,
+            "observedCount": 32,
+            "overflowCount": 0,
+            "underflowCount": 0
+          },
+          "id": "pure.batch",
+          "maximum": {
+            "interval": {
+              "lowerBoundNanoseconds": 49541,
+              "upperBoundNanoseconds": 49541
+            }
+          },
+          "outcome": "success",
+          "p50": {
+            "interval": {
+              "lowerBoundNanoseconds": 39000,
+              "upperBoundNanoseconds": 39999
+            }
+          },
+          "p95": {
+            "interval": {
+              "lowerBoundNanoseconds": 47000,
+              "upperBoundNanoseconds": 47999
+            }
+          },
+          "p99": {
+            "unavailable": {
+              "_0": "insufficientTailData"
+            }
+          },
+          "version": 1
+        }
+      ],
+      "normalizedMeanNanoseconds": 5095.06640625,
+      "processCleanup": {
+        "group_has_live_members_after_cleanup": false,
+        "kill_sent": false,
+        "owner_reaped": true,
+        "term_sent": false,
+        "unexpected_descendants": false
+      },
+      "processStatus": "completed",
+      "rejectedCalls": 0,
+      "runStatus": "completed",
+      "semanticValidationExitCode": 0,
+      "warmupBatches": 4,
+      "warmupCalls": 32
+    },
+    {
+      "artifacts": {
+        "common": {
+          "path": ".build/performance-plan-20261110/foundation/json.parse.262144.depth64.ascii/00-single/benchmark-envelope.json",
+          "sha256": "7e3d68012c86f902594bfbafaea4c0ca2340ec02fb5fa15b30f96f5be6c1b465"
+        },
+        "native": {
+          "path": ".build/performance-plan-20261110/foundation/json.parse.262144.depth64.ascii/00-single/native-report.json",
+          "sha256": "e801d04b313e61dab233f32e490e997d98162cceece3225c3fa863e7076a4daf"
+        },
+        "orchestration": {
+          "path": ".build/performance-plan-20261110/foundation/json.parse.262144.depth64.ascii/orchestration.json",
+          "sha256": "b95c38c40b6d0c0f10bbc16cf6c0055282bf5b3d9c56a5bad5377214ead873ea"
+        }
+      },
+      "case": "json.parse.262144.depth64.ascii",
+      "cleanup": {
+        "completed": true,
+        "remainingOwners": 0
+      },
+      "command": [
+        "/Users/carsonrau/Developer/DiscordKit/Tools/DiscordFoundationBenchmarks/.build/arm64-apple-macosx/release/DiscordFoundationBenchmarks",
+        "--case",
+        "json.parse.262144.depth64.ascii",
+        "--output",
+        "/Users/carsonrau/Developer/DiscordKit/.build/performance-plan-20261110/foundation/json.parse.262144.depth64.ascii/00-single/native-report.json",
+        "--profile",
+        "smoke",
+        "--seed",
+        "4705193143269049553",
+        "--duration-seconds",
+        "10",
+        "--warmup-seconds",
+        "1",
+        "--batches",
+        "32",
+        "--batch-size",
+        "8",
+        "--warmup-batches",
+        "4"
+      ],
+      "completedBatches": 32,
+      "completedCalls": 256,
+      "counts": {
+        "admitted": 32,
+        "completed": 32,
+        "deadlineMisses": 0,
+        "offered": 32,
+        "outcomes": {
+          "cancelled": 0,
+          "failure": 0,
+          "rejected": 0,
+          "success": 32,
+          "timedOut": 0,
+          "uncertain": 0
+        }
+      },
+      "createdAtUTC": "2026-11-11T03:53:34.909182+00:00",
+      "hostObservationAfter": {
+        "load_average_1_5_15_minutes": [
+          5.20458984375,
+          4.640625,
+          4.787109375
+        ],
+        "method": "os.getloadavg; host-level indicator, not exclusive-allocation proof"
+      },
+      "hostObservationBefore": {
+        "load_average_1_5_15_minutes": [
+          5.20458984375,
+          4.640625,
+          4.787109375
+        ],
+        "method": "os.getloadavg; host-level indicator, not exclusive-allocation proof"
+      },
+      "identity": {
+        "catalog": "discordkit.timing",
+        "catalogVersion": 4,
+        "concurrency": 1,
+        "fixtureHashes": {
+          "prepared-variants-v1": "2e8ab587300bb39da1ba24b2483a488148a62664d7b5dd581b168318ee99b4da"
+        },
+        "inputSizes": {
+          "batchSize": 8,
+          "batchesCap": 32,
+          "depth": 64,
+          "durationCapSeconds": 10,
+          "payloadBytes": 262144,
+          "unicode": 0,
+          "variants": 4,
+          "warmupBatchesCap": 4,
+          "width": 256
+        },
+        "instrumentation": "external-batch",
+        "measuredNanoseconds": 160511333,
+        "profile": "smoke",
+        "profileVersion": 1,
+        "repetitions": 1,
+        "requestedWarmupNanoseconds": 1000000000,
+        "scenario": "json.parse.262144.depth64.ascii",
+        "scheduler": "serial-synchronous-batches",
+        "seed": 4705193143269049553,
+        "warmupNanoseconds": 20543583
+      },
+      "metrics": [
+        {
+          "clockDomain": "foundation-monotonic",
+          "distribution": {
+            "configuration": {
+              "bucketWidthNanoseconds": 1000,
+              "lowerBoundNanoseconds": 0,
+              "upperBoundNanoseconds": 100000000
+            },
+            "counterOverflow": false,
+            "droppedCount": 0,
+            "inRangeCount": 32,
+            "maxInRangeNanoseconds": 5515709,
+            "observedCount": 32,
+            "overflowCount": 0,
+            "underflowCount": 0
+          },
+          "id": "pure.batch",
+          "maximum": {
+            "interval": {
+              "lowerBoundNanoseconds": 5515709,
+              "upperBoundNanoseconds": 5515709
+            }
+          },
+          "outcome": "success",
+          "p50": {
+            "interval": {
+              "lowerBoundNanoseconds": 4994000,
+              "upperBoundNanoseconds": 4994999
+            }
+          },
+          "p95": {
+            "interval": {
+              "lowerBoundNanoseconds": 5188000,
+              "upperBoundNanoseconds": 5188999
+            }
+          },
+          "p99": {
+            "unavailable": {
+              "_0": "insufficientTailData"
+            }
+          },
+          "version": 1
+        }
+      ],
+      "normalizedMeanNanoseconds": 626882.33203125,
+      "processCleanup": {
+        "group_has_live_members_after_cleanup": false,
+        "kill_sent": false,
+        "owner_reaped": true,
+        "term_sent": false,
+        "unexpected_descendants": false
+      },
+      "processStatus": "completed",
+      "rejectedCalls": 0,
+      "runStatus": "completed",
+      "semanticValidationExitCode": 0,
+      "warmupBatches": 4,
+      "warmupCalls": 32
+    },
+    {
+      "artifacts": {
+        "common": {
+          "path": ".build/performance-plan-20261110/foundation/json.serialize.262144.depth64.ascii/00-single/benchmark-envelope.json",
+          "sha256": "970f6968e0138bd55f4ae9cfcfb9926fb4b3dfcfe7277e00319204de4192ed96"
+        },
+        "native": {
+          "path": ".build/performance-plan-20261110/foundation/json.serialize.262144.depth64.ascii/00-single/native-report.json",
+          "sha256": "8da42f898290f8f66c221be7f33984c2141d37a84705ba0c0f1be2c13bfcb507"
+        },
+        "orchestration": {
+          "path": ".build/performance-plan-20261110/foundation/json.serialize.262144.depth64.ascii/orchestration.json",
+          "sha256": "89f9cdaa8ae0e7ea245733640306889ac56aa5fa2cd4d4f3e03c72bdbc975075"
+        }
+      },
+      "case": "json.serialize.262144.depth64.ascii",
+      "cleanup": {
+        "completed": true,
+        "remainingOwners": 0
+      },
+      "command": [
+        "/Users/carsonrau/Developer/DiscordKit/Tools/DiscordFoundationBenchmarks/.build/arm64-apple-macosx/release/DiscordFoundationBenchmarks",
+        "--case",
+        "json.serialize.262144.depth64.ascii",
+        "--output",
+        "/Users/carsonrau/Developer/DiscordKit/.build/performance-plan-20261110/foundation/json.serialize.262144.depth64.ascii/00-single/native-report.json",
+        "--profile",
+        "smoke",
+        "--seed",
+        "4705193143269049553",
+        "--duration-seconds",
+        "10",
+        "--warmup-seconds",
+        "1",
+        "--batches",
+        "32",
+        "--batch-size",
+        "8",
+        "--warmup-batches",
+        "4"
+      ],
+      "completedBatches": 32,
+      "completedCalls": 256,
+      "counts": {
+        "admitted": 32,
+        "completed": 32,
+        "deadlineMisses": 0,
+        "offered": 32,
+        "outcomes": {
+          "cancelled": 0,
+          "failure": 0,
+          "rejected": 0,
+          "success": 32,
+          "timedOut": 0,
+          "uncertain": 0
+        }
+      },
+      "createdAtUTC": "2026-11-11T03:53:35.569587+00:00",
+      "hostObservationAfter": {
+        "load_average_1_5_15_minutes": [
+          5.02783203125,
+          4.61328125,
+          4.7763671875
+        ],
+        "method": "os.getloadavg; host-level indicator, not exclusive-allocation proof"
+      },
+      "hostObservationBefore": {
+        "load_average_1_5_15_minutes": [
+          5.20458984375,
+          4.640625,
+          4.787109375
+        ],
+        "method": "os.getloadavg; host-level indicator, not exclusive-allocation proof"
+      },
+      "identity": {
+        "catalog": "discordkit.timing",
+        "catalogVersion": 4,
+        "concurrency": 1,
+        "fixtureHashes": {
+          "prepared-variants-v1": "2e8ab587300bb39da1ba24b2483a488148a62664d7b5dd581b168318ee99b4da"
+        },
+        "inputSizes": {
+          "batchSize": 8,
+          "batchesCap": 32,
+          "depth": 64,
+          "durationCapSeconds": 10,
+          "payloadBytes": 262144,
+          "unicode": 0,
+          "variants": 4,
+          "warmupBatchesCap": 4,
+          "width": 256
+        },
+        "instrumentation": "external-batch",
+        "measuredNanoseconds": 201058750,
+        "profile": "smoke",
+        "profileVersion": 1,
+        "repetitions": 1,
+        "requestedWarmupNanoseconds": 1000000000,
+        "scenario": "json.serialize.262144.depth64.ascii",
+        "scheduler": "serial-synchronous-batches",
+        "seed": 4705193143269049553,
+        "warmupNanoseconds": 25776541
+      },
+      "metrics": [
+        {
+          "clockDomain": "foundation-monotonic",
+          "distribution": {
+            "configuration": {
+              "bucketWidthNanoseconds": 1000,
+              "lowerBoundNanoseconds": 0,
+              "upperBoundNanoseconds": 100000000
+            },
+            "counterOverflow": false,
+            "droppedCount": 0,
+            "inRangeCount": 32,
+            "maxInRangeNanoseconds": 6842041,
+            "observedCount": 32,
+            "overflowCount": 0,
+            "underflowCount": 0
+          },
+          "id": "pure.batch",
+          "maximum": {
+            "interval": {
+              "lowerBoundNanoseconds": 6842041,
+              "upperBoundNanoseconds": 6842041
+            }
+          },
+          "outcome": "success",
+          "p50": {
+            "interval": {
+              "lowerBoundNanoseconds": 6181000,
+              "upperBoundNanoseconds": 6181999
+            }
+          },
+          "p95": {
+            "interval": {
+              "lowerBoundNanoseconds": 6830000,
+              "upperBoundNanoseconds": 6830999
+            }
+          },
+          "p99": {
+            "unavailable": {
+              "_0": "insufficientTailData"
+            }
+          },
+          "version": 1
+        }
+      ],
+      "normalizedMeanNanoseconds": 785237.13671875,
+      "processCleanup": {
+        "group_has_live_members_after_cleanup": false,
+        "kill_sent": false,
+        "owner_reaped": true,
+        "term_sent": false,
+        "unexpected_descendants": false
+      },
+      "processStatus": "completed",
+      "rejectedCalls": 0,
+      "runStatus": "completed",
+      "semanticValidationExitCode": 0,
+      "warmupBatches": 4,
+      "warmupCalls": 32
+    },
+    {
+      "artifacts": {
+        "common": {
+          "path": ".build/performance-plan-20261110/foundation/permission.allow.r128.w4096/00-single/benchmark-envelope.json",
+          "sha256": "47a97529d32b318ff10659a0a5abdfe8e6727a58391a11bdbf347005351fcf87"
+        },
+        "native": {
+          "path": ".build/performance-plan-20261110/foundation/permission.allow.r128.w4096/00-single/native-report.json",
+          "sha256": "e83eb5b6be496ebf52f6e54401168f83a2aad4b68ab73574a0e05136a4a0762d"
+        },
+        "orchestration": {
+          "path": ".build/performance-plan-20261110/foundation/permission.allow.r128.w4096/orchestration.json",
+          "sha256": "3616c3bc0880577e28b017cf11eaf46b0b45e7c9279d5149f65c337a84223627"
+        }
+      },
+      "case": "permission.allow.r128.w4096",
+      "cleanup": {
+        "completed": true,
+        "remainingOwners": 0
+      },
+      "command": [
+        "/Users/carsonrau/Developer/DiscordKit/Tools/DiscordFoundationBenchmarks/.build/arm64-apple-macosx/release/DiscordFoundationBenchmarks",
+        "--case",
+        "permission.allow.r128.w4096",
+        "--output",
+        "/Users/carsonrau/Developer/DiscordKit/.build/performance-plan-20261110/foundation/permission.allow.r128.w4096/00-single/native-report.json",
+        "--profile",
+        "smoke",
+        "--seed",
+        "4705193143269049553",
+        "--duration-seconds",
+        "10",
+        "--warmup-seconds",
+        "1",
+        "--batches",
+        "32",
+        "--batch-size",
+        "8",
+        "--warmup-batches",
+        "4"
+      ],
+      "completedBatches": 32,
+      "completedCalls": 256,
+      "counts": {
+        "admitted": 32,
+        "completed": 32,
+        "deadlineMisses": 0,
+        "offered": 32,
+        "outcomes": {
+          "cancelled": 0,
+          "failure": 0,
+          "rejected": 0,
+          "success": 32,
+          "timedOut": 0,
+          "uncertain": 0
+        }
+      },
+      "createdAtUTC": "2026-11-11T03:53:36.274791+00:00",
+      "hostObservationAfter": {
+        "load_average_1_5_15_minutes": [
+          5.02783203125,
+          4.61328125,
+          4.7763671875
+        ],
+        "method": "os.getloadavg; host-level indicator, not exclusive-allocation proof"
+      },
+      "hostObservationBefore": {
+        "load_average_1_5_15_minutes": [
+          5.02783203125,
+          4.61328125,
+          4.7763671875
+        ],
+        "method": "os.getloadavg; host-level indicator, not exclusive-allocation proof"
+      },
+      "identity": {
+        "catalog": "discordkit.timing",
+        "catalogVersion": 4,
+        "concurrency": 1,
+        "fixtureHashes": {
+          "prepared-variants-v1": "bb68dbbeac5906487aa88a96c2dd6af6429aab201599a0ce7e8cd0458d4da492"
+        },
+        "inputSizes": {
+          "assigned_role_count": 128,
+          "batchSize": 8,
+          "batchesCap": 32,
+          "bit_width": 4096,
+          "durationCapSeconds": 10,
+          "maximum_total_bit_width": 16777216,
+          "overwrite_count": 128,
+          "role_count": 129,
+          "variant_count": 4,
+          "warmupBatchesCap": 4
+        },
+        "instrumentation": "external-batch",
+        "measuredNanoseconds": 19441375,
+        "profile": "smoke",
+        "profileVersion": 1,
+        "repetitions": 1,
+        "requestedWarmupNanoseconds": 1000000000,
+        "scenario": "permission.allow.r128.w4096",
+        "scheduler": "serial-synchronous-batches",
+        "seed": 4705193143269049553,
+        "warmupNanoseconds": 1972416
+      },
+      "metrics": [
+        {
+          "clockDomain": "foundation-monotonic",
+          "distribution": {
+            "configuration": {
+              "bucketWidthNanoseconds": 1000,
+              "lowerBoundNanoseconds": 0,
+              "upperBoundNanoseconds": 100000000
+            },
+            "counterOverflow": false,
+            "droppedCount": 0,
+            "inRangeCount": 32,
+            "maxInRangeNanoseconds": 804709,
+            "observedCount": 32,
+            "overflowCount": 0,
+            "underflowCount": 0
+          },
+          "id": "pure.batch",
+          "maximum": {
+            "interval": {
+              "lowerBoundNanoseconds": 804709,
+              "upperBoundNanoseconds": 804709
+            }
+          },
+          "outcome": "success",
+          "p50": {
+            "interval": {
+              "lowerBoundNanoseconds": 486000,
+              "upperBoundNanoseconds": 486999
+            }
+          },
+          "p95": {
+            "interval": {
+              "lowerBoundNanoseconds": 789000,
+              "upperBoundNanoseconds": 789999
+            }
+          },
+          "p99": {
+            "unavailable": {
+              "_0": "insufficientTailData"
+            }
+          },
+          "version": 1
+        }
+      ],
+      "normalizedMeanNanoseconds": 75903,
+      "processCleanup": {
+        "group_has_live_members_after_cleanup": false,
+        "kill_sent": false,
+        "owner_reaped": true,
+        "term_sent": false,
+        "unexpected_descendants": false
+      },
+      "processStatus": "completed",
+      "rejectedCalls": 0,
+      "runStatus": "completed",
+      "semanticValidationExitCode": 0,
+      "warmupBatches": 4,
+      "warmupCalls": 32
+    },
+    {
+      "artifacts": {
+        "common": {
+          "path": ".build/performance-plan-20261110/foundation/rpc.decode.p262144.f256/00-single/benchmark-envelope.json",
+          "sha256": "0f524c11c2724851e007db1073622f8a84812f902aa52e4a892bd7a3a1b67482"
+        },
+        "native": {
+          "path": ".build/performance-plan-20261110/foundation/rpc.decode.p262144.f256/00-single/native-report.json",
+          "sha256": "adb03ec9f811371609a024dc18473a640a1a2ef12e1ceef49fd2df7d510b3fc9"
+        },
+        "orchestration": {
+          "path": ".build/performance-plan-20261110/foundation/rpc.decode.p262144.f256/orchestration.json",
+          "sha256": "21c53dc0e5c89e55cc586e5360e50bf3954bf873af2a9b34d3c61a041887589a"
+        }
+      },
+      "case": "rpc.decode.p262144.f256",
+      "cleanup": {
+        "completed": true,
+        "remainingOwners": 0
+      },
+      "command": [
+        "/Users/carsonrau/Developer/DiscordKit/Tools/DiscordFoundationBenchmarks/.build/arm64-apple-macosx/release/DiscordFoundationBenchmarks",
+        "--case",
+        "rpc.decode.p262144.f256",
+        "--output",
+        "/Users/carsonrau/Developer/DiscordKit/.build/performance-plan-20261110/foundation/rpc.decode.p262144.f256/00-single/native-report.json",
+        "--profile",
+        "smoke",
+        "--seed",
+        "4705193143269049553",
+        "--duration-seconds",
+        "10",
+        "--warmup-seconds",
+        "1",
+        "--batches",
+        "32",
+        "--batch-size",
+        "8",
+        "--warmup-batches",
+        "4"
+      ],
+      "completedBatches": 32,
+      "completedCalls": 256,
+      "counts": {
+        "admitted": 32,
+        "completed": 32,
+        "deadlineMisses": 0,
+        "offered": 32,
+        "outcomes": {
+          "cancelled": 0,
+          "failure": 0,
+          "rejected": 0,
+          "success": 32,
+          "timedOut": 0,
+          "uncertain": 0
+        }
+      },
+      "createdAtUTC": "2026-11-11T03:53:38.521773+00:00",
+      "hostObservationAfter": {
+        "load_average_1_5_15_minutes": [
+          5.02783203125,
+          4.61328125,
+          4.7763671875
+        ],
+        "method": "os.getloadavg; host-level indicator, not exclusive-allocation proof"
+      },
+      "hostObservationBefore": {
+        "load_average_1_5_15_minutes": [
+          5.02783203125,
+          4.61328125,
+          4.7763671875
+        ],
+        "method": "os.getloadavg; host-level indicator, not exclusive-allocation proof"
+      },
+      "identity": {
+        "catalog": "discordkit.timing",
+        "catalogVersion": 4,
+        "concurrency": 1,
+        "fixtureHashes": {
+          "prepared-variants-v1": "cc8c5a64c263330900e597bc7bfa04ded37597d813bb4977ba56c70563935509"
+        },
+        "inputSizes": {
+          "batchSize": 8,
+          "batchesCap": 32,
+          "durationCapSeconds": 10,
+          "fragment_bytes": 256,
+          "fragment_count": 1025,
+          "payload_bytes": 262144,
+          "variant_count": 4,
+          "warmupBatchesCap": 4,
+          "wire_bytes": 262152
+        },
+        "instrumentation": "external-batch",
+        "measuredNanoseconds": 29056542,
+        "profile": "smoke",
+        "profileVersion": 1,
+        "repetitions": 1,
+        "requestedWarmupNanoseconds": 1000000000,
+        "scenario": "rpc.decode.p262144.f256",
+        "scheduler": "serial-synchronous-batches",
+        "seed": 4705193143269049553,
+        "warmupNanoseconds": 3804792
+      },
+      "metrics": [
+        {
+          "clockDomain": "foundation-monotonic",
+          "distribution": {
+            "configuration": {
+              "bucketWidthNanoseconds": 1000,
+              "lowerBoundNanoseconds": 0,
+              "upperBoundNanoseconds": 100000000
+            },
+            "counterOverflow": false,
+            "droppedCount": 0,
+            "inRangeCount": 32,
+            "maxInRangeNanoseconds": 1015125,
+            "observedCount": 32,
+            "overflowCount": 0,
+            "underflowCount": 0
+          },
+          "id": "pure.batch",
+          "maximum": {
+            "interval": {
+              "lowerBoundNanoseconds": 1015125,
+              "upperBoundNanoseconds": 1015125
+            }
+          },
+          "outcome": "success",
+          "p50": {
+            "interval": {
+              "lowerBoundNanoseconds": 891000,
+              "upperBoundNanoseconds": 891999
+            }
+          },
+          "p95": {
+            "interval": {
+              "lowerBoundNanoseconds": 1005000,
+              "upperBoundNanoseconds": 1005999
+            }
+          },
+          "p99": {
+            "unavailable": {
+              "_0": "insufficientTailData"
+            }
+          },
+          "version": 1
+        }
+      ],
+      "normalizedMeanNanoseconds": 113396.80859375,
+      "processCleanup": {
+        "group_has_live_members_after_cleanup": false,
+        "kill_sent": false,
+        "owner_reaped": true,
+        "term_sent": false,
+        "unexpected_descendants": false
+      },
+      "processStatus": "completed",
+      "rejectedCalls": 0,
+      "runStatus": "completed",
+      "semanticValidationExitCode": 0,
+      "warmupBatches": 4,
+      "warmupCalls": 32
+    },
+    {
+      "artifacts": {
+        "common": {
+          "path": ".build/performance-plan-20261110/foundation/rpc.decode.p262144.f4096/00-single/benchmark-envelope.json",
+          "sha256": "57c8137e80ba514e6d532cacbdafc1afc6caf7ebc08485869b6fb620ed22c6ab"
+        },
+        "native": {
+          "path": ".build/performance-plan-20261110/foundation/rpc.decode.p262144.f4096/00-single/native-report.json",
+          "sha256": "5523003dd71dc35b518ec8f965fd0c3c3567f5e97eb1777984558b62fc31b700"
+        },
+        "orchestration": {
+          "path": ".build/performance-plan-20261110/foundation/rpc.decode.p262144.f4096/orchestration.json",
+          "sha256": "2bc799bc4f3fb825e078fb1e01981cbec65f13aa987a3b878c7469ca806f3455"
+        }
+      },
+      "case": "rpc.decode.p262144.f4096",
+      "cleanup": {
+        "completed": true,
+        "remainingOwners": 0
+      },
+      "command": [
+        "/Users/carsonrau/Developer/DiscordKit/Tools/DiscordFoundationBenchmarks/.build/arm64-apple-macosx/release/DiscordFoundationBenchmarks",
+        "--case",
+        "rpc.decode.p262144.f4096",
+        "--output",
+        "/Users/carsonrau/Developer/DiscordKit/.build/performance-plan-20261110/foundation/rpc.decode.p262144.f4096/00-single/native-report.json",
+        "--profile",
+        "smoke",
+        "--seed",
+        "4705193143269049553",
+        "--duration-seconds",
+        "10",
+        "--warmup-seconds",
+        "1",
+        "--batches",
+        "32",
+        "--batch-size",
+        "8",
+        "--warmup-batches",
+        "4"
+      ],
+      "completedBatches": 32,
+      "completedCalls": 256,
+      "counts": {
+        "admitted": 32,
+        "completed": 32,
+        "deadlineMisses": 0,
+        "offered": 32,
+        "outcomes": {
+          "cancelled": 0,
+          "failure": 0,
+          "rejected": 0,
+          "success": 32,
+          "timedOut": 0,
+          "uncertain": 0
+        }
+      },
+      "createdAtUTC": "2026-11-11T03:53:39.038338+00:00",
+      "hostObservationAfter": {
+        "load_average_1_5_15_minutes": [
+          5.02783203125,
+          4.61328125,
+          4.7763671875
+        ],
+        "method": "os.getloadavg; host-level indicator, not exclusive-allocation proof"
+      },
+      "hostObservationBefore": {
+        "load_average_1_5_15_minutes": [
+          5.02783203125,
+          4.61328125,
+          4.7763671875
+        ],
+        "method": "os.getloadavg; host-level indicator, not exclusive-allocation proof"
+      },
+      "identity": {
+        "catalog": "discordkit.timing",
+        "catalogVersion": 4,
+        "concurrency": 1,
+        "fixtureHashes": {
+          "prepared-variants-v1": "cc8c5a64c263330900e597bc7bfa04ded37597d813bb4977ba56c70563935509"
+        },
+        "inputSizes": {
+          "batchSize": 8,
+          "batchesCap": 32,
+          "durationCapSeconds": 10,
+          "fragment_bytes": 4096,
+          "fragment_count": 65,
+          "payload_bytes": 262144,
+          "variant_count": 4,
+          "warmupBatchesCap": 4,
+          "wire_bytes": 262152
+        },
+        "instrumentation": "external-batch",
+        "measuredNanoseconds": 5488667,
+        "profile": "smoke",
+        "profileVersion": 1,
+        "repetitions": 1,
+        "requestedWarmupNanoseconds": 1000000000,
+        "scenario": "rpc.decode.p262144.f4096",
+        "scheduler": "serial-synchronous-batches",
+        "seed": 4705193143269049553,
+        "warmupNanoseconds": 676333
+      },
+      "metrics": [
+        {
+          "clockDomain": "foundation-monotonic",
+          "distribution": {
+            "configuration": {
+              "bucketWidthNanoseconds": 1000,
+              "lowerBoundNanoseconds": 0,
+              "upperBoundNanoseconds": 100000000
+            },
+            "counterOverflow": false,
+            "droppedCount": 0,
+            "inRangeCount": 32,
+            "maxInRangeNanoseconds": 189833,
+            "observedCount": 32,
+            "overflowCount": 0,
+            "underflowCount": 0
+          },
+          "id": "pure.batch",
+          "maximum": {
+            "interval": {
+              "lowerBoundNanoseconds": 189833,
+              "upperBoundNanoseconds": 189833
+            }
+          },
+          "outcome": "success",
+          "p50": {
+            "interval": {
+              "lowerBoundNanoseconds": 169000,
+              "upperBoundNanoseconds": 169999
+            }
+          },
+          "p95": {
+            "interval": {
+              "lowerBoundNanoseconds": 186000,
+              "upperBoundNanoseconds": 186999
+            }
+          },
+          "p99": {
+            "unavailable": {
+              "_0": "insufficientTailData"
+            }
+          },
+          "version": 1
+        }
+      ],
+      "normalizedMeanNanoseconds": 21431.96484375,
+      "processCleanup": {
+        "group_has_live_members_after_cleanup": false,
+        "kill_sent": false,
+        "owner_reaped": true,
+        "term_sent": false,
+        "unexpected_descendants": false
+      },
+      "processStatus": "completed",
+      "rejectedCalls": 0,
+      "runStatus": "completed",
+      "semanticValidationExitCode": 0,
+      "warmupBatches": 4,
+      "warmupCalls": 32
+    },
+    {
+      "artifacts": {
+        "common": {
+          "path": ".build/performance-plan-20261110/foundation/rpc.decode.p262144.f7/00-single/benchmark-envelope.json",
+          "sha256": "0e02ef4d46d224465e069c626da32e8069e35ce404c14edaaa13914c1ac25090"
+        },
+        "native": {
+          "path": ".build/performance-plan-20261110/foundation/rpc.decode.p262144.f7/00-single/native-report.json",
+          "sha256": "802169fbaece332498f65fbc30adbc1a83e41222782892e7aba91b3f6871f19b"
+        },
+        "orchestration": {
+          "path": ".build/performance-plan-20261110/foundation/rpc.decode.p262144.f7/orchestration.json",
+          "sha256": "f032781462f6d725e9237da3dbd4f01ebf19ebd7e2d346a504e77ba278db9786"
+        }
+      },
+      "case": "rpc.decode.p262144.f7",
+      "cleanup": {
+        "completed": true,
+        "remainingOwners": 0
+      },
+      "command": [
+        "/Users/carsonrau/Developer/DiscordKit/Tools/DiscordFoundationBenchmarks/.build/arm64-apple-macosx/release/DiscordFoundationBenchmarks",
+        "--case",
+        "rpc.decode.p262144.f7",
+        "--output",
+        "/Users/carsonrau/Developer/DiscordKit/.build/performance-plan-20261110/foundation/rpc.decode.p262144.f7/00-single/native-report.json",
+        "--profile",
+        "smoke",
+        "--seed",
+        "4705193143269049553",
+        "--duration-seconds",
+        "10",
+        "--warmup-seconds",
+        "1",
+        "--batches",
+        "32",
+        "--batch-size",
+        "8",
+        "--warmup-batches",
+        "4"
+      ],
+      "completedBatches": 32,
+      "completedCalls": 256,
+      "counts": {
+        "admitted": 32,
+        "completed": 32,
+        "deadlineMisses": 0,
+        "offered": 32,
+        "outcomes": {
+          "cancelled": 0,
+          "failure": 0,
+          "rejected": 0,
+          "success": 32,
+          "timedOut": 0,
+          "uncertain": 0
+        }
+      },
+      "createdAtUTC": "2026-11-11T03:53:36.934459+00:00",
+      "hostObservationAfter": {
+        "load_average_1_5_15_minutes": [
+          5.02783203125,
+          4.61328125,
+          4.7763671875
+        ],
+        "method": "os.getloadavg; host-level indicator, not exclusive-allocation proof"
+      },
+      "hostObservationBefore": {
+        "load_average_1_5_15_minutes": [
+          5.02783203125,
+          4.61328125,
+          4.7763671875
+        ],
+        "method": "os.getloadavg; host-level indicator, not exclusive-allocation proof"
+      },
+      "identity": {
+        "catalog": "discordkit.timing",
+        "catalogVersion": 4,
+        "concurrency": 1,
+        "fixtureHashes": {
+          "prepared-variants-v1": "cc8c5a64c263330900e597bc7bfa04ded37597d813bb4977ba56c70563935509"
+        },
+        "inputSizes": {
+          "batchSize": 8,
+          "batchesCap": 32,
+          "durationCapSeconds": 10,
+          "fragment_bytes": 7,
+          "fragment_count": 37451,
+          "payload_bytes": 262144,
+          "variant_count": 4,
+          "warmupBatchesCap": 4,
+          "wire_bytes": 262152
+        },
+        "instrumentation": "external-batch",
+        "measuredNanoseconds": 924676459,
+        "profile": "smoke",
+        "profileVersion": 1,
+        "repetitions": 1,
+        "requestedWarmupNanoseconds": 1000000000,
+        "scenario": "rpc.decode.p262144.f7",
+        "scheduler": "serial-synchronous-batches",
+        "seed": 4705193143269049553,
+        "warmupNanoseconds": 134223209
+      },
+      "metrics": [
+        {
+          "clockDomain": "foundation-monotonic",
+          "distribution": {
+            "configuration": {
+              "bucketWidthNanoseconds": 1000,
+              "lowerBoundNanoseconds": 0,
+              "upperBoundNanoseconds": 100000000
+            },
+            "counterOverflow": false,
+            "droppedCount": 0,
+            "inRangeCount": 32,
+            "maxInRangeNanoseconds": 30095375,
+            "observedCount": 32,
+            "overflowCount": 0,
+            "underflowCount": 0
+          },
+          "id": "pure.batch",
+          "maximum": {
+            "interval": {
+              "lowerBoundNanoseconds": 30095375,
+              "upperBoundNanoseconds": 30095375
+            }
+          },
+          "outcome": "success",
+          "p50": {
+            "interval": {
+              "lowerBoundNanoseconds": 28825000,
+              "upperBoundNanoseconds": 28825999
+            }
+          },
+          "p95": {
+            "interval": {
+              "lowerBoundNanoseconds": 29979000,
+              "upperBoundNanoseconds": 29979999
+            }
+          },
+          "p99": {
+            "unavailable": {
+              "_0": "insufficientTailData"
+            }
+          },
+          "version": 1
+        }
+      ],
+      "normalizedMeanNanoseconds": 3611737.625,
+      "processCleanup": {
+        "group_has_live_members_after_cleanup": false,
+        "kill_sent": false,
+        "owner_reaped": true,
+        "term_sent": false,
+        "unexpected_descendants": false
+      },
+      "processStatus": "completed",
+      "rejectedCalls": 0,
+      "runStatus": "completed",
+      "semanticValidationExitCode": 0,
+      "warmupBatches": 4,
+      "warmupCalls": 32
+    }
+  ],
+  "instrumentation": [
+    {
+      "artifacts": {
+        "common": {
+          "path": ".build/performance-plan-20261110/timing/aggregate/00-single/benchmark-envelope.json",
+          "sha256": "82d3dc1b1e6c30cfe52f04ad1f95dfe3e6867846446d457d9a184e3f46f7c72d"
+        },
+        "native": {
+          "path": ".build/performance-plan-20261110/timing/aggregate/00-single/native-report.json",
+          "sha256": "8812c72ec2733330db8928dcc7a0888a352ee7bb7ea5525a6b180fe0d4fa4266"
+        },
+        "orchestration": {
+          "path": ".build/performance-plan-20261110/timing/aggregate/orchestration.json",
+          "sha256": "7c3ff16b8870dd6629cd2e8601cec6eb32697f0fd62ba4157a9b577e7d4c9e16"
+        }
+      },
+      "case": "aggregate",
+      "cleanup": {
+        "completed": true,
+        "remainingOwners": 0
+      },
+      "command": [
+        "/Users/carsonrau/Developer/DiscordKit/Tools/DiscordTimingBenchmarks/.build/arm64-apple-macosx/release/DiscordTimingBenchmarks",
+        "--mode",
+        "aggregate",
+        "--output",
+        "/Users/carsonrau/Developer/DiscordKit/.build/performance-plan-20261110/timing/aggregate/00-single/native-report.json",
+        "--profile",
+        "smoke",
+        "--seed",
+        "4705193143269049553",
+        "--concurrency",
+        "2",
+        "--duration-seconds",
+        "10",
+        "--warmup-seconds",
+        "1",
+        "--iterations",
+        "1000",
+        "--warmup-iterations",
+        "128"
+      ],
+      "completedOperations": 2000,
+      "counts": {
+        "admitted": 2000,
+        "completed": 2000,
+        "deadlineMisses": 0,
+        "offered": 2000,
+        "outcomes": {
+          "cancelled": 0,
+          "failure": 0,
+          "rejected": 0,
+          "success": 2000,
+          "timedOut": 0,
+          "uncertain": 0
+        }
+      },
+      "createdAtUTC": "2026-11-11T03:56:12.777069+00:00",
+      "flushNanoseconds": 15459,
+      "hostObservationAfter": {
+        "load_average_1_5_15_minutes": [
+          5.26123046875,
+          5.19384765625,
+          4.9970703125
+        ],
+        "method": "os.getloadavg; host-level indicator, not exclusive-allocation proof"
+      },
+      "hostObservationBefore": {
+        "load_average_1_5_15_minutes": [
+          5.26123046875,
+          5.19384765625,
+          4.9970703125
+        ],
+        "method": "os.getloadavg; host-level indicator, not exclusive-allocation proof"
+      },
+      "identity": {
+        "catalog": "discordkit.timing",
+        "catalogVersion": 3,
+        "concurrency": 2,
+        "fixtureHashes": {
+          "fixture-v1": "8d7524e535557da2a0cd19b35883a70b9383e48446f9d48216b6b15faf7cd66b"
+        },
+        "inputSizes": {
+          "durationCapSeconds": 10,
+          "iterationsPerWorkerCap": 1000,
+          "lanes": 64,
+          "warmupIterationsPerWorkerCap": 128
+        },
+        "instrumentation": "aggregate",
+        "measuredNanoseconds": 771917,
+        "profile": "smoke",
+        "profileVersion": 1,
+        "repetitions": 1,
+        "requestedWarmupNanoseconds": 1000000000,
+        "scenario": "instrumentation.cpu-fixture",
+        "scheduler": "finite-structured-worker-cohort",
+        "seed": 4705193143269049553,
+        "warmupNanoseconds": 344000
+      },
+      "metrics": [
+        {
+          "clockDomain": "instrumentation-monotonic",
+          "distribution": {
+            "configuration": {
+              "bucketWidthNanoseconds": 100,
+              "lowerBoundNanoseconds": 0,
+              "upperBoundNanoseconds": 2000000
+            },
+            "counterOverflow": false,
+            "droppedCount": 0,
+            "inRangeCount": 2000,
+            "maxInRangeNanoseconds": 16125,
+            "observedCount": 2000,
+            "overflowCount": 0,
+            "underflowCount": 0
+          },
+          "id": "instrumentation.operation.gross",
+          "maximum": {
+            "interval": {
+              "lowerBoundNanoseconds": 16125,
+              "upperBoundNanoseconds": 16125
+            }
+          },
+          "outcome": "success",
+          "p50": {
+            "interval": {
+              "lowerBoundNanoseconds": 600,
+              "upperBoundNanoseconds": 699
+            }
+          },
+          "p95": {
+            "interval": {
+              "lowerBoundNanoseconds": 700,
+              "upperBoundNanoseconds": 799
+            }
+          },
+          "p99": {
+            "unavailable": {
+              "_0": "insufficientTailData"
+            }
+          },
+          "version": 1
+        }
+      ],
+      "outputCounters": {
+        "aggregateAccepted": 2000,
+        "aggregateDropped": 0,
+        "aggregateIgnoredBegin": 2000,
+        "aggregateInvalid": 0,
+        "callbackRecords": 0
+      },
+      "processCleanup": {
+        "group_has_live_members_after_cleanup": false,
+        "kill_sent": false,
+        "owner_reaped": true,
+        "term_sent": false,
+        "unexpected_descendants": false
+      },
+      "processStatus": "completed",
+      "runStatus": "completed",
+      "semanticValidationExitCode": 0,
+      "warmupOperations": 256
+    },
+    {
+      "artifacts": {
+        "common": {
+          "path": ".build/performance-plan-20261110/timing/combined/00-single/benchmark-envelope.json",
+          "sha256": "bfb88209e35f97ed31e63314ecdca115e82be35dafdc8898b348cd8dceb09710"
+        },
+        "native": {
+          "path": ".build/performance-plan-20261110/timing/combined/00-single/native-report.json",
+          "sha256": "2ed63f5d673bcc7ddd29b7cb520c45d7ee0cb97a142f7ebac1a4c57c2e61ea91"
+        },
+        "orchestration": {
+          "path": ".build/performance-plan-20261110/timing/combined/orchestration.json",
+          "sha256": "25b8b597cccad64f3a93f778662f6fc745101539f34d7fb7190d41b986a9e037"
+        }
+      },
+      "case": "combined",
+      "cleanup": {
+        "completed": true,
+        "remainingOwners": 0
+      },
+      "command": [
+        "/Users/carsonrau/Developer/DiscordKit/Tools/DiscordTimingBenchmarks/.build/arm64-apple-macosx/release/DiscordTimingBenchmarks",
+        "--mode",
+        "combined",
+        "--output",
+        "/Users/carsonrau/Developer/DiscordKit/.build/performance-plan-20261110/timing/combined/00-single/native-report.json",
+        "--profile",
+        "smoke",
+        "--seed",
+        "4705193143269049553",
+        "--concurrency",
+        "2",
+        "--duration-seconds",
+        "10",
+        "--warmup-seconds",
+        "1",
+        "--iterations",
+        "1000",
+        "--warmup-iterations",
+        "128"
+      ],
+      "completedOperations": 2000,
+      "counts": {
+        "admitted": 2000,
+        "completed": 2000,
+        "deadlineMisses": 0,
+        "offered": 2000,
+        "outcomes": {
+          "cancelled": 0,
+          "failure": 0,
+          "rejected": 0,
+          "success": 2000,
+          "timedOut": 0,
+          "uncertain": 0
+        }
+      },
+      "createdAtUTC": "2026-11-11T03:56:13.679456+00:00",
+      "flushNanoseconds": 8436125,
+      "hostObservationAfter": {
+        "load_average_1_5_15_minutes": [
+          5.26123046875,
+          5.19384765625,
+          4.9970703125
+        ],
+        "method": "os.getloadavg; host-level indicator, not exclusive-allocation proof"
+      },
+      "hostObservationBefore": {
+        "load_average_1_5_15_minutes": [
+          5.26123046875,
+          5.19384765625,
+          4.9970703125
+        ],
+        "method": "os.getloadavg; host-level indicator, not exclusive-allocation proof"
+      },
+      "identity": {
+        "catalog": "discordkit.timing",
+        "catalogVersion": 3,
+        "concurrency": 2,
+        "fixtureHashes": {
+          "fixture-v1": "8d7524e535557da2a0cd19b35883a70b9383e48446f9d48216b6b15faf7cd66b"
+        },
+        "inputSizes": {
+          "durationCapSeconds": 10,
+          "iterationsPerWorkerCap": 1000,
+          "lanes": 64,
+          "warmupIterationsPerWorkerCap": 128
+        },
+        "instrumentation": "combined",
+        "measuredNanoseconds": 5846291,
+        "profile": "smoke",
+        "profileVersion": 1,
+        "repetitions": 1,
+        "requestedWarmupNanoseconds": 1000000000,
+        "scenario": "instrumentation.cpu-fixture",
+        "scheduler": "finite-structured-worker-cohort",
+        "seed": 4705193143269049553,
+        "warmupNanoseconds": 2302917
+      },
+      "metrics": [
+        {
+          "clockDomain": "instrumentation-monotonic",
+          "distribution": {
+            "configuration": {
+              "bucketWidthNanoseconds": 100,
+              "lowerBoundNanoseconds": 0,
+              "upperBoundNanoseconds": 2000000
+            },
+            "counterOverflow": false,
+            "droppedCount": 0,
+            "inRangeCount": 2000,
+            "maxInRangeNanoseconds": 24917,
+            "observedCount": 2000,
+            "overflowCount": 0,
+            "underflowCount": 0
+          },
+          "id": "instrumentation.operation.gross",
+          "maximum": {
+            "interval": {
+              "lowerBoundNanoseconds": 24917,
+              "upperBoundNanoseconds": 24917
+            }
+          },
+          "outcome": "success",
+          "p50": {
+            "interval": {
+              "lowerBoundNanoseconds": 5000,
+              "upperBoundNanoseconds": 5099
+            }
+          },
+          "p95": {
+            "interval": {
+              "lowerBoundNanoseconds": 5400,
+              "upperBoundNanoseconds": 5499
+            }
+          },
+          "p99": {
+            "unavailable": {
+              "_0": "insufficientTailData"
+            }
+          },
+          "version": 1
+        }
+      ],
+      "outputCounters": {
+        "aggregateAccepted": 2000,
+        "aggregateDropped": 0,
+        "aggregateIgnoredBegin": 2000,
+        "aggregateInvalid": 0,
+        "callbackRecords": 4000,
+        "captureActiveAfterClose": 0,
+        "captureDropped": 0,
+        "captureIncomplete": 0,
+        "captureRetained": 208,
+        "captureSampledOut": 3792,
+        "captureUnmatched": 0,
+        "ndjsonBytes": 37667,
+        "timelineBytes": 51368
+      },
+      "processCleanup": {
+        "group_has_live_members_after_cleanup": false,
+        "kill_sent": false,
+        "owner_reaped": true,
+        "term_sent": false,
+        "unexpected_descendants": false
+      },
+      "processStatus": "completed",
+      "runStatus": "completed",
+      "semanticValidationExitCode": 0,
+      "warmupOperations": 256
+    },
+    {
+      "artifacts": {
+        "common": {
+          "path": ".build/performance-plan-20261110/timing/disabled/00-single/benchmark-envelope.json",
+          "sha256": "3518edf0d5201d7cea677f9d6268965e0d9e68764e2b81bd63700674324ace94"
+        },
+        "native": {
+          "path": ".build/performance-plan-20261110/timing/disabled/00-single/native-report.json",
+          "sha256": "7ee60fdd30d15fb01893082c74b5a637846d649bfe144c4fa65dc7a1415023ad"
+        },
+        "orchestration": {
+          "path": ".build/performance-plan-20261110/timing/disabled/orchestration.json",
+          "sha256": "882b89eecd98f4a5b6a0f9308584bf28674780dd0e16d1f914ad775beef78e23"
+        }
+      },
+      "case": "disabled",
+      "cleanup": {
+        "completed": true,
+        "remainingOwners": 0
+      },
+      "command": [
+        "/Users/carsonrau/Developer/DiscordKit/Tools/DiscordTimingBenchmarks/.build/arm64-apple-macosx/release/DiscordTimingBenchmarks",
+        "--mode",
+        "disabled",
+        "--output",
+        "/Users/carsonrau/Developer/DiscordKit/.build/performance-plan-20261110/timing/disabled/00-single/native-report.json",
+        "--profile",
+        "smoke",
+        "--seed",
+        "4705193143269049553",
+        "--concurrency",
+        "2",
+        "--duration-seconds",
+        "10",
+        "--warmup-seconds",
+        "1",
+        "--iterations",
+        "1000",
+        "--warmup-iterations",
+        "128"
+      ],
+      "completedOperations": 2000,
+      "counts": {
+        "admitted": 2000,
+        "completed": 2000,
+        "deadlineMisses": 0,
+        "offered": 2000,
+        "outcomes": {
+          "cancelled": 0,
+          "failure": 0,
+          "rejected": 0,
+          "success": 2000,
+          "timedOut": 0,
+          "uncertain": 0
+        }
+      },
+      "createdAtUTC": "2026-11-11T03:56:11.880261+00:00",
+      "flushNanoseconds": 1167,
+      "hostObservationAfter": {
+        "load_average_1_5_15_minutes": [
+          5.26123046875,
+          5.19384765625,
+          4.9970703125
+        ],
+        "method": "os.getloadavg; host-level indicator, not exclusive-allocation proof"
+      },
+      "hostObservationBefore": {
+        "load_average_1_5_15_minutes": [
+          5.26123046875,
+          5.19384765625,
+          4.9970703125
+        ],
+        "method": "os.getloadavg; host-level indicator, not exclusive-allocation proof"
+      },
+      "identity": {
+        "catalog": "discordkit.timing",
+        "catalogVersion": 3,
+        "concurrency": 2,
+        "fixtureHashes": {
+          "fixture-v1": "8d7524e535557da2a0cd19b35883a70b9383e48446f9d48216b6b15faf7cd66b"
+        },
+        "inputSizes": {
+          "durationCapSeconds": 10,
+          "iterationsPerWorkerCap": 1000,
+          "lanes": 64,
+          "warmupIterationsPerWorkerCap": 128
+        },
+        "instrumentation": "disabled",
+        "measuredNanoseconds": 176250,
+        "profile": "smoke",
+        "profileVersion": 1,
+        "repetitions": 1,
+        "requestedWarmupNanoseconds": 1000000000,
+        "scenario": "instrumentation.cpu-fixture",
+        "scheduler": "finite-structured-worker-cohort",
+        "seed": 4705193143269049553,
+        "warmupNanoseconds": 228000
+      },
+      "metrics": [
+        {
+          "clockDomain": "instrumentation-monotonic",
+          "distribution": {
+            "configuration": {
+              "bucketWidthNanoseconds": 100,
+              "lowerBoundNanoseconds": 0,
+              "upperBoundNanoseconds": 2000000
+            },
+            "counterOverflow": false,
+            "droppedCount": 0,
+            "inRangeCount": 2000,
+            "maxInRangeNanoseconds": 291,
+            "observedCount": 2000,
+            "overflowCount": 0,
+            "underflowCount": 0
+          },
+          "id": "instrumentation.operation.gross",
+          "maximum": {
+            "interval": {
+              "lowerBoundNanoseconds": 291,
+              "upperBoundNanoseconds": 291
+            }
+          },
+          "outcome": "success",
+          "p50": {
+            "interval": {
+              "lowerBoundNanoseconds": 0,
+              "upperBoundNanoseconds": 99
+            }
+          },
+          "p95": {
+            "interval": {
+              "lowerBoundNanoseconds": 0,
+              "upperBoundNanoseconds": 99
+            }
+          },
+          "p99": {
+            "unavailable": {
+              "_0": "insufficientTailData"
+            }
+          },
+          "version": 1
+        }
+      ],
+      "outputCounters": {
+        "callbackRecords": 0
+      },
+      "processCleanup": {
+        "group_has_live_members_after_cleanup": false,
+        "kill_sent": false,
+        "owner_reaped": true,
+        "term_sent": false,
+        "unexpected_descendants": false
+      },
+      "processStatus": "completed",
+      "runStatus": "completed",
+      "semanticValidationExitCode": 0,
+      "warmupOperations": 256
+    },
+    {
+      "artifacts": {
+        "common": {
+          "path": ".build/performance-plan-20261110/timing/filtered/00-single/benchmark-envelope.json",
+          "sha256": "a3c541511d9a672f947d851290035a0e8823ac787fd1e53507629f4cd17c4413"
+        },
+        "native": {
+          "path": ".build/performance-plan-20261110/timing/filtered/00-single/native-report.json",
+          "sha256": "5f2f8483a4798901de095dca9b36888f9498accbc664deb38a4aca1cb3fef041"
+        },
+        "orchestration": {
+          "path": ".build/performance-plan-20261110/timing/filtered/orchestration.json",
+          "sha256": "d5f458320def0d6cfc9fa6e14020aab75b6aacbb79a1469ac600b253cf1acf76"
+        }
+      },
+      "case": "filtered",
+      "cleanup": {
+        "completed": true,
+        "remainingOwners": 0
+      },
+      "command": [
+        "/Users/carsonrau/Developer/DiscordKit/Tools/DiscordTimingBenchmarks/.build/arm64-apple-macosx/release/DiscordTimingBenchmarks",
+        "--mode",
+        "filtered",
+        "--output",
+        "/Users/carsonrau/Developer/DiscordKit/.build/performance-plan-20261110/timing/filtered/00-single/native-report.json",
+        "--profile",
+        "smoke",
+        "--seed",
+        "4705193143269049553",
+        "--concurrency",
+        "2",
+        "--duration-seconds",
+        "10",
+        "--warmup-seconds",
+        "1",
+        "--iterations",
+        "1000",
+        "--warmup-iterations",
+        "128"
+      ],
+      "completedOperations": 2000,
+      "counts": {
+        "admitted": 2000,
+        "completed": 2000,
+        "deadlineMisses": 0,
+        "offered": 2000,
+        "outcomes": {
+          "cancelled": 0,
+          "failure": 0,
+          "rejected": 0,
+          "success": 2000,
+          "timedOut": 0,
+          "uncertain": 0
+        }
+      },
+      "createdAtUTC": "2026-11-11T03:56:13.219765+00:00",
+      "flushNanoseconds": 1458,
+      "hostObservationAfter": {
+        "load_average_1_5_15_minutes": [
+          5.26123046875,
+          5.19384765625,
+          4.9970703125
+        ],
+        "method": "os.getloadavg; host-level indicator, not exclusive-allocation proof"
+      },
+      "hostObservationBefore": {
+        "load_average_1_5_15_minutes": [
+          5.26123046875,
+          5.19384765625,
+          4.9970703125
+        ],
+        "method": "os.getloadavg; host-level indicator, not exclusive-allocation proof"
+      },
+      "identity": {
+        "catalog": "discordkit.timing",
+        "catalogVersion": 3,
+        "concurrency": 2,
+        "fixtureHashes": {
+          "fixture-v1": "8d7524e535557da2a0cd19b35883a70b9383e48446f9d48216b6b15faf7cd66b"
+        },
+        "inputSizes": {
+          "durationCapSeconds": 10,
+          "iterationsPerWorkerCap": 1000,
+          "lanes": 64,
+          "warmupIterationsPerWorkerCap": 128
+        },
+        "instrumentation": "filtered",
+        "measuredNanoseconds": 3415417,
+        "profile": "smoke",
+        "profileVersion": 1,
+        "repetitions": 1,
+        "requestedWarmupNanoseconds": 1000000000,
+        "scenario": "instrumentation.cpu-fixture",
+        "scheduler": "finite-structured-worker-cohort",
+        "seed": 4705193143269049553,
+        "warmupNanoseconds": 692667
+      },
+      "metrics": [
+        {
+          "clockDomain": "instrumentation-monotonic",
+          "distribution": {
+            "configuration": {
+              "bucketWidthNanoseconds": 100,
+              "lowerBoundNanoseconds": 0,
+              "upperBoundNanoseconds": 2000000
+            },
+            "counterOverflow": false,
+            "droppedCount": 0,
+            "inRangeCount": 2000,
+            "maxInRangeNanoseconds": 9959,
+            "observedCount": 2000,
+            "overflowCount": 0,
+            "underflowCount": 0
+          },
+          "id": "instrumentation.operation.gross",
+          "maximum": {
+            "interval": {
+              "lowerBoundNanoseconds": 9959,
+              "upperBoundNanoseconds": 9959
+            }
+          },
+          "outcome": "success",
+          "p50": {
+            "interval": {
+              "lowerBoundNanoseconds": 3100,
+              "upperBoundNanoseconds": 3199
+            }
+          },
+          "p95": {
+            "interval": {
+              "lowerBoundNanoseconds": 4100,
+              "upperBoundNanoseconds": 4199
+            }
+          },
+          "p99": {
+            "unavailable": {
+              "_0": "insufficientTailData"
+            }
+          },
+          "version": 1
+        }
+      ],
+      "outputCounters": {
+        "callbackRecords": 0
+      },
+      "processCleanup": {
+        "group_has_live_members_after_cleanup": false,
+        "kill_sent": false,
+        "owner_reaped": true,
+        "term_sent": false,
+        "unexpected_descendants": false
+      },
+      "processStatus": "completed",
+      "runStatus": "completed",
+      "semanticValidationExitCode": 0,
+      "warmupOperations": 256
+    },
+    {
+      "artifacts": {
+        "common": {
+          "path": ".build/performance-plan-20261110/timing/noop/00-single/benchmark-envelope.json",
+          "sha256": "cdfc26c3e8a5252c0de55c95e90a0e9ec263227b9ff93376287ef1f8cc9c1c45"
+        },
+        "native": {
+          "path": ".build/performance-plan-20261110/timing/noop/00-single/native-report.json",
+          "sha256": "93c3d33aa44e985414ec6cccd48f741cb55049713ecffd12c5034f4168bcf014"
+        },
+        "orchestration": {
+          "path": ".build/performance-plan-20261110/timing/noop/orchestration.json",
+          "sha256": "cfddbe9f01058d313d1030f3a23954a14d619bbf4343cb0646e537912ffd3b1e"
+        }
+      },
+      "case": "noop",
+      "cleanup": {
+        "completed": true,
+        "remainingOwners": 0
+      },
+      "command": [
+        "/Users/carsonrau/Developer/DiscordKit/Tools/DiscordTimingBenchmarks/.build/arm64-apple-macosx/release/DiscordTimingBenchmarks",
+        "--mode",
+        "noop",
+        "--output",
+        "/Users/carsonrau/Developer/DiscordKit/.build/performance-plan-20261110/timing/noop/00-single/native-report.json",
+        "--profile",
+        "smoke",
+        "--seed",
+        "4705193143269049553",
+        "--concurrency",
+        "2",
+        "--duration-seconds",
+        "10",
+        "--warmup-seconds",
+        "1",
+        "--iterations",
+        "1000",
+        "--warmup-iterations",
+        "128"
+      ],
+      "completedOperations": 2000,
+      "counts": {
+        "admitted": 2000,
+        "completed": 2000,
+        "deadlineMisses": 0,
+        "offered": 2000,
+        "outcomes": {
+          "cancelled": 0,
+          "failure": 0,
+          "rejected": 0,
+          "success": 2000,
+          "timedOut": 0,
+          "uncertain": 0
+        }
+      },
+      "createdAtUTC": "2026-11-11T03:56:12.329453+00:00",
+      "flushNanoseconds": 750,
+      "hostObservationAfter": {
+        "load_average_1_5_15_minutes": [
+          5.26123046875,
+          5.19384765625,
+          4.9970703125
+        ],
+        "method": "os.getloadavg; host-level indicator, not exclusive-allocation proof"
+      },
+      "hostObservationBefore": {
+        "load_average_1_5_15_minutes": [
+          5.26123046875,
+          5.19384765625,
+          4.9970703125
+        ],
+        "method": "os.getloadavg; host-level indicator, not exclusive-allocation proof"
+      },
+      "identity": {
+        "catalog": "discordkit.timing",
+        "catalogVersion": 3,
+        "concurrency": 2,
+        "fixtureHashes": {
+          "fixture-v1": "8d7524e535557da2a0cd19b35883a70b9383e48446f9d48216b6b15faf7cd66b"
+        },
+        "inputSizes": {
+          "durationCapSeconds": 10,
+          "iterationsPerWorkerCap": 1000,
+          "lanes": 64,
+          "warmupIterationsPerWorkerCap": 128
+        },
+        "instrumentation": "noop",
+        "measuredNanoseconds": 558167,
+        "profile": "smoke",
+        "profileVersion": 1,
+        "repetitions": 1,
+        "requestedWarmupNanoseconds": 1000000000,
+        "scenario": "instrumentation.cpu-fixture",
+        "scheduler": "finite-structured-worker-cohort",
+        "seed": 4705193143269049553,
+        "warmupNanoseconds": 246291
+      },
+      "metrics": [
+        {
+          "clockDomain": "instrumentation-monotonic",
+          "distribution": {
+            "configuration": {
+              "bucketWidthNanoseconds": 100,
+              "lowerBoundNanoseconds": 0,
+              "upperBoundNanoseconds": 2000000
+            },
+            "counterOverflow": false,
+            "droppedCount": 0,
+            "inRangeCount": 2000,
+            "maxInRangeNanoseconds": 1125,
+            "observedCount": 2000,
+            "overflowCount": 0,
+            "underflowCount": 0
+          },
+          "id": "instrumentation.operation.gross",
+          "maximum": {
+            "interval": {
+              "lowerBoundNanoseconds": 1125,
+              "upperBoundNanoseconds": 1125
+            }
+          },
+          "outcome": "success",
+          "p50": {
+            "interval": {
+              "lowerBoundNanoseconds": 400,
+              "upperBoundNanoseconds": 499
+            }
+          },
+          "p95": {
+            "interval": {
+              "lowerBoundNanoseconds": 500,
+              "upperBoundNanoseconds": 599
+            }
+          },
+          "p99": {
+            "unavailable": {
+              "_0": "insufficientTailData"
+            }
+          },
+          "version": 1
+        }
+      ],
+      "outputCounters": {
+        "callbackRecords": 0
+      },
+      "processCleanup": {
+        "group_has_live_members_after_cleanup": false,
+        "kill_sent": false,
+        "owner_reaped": true,
+        "term_sent": false,
+        "unexpected_descendants": false
+      },
+      "processStatus": "completed",
+      "runStatus": "completed",
+      "semanticValidationExitCode": 0,
+      "warmupOperations": 256
+    },
+    {
+      "artifacts": {
+        "common": {
+          "path": ".build/performance-plan-20261110/timing/scalarAggregate/00-single/benchmark-envelope.json",
+          "sha256": "fad1a8ce3d255ad37ae13d4a673bea1f0a9683b21a6fd54c14c1a8598d0d8d92"
+        },
+        "native": {
+          "path": ".build/performance-plan-20261110/timing/scalarAggregate/00-single/native-report.json",
+          "sha256": "2cae25c96febd9f7388676fa0604516867c46ccf374f5539e5e6f64103048fc5"
+        },
+        "orchestration": {
+          "path": ".build/performance-plan-20261110/timing/scalarAggregate/orchestration.json",
+          "sha256": "d10b0bd4980b8d2f4d906cfa3a4ccd40107767d1139cb7cf7ea822822f28a7ce"
+        }
+      },
+      "case": "scalarAggregate",
+      "cleanup": {
+        "completed": true,
+        "remainingOwners": 0
+      },
+      "command": [
+        "/Users/carsonrau/Developer/DiscordKit/Tools/DiscordTimingBenchmarks/.build/arm64-apple-macosx/release/DiscordTimingBenchmarks",
+        "--mode",
+        "scalarAggregate",
+        "--output",
+        "/Users/carsonrau/Developer/DiscordKit/.build/performance-plan-20261110/timing/scalarAggregate/00-single/native-report.json",
+        "--profile",
+        "smoke",
+        "--seed",
+        "4705193143269049553",
+        "--concurrency",
+        "2",
+        "--duration-seconds",
+        "10",
+        "--warmup-seconds",
+        "1",
+        "--iterations",
+        "1000",
+        "--warmup-iterations",
+        "128"
+      ],
+      "completedOperations": 2000,
+      "counts": {
+        "admitted": 2000,
+        "completed": 2000,
+        "deadlineMisses": 0,
+        "offered": 2000,
+        "outcomes": {
+          "cancelled": 0,
+          "failure": 0,
+          "rejected": 0,
+          "success": 2000,
+          "timedOut": 0,
+          "uncertain": 0
+        }
+      },
+      "createdAtUTC": "2026-11-11T03:56:14.957145+00:00",
+      "flushNanoseconds": 31042,
+      "hostObservationAfter": {
+        "load_average_1_5_15_minutes": [
+          5.26123046875,
+          5.19384765625,
+          4.9970703125
+        ],
+        "method": "os.getloadavg; host-level indicator, not exclusive-allocation proof"
+      },
+      "hostObservationBefore": {
+        "load_average_1_5_15_minutes": [
+          5.26123046875,
+          5.19384765625,
+          4.9970703125
+        ],
+        "method": "os.getloadavg; host-level indicator, not exclusive-allocation proof"
+      },
+      "identity": {
+        "catalog": "discordkit.timing",
+        "catalogVersion": 3,
+        "concurrency": 2,
+        "fixtureHashes": {
+          "fixture-v1": "8d7524e535557da2a0cd19b35883a70b9383e48446f9d48216b6b15faf7cd66b"
+        },
+        "inputSizes": {
+          "durationCapSeconds": 10,
+          "iterationsPerWorkerCap": 1000,
+          "lanes": 64,
+          "warmupIterationsPerWorkerCap": 128
+        },
+        "instrumentation": "scalarAggregate",
+        "measuredNanoseconds": 92107708,
+        "profile": "smoke",
+        "profileVersion": 1,
+        "repetitions": 1,
+        "requestedWarmupNanoseconds": 1000000000,
+        "scenario": "instrumentation.local-rest",
+        "scheduler": "finite-structured-worker-cohort",
+        "seed": 4705193143269049553,
+        "warmupNanoseconds": 13469250
+      },
+      "metrics": [
+        {
+          "clockDomain": "instrumentation-monotonic",
+          "distribution": {
+            "configuration": {
+              "bucketWidthNanoseconds": 100,
+              "lowerBoundNanoseconds": 0,
+              "upperBoundNanoseconds": 2000000
+            },
+            "counterOverflow": false,
+            "droppedCount": 0,
+            "inRangeCount": 2000,
+            "maxInRangeNanoseconds": 234959,
+            "observedCount": 2000,
+            "overflowCount": 0,
+            "underflowCount": 0
+          },
+          "id": "instrumentation.operation.gross",
+          "maximum": {
+            "interval": {
+              "lowerBoundNanoseconds": 234959,
+              "upperBoundNanoseconds": 234959
+            }
+          },
+          "outcome": "success",
+          "p50": {
+            "interval": {
+              "lowerBoundNanoseconds": 81400,
+              "upperBoundNanoseconds": 81499
+            }
+          },
+          "p95": {
+            "interval": {
+              "lowerBoundNanoseconds": 134000,
+              "upperBoundNanoseconds": 134099
+            }
+          },
+          "p99": {
+            "unavailable": {
+              "_0": "insufficientTailData"
+            }
+          },
+          "version": 1
+        }
+      ],
+      "outputCounters": {
+        "aggregateAccepted": 8000,
+        "aggregateDropped": 0,
+        "aggregateIgnoredBegin": 0,
+        "aggregateInvalid": 0,
+        "callbackRecords": 2000
+      },
+      "processCleanup": {
+        "group_has_live_members_after_cleanup": false,
+        "kill_sent": false,
+        "owner_reaped": true,
+        "term_sent": false,
+        "unexpected_descendants": false
+      },
+      "processStatus": "completed",
+      "runStatus": "completed",
+      "semanticValidationExitCode": 0,
+      "warmupOperations": 256
+    },
+    {
+      "artifacts": {
+        "common": {
+          "path": ".build/performance-plan-20261110/timing/scalarDisabled/00-single/benchmark-envelope.json",
+          "sha256": "29e2731069f887fd86fbce5016e1794137231c57b18b88255c0ee7ce40f5f7a9"
+        },
+        "native": {
+          "path": ".build/performance-plan-20261110/timing/scalarDisabled/00-single/native-report.json",
+          "sha256": "bb7db93af9af385a8a0cfdaeddaf4c9a31316db5f7ad6915abf2fedc42df99c3"
+        },
+        "orchestration": {
+          "path": ".build/performance-plan-20261110/timing/scalarDisabled/orchestration.json",
+          "sha256": "46ae4e8d1783e9cfb8c97db2a2ee58467b5ecb6c26af814ae8f1817574fe57e8"
+        }
+      },
+      "case": "scalarDisabled",
+      "cleanup": {
+        "completed": true,
+        "remainingOwners": 0
+      },
+      "command": [
+        "/Users/carsonrau/Developer/DiscordKit/Tools/DiscordTimingBenchmarks/.build/arm64-apple-macosx/release/DiscordTimingBenchmarks",
+        "--mode",
+        "scalarDisabled",
+        "--output",
+        "/Users/carsonrau/Developer/DiscordKit/.build/performance-plan-20261110/timing/scalarDisabled/00-single/native-report.json",
+        "--profile",
+        "smoke",
+        "--seed",
+        "4705193143269049553",
+        "--concurrency",
+        "2",
+        "--duration-seconds",
+        "10",
+        "--warmup-seconds",
+        "1",
+        "--iterations",
+        "1000",
+        "--warmup-iterations",
+        "128"
+      ],
+      "completedOperations": 2000,
+      "counts": {
+        "admitted": 2000,
+        "completed": 2000,
+        "deadlineMisses": 0,
+        "offered": 2000,
+        "outcomes": {
+          "cancelled": 0,
+          "failure": 0,
+          "rejected": 0,
+          "success": 2000,
+          "timedOut": 0,
+          "uncertain": 0
+        }
+      },
+      "createdAtUTC": "2026-11-11T03:56:14.257339+00:00",
+      "flushNanoseconds": 2291,
+      "hostObservationAfter": {
+        "load_average_1_5_15_minutes": [
+          5.26123046875,
+          5.19384765625,
+          4.9970703125
+        ],
+        "method": "os.getloadavg; host-level indicator, not exclusive-allocation proof"
+      },
+      "hostObservationBefore": {
+        "load_average_1_5_15_minutes": [
+          5.26123046875,
+          5.19384765625,
+          4.9970703125
+        ],
+        "method": "os.getloadavg; host-level indicator, not exclusive-allocation proof"
+      },
+      "identity": {
+        "catalog": "discordkit.timing",
+        "catalogVersion": 3,
+        "concurrency": 2,
+        "fixtureHashes": {
+          "fixture-v1": "8d7524e535557da2a0cd19b35883a70b9383e48446f9d48216b6b15faf7cd66b"
+        },
+        "inputSizes": {
+          "durationCapSeconds": 10,
+          "iterationsPerWorkerCap": 1000,
+          "lanes": 64,
+          "warmupIterationsPerWorkerCap": 128
+        },
+        "instrumentation": "scalarDisabled",
+        "measuredNanoseconds": 119103625,
+        "profile": "smoke",
+        "profileVersion": 1,
+        "repetitions": 1,
+        "requestedWarmupNanoseconds": 1000000000,
+        "scenario": "instrumentation.local-rest",
+        "scheduler": "finite-structured-worker-cohort",
+        "seed": 4705193143269049553,
+        "warmupNanoseconds": 13336750
+      },
+      "metrics": [
+        {
+          "clockDomain": "instrumentation-monotonic",
+          "distribution": {
+            "configuration": {
+              "bucketWidthNanoseconds": 100,
+              "lowerBoundNanoseconds": 0,
+              "upperBoundNanoseconds": 2000000
+            },
+            "counterOverflow": false,
+            "droppedCount": 0,
+            "inRangeCount": 2000,
+            "maxInRangeNanoseconds": 727500,
+            "observedCount": 2000,
+            "overflowCount": 0,
+            "underflowCount": 0
+          },
+          "id": "instrumentation.operation.gross",
+          "maximum": {
+            "interval": {
+              "lowerBoundNanoseconds": 727500,
+              "upperBoundNanoseconds": 727500
+            }
+          },
+          "outcome": "success",
+          "p50": {
+            "interval": {
+              "lowerBoundNanoseconds": 123500,
+              "upperBoundNanoseconds": 123599
+            }
+          },
+          "p95": {
+            "interval": {
+              "lowerBoundNanoseconds": 190700,
+              "upperBoundNanoseconds": 190799
+            }
+          },
+          "p99": {
+            "unavailable": {
+              "_0": "insufficientTailData"
+            }
+          },
+          "version": 1
+        }
+      ],
+      "outputCounters": {
+        "callbackRecords": 2000
+      },
+      "processCleanup": {
+        "group_has_live_members_after_cleanup": false,
+        "kill_sent": false,
+        "owner_reaped": true,
+        "term_sent": false,
+        "unexpected_descendants": false
+      },
+      "processStatus": "completed",
+      "runStatus": "completed",
+      "semanticValidationExitCode": 0,
+      "warmupOperations": 256
+    }
+  ],
+  "limitations": [
+    "Host was not reserved; thermal, frequency and exclusive allocation were not established.",
+    "One fresh smoke process per CPU case or observation mode, with fixed mode order.",
+    "Batch normalized mean is not individual-call tail latency.",
+    "Scalar instrumentation results do not identify a causal isolated observer cost.",
+    "Common envelopes retain conservative unavailable provenance; authoritative external receipts are retained separately.",
+    "No Time Profiler, Instruments, allocation-event, hosted, Linux, live Discord, physical audio or browser/desktop capture occurred."
+  ],
+  "orderingProbe": {
+    "artifacts": {
+      "Package.swift": {
+        "path": ".build/performance-plan-20261110/ordering-probe/Package.swift",
+        "sha256": "30d4497a7fb43b0445ee8864260e7bdd972a5492482277f30bfd74c633d38485"
+      },
+      "Sources/OrderingProbe/main.swift": {
+        "path": ".build/performance-plan-20261110/ordering-probe/Sources/OrderingProbe/main.swift",
+        "sha256": "be1dac3966e076b1c3d31198810ce084b3f6f9db937037930db80452f42c3ef6"
+      },
+      "final-ownership.json": {
+        "path": ".build/performance-plan-20261110/ordering-probe/final-ownership.json",
+        "sha256": "195bf122b14be71688a201953e2828d327801dbb09d7cc7584f5143ac5cb3a05"
+      },
+      "hashes.json": {
+        "path": ".build/performance-plan-20261110/ordering-probe/hashes.json",
+        "sha256": "ba7f8b458d5b405cf9c04121f7ac9997f39fa4c2977296d32e5d2e4692c7a47c"
+      },
+      "identity-before.json": {
+        "path": ".build/performance-plan-20261110/ordering-probe/identity-before.json",
+        "sha256": "fac850b405e6be348531672edb231f17e8307b5576c69833682dafdd4594bc3d"
+      },
+      "summary.json": {
+        "path": ".build/performance-plan-20261110/ordering-probe/summary.json",
+        "sha256": "68ffa512d5b5e78a98b68790c2edadfab633b51479238d4cc63442cb1c689fa4"
+      }
+    },
+    "finalOwnership": {
+      "allProcessGroupsAbsent": true,
+      "allSourceAndExecutableHashesUnchanged": true,
+      "allTrialOwnersZero": true,
+      "children": [
+        {
+          "exitCode": 0,
+          "processGroupAfterReaping": "absent",
+          "processIdentifier": 85800
+        },
+        {
+          "exitCode": 0,
+          "processGroupAfterReaping": "absent",
+          "processIdentifier": 85801
+        },
+        {
+          "exitCode": 0,
+          "processGroupAfterReaping": "absent",
+          "processIdentifier": 85802
+        },
+        {
+          "exitCode": 0,
+          "processGroupAfterReaping": "absent",
+          "processIdentifier": 85803
+        },
+        {
+          "exitCode": 0,
+          "processGroupAfterReaping": "absent",
+          "processIdentifier": 85804
+        },
+        {
+          "exitCode": 0,
+          "processGroupAfterReaping": "absent",
+          "processIdentifier": 85805
+        },
+        {
+          "exitCode": 0,
+          "processGroupAfterReaping": "absent",
+          "processIdentifier": 85806
+        },
+        {
+          "exitCode": 0,
+          "processGroupAfterReaping": "absent",
+          "processIdentifier": 85807
+        },
+        {
+          "exitCode": 0,
+          "processGroupAfterReaping": "absent",
+          "processIdentifier": 85808
+        },
+        {
+          "exitCode": 0,
+          "processGroupAfterReaping": "absent",
+          "processIdentifier": 85809
+        },
+        {
+          "exitCode": 0,
+          "processGroupAfterReaping": "absent",
+          "processIdentifier": 85810
+        },
+        {
+          "exitCode": 0,
+          "processGroupAfterReaping": "absent",
+          "processIdentifier": 85811
+        },
+        {
+          "exitCode": 0,
+          "processGroupAfterReaping": "absent",
+          "processIdentifier": 85812
+        },
+        {
+          "exitCode": 0,
+          "processGroupAfterReaping": "absent",
+          "processIdentifier": 85813
+        },
+        {
+          "exitCode": 0,
+          "processGroupAfterReaping": "absent",
+          "processIdentifier": 85814
+        },
+        {
+          "exitCode": 0,
+          "processGroupAfterReaping": "absent",
+          "processIdentifier": 85815
+        },
+        {
+          "exitCode": 0,
+          "processGroupAfterReaping": "absent",
+          "processIdentifier": 85816
+        },
+        {
+          "exitCode": 0,
+          "processGroupAfterReaping": "absent",
+          "processIdentifier": 85818
+        },
+        {
+          "exitCode": 0,
+          "processGroupAfterReaping": "absent",
+          "processIdentifier": 85819
+        },
+        {
+          "exitCode": 0,
+          "processGroupAfterReaping": "absent",
+          "processIdentifier": 85820
+        }
+      ]
+    },
+    "freshProcesses": 20,
+    "pairs": 10,
+    "policyResults": [
+      {
+        "allTrialMaxNanoseconds": 15140542,
+        "allTrialMinNanoseconds": 10632125,
+        "cleanupOwners": 0,
+        "defaultPolicy": true,
+        "fairnessMicroseconds": 10000,
+        "medianOfConfirmedReleaseProcessMediansNanoseconds": 15026583.0,
+        "medianOfProcessMediansNanoseconds": 15047271.0,
+        "minimumConfirmedReleaseGapNanoseconds": 10623125,
+        "processMedianMaxNanoseconds": 15066375.0,
+        "processMedianMinNanoseconds": 12367145.5
+      },
+      {
+        "allTrialMaxNanoseconds": 1809042,
+        "allTrialMinNanoseconds": 165166,
+        "cleanupOwners": 0,
+        "defaultPolicy": false,
+        "fairnessMicroseconds": 100,
+        "medianOfConfirmedReleaseProcessMediansNanoseconds": 1136010.0,
+        "medianOfProcessMediansNanoseconds": 1150302.0,
+        "minimumConfirmedReleaseGapNanoseconds": 148625,
+        "processMedianMaxNanoseconds": 1159396.0,
+        "processMedianMinNanoseconds": 1131958.0
+      }
+    ],
+    "processes": [
+      {
+        "elapsedSeconds": 0.4824739580217283,
+        "exitCode": 0,
+        "fairnessMicroseconds": 10000,
+        "medianConfirmedReleaseGapNanoseconds": 15027916.0,
+        "medianReleaseGapNanoseconds": 15052458.5,
+        "pair": 0,
+        "position": 0,
+        "stderrSHA256": "9500d1c6ea76c75bc25a0d34f9a6594356c43fe5024a751a9d1a5d5c6b0aac29",
+        "stdoutSHA256": "d4d8c6be59824e6b242a2462d2d7acff0e59a5eb1b7c9fd27fa4dabb191fcc94"
+      },
+      {
+        "elapsedSeconds": 0.02603508299216628,
+        "exitCode": 0,
+        "fairnessMicroseconds": 100,
+        "medianConfirmedReleaseGapNanoseconds": 1138167.0,
+        "medianReleaseGapNanoseconds": 1154396.0,
+        "pair": 0,
+        "position": 1,
+        "stderrSHA256": "9500d1c6ea76c75bc25a0d34f9a6594356c43fe5024a751a9d1a5d5c6b0aac29",
+        "stdoutSHA256": "3445d64cdebe5155b841b9eaa50a51039d7e98c3449d758632b67a173a0f6b1a"
+      },
+      {
+        "elapsedSeconds": 0.025434125011088327,
+        "exitCode": 0,
+        "fairnessMicroseconds": 100,
+        "medianConfirmedReleaseGapNanoseconds": 1145458.5,
+        "medianReleaseGapNanoseconds": 1159396.0,
+        "pair": 1,
+        "position": 0,
+        "stderrSHA256": "9500d1c6ea76c75bc25a0d34f9a6594356c43fe5024a751a9d1a5d5c6b0aac29",
+        "stdoutSHA256": "39fad310ef62e844c649432ab9552ec57f896759560672417c117e4cb94736a8"
+      },
+      {
+        "elapsedSeconds": 0.14509170898236334,
+        "exitCode": 0,
+        "fairnessMicroseconds": 10000,
+        "medianConfirmedReleaseGapNanoseconds": 15025250.0,
+        "medianReleaseGapNanoseconds": 15041000.0,
+        "pair": 1,
+        "position": 1,
+        "stderrSHA256": "9500d1c6ea76c75bc25a0d34f9a6594356c43fe5024a751a9d1a5d5c6b0aac29",
+        "stdoutSHA256": "25b42b7bbb7974bb41b3dee1958dda543401530332374c221ecf18fe2711bd99"
+      },
+      {
+        "elapsedSeconds": 0.13941787500516511,
+        "exitCode": 0,
+        "fairnessMicroseconds": 10000,
+        "medianConfirmedReleaseGapNanoseconds": 15037000.0,
+        "medianReleaseGapNanoseconds": 15055875.0,
+        "pair": 2,
+        "position": 0,
+        "stderrSHA256": "9500d1c6ea76c75bc25a0d34f9a6594356c43fe5024a751a9d1a5d5c6b0aac29",
+        "stdoutSHA256": "ea6fbd767ccd5550210f5db42d2465111fb97dfef74c8bdc5172d2edd2e76069"
+      },
+      {
+        "elapsedSeconds": 0.04688083301880397,
+        "exitCode": 0,
+        "fairnessMicroseconds": 100,
+        "medianConfirmedReleaseGapNanoseconds": 1129312.5,
+        "medianReleaseGapNanoseconds": 1149146.0,
+        "pair": 2,
+        "position": 1,
+        "stderrSHA256": "9500d1c6ea76c75bc25a0d34f9a6594356c43fe5024a751a9d1a5d5c6b0aac29",
+        "stdoutSHA256": "9df083953b7a4a23e35ab407f4aff11c56b4e876478569a134e6084aa3921fbb"
+      },
+      {
+        "elapsedSeconds": 0.025471416010987014,
+        "exitCode": 0,
+        "fairnessMicroseconds": 100,
+        "medianConfirmedReleaseGapNanoseconds": 1135124.5,
+        "medianReleaseGapNanoseconds": 1150708.5,
+        "pair": 3,
+        "position": 0,
+        "stderrSHA256": "9500d1c6ea76c75bc25a0d34f9a6594356c43fe5024a751a9d1a5d5c6b0aac29",
+        "stdoutSHA256": "f3619f4444b2166ceca1214a3a6f0e42bca34eeda825be19c6ade75df99d8ea9"
+      },
+      {
+        "elapsedSeconds": 0.14036320798913948,
+        "exitCode": 0,
+        "fairnessMicroseconds": 10000,
+        "medianConfirmedReleaseGapNanoseconds": 15035583.5,
+        "medianReleaseGapNanoseconds": 15051354.0,
+        "pair": 3,
+        "position": 1,
+        "stderrSHA256": "9500d1c6ea76c75bc25a0d34f9a6594356c43fe5024a751a9d1a5d5c6b0aac29",
+        "stdoutSHA256": "d1ac9fff8dee72e182efeaf89c7aa9d4827de61fd47529c538a270bf0faf763b"
+      },
+      {
+        "elapsedSeconds": 0.14975400001276284,
+        "exitCode": 0,
+        "fairnessMicroseconds": 10000,
+        "medianConfirmedReleaseGapNanoseconds": 15023250.0,
+        "medianReleaseGapNanoseconds": 15043188.0,
+        "pair": 4,
+        "position": 0,
+        "stderrSHA256": "9500d1c6ea76c75bc25a0d34f9a6594356c43fe5024a751a9d1a5d5c6b0aac29",
+        "stdoutSHA256": "0a579d580a2ea0ab7dda80e400479a8ce624d77a682c7bb65d7ef8de2c8ee20b"
+      },
+      {
+        "elapsedSeconds": 0.025791791995288804,
+        "exitCode": 0,
+        "fairnessMicroseconds": 100,
+        "medianConfirmedReleaseGapNanoseconds": 1133958.0,
+        "medianReleaseGapNanoseconds": 1149895.5,
+        "pair": 4,
+        "position": 1,
+        "stderrSHA256": "9500d1c6ea76c75bc25a0d34f9a6594356c43fe5024a751a9d1a5d5c6b0aac29",
+        "stdoutSHA256": "a94f93cc7116b0adb35cd80de3599bc22a74a15743831a4fc170016fecacc860"
+      },
+      {
+        "elapsedSeconds": 0.025117209006566554,
+        "exitCode": 0,
+        "fairnessMicroseconds": 100,
+        "medianConfirmedReleaseGapNanoseconds": 1136895.5,
+        "medianReleaseGapNanoseconds": 1146958.0,
+        "pair": 5,
+        "position": 0,
+        "stderrSHA256": "c2840629556f144a7d69af7e8ebd83641e3ad9f5d521d9386f13a9e692b8c9df",
+        "stdoutSHA256": "8ab4d3ba2702e04ea24c1fc0751cbc55a517d29160a7d18a024f457018ded927"
+      },
+      {
+        "elapsedSeconds": 0.1413437910086941,
+        "exitCode": 0,
+        "fairnessMicroseconds": 10000,
+        "medianConfirmedReleaseGapNanoseconds": 13811978.5,
+        "medianReleaseGapNanoseconds": 13821583.0,
+        "pair": 5,
+        "position": 1,
+        "stderrSHA256": "c2840629556f144a7d69af7e8ebd83641e3ad9f5d521d9386f13a9e692b8c9df",
+        "stdoutSHA256": "74f57c27fdd79f5b3a9bc465aeee4f67db0d5b3e79a61939e742ee18875eed31"
+      },
+      {
+        "elapsedSeconds": 0.1475373749854043,
+        "exitCode": 0,
+        "fairnessMicroseconds": 10000,
+        "medianConfirmedReleaseGapNanoseconds": 15038792.0,
+        "medianReleaseGapNanoseconds": 15051708.5,
+        "pair": 6,
+        "position": 0,
+        "stderrSHA256": "c2840629556f144a7d69af7e8ebd83641e3ad9f5d521d9386f13a9e692b8c9df",
+        "stdoutSHA256": "cf9ceb96cf56ad8c0ae0e4487645fb9eb430d3e87935d825cc2b43690984af8e"
+      },
+      {
+        "elapsedSeconds": 0.025052583019714803,
+        "exitCode": 0,
+        "fairnessMicroseconds": 100,
+        "medianConfirmedReleaseGapNanoseconds": 1116000.0,
+        "medianReleaseGapNanoseconds": 1131958.0,
+        "pair": 6,
+        "position": 1,
+        "stderrSHA256": "c2840629556f144a7d69af7e8ebd83641e3ad9f5d521d9386f13a9e692b8c9df",
+        "stdoutSHA256": "5a69ea428f18d123d93ef99251c91cdabf121b56d2a36b8465aaf2422e8d59f2"
+      },
+      {
+        "elapsedSeconds": 0.024823541985824704,
+        "exitCode": 0,
+        "fairnessMicroseconds": 100,
+        "medianConfirmedReleaseGapNanoseconds": 1144229.0,
+        "medianReleaseGapNanoseconds": 1153833.0,
+        "pair": 7,
+        "position": 0,
+        "stderrSHA256": "c2840629556f144a7d69af7e8ebd83641e3ad9f5d521d9386f13a9e692b8c9df",
+        "stdoutSHA256": "31aa87abbba61a6fa6ca8d9adeb05093666389ea01f04d9bb7238b4f10b4b283"
+      },
+      {
+        "elapsedSeconds": 0.13214595799217932,
+        "exitCode": 0,
+        "fairnessMicroseconds": 10000,
+        "medianConfirmedReleaseGapNanoseconds": 15054500.0,
+        "medianReleaseGapNanoseconds": 15066375.0,
+        "pair": 7,
+        "position": 1,
+        "stderrSHA256": "c2840629556f144a7d69af7e8ebd83641e3ad9f5d521d9386f13a9e692b8c9df",
+        "stdoutSHA256": "52d56efc2076b5ae661052d72e632834add3cba0fc8afa00a3c846dfd2eff472"
+      },
+      {
+        "elapsedSeconds": 0.14989008402335458,
+        "exitCode": 0,
+        "fairnessMicroseconds": 10000,
+        "medianConfirmedReleaseGapNanoseconds": 13189562.5,
+        "medianReleaseGapNanoseconds": 13209333.0,
+        "pair": 8,
+        "position": 0,
+        "stderrSHA256": "c2840629556f144a7d69af7e8ebd83641e3ad9f5d521d9386f13a9e692b8c9df",
+        "stdoutSHA256": "f010d0ccc88bd440906b24cae901c37151a4f01d2821db42db14ebe4f323b6b3"
+      },
+      {
+        "elapsedSeconds": 0.025581374997273088,
+        "exitCode": 0,
+        "fairnessMicroseconds": 100,
+        "medianConfirmedReleaseGapNanoseconds": 1141229.0,
+        "medianReleaseGapNanoseconds": 1156041.5,
+        "pair": 8,
+        "position": 1,
+        "stderrSHA256": "c2840629556f144a7d69af7e8ebd83641e3ad9f5d521d9386f13a9e692b8c9df",
+        "stdoutSHA256": "172e0a8912d7a063459c686e635a882e9693d0065310c0cfc389b0bbf50eea41"
+      },
+      {
+        "elapsedSeconds": 0.025414207979338244,
+        "exitCode": 0,
+        "fairnessMicroseconds": 100,
+        "medianConfirmedReleaseGapNanoseconds": 1126833.5,
+        "medianReleaseGapNanoseconds": 1139500.0,
+        "pair": 9,
+        "position": 0,
+        "stderrSHA256": "c2840629556f144a7d69af7e8ebd83641e3ad9f5d521d9386f13a9e692b8c9df",
+        "stdoutSHA256": "2131bbafc1998cd96b63a1bec651172a70e443d70fc0da5beae902c51b9c70c1"
+      },
+      {
+        "elapsedSeconds": 0.1455457920092158,
+        "exitCode": 0,
+        "fairnessMicroseconds": 10000,
+        "medianConfirmedReleaseGapNanoseconds": 12353853.5,
+        "medianReleaseGapNanoseconds": 12367145.5,
+        "pair": 9,
+        "position": 1,
+        "stderrSHA256": "c2840629556f144a7d69af7e8ebd83641e3ad9f5d521d9386f13a9e692b8c9df",
+        "stdoutSHA256": "8059a3701ddbdbef9b9496e7ab41137e8a003dff1e0f4edf459c3f45a2057c2a"
+      }
+    ],
+    "scope": "Exploratory local optimized public API reproduction; no controlled-host baseline, no REST/network, no percentile qualification",
+    "sourceAndExecutableHashes": {
+      "Package.resolved": "dd6c86faf979e3b991553d84ae0b378105629a3a010d71f842ed84dda9bf263c",
+      "Package.swift": "30d4497a7fb43b0445ee8864260e7bdd972a5492482277f30bfd74c633d38485",
+      "Sources/OrderingProbe/main.swift": "be1dac3966e076b1c3d31198810ce084b3f6f9db937037930db80452f42c3ef6",
+      "build-command.json": "2a386ffebfc048478ae303a85db5eea3ffad1aca66da8a9198c2f1abfc76439f",
+      "build-status.json": "af00580153ec939ddba2ba320ac921c542bffcc51da64867003d1942c8a3bb2d",
+      "build.stderr.log": "a26f79d8d4bcb5c7051e6e8c0caa351380a04c9da88db441cc5799092650a9fd",
+      "build.stdout.log": "13e8aa2ec56e5b943b432ffa60c2d1202a72c2595b9f148c9ce906c75add92eb",
+      "executable": "656ee81563286efc4d252b6d2a2cea2271b808cc88f7e5c5cf6973d7325d318e"
+    },
+    "trialsPerProcess": 8
+  },
+  "qualification": "Exploratory local planning evidence; no controlled-host numerical baseline or p99 qualification. No product optimization.",
+  "releaseBuilds": [
+    {
+      "buildCommand": [
+        "/usr/bin/swift",
+        "build",
+        "--package-path",
+        "/Users/carsonrau/Developer/DiscordKit/Tools/DiscordFoundationBenchmarks",
+        "-c",
+        "release",
+        "--product",
+        "DiscordFoundationBenchmarks",
+        "--force-resolved-versions",
+        "-j",
+        "4",
+        "--build-system",
+        "native",
+        "--disable-experimental-prebuilts"
+      ],
+      "compiler": "Apple Swift version 6.4 (swiftlang-6.4.0.34.1 clang-2100.3.34.1)\nTarget: arm64-apple-macosx27.0.0",
+      "executable": {
+        "bytes": 15406328,
+        "path": "/Users/carsonrau/Developer/DiscordKit/Tools/DiscordFoundationBenchmarks/.build/arm64-apple-macosx/release/DiscordFoundationBenchmarks",
+        "sha256": "9971ea1fe384c5d90dff1243d2eb3966146ab4a127de21b13f91ebea761001ab"
+      },
+      "optimization": "release",
+      "receipt": {
+        "path": ".build/performance-plan-20261110/foundation-release.json",
+        "sha256": "3ad08d04316aa1c37944e392367eec1387105631e7ecffc8767c8438a56723da"
+      },
+      "source": {
+        "dependency_hashes": {
+          "Examples/ActivityHost/Package.resolved": "f119349c61a00ef8f90807e9d92fe745aa5a27b57d3bf0784b5e13f71d02cfeb",
+          "Examples/CommandsApp/Package.resolved": "153e11716602f8c4e220d9b6e0d0aeb3f8b1ee7d592671d7c41f8d807d15051c",
+          "Examples/DSLBot/Package.resolved": "74cd15ee9c7cead29c5e380ab4cbdf16e3d9170711db65c502d52f41b85fd3fb",
+          "Examples/DSLCommands/Package.resolved": "090387496b42083a5c83d559fb6f67190e087e1ca3811891254ae00b9c76cdb6",
+          "Examples/DSLEvents/Package.resolved": "2ae301b70929845d3d378fad230be4f70469a1df1c08b33854ea2bb9d361786f",
+          "Examples/GatewayBot/Package.resolved": "c0d7fb3fde8bd9ebabd18800ddeadb2eee916a4b42d1e73dde8663a6bbd21673",
+          "Examples/HTTPApp/Package.resolved": "138b346afefcbc0405153811694d115b2e36672adac04363d68f918755020f78",
+          "Examples/LoggingApp/Package.resolved": "c876309dae29d04a6454e752f15a2503635c5c748256c48e4714ff1af7cdc183",
+          "Examples/OAuthApp/Package.resolved": "a2ac3bdd08614cba4560b870987d466b4689e898a14862d8543c5fb908602890",
+          "Examples/RESTOnly/Package.resolved": "84cb72a16d16999f0791882aaab29cffd961ecdd87596afe15ac44a196661a6e",
+          "Examples/RPCApp/Package.resolved": "f0c2bf97d6d7b7573fa40c3c791e0f8765240bf5c051ef9c83be2ec14cef262c",
+          "Examples/SocialApp/Package.resolved": "e0b4d8ea7255d7bdde18593a5646ccd7d158eea3f3c49c80057f6c6fb0830ac8",
+          "Examples/VoiceBot/Package.resolved": "3b8c729fb2c9058a965b4e2287b82dcfb537770e457f46ac23a06f89ed541f6c",
+          "Package.resolved": "dd6c86faf979e3b991553d84ae0b378105629a3a010d71f842ed84dda9bf263c",
+          "Packages/DiscordDSLExtensions/Package.resolved": "986690f3984eee93d7f14bd31cfed0aeebc86d83811a1d1958bd703382ed04d1",
+          "Packages/DiscordDSLMacros/Package.resolved": "eaf49525b5ff7142dfeb4af84fc68eebe15983e3f9046cffa2042e0f03e4ba00",
+          "Tests/Fixtures/DSLCompile/Package.resolved": "5b780d900da9a50bc004cc7dfe008530add5cb6fd866f36313227d83f1e04cd7",
+          "Tests/Fixtures/DSLExtensionsCompile/Package.resolved": "45eb0e9663f4810d8e754e0cd55ea911228bcbb478e2c1ee7d9c47a5a7a48c1d",
+          "Tests/Fixtures/PlatformProbe/Package.resolved": "903d2b9d4694a8767f98483e7524dd61c7cd977a6029bb32c1da5dadce3bb258",
+          "Tests/Fixtures/VoiceProbe/Package.resolved": "2b6df77006549add09e3f82105502a445e7eb2f292f52b79897c2fbacffa4b9f",
+          "Tools/AppleAudioQualification/Package.resolved": "ece1a17a96da2ff095f0353e9619c719bbd83a5a5efd9429de21334c11125f01",
+          "Tools/DiscordDSLBenchmarks/Package.resolved": "875da4a883f64f08c3c366b43307850428fbbd27a6a81c584429e21da50b9519",
+          "Tools/DiscordFoundationBenchmarks/Package.resolved": "7762e99b7078119f49f843d4f0ba2295c65ebdcad13992cddb42a85c6b61b1cd",
+          "Tools/DiscordKitLoadTests/Package.resolved": "447bf3ccefdc65c7cbe44f1c8b610f5616e971394c8e971956a3f1e9159cdb52",
+          "Tools/DiscordKitTools/Package.resolved": "5a0b4820b8689eb8b865d10d34c94ce77e8b333e0744be24940afb2a77b1f53d",
+          "Tools/DiscordMediaBenchmarks/Package.resolved": "faf34927be6ade9ffe97b6eb347ebe1c45e802fd140a64c0de180a1a3d0af553",
+          "Tools/DiscordTimingBenchmarks/Package.resolved": "dd6c86faf979e3b991553d84ae0b378105629a3a010d71f842ed84dda9bf263c",
+          "Tools/VoiceSessionQualification/Package.resolved": "e76c3b60a2aa0ce68513d1ddd323d13737e23dfdf966d002253fbb8aa3e6136e"
+        },
+        "dirty": false,
+        "dirty_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "repository": "/Users/carsonrau/Developer/DiscordKit",
+        "revision": "065e2b655c28250076ba53fca310f209be1d3fd5"
+      },
+      "status": "completed",
+      "suite": "foundation"
+    },
+    {
+      "buildCommand": [
+        "/usr/bin/swift",
+        "build",
+        "--package-path",
+        "/Users/carsonrau/Developer/DiscordKit/Tools/DiscordTimingBenchmarks",
+        "-c",
+        "release",
+        "--product",
+        "DiscordTimingBenchmarks",
+        "--force-resolved-versions",
+        "-j",
+        "4",
+        "--build-system",
+        "native",
+        "--disable-experimental-prebuilts"
+      ],
+      "compiler": "Apple Swift version 6.4 (swiftlang-6.4.0.34.1 clang-2100.3.34.1)\nTarget: arm64-apple-macosx27.0.0",
+      "executable": {
+        "bytes": 12198456,
+        "path": "/Users/carsonrau/Developer/DiscordKit/Tools/DiscordTimingBenchmarks/.build/arm64-apple-macosx/release/DiscordTimingBenchmarks",
+        "sha256": "e12b9b11acea26da102de7eec592740b75553ddd1db0f454937b5206109591ea"
+      },
+      "optimization": "release",
+      "receipt": {
+        "path": ".build/performance-plan-20261110/timing-release.json",
+        "sha256": "9b5e8c0d98433274a146747bd24337e10c4fc9c21d8d581a5e23f9a0082d7498"
+      },
+      "source": {
+        "dependency_hashes": {
+          "Examples/ActivityHost/Package.resolved": "f119349c61a00ef8f90807e9d92fe745aa5a27b57d3bf0784b5e13f71d02cfeb",
+          "Examples/CommandsApp/Package.resolved": "153e11716602f8c4e220d9b6e0d0aeb3f8b1ee7d592671d7c41f8d807d15051c",
+          "Examples/DSLBot/Package.resolved": "74cd15ee9c7cead29c5e380ab4cbdf16e3d9170711db65c502d52f41b85fd3fb",
+          "Examples/DSLCommands/Package.resolved": "090387496b42083a5c83d559fb6f67190e087e1ca3811891254ae00b9c76cdb6",
+          "Examples/DSLEvents/Package.resolved": "2ae301b70929845d3d378fad230be4f70469a1df1c08b33854ea2bb9d361786f",
+          "Examples/GatewayBot/Package.resolved": "c0d7fb3fde8bd9ebabd18800ddeadb2eee916a4b42d1e73dde8663a6bbd21673",
+          "Examples/HTTPApp/Package.resolved": "138b346afefcbc0405153811694d115b2e36672adac04363d68f918755020f78",
+          "Examples/LoggingApp/Package.resolved": "c876309dae29d04a6454e752f15a2503635c5c748256c48e4714ff1af7cdc183",
+          "Examples/OAuthApp/Package.resolved": "a2ac3bdd08614cba4560b870987d466b4689e898a14862d8543c5fb908602890",
+          "Examples/RESTOnly/Package.resolved": "84cb72a16d16999f0791882aaab29cffd961ecdd87596afe15ac44a196661a6e",
+          "Examples/RPCApp/Package.resolved": "f0c2bf97d6d7b7573fa40c3c791e0f8765240bf5c051ef9c83be2ec14cef262c",
+          "Examples/SocialApp/Package.resolved": "e0b4d8ea7255d7bdde18593a5646ccd7d158eea3f3c49c80057f6c6fb0830ac8",
+          "Examples/VoiceBot/Package.resolved": "3b8c729fb2c9058a965b4e2287b82dcfb537770e457f46ac23a06f89ed541f6c",
+          "Package.resolved": "dd6c86faf979e3b991553d84ae0b378105629a3a010d71f842ed84dda9bf263c",
+          "Packages/DiscordDSLExtensions/Package.resolved": "986690f3984eee93d7f14bd31cfed0aeebc86d83811a1d1958bd703382ed04d1",
+          "Packages/DiscordDSLMacros/Package.resolved": "eaf49525b5ff7142dfeb4af84fc68eebe15983e3f9046cffa2042e0f03e4ba00",
+          "Tests/Fixtures/DSLCompile/Package.resolved": "5b780d900da9a50bc004cc7dfe008530add5cb6fd866f36313227d83f1e04cd7",
+          "Tests/Fixtures/DSLExtensionsCompile/Package.resolved": "45eb0e9663f4810d8e754e0cd55ea911228bcbb478e2c1ee7d9c47a5a7a48c1d",
+          "Tests/Fixtures/PlatformProbe/Package.resolved": "903d2b9d4694a8767f98483e7524dd61c7cd977a6029bb32c1da5dadce3bb258",
+          "Tests/Fixtures/VoiceProbe/Package.resolved": "2b6df77006549add09e3f82105502a445e7eb2f292f52b79897c2fbacffa4b9f",
+          "Tools/AppleAudioQualification/Package.resolved": "ece1a17a96da2ff095f0353e9619c719bbd83a5a5efd9429de21334c11125f01",
+          "Tools/DiscordDSLBenchmarks/Package.resolved": "875da4a883f64f08c3c366b43307850428fbbd27a6a81c584429e21da50b9519",
+          "Tools/DiscordFoundationBenchmarks/Package.resolved": "7762e99b7078119f49f843d4f0ba2295c65ebdcad13992cddb42a85c6b61b1cd",
+          "Tools/DiscordKitLoadTests/Package.resolved": "447bf3ccefdc65c7cbe44f1c8b610f5616e971394c8e971956a3f1e9159cdb52",
+          "Tools/DiscordKitTools/Package.resolved": "5a0b4820b8689eb8b865d10d34c94ce77e8b333e0744be24940afb2a77b1f53d",
+          "Tools/DiscordMediaBenchmarks/Package.resolved": "faf34927be6ade9ffe97b6eb347ebe1c45e802fd140a64c0de180a1a3d0af553",
+          "Tools/DiscordTimingBenchmarks/Package.resolved": "dd6c86faf979e3b991553d84ae0b378105629a3a010d71f842ed84dda9bf263c",
+          "Tools/VoiceSessionQualification/Package.resolved": "e76c3b60a2aa0ce68513d1ddd323d13737e23dfdf966d002253fbb8aa3e6136e"
+        },
+        "dirty": false,
+        "dirty_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "repository": "/Users/carsonrau/Developer/DiscordKit",
+        "revision": "065e2b655c28250076ba53fca310f209be1d3fd5"
+      },
+      "status": "completed",
+      "suite": "timing"
+    }
+  ],
+  "schemaVersion": 1,
+  "sourceRevision": "065e2b655c28250076ba53fca310f209be1d3fd5",
+  "sourceWasCleanDuringCapture": true
+}

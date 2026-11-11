@@ -67,6 +67,56 @@ supervisor; use the shared driver for performance evidence. `--list-modes` print
 available mode names. Unsupported native adapters fail explicitly. No automatic
 benchmark or live Discord run occurs during a consumer build.
 
+Stage 0 observer controls can select finite cohorts 1/4/16 and compare shared
+collectors with one independent collector per worker:
+
+```sh
+python3 Tools/DiscordTimingBenchmarks/scripts/run_modes.py \
+  --executable Tools/DiscordTimingBenchmarks/.build/release/DiscordTimingBenchmarks \
+  --receipt .build/timing-stage0/release.json \
+  --output-dir .build/timing-stage0/observer-controls \
+  --cohort 1 --cohort 4 --cohort 16 \
+  --collector-scope shared --collector-scope perWorker \
+  --mode disabled --mode noop --mode aggregate --mode sampled \
+  --mode filtered --mode callback --mode rotatingFile
+```
+
+Each selected combination runs sequentially in a supervised fresh process under
+a distinct cohort/scope/mode directory. `--concurrency 1` also works for a single
+run. Only `callbackContention` requires at least two workers; the wrapper skips
+that mode for cohort one when running a larger mode matrix, and rejects it when
+it is the only requested mode with cohort one. Existing defaults remain two
+workers, shared collectors and the original mode directory names. The native CLI
+accepts one `--collector-scope shared|perWorker` value per process.
+
+Both topologies use one shared interval observer identity source, preserving the
+allocator's contribution while changing collector ownership. Per-worker sinks
+route through task-local worker context without replacing numeric interval
+parents or diagnostic correlation. Nil and no-op observers retain their existing
+semantics. Per-worker collection adds a task-local lookup to observed endpoints.
+The total capture allowance remains at most 65,536 records, 8 MiB and 256 active
+decisions across either topology, divided evenly with integer truncation across
+worker collectors. Signposts similarly divide their 256-active-interval bound.
+Saturation deliberately retains three endpoints per collector, at most 192 at the
+supported maximum cohort of 64. Per-worker aggregates reserve only the fixture's
+one CPU row or four scalar rows; summed conservative aggregate storage remains
+below 2 MiB at cohort 64, so capture plus aggregate storage remains below 10 MiB.
+Closed warmup collectors leave scope before measured outputs are allocated.
+`collectorOwners`, exact merged counters, capture configured bounds and
+`aggregateStorageUpperBoundBytes` record this resource accounting. Uneven worker
+progress can exhaust one partition before others; explicit drops remain evidence.
+Each per-worker artifact owner writes its own worker directory. The
+original shared instrumentation identity remains unchanged; per-worker runs use
+the explicit `.per-worker-collectors-v1` instrumentation suffix. These distinct
+identities require a deliberate overhead-control comparison, not an ordinary
+same-workload numerical regression gate.
+
+Deterministic wrapper tests use mocked process delegation and launch no capture:
+
+```sh
+python3 -m unittest discover -s Tools/DiscordTimingBenchmarks/scripts -p 'test_*.py'
+```
+
 ## Work and measurement boundaries
 
 Each finite structured worker repeatedly rotates and multiplies 64 integer lanes.

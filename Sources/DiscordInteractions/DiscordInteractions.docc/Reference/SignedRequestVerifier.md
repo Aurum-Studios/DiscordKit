@@ -12,6 +12,7 @@
 
 - ``DiscordInteractions/SignedRequestVerifier/replayEntryCount()``
 - ``DiscordInteractions/SignedRequestVerifier/verify(headers:body:)``
+- ``DiscordInteractions/SignedRequestVerifier/verifyWithAdmissionTiming(headers:body:)``
 
 ## See Also
 

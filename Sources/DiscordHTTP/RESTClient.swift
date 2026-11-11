@@ -95,6 +95,7 @@ public final class RESTClient<C: Clock>: Sendable, CustomStringConvertible, Cust
     ///   or indeterminate mutation outcome when an unsafe send may already have succeeded.
     ///   Decoder errors are replaced with a safe invalid-response category.
     public func execute<Response: Sendable>(_ endpoint: Endpoint<Response>, deadline: C.Instant? = nil) async throws -> Response {
+        phaseTiming?.ownerAdmitted()
         let executionStarted = timing?.instant()
         let interval = intervals?.begin(.rest, stage: .operation)
         do {

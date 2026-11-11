@@ -9,6 +9,18 @@ https://aurum-studios.com
 
 ## Unreleased
 
+### Performance measurement controls — 2026-11-10
+
+- Add versioned default-policy ordering and arrival workloads, no-op generator
+  controls, independent JSON dimensions and continuous media/full-window DAVE
+  fixtures while preserving historical cases.
+- Add bounded shared/per-worker observer comparisons at cohorts 1/4/16 and direct
+  REST execution-entry, signed-verifier admission and Gateway lease-validation
+  hooks. Preserve existing public APIs and nil observation-clock behavior.
+- Retain peer CPU, available thermal/power and cgroup throttling observations.
+  Record local validation and separate the reserved-host numerical gate in the
+  [Phase 0 record](Docs/Tasks/performance-improvements/PHASE-0.md).
+
 ### Timing baselines and CI — 2026-11-10
 
 - Add versioned policies bound to immutable baseline and no-change evidence,

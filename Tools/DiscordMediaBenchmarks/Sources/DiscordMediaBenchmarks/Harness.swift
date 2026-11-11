@@ -45,33 +45,45 @@ enum MediaHarness {
         let cap = warmup ? (seconds == 0 ? 0 : configuration.warmupBatches) : configuration.batches
         let deadline = start.addingReportingOverflow(seconds * 1_000_000_000)
         guard !deadline.overflow else { throw MediaBenchmarkError.integrityFailure("Deadline overflow") }
-        for batchIndex in 0..<cap {
+        let sessionSeed = configuration.seed &+ (warmup ? 1 << 63 : 0)
+        let session: MediaSession?
+        if let factory = workload.preparePopulation, cap > 0, now() < deadline.partialValue {
             try Task.checkCancellation()
-            if now() >= deadline.partialValue { break }
-            let seed = configuration.seed &+ UInt64(batchIndex) &+ (warmup ? 1 << 63 : 0)
-            let batch = try await workload.prepare(configuration.batchSize, seed)
-            do {
-                // Preparation may consume the remaining wall budget; close its owners without timing it.
-                if now() >= deadline.partialValue { await batch.close(); break }
-                let batchStart = now()
-                let completed = try await batch.run()
-                let batchEnd = now()
-                guard batchEnd >= batchStart else { throw MediaBenchmarkError.integrityFailure("Regressing batch clock") }
-                let elapsed = batchEnd - batchStart
-                try await batch.verify()
-                guard completed == UInt64(configuration.batchSize) else {
-                    throw MediaBenchmarkError.integrityFailure("Completed call accounting mismatch")
-                }
-                await batch.close()
-                let sum = result.timedNanoseconds.addingReportingOverflow(elapsed)
-                guard !sum.overflow else { throw MediaBenchmarkError.integrityFailure("Timing sum overflow") }
-                result.timedNanoseconds = sum.partialValue
-                result.maximumBatchNanoseconds = max(result.maximumBatchNanoseconds, elapsed)
-                result.histogram.record(elapsed)
-                result.batches += 1; result.calls += completed
-            } catch { await batch.close(); throw error }
-        }
-        try Task.checkCancellation()
+            session = try await factory(sessionSeed)
+        } else { session = nil }
+        do {
+            for batchIndex in 0..<cap {
+                try Task.checkCancellation()
+                if now() >= deadline.partialValue { break }
+                let seed = configuration.seed &+ UInt64(batchIndex) &+ (warmup ? 1 << 63 : 0)
+                let batch: MediaBatch
+                if let session { batch = try await session.prepare(configuration.batchSize, seed) }
+                else { batch = try await workload.prepare(configuration.batchSize, seed) }
+                do {
+                    // Preparation may consume the remaining wall budget; close its owners without timing it.
+                    if now() >= deadline.partialValue { await batch.close(); break }
+                    let batchStart = now()
+                    let completed = try await batch.run()
+                    let batchEnd = now()
+                    guard batchEnd >= batchStart else { throw MediaBenchmarkError.integrityFailure("Regressing batch clock") }
+                    let elapsed = batchEnd - batchStart
+                    try await batch.verify()
+                    guard completed == UInt64(configuration.batchSize) else {
+                        throw MediaBenchmarkError.integrityFailure("Completed call accounting mismatch")
+                    }
+                    await batch.close()
+                    let sum = result.timedNanoseconds.addingReportingOverflow(elapsed)
+                    guard !sum.overflow else { throw MediaBenchmarkError.integrityFailure("Timing sum overflow") }
+                    result.timedNanoseconds = sum.partialValue
+                    result.maximumBatchNanoseconds = max(result.maximumBatchNanoseconds, elapsed)
+                    result.histogram.record(elapsed)
+                    result.batches += 1; result.calls += completed
+                } catch { await batch.close(); throw error }
+            }
+            try Task.checkCancellation()
+            try await session?.verify()
+            await session?.close()
+        } catch { await session?.close(); throw error }
         let end = now()
         guard end >= start else { throw MediaBenchmarkError.integrityFailure("Regressing population clock") }
         result.elapsedNanoseconds = end - start
@@ -109,7 +121,7 @@ enum MediaHarness {
         dimensions["durationCapSeconds"] = configuration.durationSeconds
         var identity = ReportIdentity(scenario: workload.id, profile: configuration.profile, seed: configuration.seed,
             fixtureHashes: ["public-fixture-descriptor-v1": fixtureHash], inputSizes: dimensions,
-            instrumentation: "external-prepared-batch", scheduler: workload.id == "dave.transition.queue" ? "joined-concurrent-signaling-batches" : "serial-wrapper-batches",
+            instrumentation: "external-prepared-batch", scheduler: workload.id == "dave.transition.queue" ? "joined-concurrent-signaling-batches" : workload.preparePopulation == nil ? "serial-wrapper-batches" : "serial-population-stream-v2",
             concurrency: workload.id == "dave.transition.queue" ? UInt32(configuration.batchSize) : 1,
             warmupNanoseconds: warmup.elapsedNanoseconds,
             requestedWarmupNanoseconds: configuration.warmupSeconds * 1_000_000_000,
@@ -134,6 +146,7 @@ enum MediaHarness {
                 "Cryptographic timings establish no security property or independent implementation qualification.",
                 "DAVE queue cases include bounded concurrent caller scheduling and signaling admission; this does not isolate queue residence or guarantee a particular observed depth.",
                 "CELT recover selects documented PLC fallback. SILK/hybrid request in-band FEC; timing does not establish provider interoperability or recovered signal quality.",
+                "Version-two continuous cases keep one prefilled owner across each population; warmup and measurement use independent owners. Legacy cases retain per-batch/call reset semantics.",
                 "Time caps and cancellation apply between started bounded batches. Microbenchmarks have no scheduled playout deadlines; deadlineMisses zero describes this unscheduled population."
             ])
         try common.validate()

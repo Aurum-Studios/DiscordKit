@@ -720,8 +720,13 @@ public actor GatewayShard<C: Clock, Leases: ShardLeaseStore> where C.Duration ==
         while true {
             try Task.checkCancellation()
             guard running, generation == active, let ticket = lease else { throw GatewayFailure.staleGeneration }
-            do { try await leases.validate(ticket) }
+            let validation = intervals?.begin(.gatewaySession, stage: .leaseValidation, parent: sessionContext)
+            do {
+                try await leases.validate(ticket)
+                validation?.end()
+            }
             catch {
+                validation?.end(error is CancellationError ? .cancelled : .failed)
                 if lease?.generation != ticket.generation { continue }
                 throw safeGatewayFailure(error)
             }

@@ -127,7 +127,7 @@ counts and independent terminal result.
 | `arrival.scheduledResponse` | Scheduled arrival offset → joined terminal outcome, including driver lateness/admission/service | Direct scheduled-arrival workflow; Stage 5 |
 | `arrival.submittedResponse` | Actual submission before any owner hop → joined terminal outcome | Direct actual-submission workflow; overlaps scheduled-response; Stage 5 |
 | `arrival.lateness` | Scheduled arrival offset → actual submission; missed arrivals have counts, not fabricated latency | Precedes service; Stage 5 |
-| `arrival.admissionWait` | Actual driver submission → explicitly supplied owner admission | Emitted only with real same-clock owner timestamp; not emitted by current REST arrival fixture; Stage 5 |
+| `arrival.admissionWait` | Actual driver submission → explicitly supplied owner admission | Historical `arrival.rest` leaves this unknown. Versioned default-policy mutation arrivals observe `RESTClient.execute` entry, including preceding fixture residence and descriptor construction; no REST actor queue is implied. |
 | `arrival.service` | Driver operation closure invocation → joined return | Includes REST admission and service; optional finer timestamp ranges do not change this metric; Stage 5 |
 | `gateway.decode` | Shard begins parsing received supported JSON → decoded payload or rejection | Child of receipt-to-dispatch; Stage 6 |
 | `gateway.hubResidence` | One subscription retains an event → iterator removes it, or explicit discard/cleanup | Precedes legacy local queue; each retained copy has its own actual owner hook; Stage 6 |

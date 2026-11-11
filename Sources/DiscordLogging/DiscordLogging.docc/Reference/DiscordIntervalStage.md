@@ -25,6 +25,7 @@
 - ``DiscordLogging/DiscordIntervalStage/ingestion``
 - ``DiscordLogging/DiscordIntervalStage/ingestionQueue``
 - ``DiscordLogging/DiscordIntervalStage/initialResponse``
+- ``DiscordLogging/DiscordIntervalStage/leaseValidation``
 - ``DiscordLogging/DiscordIntervalStage/localQueue``
 - ``DiscordLogging/DiscordIntervalStage/localReady``
 - ``DiscordLogging/DiscordIntervalStage/operation``

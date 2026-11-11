@@ -338,6 +338,7 @@ extension DiscordIntervalSignposts {
         case .discovery: 28
         case .ingestion: 29
         case .localReady: 30
+        case .leaseValidation: 31
         }
     }
 
