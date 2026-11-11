@@ -7,8 +7,9 @@ https://aurum-studios.com
 
 # Performance refinement plan
 
-Status: proposed implementation stages, with completed source investigation and
-exploratory local measurements. Prepared against
+Status: Stage 0 implementation validated locally; reserved-host numerical and
+profiler qualification remain open. Stages 1–10 remain planned. Source
+investigation and exploratory planning measurements were prepared against
 `065e2b655c28250076ba53fca310f209be1d3fd5`. No runtime optimization or numerical
 regression policy is implemented by this plan.
 
