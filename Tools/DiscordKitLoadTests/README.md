@@ -796,3 +796,78 @@ Use the shared release-build and fresh-process comparison driver. Process CPU/RS
 includes setup, signing, replay prefill, warmup and cleanup; caller/workflow
 histograms exclude initial setup. Do not subtract phase percentiles or interpret
 these local fixtures as reserved-host, production, DNS/TLS or capacity evidence.
+
+## Performance phase 3 event delivery controls
+
+The separate `gateway-hub-timing` command runs four finite, versioned public
+`GatewayEventHub` experiments. It uses replay events and in-process hub owners;
+socket ingestion, lease validation, decoder, dispatcher, cache, provider and
+trusted interaction work remain separate controls in `command-timing`.
+
+```sh
+swift run --package-path Tools/DiscordKitLoadTests DiscordKitLoadTests \
+  gateway-hub-timing --list-cases
+swift run -c release --package-path Tools/DiscordKitLoadTests DiscordKitLoadTests \
+  gateway-hub-timing --case gateway.hubQueuedV1 --requests 128 \
+  --subscriptions 8 --hubs 1 --queued-depth 16 --payload-bytes 128 \
+  --warmup-requests 8 --output .build/hub-queued.json \
+  --common-report .build/hub-queued-common.json
+```
+
+| Case | Finite work and terminal evidence |
+| --- | --- |
+| `gateway.hubQueuedV1` | Prefill `queued-depth` copies per subscriber, then publish and pull once per subscriber on each iteration. Capacity is depth plus one, so backlog remains fixed independently of request count. Final drain checks every retained sequence. |
+| `gateway.hubWaitingV1` | Park and confirm one consumer task per subscription before each publication, then join all tasks. Direct handoffs create no retained-residence interval. |
+| `gateway.hubOverflowV1` | Hold consumers until all publications finish, then drain or observe each terminal resynchronization error. Capacity is `max(1, queued-depth)`. |
+| `gateway.hubCancelledV1` | Hold consumers through publication, then explicitly cancel every subscription and retain cancellation and cleanup receipts. Capacity matches overflow mode. |
+
+`--subscriptions` (1...256 per hub), `--hubs` (1...8), `--queued-depth`
+(0...4096), `--payload-bytes` (0...65536), and `--policy` (`resynchronize`,
+`dropNewest`, `dropOldest`) are independent inputs. All hubs share one authority.
+Total subscriptions are limited to 512, retained envelope slots to 262144,
+conservative retained envelope charges to 64 MiB, and measured offered copies to
+10000000. These joint bounds may reject an otherwise individually valid option.
+`--requests` accepts 1...100000; `--warmup-requests` accepts 0...10000.
+`--delay-microseconds` accepts 0...1000000: queued mode holds each published copy
+before pulling, while overflow/cancelled modes hold the completed retained cohort
+before final drain/cancellation. Waiting mode has no injected hold.
+
+There is one sequential publisher, recorded as concurrency **1** and scheduler
+`sequential-publication-fixed-backlog-v1`; subscriber fan-out and hub count do not
+claim additional publisher concurrency. Warmup uses separate owners and its own
+finite cap. The measured cap is 1...300 seconds, warmup 0...60 seconds; cooperative
+interruption joins every waiting task and releases all retained ownership before
+returning partial counts. Driver profile, seed, duration, warmup and common-report
+environment variables are accepted, with explicit options taking precedence.
+
+Native schema 1 (`DiscordKitLoadTests.gateway-hub-timing`) embeds common
+schema-1/catalog-6 evidence. `gateway.publication` measures immediately before
+each public `publish` call through its return, excluding event construction,
+prefill, consumer work and final drain. Its histogram uses 1 µs buckets over
+0...100 ms. `gateway.hubResidence` receives actual production interval endings,
+including prefill, failed eviction and cancelled teardown, using 100 µs buckets
+over 0...10 seconds. Censored observations and timing loss remain explicit.
+Native `pullCall` uses the same fast precision and includes actual `next` calls,
+setup returns and final drain; waiting pulls include suspension and driver barriers.
+These boundaries overlap and their percentiles must not be added or subtracted.
+
+Common counts partition measured **subscriber copies**; publication distributions
+count actual calls. Success requires measured-copy consumption, while explicit
+retained cancellation and other unconsumed work retain separate terminal outcomes.
+Native counters distinguish publication drops, terminated subscriptions,
+resynchronization errors, admitted copies discarded before consumption, cancelled
+retained copies, setup copies and final cleanup. `dropOldest` evictions are admitted
+copies discarded before consumption; the public API does not count them as
+publication drops. Setup copies never become logical offered work, including on
+interruption. Retained cancellation receipts can include setup copies.
+
+Gross duration includes prefill, injected holds, task barriers, final FIFO drain
+and joined shutdown. CPU includes setup and separate warmup; peak RSS covers the
+process lifetime. Buffered byte receipts describe retained envelope charges, not
+queue metadata allocations, unique payload allocations or process memory.
+Use identical public-API harness sources and release settings against baseline
+and candidate runtimes, followed by serial fresh-process no-change controls and
+alternating comparisons. Local observations remain informational; reserved-host
+noise-floor and profiler qualification, hosted CI, live Discord and production
+capacity require their own evidence. See the
+[phase record](../../Docs/Tasks/performance-improvements/PHASE-3.md).

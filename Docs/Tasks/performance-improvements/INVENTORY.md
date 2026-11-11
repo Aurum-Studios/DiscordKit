@@ -12,7 +12,9 @@ code mechanism is distinct from a qualified performance bottleneck. Only F01 has
 a dedicated causal timing reproduction here; the CPU observations expose workload
 cost and fragmentation sensitivity, not attributed profile stacks. F01's local admission refinement is tracked in [Phase 1](PHASE-1.md).
 F02/F03/F04/F06 refinements and the retained F05/F07 decisions are tracked in
-[Phase 2](PHASE-2.md); later-stage candidates remain proposed. See [stage gates](PLAN.md) and
+[Phase 2](PHASE-2.md). F08/F09 event-delivery refinements and retained F10/F11
+ownership/routing decisions are tracked in [Phase 3](PHASE-3.md); later-stage
+candidates remain proposed. See [stage gates](PLAN.md) and
 [planning evidence](EVIDENCE.md).
 
 ## Shared runtime paths

@@ -62,6 +62,15 @@ bytes count each retained envelope copy; events already transferred to consumers
 are consumer-owned and outside queue accounting. First-created subscribers have
 priority when aggregate admission is exhausted.
 
+The authority maintains creation order and exact per-hub counters, so publication
+visits only that hub's subscriptions and actual evictions; snapshots and capacity
+checks do not rescan other hubs. Actor-owned circular queues release consumed
+payloads immediately, grow within the effective individual/hub/shared count limit,
+and free slot storage when empty. Queue slots, subscriber/order metadata and
+allocator overhead are additional to the envelope-byte accounting above; live
+queues can retain their bounded slot high-water capacity. See the
+[phase 3 record](Tasks/performance-improvements/PHASE-3.md) for evidence and limits.
+
 Default overflow terminates only that subscription with
 `resynchronizationRequired`; it discards queued data and retains a bounded terminal
 metadata slot until observed, cancelled or finished. `.dropNewest` and `.dropOldest`
@@ -87,6 +96,12 @@ independent. A shared `GatewayHandlerAuthority` bounds aggregate running callbac
 and FIFO permit waiters across dispatchers. Callback errors propagate to the owner;
 concurrent completed side effects are not rolled back. Reentrant and MainActor
 consumers are exercised deterministically.
+
+Shared permit handoff clears consumed continuation slots and periodically reclaims
+the consumed prefix. Cancellation still searches the bounded live suffix by
+invocation identity. Allocated slot capacity can retain its bounded high-water
+mark. The dispatcher's pending lookahead preserves its first-eligible-shard policy;
+the default concurrency and retention limits remain four and 128 events/4 MiB.
 
 ## Optional entity projections
 

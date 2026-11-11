@@ -9,11 +9,13 @@ https://aurum-studios.com
 
 Status: Stage 0 implementation validated locally; Stage 1 implementation and
 local validation are recorded in [Phase 1](PHASE-1.md). Stage 2 implementation and
-local evidence are tracked in [Phase 2](PHASE-2.md). Reserved-host numerical and
-profiler qualification remain open. Stages 3–10 remain planned. Source
+local evidence are tracked in [Phase 2](PHASE-2.md). Stage 3 implementation and
+validation are tracked in [Phase 3](PHASE-3.md). Reserved-host numerical and
+profiler qualification remain open. Stages 4–10 remain planned. Source
 investigation and exploratory planning measurements were prepared against
 `065e2b655c28250076ba53fca310f209be1d3fd5`. Stage 1 refines local admission;
-Stage 2 refines request work and NIO buffering; no numerical regression policy is selected.
+Stage 2 refines request work and NIO buffering; Stage 3 refines bounded event
+delivery. No numerical regression policy is selected.
 
 The first target is avoidable waiting in shared request admission, followed by
 redundant request work and scale-sensitive event/cache algorithms. Shared JSON,
@@ -94,7 +96,8 @@ Stage 0 has an [implementation and qualification record](PHASE-0.md); its
 controlled-host numerical gate remains explicit. Stage 1 has a separate
 [implementation record](PHASE-1.md), authorized with that numerical gate still
 open. Stage 2 has its own [implementation and validation record](PHASE-2.md).
-Stages 3–10 remain **planned**.
+Stage 3 has its own [implementation and validation record](PHASE-3.md).
+Stages 4–10 remain **planned**.
 Stage 0 qualifies measurement before any numerical claim. Stages 1–5 prioritize common library paths. Stages 6–9 are independently
 adopted product tracks after Stage 0; source investigations can overlap, but host
 builds and performance captures run sequentially. Stage 10 follows the selected

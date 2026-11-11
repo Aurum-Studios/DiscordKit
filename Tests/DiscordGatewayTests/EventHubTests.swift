@@ -174,6 +174,166 @@ struct EventHubTests {
         await subscription.cancel()
     }
 
+    /// Circular queues preserve order through wrapped growth, non-power-of-two caps and repeated empty reuse.
+    /// - Parameter capacity: Positive individual event cap chosen to exercise one-slot and wrapped windows.
+    @Test(arguments: [1, 3, 5, 17])
+    func circularQueueWrapGrowthAndRepeatedDrain(_ capacity: Int) async throws {
+        let hub = GatewayEventHub(configuration: try .init(maximumEventsPerSubscription: capacity))
+        let subscription = try await hub.subscribe(policy: .dropOldest)
+        var iterator = subscription.makeAsyncIterator()
+        let initial = min(capacity, 8)
+        let consumed = max(1, initial / 2)
+        for sequence in 0..<initial { await hub.publish(try makeDeliveryEvent(Int64(sequence))) }
+        for sequence in 0..<consumed {
+            #expect(try await iterator.next()?.sequence == Int64(sequence))
+        }
+        let end = initial + capacity * 3
+        for sequence in initial..<end {
+            let result = await hub.publish(try makeDeliveryEvent(Int64(sequence)))
+            #expect(result.delivered == 1 && result.dropped == 0 && result.terminated == 0)
+        }
+        let expected = try ((end - capacity)..<end).map { try makeDeliveryEvent(Int64($0)) }
+        let full = await hub.snapshot()
+        #expect(full.bufferedEvents == capacity)
+        #expect(full.bufferedBytes == expected.reduce(0) { $0 + $1.retainedByteCount })
+        for event in expected { #expect(try await iterator.next()?.sequence == event.sequence) }
+        #expect(await hub.snapshot().bufferedEvents == 0)
+        #expect(await hub.snapshot().bufferedBytes == 0)
+        for sequence in end..<(end + 3) {
+            #expect(await hub.publish(try makeDeliveryEvent(Int64(sequence))).delivered == 1)
+            #expect(try await iterator.next()?.sequence == Int64(sequence))
+            #expect(await hub.snapshot().bufferedBytes == 0)
+        }
+        await subscription.cancel()
+        #expect(await hub.snapshot().subscriptions == 0)
+    }
+
+    /// Removing earlier metadata and adding replacements retains creation priority under a one-copy hub cap.
+    @Test func admissionPrioritySurvivesRemovalAndReplacement() async throws {
+        let hub = GatewayEventHub(configuration: try .init(maximumBufferedEvents: 1))
+        let first = try await hub.subscribe(policy: .dropNewest)
+        let removed = try await hub.subscribe(policy: .dropNewest)
+        let survivor = try await hub.subscribe(policy: .dropNewest)
+        await removed.cancel()
+        let replacement = try await hub.subscribe(policy: .dropNewest)
+        let initial = await hub.publish(try makeDeliveryEvent(1))
+        #expect(initial.delivered == 1 && initial.dropped == 2)
+        var firstIterator = first.makeAsyncIterator()
+        #expect(try await firstIterator.next()?.sequence == 1)
+        await first.cancel()
+        let next = await hub.publish(try makeDeliveryEvent(2))
+        #expect(next.delivered == 1 && next.dropped == 1)
+        var survivorIterator = survivor.makeAsyncIterator()
+        #expect(try await survivorIterator.next()?.sequence == 2)
+        await survivor.cancel()
+        #expect(await hub.publish(try makeDeliveryEvent(3)).delivered == 1)
+        var replacementIterator = replacement.makeAsyncIterator()
+        #expect(try await replacementIterator.next()?.sequence == 3)
+        await replacement.cancel()
+        #expect(await hub.snapshot().subscriptions == 0)
+    }
+
+    /// A byte-bound admission evicts several wrapped entries and releases every displaced byte exactly once.
+    @Test func byteBoundedDropOldestEvictsMultipleWrappedCopies() async throws {
+        let small = try makeDeliveryEvent(1)
+        let large = try makeDeliveryEvent(9, payload: .string(String(repeating: "x", count: small.retainedByteCount)))
+        let hub = GatewayEventHub(configuration: try .init(maximumEventsPerSubscription: 5,
+            maximumBytesPerSubscription: small.retainedByteCount * 4))
+        let subscription = try await hub.subscribe(policy: .dropOldest)
+        var iterator = subscription.makeAsyncIterator()
+        for sequence in 1...4 { await hub.publish(try makeDeliveryEvent(Int64(sequence))) }
+        #expect(try await iterator.next()?.sequence == 1)
+        #expect(try await iterator.next()?.sequence == 2)
+        await hub.publish(try makeDeliveryEvent(5))
+        await hub.publish(try makeDeliveryEvent(6))
+        #expect(await hub.publish(large).delivered == 1)
+        let expectedRetainedSmallCopies = (small.retainedByteCount * 4 - large.retainedByteCount) / small.retainedByteCount
+        let retained = await hub.snapshot()
+        #expect(retained.bufferedEvents == expectedRetainedSmallCopies + 1)
+        #expect(retained.bufferedBytes == expectedRetainedSmallCopies * small.retainedByteCount + large.retainedByteCount)
+        for sequence in (7 - expectedRetainedSmallCopies)..<7 {
+            #expect(try await iterator.next()?.sequence == Int64(sequence))
+        }
+        #expect(try await iterator.next()?.sequence == 9)
+        #expect(await hub.snapshot().bufferedBytes == 0)
+        await subscription.cancel()
+    }
+
+    /// Evicting a queue cannot reclaim another hub's bytes; a still-inadmissible candidate is dropped.
+    /// The affected queue stays empty, unrelated payloads remain ordered, and all usage counters agree.
+    @Test func dropOldestCannotReclaimAnotherHubsCapacity() async throws {
+        let small = try makeDeliveryEvent(1)
+        let large = try makeDeliveryEvent(4, payload: .string(String(repeating: "x", count: small.retainedByteCount)))
+        let authority = GatewayEventHubAuthority(configuration: try .init(
+            maximumBufferedBytes: small.retainedByteCount * 3))
+        let a = GatewayEventHub(configuration: try .init(), authority: authority)
+        let b = GatewayEventHub(configuration: try .init(), authority: authority)
+        let affected = try await a.subscribe(policy: .dropOldest)
+        let unrelated = try await b.subscribe(policy: .dropNewest)
+        await a.publish(small)
+        await b.publish(try makeDeliveryEvent(2))
+        await b.publish(try makeDeliveryEvent(3))
+        #expect(await authority.snapshot().bufferedEvents == 3)
+        #expect(await authority.snapshot().bufferedBytes == small.retainedByteCount * 3)
+        let rejected = await a.publish(large)
+        #expect(rejected.delivered == 0 && rejected.dropped == 1 && rejected.terminated == 0)
+        let affectedState = await a.snapshot(), unrelatedState = await b.snapshot()
+        #expect(affectedState.subscriptions == 1 && affectedState.bufferedEvents == 0 && affectedState.bufferedBytes == 0)
+        #expect(unrelatedState.subscriptions == 1 && unrelatedState.bufferedEvents == 2)
+        #expect(unrelatedState.bufferedBytes == small.retainedByteCount * 2)
+        #expect(await authority.snapshot().bufferedEvents == 2)
+        #expect(await authority.snapshot().bufferedBytes == small.retainedByteCount * 2)
+        // Queue continuity is intentionally lossy: only a newly admitted event remains after the eviction.
+        #expect(await a.publish(try makeDeliveryEvent(5)).delivered == 1)
+        var affectedIterator = affected.makeAsyncIterator(), unrelatedIterator = unrelated.makeAsyncIterator()
+        #expect(try await affectedIterator.next()?.sequence == 5)
+        #expect(try await unrelatedIterator.next()?.sequence == 2)
+        #expect(try await unrelatedIterator.next()?.sequence == 3)
+        #expect(await authority.snapshot().bufferedEvents == 0)
+        #expect(await authority.snapshot().bufferedBytes == 0)
+        await a.finish()
+        await b.finish()
+        #expect(await authority.snapshot().subscriptions == 0)
+    }
+
+    /// Hub and process counters agree after direct delivery, terminal observation, cancellation and final reuse.
+    @Test func exactCountersAcrossSharedHubLifecycles() async throws {
+        let authority = GatewayEventHubAuthority(configuration: try .init())
+        let a = GatewayEventHub(configuration: try .init(maximumEventsPerSubscription: 1), authority: authority)
+        let b = GatewayEventHub(configuration: try .init(), authority: authority)
+        let terminal = try await a.subscribe()
+        let waiting = try await b.subscribe()
+        let parked = Task {
+            var iterator = waiting.makeAsyncIterator()
+            return try await iterator.next()
+        }
+        while await authority.snapshot().waitingConsumers != 1 { await Task.yield() }
+        #expect(await a.snapshot().waitingConsumers == 0)
+        #expect(await b.snapshot().waitingConsumers == 1)
+        let event = try makeDeliveryEvent(1)
+        await a.publish(event)
+        #expect(await authority.snapshot().bufferedBytes == event.retainedByteCount)
+        #expect(await b.publish(event).delivered == 1)
+        #expect(try await parked.value?.sequence == 1)
+        #expect(await authority.snapshot().waitingConsumers == 0)
+        #expect(await authority.snapshot().bufferedEvents == 1)
+        #expect(await a.publish(event).terminated == 1)
+        #expect(await authority.snapshot().bufferedBytes == 0)
+        #expect(await a.snapshot().subscriptions == 1)
+        var failed = terminal.makeAsyncIterator()
+        await #expect(throws: GatewayEventDeliveryFailure.resynchronizationRequired) { try await failed.next() }
+        #expect(await a.snapshot().subscriptions == 0)
+        #expect(await authority.snapshot().subscriptions == 1)
+        let replacement = try await a.subscribe()
+        await a.publish(event)
+        await replacement.cancel()
+        #expect(await authority.snapshot().bufferedEvents == 0)
+        await b.finish()
+        let empty = await authority.snapshot()
+        #expect(empty.subscriptions == 0 && empty.bufferedEvents == 0 && empty.bufferedBytes == 0 && empty.waitingConsumers == 0)
+        await a.finish()
+    }
+
     /// Shared limits stay finite across many independent hubs, and releasing queues permits later admission.
     @Test func manyClientAggregateMetadataAndBytes() async throws {
         let event = try makeDeliveryEvent(1)

@@ -166,6 +166,10 @@ enum LoadCommand {
     ///   Runtime per-request failures are counted. Transport measurements never retry;
     ///   the HTTP scenario exercises its explicit finite rejected-request retry contract.
     static func run(arguments: [String]) async throws {
+        if arguments.first == "gateway-hub-timing" {
+            try await EventHubTimingCommand.run(arguments: Array(arguments.dropFirst()))
+            return
+        }
         if arguments.first == "voice-timing" {
             try await Phase9TimingCommand.run(arguments: Array(arguments.dropFirst()))
             return

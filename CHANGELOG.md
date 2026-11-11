@@ -9,6 +9,18 @@ https://aurum-studios.com
 
 ## Unreleased
 
+### Performance plan phase 3
+
+- Maintain Gateway subscriber creation order and exact hub accounting so fan-out
+  avoids publication-time sorting and repeated shared-state scans.
+- Use bounded circular event storage and amortized FIFO handler-permit handoff,
+  releasing consumed payloads/continuations while preserving ordering, budgets,
+  cancellation and all overflow policies.
+- Add independent fan-out/backlog measurement controls and deterministic coverage
+  for queue wraparound, shared capacity, cancellation and Gateway control progress
+  under a suspended handler. See the [phase record](Docs/Tasks/performance-improvements/PHASE-3.md)
+  for validation and separately open numerical/platform qualification gates.
+
 ### Performance plan phase 2
 
 - Decode successful unshared REST exchanges once while preserving validated byte

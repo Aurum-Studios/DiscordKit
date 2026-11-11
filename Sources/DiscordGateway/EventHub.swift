@@ -133,24 +133,101 @@ public actor GatewayEventHubAuthority {
         }
     }
 
-    private struct Subscriber {
+    /// Lazily allocated circular storage whose consumed slots immediately release envelope payloads.
+    /// Capacity never exceeds the queue's effective event limit; empty queues release their allocation.
+    private struct EventQueue {
+        private var storage: [QueuedEvent?] = []
+        private var head = 0
+        private(set) var count = 0
+        let maximumCount: Int
+
+        /// Appends one already admitted event in amortized constant time, copying only during bounded growth.
+        /// - Parameter event: Envelope copy whose accounting was admitted against every applicable limit.
+        /// - Precondition: Fewer than `maximumCount` events are retained before this call.
+        mutating func append(_ event: QueuedEvent) {
+            precondition(count < maximumCount)
+            if count == storage.count {
+                let capacity = storage.isEmpty ? 1 : storage.count + min(storage.count, maximumCount - storage.count)
+                var expanded = [QueuedEvent?](repeating: nil, count: capacity)
+                for offset in 0..<count {
+                    let index = offset < storage.count - head ? head + offset : offset - (storage.count - head)
+                    expanded[offset] = storage[index]
+                }
+                storage = expanded
+                head = 0
+            }
+            let tail = count < storage.count - head ? head + count : count - (storage.count - head)
+            storage[tail] = event
+            count += 1
+        }
+
+        /// Removes the oldest envelope without shifting live entries and clears its retained payload reference.
+        /// Slot cleanup when the queue empties is amortized over the preceding admitted events.
+        /// - Returns: The oldest queued copy, or nil when empty; draining also releases slot metadata.
+        mutating func popFirst() -> QueuedEvent? {
+            guard count > 0 else { return nil }
+            let event = storage[head]
+            storage[head] = nil
+            count -= 1
+            if count == 0 {
+                storage = []
+                head = 0
+            } else {
+                head = head == storage.count - 1 ? 0 : head + 1
+            }
+            return event
+        }
+    }
+
+    /// Admission order and exact retained usage for one hub, including unobserved terminal metadata.
+    private final class HubState {
+        var subscriptions: [UUID] = []
+        var bufferedEvents = 0
+        var bufferedBytes = 0
+        var waitingConsumers = 0
+    }
+
+    /// Actor-owned mutable queue state; reference ownership avoids copying circular storage on lookup.
+    private final class Subscriber {
         let hub: UUID
-        let ordinal: UInt64
+        let hubState: HubState
         let configuration: GatewayEventHubConfiguration
         let maximumEvents: Int
         let maximumBytes: Int
         let policy: GatewayEventOverflowPolicy
-        var events: [QueuedEvent] = []
+        var events: EventQueue
         var bytes = 0
         var waiter: CheckedContinuation<GatewayEvent?, any Error>?
         var failed = false
+
+        /// Creates empty actor-confined queue storage without allocating event slots.
+        /// - Parameters:
+        ///   - hub: Owning hub identity used only for metadata removal.
+        ///   - hubState: Shared exact counters and admission order for that hub.
+        ///   - configuration: Validated hub event and byte limits.
+        ///   - maximumEvents: Positive individual event limit selected at admission.
+        ///   - maximumBytes: Positive individual envelope byte limit selected at admission.
+        ///   - policy: Overflow behavior for this independent queue.
+        ///   - sharedMaximumEvents: Positive authority event cap, bounding lazily allocated slot metadata.
+        init(hub: UUID, hubState: HubState, configuration: GatewayEventHubConfiguration,
+             maximumEvents: Int, maximumBytes: Int, policy: GatewayEventOverflowPolicy,
+             sharedMaximumEvents: Int) {
+            self.hub = hub
+            self.hubState = hubState
+            self.configuration = configuration
+            self.maximumEvents = maximumEvents
+            self.maximumBytes = maximumBytes
+            self.policy = policy
+            events = EventQueue(maximumCount: min(maximumEvents, configuration.maximumBufferedEvents, sharedMaximumEvents))
+        }
     }
 
     private let configuration: GatewayEventHubConfiguration
     private var subscribers: [UUID: Subscriber] = [:]
-    private var nextOrdinal: UInt64 = 0
+    private var hubs: [UUID: HubState] = [:]
     private var bufferedEvents = 0
     private var bufferedBytes = 0
+    private var waitingConsumers = 0
 
     /// Stores validated aggregate limits; no background task or external resources are created.
     /// - Parameter configuration: Process-wide subscriptions/count/bytes limits. Per-subscription defaults
@@ -177,13 +254,17 @@ public actor GatewayEventHubAuthority {
         let events = maximumEvents ?? configuration.maximumEventsPerSubscription
         let bytes = maximumBytes ?? configuration.maximumBytesPerSubscription
         guard events > 0, bytes > 0 else { throw GatewayEventDeliveryFailure.invalidConfiguration }
+        let hubState = hubs[hub] ?? HubState()
         guard subscribers.count < self.configuration.maximumSubscriptions,
-              subscribers.values.lazy.filter({ $0.hub == hub }).count < configuration.maximumSubscriptions,
-              nextOrdinal < UInt64.max else { throw GatewayEventDeliveryFailure.subscriptionCapacityExceeded }
+              hubState.subscriptions.count < configuration.maximumSubscriptions else {
+            throw GatewayEventDeliveryFailure.subscriptionCapacityExceeded
+        }
         let id = UUID()
-        subscribers[id] = Subscriber(hub: hub, ordinal: nextOrdinal, configuration: configuration,
-            maximumEvents: events, maximumBytes: bytes, policy: policy)
-        nextOrdinal += 1
+        subscribers[id] = Subscriber(hub: hub, hubState: hubState, configuration: configuration,
+            maximumEvents: events, maximumBytes: bytes, policy: policy,
+            sharedMaximumEvents: self.configuration.maximumBufferedEvents)
+        hubState.subscriptions.append(id)
+        hubs[hub] = hubState
         DiscordLog.makeLogger("gateway.events").debug("Gateway subscription created", metadata: ["dk.event": "gateway.subscription.created", "dk.subscriptions": .stringConvertible(subscribers.count)])
         return GatewayEventSubscription(authority: self, id: id)
     }
@@ -199,13 +280,13 @@ public actor GatewayEventHubAuthority {
         var delivered = 0
         var dropped = 0
         var terminated = 0
-        let ids = subscribers.filter { $0.value.hub == hub && !$0.value.failed }
-            .sorted { $0.value.ordinal < $1.value.ordinal }.map(\.key)
+        let ids = hubs[hub]?.subscriptions ?? []
         for id in ids {
-            guard var subscriber = subscribers[id] else { continue }
+            guard let subscriber = subscribers[id], !subscriber.failed else { continue }
             if let waiter = subscriber.waiter {
                 subscriber.waiter = nil
-                subscribers[id] = subscriber
+                subscriber.hubState.waitingConsumers -= 1
+                waitingConsumers -= 1
                 waiter.resume(returning: event)
                 delivered += 1
                 continue
@@ -214,31 +295,26 @@ public actor GatewayEventHubAuthority {
                event.retainedByteCount <= subscriber.maximumBytes,
                event.retainedByteCount <= subscriber.configuration.maximumBufferedBytes,
                event.retainedByteCount <= configuration.maximumBufferedBytes {
-                while !fits(event, subscriber: subscriber), !subscriber.events.isEmpty {
-                    let removed = subscriber.events.removeFirst()
+                while !fits(event, subscriber: subscriber), let removed = subscriber.events.popFirst() {
                     removed.interval?.end(.failed)
-                    subscriber.bytes -= removed.retainedByteCount
-                    bufferedEvents -= 1
-                    bufferedBytes -= removed.retainedByteCount
-                    subscribers[id] = subscriber
+                    release(removed, subscriber: subscriber)
                 }
             }
             if fits(event, subscriber: subscriber) {
                 subscriber.events.append(QueuedEvent(event: event,
                     interval: intervals?.begin(.gatewayPublication, stage: .hubResidence, parent: parent)))
                 subscriber.bytes += event.retainedByteCount
+                subscriber.hubState.bufferedEvents += 1
+                subscriber.hubState.bufferedBytes += event.retainedByteCount
                 bufferedEvents += 1
                 bufferedBytes += event.retainedByteCount
-                subscribers[id] = subscriber
                 delivered += 1
             } else if subscriber.policy == .resynchronize {
-                bufferedEvents -= subscriber.events.count
-                bufferedBytes -= subscriber.bytes
-                for entry in subscriber.events { entry.interval?.end(.failed) }
-                subscriber.events.removeAll(keepingCapacity: false)
-                subscriber.bytes = 0
+                while let entry = subscriber.events.popFirst() {
+                    entry.interval?.end(.failed)
+                    release(entry, subscriber: subscriber)
+                }
                 subscriber.failed = true
-                subscribers[id] = subscriber
                 terminated += 1
             } else { dropped += 1 }
         }
@@ -255,11 +331,10 @@ public actor GatewayEventHubAuthority {
     ///   - subscriber: Current local queue state, already reflected in shared accounting.
     /// - Returns: Whether all subscriber, hub, and shared event/byte bounds permit one more copy.
     private func fits(_ event: GatewayEvent, subscriber: Subscriber) -> Bool {
-        let hub = snapshot(hub: subscriber.hub)
         return subscriber.events.count < subscriber.maximumEvents
             && event.retainedByteCount <= subscriber.maximumBytes - subscriber.bytes
-            && hub.bufferedEvents < subscriber.configuration.maximumBufferedEvents
-            && event.retainedByteCount <= subscriber.configuration.maximumBufferedBytes - hub.bufferedBytes
+            && subscriber.hubState.bufferedEvents < subscriber.configuration.maximumBufferedEvents
+            && event.retainedByteCount <= subscriber.configuration.maximumBufferedBytes - subscriber.hubState.bufferedBytes
             && bufferedEvents < configuration.maximumBufferedEvents
             && event.retainedByteCount <= configuration.maximumBufferedBytes - bufferedBytes
     }
@@ -273,18 +348,14 @@ public actor GatewayEventHubAuthority {
             cancel(id, cancelled: true)
             throw CancellationError()
         }
-        guard var subscriber = subscribers[id] else { return nil }
+        guard let subscriber = subscribers[id] else { return nil }
         if subscriber.failed {
-            subscribers.removeValue(forKey: id)
+            removeMetadata(id, subscriber: subscriber)
             throw GatewayEventDeliveryFailure.resynchronizationRequired
         }
         guard subscriber.waiter == nil else { throw GatewayEventDeliveryFailure.concurrentIteration }
-        if !subscriber.events.isEmpty {
-            let event = subscriber.events.removeFirst()
-            subscriber.bytes -= event.retainedByteCount
-            bufferedEvents -= 1
-            bufferedBytes -= event.retainedByteCount
-            subscribers[id] = subscriber
+        if let event = subscriber.events.popFirst() {
+            release(event, subscriber: subscriber)
             event.interval?.end()
             DiscordLog.makeLogger("gateway.events").trace("Gateway subscription dequeued an event", metadata: ["dk.event": "gateway.subscription.dequeued", "dk.queued": .stringConvertible(bufferedEvents), "dk.bytes": .stringConvertible(bufferedBytes)])
             return event.event
@@ -292,7 +363,8 @@ public actor GatewayEventHubAuthority {
         DiscordLog.makeLogger("gateway.events").trace("Gateway subscription waiting for publication", metadata: ["dk.event": "gateway.subscription.wait"])
         return try await withCheckedThrowingContinuation { continuation in
             subscriber.waiter = continuation
-            subscribers[id] = subscriber
+            subscriber.hubState.waitingConsumers += 1
+            waitingConsumers += 1
         }
     }
 
@@ -301,10 +373,16 @@ public actor GatewayEventHubAuthority {
     ///   - id: Subscription to release; unknown IDs are harmless.
     ///   - cancelled: Whether a suspended consumer receives cancellation rather than normal completion.
     fileprivate func cancel(_ id: UUID, cancelled: Bool) {
-        guard let subscriber = subscribers.removeValue(forKey: id) else { return }
-        bufferedEvents -= subscriber.events.count
-        bufferedBytes -= subscriber.bytes
-        for entry in subscriber.events { entry.interval?.end(.cancelled) }
+        guard let subscriber = subscribers[id] else { return }
+        while let entry = subscriber.events.popFirst() {
+            entry.interval?.end(.cancelled)
+            release(entry, subscriber: subscriber)
+        }
+        if subscriber.waiter != nil {
+            subscriber.hubState.waitingConsumers -= 1
+            waitingConsumers -= 1
+        }
+        removeMetadata(id, subscriber: subscriber)
         DiscordLog.makeLogger("gateway.events").trace("Gateway subscription released", metadata: ["dk.event": "gateway.subscription.released", "dk.cancelled": .stringConvertible(cancelled), "dk.subscriptions": .stringConvertible(subscribers.count), "dk.queued": .stringConvertible(bufferedEvents), "dk.bytes": .stringConvertible(bufferedBytes)])
         if cancelled { subscriber.waiter?.resume(throwing: CancellationError()) }
         else { subscriber.waiter?.resume(returning: nil) }
@@ -313,19 +391,47 @@ public actor GatewayEventHubAuthority {
     /// Discards every queue owned by one hub, leaving unrelated identities operational.
     /// - Parameter hub: Opaque hub whose subscribers should receive normal completion.
     fileprivate func finish(hub: UUID) {
-        let ids = subscribers.filter { $0.value.hub == hub }.map(\.key)
+        let ids = hubs[hub]?.subscriptions ?? []
         for id in ids { cancel(id, cancelled: false) }
     }
 
-    /// Computes bounded metadata/queue usage for a hub or the full authority.
+    /// Reads exact metadata/queue counters for a hub or the full authority without scanning queues.
     /// - Parameter hub: Nil selects all hubs; otherwise only matching subscriptions count.
     /// - Returns: Atomic usage, including terminal failure metadata until observed or cancelled.
     fileprivate func snapshot(hub: UUID?) -> GatewayEventHubSnapshot {
-        let selected = subscribers.values.filter { hub == nil || $0.hub == hub }
-        return GatewayEventHubSnapshot(subscriptions: selected.count,
-            bufferedEvents: selected.reduce(0) { $0 + $1.events.count },
-            bufferedBytes: selected.reduce(0) { $0 + $1.bytes },
-            waitingConsumers: selected.lazy.filter { $0.waiter != nil }.count)
+        guard let hub else {
+            return GatewayEventHubSnapshot(subscriptions: subscribers.count, bufferedEvents: bufferedEvents,
+                bufferedBytes: bufferedBytes, waitingConsumers: waitingConsumers)
+        }
+        guard let state = hubs[hub] else {
+            return GatewayEventHubSnapshot(subscriptions: 0, bufferedEvents: 0, bufferedBytes: 0, waitingConsumers: 0)
+        }
+        return GatewayEventHubSnapshot(subscriptions: state.subscriptions.count,
+            bufferedEvents: state.bufferedEvents, bufferedBytes: state.bufferedBytes,
+            waitingConsumers: state.waitingConsumers)
+    }
+
+    /// Releases the exact subscriber, hub and authority charge for one dequeued or discarded copy.
+    /// - Parameters:
+    ///   - event: Copy already removed from its FIFO; its interval is resolved by the caller.
+    ///   - subscriber: Owning queue whose retained byte charge still includes this event.
+    private func release(_ event: QueuedEvent, subscriber: Subscriber) {
+        subscriber.bytes -= event.retainedByteCount
+        subscriber.hubState.bufferedEvents -= 1
+        subscriber.hubState.bufferedBytes -= event.retainedByteCount
+        bufferedEvents -= 1
+        bufferedBytes -= event.retainedByteCount
+    }
+
+    /// Releases admission order metadata after queued and waiting-consumer accounting is drained.
+    /// This bounded metadata mutation is paid at removal, leaving publication and snapshots scan-free.
+    /// - Parameters:
+    ///   - id: Registered queue identity to remove exactly once.
+    ///   - subscriber: Actor-owned queue already empty or terminal with no retained consumer charge.
+    private func removeMetadata(_ id: UUID, subscriber: Subscriber) {
+        subscribers.removeValue(forKey: id)
+        subscriber.hubState.subscriptions.removeAll { $0 == id }
+        if subscriber.hubState.subscriptions.isEmpty { hubs.removeValue(forKey: subscriber.hub) }
     }
 }
 

@@ -193,7 +193,8 @@ struct RuntimeIntervalGatewayTests {
         #expect(fixture.clock.pendingSleepCount == 0)
     }
 
-    /// Heartbeat observations start after confirmed write, while reconnect ends only on actual RESUMED.
+    /// Heartbeat ACK, reconnect/Resume, a fast subscription and socket shutdown all complete while
+    /// a separate subscription's callback remains suspended. Its structured cleanup joins afterward.
     @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
     @Test func controlLaneACKAndResumeAreIndependent() async throws {
         let measured = ManualClock(), origin = measured.now, recorder = GatewayIntervalRecorder()
@@ -214,7 +215,23 @@ struct RuntimeIntervalGatewayTests {
             { try await secondIdle.wait(); return nil }
         ], onSend: { envelope in if envelope.opcode == 6 { resumed.open() } })
         let fixture = try makeRuntime(sockets: [first, second], jitter: 0, intervals: intervals)
+        let hub = GatewayEventHub(configuration: try .init())
+        let slow = try await hub.subscribe(), fast = try await hub.subscribe()
+        let handlerEntered = TestBarrier(), handlerRelease = TestBarrier()
+        let dispatcher = GatewayEventHandlerDispatcher(configuration: try .init(maximumRetainedEvents: 1))
+        let handlerTask = Task {
+            try await dispatcher.run(subscription: slow) { event in
+                #expect(event.sequence == 1)
+                handlerEntered.open()
+                try await handlerRelease.wait()
+            }
+        }
         let task = Task { try await fixture.shard.run() }
+        let ready = try #require(try await fixture.shard.nextEvents()?.first)
+        #expect(await hub.publish(ready).delivered == 2)
+        var fastIterator = fast.makeAsyncIterator()
+        #expect(try await fastIterator.next()?.sequence == 1)
+        try await handlerEntered.wait()
         while !recorder.snapshot().events.contains(where: { $0.kind == .began && $0.stage == .heartbeatACK }) {
             try Task.checkCancellation(); await Task.yield()
         }
@@ -222,11 +239,23 @@ struct RuntimeIntervalGatewayTests {
         #expect(recorder.snapshot().events.contains { $0.kind == .ended && $0.stage == .heartbeatACK && $0.elapsedNanoseconds == 11_000_000 })
         firstIdle.open(); try await secondReady.wait()
         #expect(recorder.snapshot().events.contains { $0.kind == .ended && $0.stage == .reconnect && $0.outcome == .succeeded })
+        let resumedEvent = try #require(try await fixture.shard.nextEvents()?.first)
+        #expect(resumedEvent.sequence == 2)
+        #expect(await hub.publish(resumedEvent).delivered == 2)
+        #expect(try await fastIterator.next()?.sequence == 2)
+        #expect(handlerRelease.waitingCount == 1)
         task.cancel(); await #expect(throws: CancellationError.self) { try await task.value }
         let events = recorder.snapshot().events
         #expect(events.last?.stage == .operation && events.last?.outcome == .cancelled)
         #expect(events.filter { $0.kind == .began }.count == events.filter { $0.kind == .ended }.count)
         #expect(await fixture.leases.retainedLeaseCount() == 0)
         #expect(fixture.clock.pendingSleepCount == 0)
+        #expect(handlerRelease.waitingCount == 1)
+        handlerTask.cancel()
+        await #expect(throws: CancellationError.self) { try await handlerTask.value }
+        await hub.finish()
+        #expect(handlerRelease.waitingCount == 0)
+        #expect(await hub.snapshot().subscriptions == 0)
+        #expect(await hub.snapshot().bufferedEvents == 0)
     }
 }

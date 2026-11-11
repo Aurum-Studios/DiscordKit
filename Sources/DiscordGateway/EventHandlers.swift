@@ -41,6 +41,8 @@ public struct GatewayHandlerAuthoritySnapshot: Sendable {
 /// Both active callbacks and queued permit requests are bounded. Cancelling a queued request
 /// removes its continuation; a callback that already acquired a permit releases it after returning
 /// or throwing. This authority does not execute user code or impose callback deadlines.
+/// FIFO handoff releases consumed continuation slots immediately and compacts an amortized prefix;
+/// cancellation retains its bounded identity search and never changes the remaining admission order.
 public actor GatewayHandlerAuthority {
     private struct Waiter {
         let id: UUID
@@ -50,7 +52,12 @@ public actor GatewayHandlerAuthority {
     private let maximumActiveHandlers: Int
     private let maximumWaitingHandlers: Int
     private var activeHandlers = 0
-    private var waiters: [Waiter] = []
+    /// Optional slots let handoff release the oldest continuation without shifting every live waiter.
+    private var waiters: [Waiter?] = []
+    /// Slots before this index are nil; the suffix contains only live FIFO requests.
+    private var waiterHead = 0
+    /// Exact live continuation count, excluding the bounded consumed prefix.
+    private var waitingCount: Int { waiters.count - waiterHead }
 
     /// Validates aggregate callback and queued-admission limits without starting tasks.
     /// - Parameters:
@@ -68,7 +75,7 @@ public actor GatewayHandlerAuthority {
     /// Reports active callback permits and bounded admission waiters atomically.
     /// - Returns: Counters shared across all dispatchers using this authority.
     public func snapshot() -> GatewayHandlerAuthoritySnapshot {
-        GatewayHandlerAuthoritySnapshot(activeHandlers: activeHandlers, waitingHandlers: waiters.count)
+        GatewayHandlerAuthoritySnapshot(activeHandlers: activeHandlers, waitingHandlers: waitingCount)
     }
 
     /// Acquires one aggregate callback permit with cancellation-safe FIFO waiting.
@@ -80,7 +87,7 @@ public actor GatewayHandlerAuthority {
             activeHandlers += 1
             return
         }
-        guard waiters.count < maximumWaitingHandlers else { throw GatewayEventDeliveryFailure.handlerCapacityExceeded }
+        guard waitingCount < maximumWaitingHandlers else { throw GatewayEventDeliveryFailure.handlerCapacityExceeded }
         try await withCheckedThrowingContinuation { continuation in
             waiters.append(Waiter(id: id, continuation: continuation))
         }
@@ -89,15 +96,37 @@ public actor GatewayHandlerAuthority {
     /// Releases one owned permit, transferring it to the oldest live admission waiter if present.
     /// The dispatcher calls this exactly once after every successful acquire, even on user failure.
     fileprivate func release() {
-        if !waiters.isEmpty { waiters.removeFirst().continuation.resume() }
-        else { activeHandlers -= 1 }
+        guard waiterHead < waiters.count else { activeHandlers -= 1; return }
+        let waiter = waiters[waiterHead]
+        waiters[waiterHead] = nil
+        waiterHead += 1
+        compactWaiters()
+        waiter?.continuation.resume()
     }
 
     /// Removes a cancelled admission waiter without recalling a callback's already granted permit.
     /// - Parameter id: Invocation identity; stale or already granted identifiers are harmless.
     fileprivate func cancel(_ id: UUID) {
-        guard let index = waiters.firstIndex(where: { $0.id == id }) else { return }
-        waiters.remove(at: index).continuation.resume(throwing: CancellationError())
+        guard let index = waiters[waiterHead...].firstIndex(where: { $0?.id == id }) else { return }
+        let waiter = waiters.remove(at: index)
+        compactWaiters()
+        waiter?.continuation.resume(throwing: CancellationError())
+    }
+
+    /// Reclaims empty storage or an amortized consumed prefix without retaining granted continuations.
+    /// With live requests, the prefix is smaller than 64 slots or the live suffix; total slot count
+    /// therefore remains below twice the live count plus 64. The array may retain its bounded
+    /// allocation highwater after draining; cleared slots retain no continuation. No eager allocation
+    /// uses the configured cap.
+    /// Cancellation may shrink the suffix, so it applies this same bound before returning.
+    private func compactWaiters() {
+        if waiterHead == waiters.count {
+            waiters.removeAll(keepingCapacity: true)
+            waiterHead = 0
+        } else if waiterHead >= 64, waiterHead >= waitingCount {
+            waiters.removeFirst(waiterHead)
+            waiterHead = 0
+        }
     }
 }
 

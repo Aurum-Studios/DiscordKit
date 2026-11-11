@@ -180,3 +180,11 @@ gate promotion, Linux/hosted run, actual desktop/browser, physical audio, live
 Discord, release, publication or deployment was performed. The existing
 [timing qualification ledger](../latency-timing/VALIDATION.md) retains its separate
 historical evidence and open gates.
+
+
+## Phase 3 implementation evidence
+
+The event-delivery refinements, retained ownership/routing decisions, deterministic
+control-progress checks and finite comparison receipts are recorded separately in
+[Phase 3](PHASE-3.md). This preserves the original planning observations above;
+implementation receipts do not promote them to controlled-host numerical evidence.
