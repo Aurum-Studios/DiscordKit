@@ -38,6 +38,13 @@ An upstream microphone, decoder or file reader still needs its own queue/admissi
 
 ``PCMStreamingResampler`` retains interpolation phase/history across blocks. ``PCMBandlimitedResampler`` adds a bounded antialias filter and lookahead. Both preserve channels, require the exact input format and return zero or more bounded output blocks; the output count from one call is not necessarily proportional to only that call's input.
 
+The bandlimited converter prepares immutable coefficients for common rational-rate
+periods during construction. Coefficient and normalization payload is capped at
+256 KiB per independently constructed converter; copies share the immutable plan.
+Costly periods use direct coefficient evaluation. Construction cost and processing
+cost are separate, and the filter's signal lookahead is unchanged. Retained PCM
+byte accounting covers audio history only, excluding this bounded plan and output.
+
 ```swift
 import DiscordMedia
 

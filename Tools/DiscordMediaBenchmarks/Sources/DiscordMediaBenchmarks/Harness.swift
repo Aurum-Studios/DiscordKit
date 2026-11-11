@@ -119,9 +119,12 @@ enum MediaHarness {
         dimensions["batchesCap"] = UInt64(configuration.batches)
         dimensions["warmupBatchesCap"] = UInt64(configuration.warmupBatches)
         dimensions["durationCapSeconds"] = configuration.durationSeconds
+        let scheduler = workload.id == "dave.transition.queue" ? "joined-concurrent-signaling-batches"
+            : workload.preparePopulation == nil ? "serial-wrapper-batches"
+            : workload.dimensions["fixtureVersion"] == 3 ? "serial-population-stream-v3" : "serial-population-stream-v2"
         var identity = ReportIdentity(scenario: workload.id, profile: configuration.profile, seed: configuration.seed,
             fixtureHashes: ["public-fixture-descriptor-v1": fixtureHash], inputSizes: dimensions,
-            instrumentation: "external-prepared-batch", scheduler: workload.id == "dave.transition.queue" ? "joined-concurrent-signaling-batches" : workload.preparePopulation == nil ? "serial-wrapper-batches" : "serial-population-stream-v2",
+            instrumentation: "external-prepared-batch", scheduler: scheduler,
             concurrency: workload.id == "dave.transition.queue" ? UInt32(configuration.batchSize) : 1,
             warmupNanoseconds: warmup.elapsedNanoseconds,
             requestedWarmupNanoseconds: configuration.warmupSeconds * 1_000_000_000,
@@ -147,6 +150,7 @@ enum MediaHarness {
                 "DAVE queue cases include bounded concurrent caller scheduling and signaling admission; this does not isolate queue residence or guarantee a particular observed depth.",
                 "CELT recover selects documented PLC fallback. SILK/hybrid request in-band FEC; timing does not establish provider interoperability or recovered signal quality.",
                 "Version-two continuous cases keep one prefilled owner across each population; warmup and measurement use independent owners. Legacy cases retain per-batch/call reset semantics.",
+                "Version-three resampler endpoints separate constructor, continuous process and finish costs. PCM queue occupancy cases rotate a full FIFO with two public actor hops per call; neither workload is paced.",
                 "Time caps and cancellation apply between started bounded batches. Microbenchmarks have no scheduled playout deadlines; deadlineMisses zero describes this unscheduled population."
             ])
         try common.validate()

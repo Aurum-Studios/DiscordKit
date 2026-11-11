@@ -46,6 +46,12 @@ fresh-process populations. Its JSON writer control has a distinct identity.
 Compiler native reports retain CPU, peak RSS, clean/incremental consumer work,
 no-change SwiftPM invocation and inert startup as separate observations.
 
+Performance [Phase 8](Tasks/performance-improvements/PHASE-8.md) separates immutable
+resampler plan construction, continuous filtering and final flush; its version-three
+cases include reverse/awkward rates and queue occupancy. Paired local paced duplex
+reports keep processing and schedule misses distinct from media batch cost. Plan
+payload accounting, process RSS and allocation-event profiling are different scopes.
+
 Legacy account profiles describe 100/10,000/1,000,000 logical identities with
 bounded active cohorts, not that many simultaneous connections. Avoid comparing
 different input sizes or instrumentation modes as though they were the same

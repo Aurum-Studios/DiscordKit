@@ -27,8 +27,10 @@ import Foundation
 /// right extension performed only by `finish()`. At ordinary boundaries it waits for real
 /// samples. It retains at most twice the support radius in densely owned PCM frames. Each
 /// call temporarily combines that history with at most one 120ms input block; no source
-/// block, task, device, wall clock or I/O is owned. Arithmetic/storage bounds do not grow
-/// with stream duration. Work is proportional to output frames times filter support, and
+/// block, task, device, wall clock or I/O is owned. Common rational-rate pairs additionally
+/// retain an immutable coefficient plan with at most 256 KiB of Double payload; costly
+/// periods evaluate coefficients directly. Arithmetic/storage bounds do not grow with
+/// stream duration. Work is proportional to output frames times filter support, and
 /// is synchronous, without cancellation or suspension. This supplies no hard real-time,
 /// device, perceptual-quality or platform qualification guarantee. Copies have independent
 /// copy-on-write state; callers must serialize mutation of each value.
@@ -66,6 +68,18 @@ public struct PCMBandlimitedResampler: Sendable {
     /// Normalized sinc cutoff in input-Nyquist units, including transition-band headroom.
     private let cutoff: Double
 
+    /// Immutable coefficients shared by value copies; costly rational periods use direct evaluation.
+    private let phasePlan: PhasePlan?
+
+    /// Maximum coefficient and normalization payload, excluding fixed metadata and allocator overhead.
+    static let maximumPhasePlanBytes = 256 * 1_024
+
+    /// Accounted immutable coefficient payload, separate from retained audio sample accounting.
+    var accountedPhasePlanBytes: Int {
+        guard let phasePlan else { return 0 }
+        return (phasePlan.coefficients.count + phasePlan.coefficientSums.count) * MemoryLayout<Double>.stride
+    }
+
     /// Number of retained interleaved frames; bounded by `maximumRetainedFrameCount`.
     ///
     /// Reading this value performs no work or mutation and excludes already returned buffers.
@@ -77,6 +91,8 @@ public struct PCMBandlimitedResampler: Sendable {
     public var accountedRetainedBytes: Int { history.count * MemoryLayout<Float>.stride }
 
     /// Creates an empty converter without starting background work or owning external resources.
+    /// Construction precomputes a complete rational coefficient period when its Double payload
+    /// fits 256 KiB; larger periods retain no table and use bounded direct evaluation instead.
     /// - Parameters:
     ///   - inputFormat: Validated source rate and mono/stereo channel order, fixed for this value.
     ///   - outputSampleRate: Destination frames per second in `8_000...192_000`, inclusive.
@@ -93,6 +109,9 @@ public struct PCMBandlimitedResampler: Sendable {
         self.lookaheadFrames = radius
         self.maximumRetainedFrameCount = 2 * radius
         self.processingDelay = try MediaTime(value: Int64(radius), timescale: Int32(inputFormat.sampleRate))
+        self.phasePlan = Self.makePhasePlan(
+            inputRate: inputFormat.sampleRate, outputRate: outputSampleRate, radius: radius, cutoff: cutoff
+        )
     }
 
     /// Filters the next contiguous block, deferring output that needs future real samples.
@@ -192,26 +211,94 @@ public struct PCMBandlimitedResampler: Sendable {
     private func appendFilteredFrame(from samples: [Float], phase: Int64, to output: inout [Float]) {
         let outputRate = Int64(outputFormat.sampleRate)
         let center = Int(phase / outputRate)
-        let fraction = Double(phase % outputRate) / Double(outputRate)
         let channels = inputFormat.channelCount
         let last = samples.count / channels - 1
         var coefficientSum = 0.0
         var left = 0.0
         var right = 0.0
-        for offset in (-lookaheadFrames + 1)...lookaheadFrames {
-            let distance = Double(offset) - fraction
-            let angle = Double.pi * distance / Double(lookaheadFrames)
-            let window = 0.42 + 0.5 * cos(angle) + 0.08 * cos(2 * angle)
-            let argument = Double.pi * cutoff * distance
-            let sinc = abs(argument) < 1e-12 ? 1 : sin(argument) / argument
-            let coefficient = cutoff * sinc * window
-            let index = max(0, min(last, center + offset)) * channels
-            coefficientSum += coefficient
-            left += Double(samples[index]) * coefficient
-            if channels == 2 { right += Double(samples[index + 1]) * coefficient }
+        if let phasePlan {
+            let phaseIndex = Int((phase % outputRate) / phasePlan.fractionStride)
+            let firstCoefficient = phaseIndex * 2 * lookaheadFrames
+            coefficientSum = phasePlan.coefficientSums[phaseIndex]
+            for tap in 0..<(2 * lookaheadFrames) {
+                let coefficient = phasePlan.coefficients[firstCoefficient + tap]
+                let index = max(0, min(last, center + tap - lookaheadFrames + 1)) * channels
+                left += Double(samples[index]) * coefficient
+                if channels == 2 { right += Double(samples[index + 1]) * coefficient }
+            }
+        } else {
+            let fraction = Double(phase % outputRate) / Double(outputRate)
+            for offset in (-lookaheadFrames + 1)...lookaheadFrames {
+                let distance = Double(offset) - fraction
+                let angle = Double.pi * distance / Double(lookaheadFrames)
+                let window = 0.42 + 0.5 * cos(angle) + 0.08 * cos(2 * angle)
+                let argument = Double.pi * cutoff * distance
+                let sinc = abs(argument) < 1e-12 ? 1 : sin(argument) / argument
+                let coefficient = cutoff * sinc * window
+                let index = max(0, min(last, center + offset)) * channels
+                coefficientSum += coefficient
+                left += Double(samples[index]) * coefficient
+                if channels == 2 { right += Double(samples[index + 1]) * coefficient }
+            }
         }
         output.append(Float(max(-1, min(1, left / coefficientSum))))
         if channels == 2 { output.append(Float(max(-1, min(1, right / coefficientSum)))) }
+    }
+
+    /// A complete rational period's raw taps and sums, generated once without normalizing taps.
+    ///
+    /// Keeping normalization separate preserves the direct evaluator's accumulation/division
+    /// order. All storage is immutable so array sharing cannot couple copied converter state.
+    private struct PhasePlan: Sendable {
+        /// Greatest common divisor of the rates; every reachable remainder is its multiple.
+        let fractionStride: Int64
+
+        /// Phase-major taps in increasing input-offset order, matching direct FIR evaluation.
+        let coefficients: [Double]
+
+        /// Increasing-tap sums, with one normalization denominator per exact fractional phase.
+        let coefficientSums: [Double]
+    }
+
+    /// Builds a complete bounded period or selects direct evaluation before allocating any taps.
+    /// - Parameters:
+    ///   - inputRate: Validated source sample rate.
+    ///   - outputRate: Validated destination sample rate.
+    ///   - radius: Positive filter radius, or zero for identity conversion.
+    ///   - cutoff: Normalized low-pass cutoff used by the direct evaluator.
+    /// - Returns: Immutable raw coefficients within the payload cap, or nil for identity/costly periods.
+    private static func makePhasePlan(inputRate: Int, outputRate: Int, radius: Int, cutoff: Double) -> PhasePlan? {
+        guard radius > 0 else { return nil }
+        var divisor = inputRate
+        var remainder = outputRate
+        while remainder != 0 {
+            (divisor, remainder) = (remainder, divisor % remainder)
+        }
+        let phaseCount = outputRate / divisor
+        let taps = 2 * radius
+        let bytesPerPhase = (taps + 1) * MemoryLayout<Double>.stride
+        guard phaseCount <= maximumPhasePlanBytes / bytesPerPhase else { return nil }
+
+        var coefficients: [Double] = []
+        coefficients.reserveCapacity(phaseCount * taps)
+        var coefficientSums: [Double] = []
+        coefficientSums.reserveCapacity(phaseCount)
+        for phaseIndex in 0..<phaseCount {
+            let fraction = Double(phaseIndex * divisor) / Double(outputRate)
+            var coefficientSum = 0.0
+            for offset in (-radius + 1)...radius {
+                let distance = Double(offset) - fraction
+                let angle = Double.pi * distance / Double(radius)
+                let window = 0.42 + 0.5 * cos(angle) + 0.08 * cos(2 * angle)
+                let argument = Double.pi * cutoff * distance
+                let sinc = abs(argument) < 1e-12 ? 1 : sin(argument) / argument
+                let coefficient = cutoff * sinc * window
+                coefficients.append(coefficient)
+                coefficientSum += coefficient
+            }
+            coefficientSums.append(coefficientSum)
+        }
+        return PhasePlan(fractionStride: Int64(divisor), coefficients: coefficients, coefficientSums: coefficientSums)
     }
 
     /// Splits complete normalized output frames into dense blocks within PCM's duration limit.

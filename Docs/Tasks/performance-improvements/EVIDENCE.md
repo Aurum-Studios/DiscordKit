@@ -199,3 +199,17 @@ and correctness checks are recorded in [Phase 4](PHASE-4.md). Its
 eviction improve locally, while full expiry drains slow and entity process RSS
 increases. These observations do not close the reserved-host numerical, profiler
 or representative workflow gates.
+
+## Phase 8 implementation evidence
+
+Bounded immutable resampler phase plans, exact differential signal tests, retained
+codec/queue ownership decisions and separated startup/process/flush controls are
+recorded in [Phase 8](PHASE-8.md). Its [capture index](phase-8-observations.json)
+retains 620 qualified media processes, 40 qualified paced localhost duplex
+processes, four diagnostic CPU samples, rejected attempts and all source/build/
+cleanup identities. Common-ratio filtering and affected encoding improve locally;
+constructor cost and plan memory increase, and an awkward fallback adverse
+observation remains explicit. The impaired hybrid control fails in both the original
+and candidate runtimes; its trigger and Stage 9 follow-up are retained separately.
+These results establish no controlled-host numerical,
+physical audio, Linux/hosted or live Discord qualification.

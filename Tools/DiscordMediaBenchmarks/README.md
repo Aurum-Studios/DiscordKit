@@ -29,8 +29,9 @@ Tools/DiscordMediaBenchmarks/.build/release/DiscordMediaBenchmarks \
 swift test --package-path Tools/DiscordMediaBenchmarks --jobs 4
 ```
 
-The finite catalog preserves its 80 original cases and adds 18 version-two
-continuous cases. Original cases cover bandlimited 16/44.1 kHz to 48 kHz resampling
+The finite catalog preserves its 80 original cases and 18 version-two
+continuous cases, and adds 45 version-three Stage 8 controls (143 total).
+Original cases cover bandlimited 16/44.1 kHz to 48 kHz resampling
 in mono/stereo; Opus encode/decode/conceal/recover in CELT 120/240/480/960 and
 SILK/hybrid 480/960 samples in mono/stereo; reordered jitter insertion/playout with
 one explicit lost slot; RTP packetization/serialization/parsing; AES256-GCM and
@@ -65,6 +66,47 @@ identities, not comparable replacements for the original cold/per-batch cases.
 The scheduler identity is `serial-population-stream-v2`; input sizes record fixture
 version, prefill and continuous-state policy. Fixture descriptor hashing includes
 the exact new case identity and retains the original hash recipe for old cases.
+
+Version-three resampler controls cross mono/stereo with rate pairs 16000→48000,
+44100→48000, 48000→16000, 48000→44100 and the relatively-prime 48000→47999
+fallback ratio. Each pair/layout has four independent endpoint identities:
+
+- `resample.v3.startup.{input}.{output}.{mono,stereo}` times construction of a new
+  empty converter per call. Results remain retained until untimed full-signal
+  verification; process and finish stay outside construction timing. This records
+  the initialization cost of an eagerly constructed coefficient plan.
+- `resample.v3.continuous.{input}.{output}.{mono,stereo}.{regular,irregular}`
+  keeps one owner after eight 20 ms prefill blocks. Regular calls admit 20 ms;
+  irregular calls rotate 1, 127 and 509 source frames across batch boundaries.
+  Only process is timed. Complete outputs are compared with an independently
+  constructed owner and final untimed finish checks sample-count carry, finite
+  PCM and released history. Small chunks can produce no output while awaiting
+  filter lookahead; normalized cost per call therefore has a different input
+  population from regular chunks.
+- `resample.v3.finish.{input}.{output}.{mono,stereo}` times finish on separately
+  constructed and processed 20 ms owners. Initialization, process and the exact
+  tail oracle stay outside timing. Each owner must release all history and
+  remain idempotently finished after its complete tail comparison.
+
+`pcm.v3.queue.occupancy{1,8,64,1024,4096}` separates queue depth from resampling
+and codec service. A population starts full and every timed call performs one
+public read plus write, maintaining the selected occupancy. Blocks contain 960
+stereo frames at 48 kHz, with distinct interleaved channel values; bytes per block
+remain 7680 while depth changes. Depth 8 is the default queue block limit and
+4096 is the supported maximum (31,457,280 retained PCM bytes). Two actor hops,
+FIFO removal/insertion and result retention are included. Fixture construction,
+complete FIFO checks, byte accounting, finish and exact final drain are untimed.
+These cases do not establish mailbox residence, producer/consumer contention,
+audio pacing or realtime scheduling. Each owner is closed with discard after
+verification or failure, and discarded preparation cannot advance its reference.
+
+Version-three continuous/queue cases use scheduler `serial-population-stream-v3`;
+startup and finish retain `serial-wrapper-batches`. Existing identities, fixture
+hash recipes and scheduler policies remain unchanged. Warmup and measurement
+receive independent owners, and the common sidecar retains every measured batch.
+Compare only matching endpoint, rates, layout, chunk/occupancy policy and batch
+size. Constructor, process and finish percentiles are separate populations and
+must not be summed into an inferred whole-stream percentile.
 
 Each timed batch invokes only its selected bounded wrapper and retains the full
 results for untimed verification. Original codec/resampler cases copy prepared initial or
