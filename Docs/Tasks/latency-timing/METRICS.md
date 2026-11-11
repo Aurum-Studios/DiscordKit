@@ -7,7 +7,7 @@ https://aurum-studios.com
 
 # Timing metric catalog
 
-Catalog identifier: **discordkit.timing**, revision **4**. Revision 1 was frozen 2026-11-10 at
+Catalog identifier: **discordkit.timing**, revision **5**. Revision 1 was frozen 2026-11-10 at
 `c8d842f7ce51e9adc69ff9997e2c0f374dc2ee68`. Every metric below has semantic
 version **1**. The identity is `(catalog, metric ID, metric version)`; changing
 endpoints, population, units or aggregation creates a new metric version.
@@ -75,6 +75,17 @@ regressions clamp to zero; future detailed invalid-clock flags do not change tha
 | `httpCoalescedSubscriber` | Before coalescer.run → its return/throw, before final context check/endpoint decode | L | Once per subscriber; overlaps shared exchange; never multiplies exchange counts |
 | `httpExecutionJoined` | Nonactor public REST execute entry → executeObserved return/throw after decoding, structured joins and diagnostic scope terminal logging | L | Whole logical caller operation, including cache/retry/ordering; fresh hit has no exchange phases |
 
+Stage 5 transport child metrics are grouped by the final caller outcome; REST
+phase observations retain their own boundary-local outcome. `transport.bodyClose`
+often observes an idempotent close after EOF already joined automatic cleanup.
+No pool-acquire, DNS, TLS or final upload-write duration is fabricated when the
+adapter exposes no such timestamp. Whole workflow throughput ends at the last
+terminal operation before final diagnostics; driver elapsed is separately retained.
+REST inter-wave setup/expiry gaps remain in the first-submission→last-terminal
+denominator. Arrival offered rate uses the scheduled window; native submitted
+completion rate and whole terminal-outcome rate remain distinct when arrivals
+are missed. See the [suite guide](../../../Tools/DiscordKitLoadTests/README.md#phase-5-transport-and-rest-timing).
+
 Gateway trusted receipt is the timestamp captured immediately after
 `socket.receive()` returns in `GatewayShard.receiveLoop`, before generation
 validation and parsing. It is not a kernel/transport arrival timestamp and cannot
@@ -83,20 +94,28 @@ Only cooperating owners using the same timing clock may compute the admission
 milestones. The signed HTTP path currently has no adapter receipt timestamp or
 scalar timing injection; application entry is a different boundary.
 
-## Planned primary-workflow durations
+## Primary-workflow durations
 
-These IDs reserve later intervals; none is emitted by Stage 0. Population A and
+Stage 5 implements the transport/REST/arrival subset below; the remaining IDs reserve later intervals. None was emitted by Stage 0. Population A and
 H apply unless a row explicitly specifies S or B. One logical operation may have
 many attempt intervals. All child work retains its owning workflow's outcome
 counts and independent terminal result.
 
 | Metric ID | Owner and start → stop, inclusions/exclusions | Relationship / implementing stage |
 | --- | --- | --- |
+| `transport.construct` | Harness request descriptor/upload producer construction entry → descriptor built | Separate from adapter invocation; Stage 5 |
+| `transport.headers` | Caller before adapter invocation → response metadata or error | Includes observable connection/pool/upload work; Stage 5 |
+| `transport.body` | Caller begins full byte consumption → EOF/error and joined stream cleanup | Body byte validation included; explicit close separately observed; Stage 5 |
 | `transport.request` | Harness caller immediately before adapter invocation → full validated body completion and awaited owned close; excludes fixture setup/diagnostic snapshots/report writes | Direct whole request; Stage 5; corrected identity distinct from historical LoadRunner |
 | `transport.poolWait` | Adapter before pool acquire → lease or refusal/cancel completion; excludes body service | Child of transport request, may overlap HTTP headers; Stage 5 |
 | `transport.upload` | Adapter begins consuming upload → final write completion or joined failure; excludes pool wait; unavailable if adapter exposes no honest boundary | Child of request/headers; Stage 5 |
 | `transport.bodyClose` | Caller/owner requests response close → owned body cleanup completes | Child of whole request; may be included in legacy httpBody; Stage 5 |
 | `rest.request` | Harness caller immediately before RESTClient.execute → result/error, before correctness assertions and coordinator/cache snapshots | Direct whole request; overlaps legacy execution; Stage 5 |
+| `rest.executionJoined` | Existing scalar httpExecutionJoined owner boundary | Legacy boundary meaning preserved within corrected REST suite; Stage 5 |
+| `rest.admission` | Existing scalar httpAdmission owner boundary | Rate/FIFO policy unchanged; Stage 5 |
+| `rest.headers` | Existing scalar httpHeaders owner boundary | Adapter return/error; includes actual upload/connection work; Stage 5 |
+| `rest.body` | Existing scalar httpBody owner boundary | Collection and owned cleanup; Stage 5 |
+| `rest.subscriber` | Existing scalar httpCoalescedSubscriber owner boundary | One observation per registered subscriber, independent of shared wire work; Stage 5 |
 | `rest.construct` | Request builder entry → encoded request descriptor or typed error | Child of logical request; per attempt if rebuilt; Stage 5 |
 | `rest.orderWait` | Before ordering authority acquire → admitted/refused/cancelled acquire result | Child of logical request; Stage 5 |
 | `rest.cacheLookup` | Caller before cache lookup → fresh/miss/expired result; includes cache actor wait | Child of logical request; Stage 5 |
@@ -105,6 +124,8 @@ counts and independent terminal result.
 | `arrival.scheduledResponse` | Scheduled arrival offset → joined terminal outcome, including driver lateness/admission/service | Direct scheduled-arrival workflow; Stage 5 |
 | `arrival.submittedResponse` | Actual submission before any owner hop → joined terminal outcome | Direct actual-submission workflow; overlaps scheduled-response; Stage 5 |
 | `arrival.lateness` | Scheduled arrival offset → actual submission; missed arrivals have counts, not fabricated latency | Precedes service; Stage 5 |
+| `arrival.admissionWait` | Actual driver submission → explicitly supplied owner admission | Emitted only with real same-clock owner timestamp; not emitted by current REST arrival fixture; Stage 5 |
+| `arrival.service` | Driver operation closure invocation → joined return | Includes REST admission and service; optional finer timestamp ranges do not change this metric; Stage 5 |
 | `gateway.decode` | Shard begins parsing received supported JSON → decoded payload or rejection | Child of receipt-to-dispatch; Stage 6 |
 | `gateway.hubResidence` | Private hub retains event → dispatcher removes event for its local queue | Precedes legacy local queue; Stage 6; only with actual owner hooks |
 | `gateway.handler` | Admitted callback invocation → callback completion and existing owned cleanup | Child of dispatcher run; Stage 6 |

@@ -166,6 +166,10 @@ enum LoadCommand {
     ///   Runtime per-request failures are counted. Transport measurements never retry;
     ///   the HTTP scenario exercises its explicit finite rejected-request retry contract.
     static func run(arguments: [String]) async throws {
+        if arguments.first == "timing" {
+            try await Phase5TimingCommand.run(arguments: Array(arguments.dropFirst()))
+            return
+        }
         let options = try LoadOptions(arguments: arguments)
         let statistics = try RunStatistics.requested(workloads: [.transport, .httpPolicy])
         if options.scenario == "cache" || options.scenario == "soak" {

@@ -304,3 +304,103 @@ events, bounding control-delay samples to three per shard while respecting
 production send-rate admission. These finite scripts qualify local recovery and correlation only;
 they do not establish real Discord quotas, network throughput, distributed
 coordination or sustained production capacity.
+
+## Phase 5 transport and REST timing
+
+The explicit `timing` subcommand implements the [Phase 5 plan](../../Docs/Tasks/latency-timing/PHASE-5.md)
+without changing the legacy entry points or reports above. It lists 12 transport
+cases, 17 REST cases and a separate independent-arrival policy:
+
+```sh
+swift run --package-path Tools/DiscordKitLoadTests DiscordKitLoadTests timing --list-cases
+swift run --package-path Tools/DiscordKitLoadTests DiscordKitLoadTests timing \
+  --case rest.cacheFresh --requests 64 --concurrency 4
+swift run --package-path Tools/DiscordKitLoadTests DiscordKitLoadTests timing \
+  --case arrival.rest --requests 128 --rate 20000 --concurrency 4 --pending 8
+```
+
+The native report is `DiscordKitLoadTests.timing` version 1, containing the selected
+native family and a common version-1 envelope with catalog revision 5. Optional
+`--output` and `--common-report` destinations must differ. Shared-driver environment
+requests are honored. Cases are deterministic; the recorded seed remains a
+comparison dimension. Fixture contents and exact source/build pins are bound by
+the release supervisor, outside operation timers.
+
+For retained optimized smoke, finish source edits before preparing the receipt:
+
+```sh
+python3 Tools/DiscordBenchmarkSupport/scripts/run_benchmarks.py build \
+  --repository . --package Tools/DiscordKitLoadTests --product DiscordKitLoadTests \
+  --receipt .build/timing-phase5/release.json
+python3 Tools/DiscordKitLoadTests/scripts/run_timing_suites.py \
+  --executable Tools/DiscordKitLoadTests/.build/release/DiscordKitLoadTests \
+  --receipt .build/timing-phase5/release.json --output-dir .build/timing-phase5/matrix
+```
+
+The wrapper runs serial fresh processes, captures all finite cases, separates
+scripted/NIO/Foundation adapters, adds cold serial and verified NIO TLS cases, and
+sweeps arrivals at 200/2,000/20,000 per second with 1/4/16 workers. Each queue is
+bounded at twice its worker count. Repeated `--case` options select subsets;
+`--scripted-only` excludes native socket cases. Default request count is 128 and
+warmup count eight; the shared smoke supervisor bounds wall time, RSS, output,
+process groups and teardown. The compact matrix links full reports. Failed or
+interrupted captures remain available and stop the sequence. Wrapper signals are
+forwarded to the active supervisor and its cleanup is awaited.
+
+Direct settings include `--adapter scripted|nio|foundation`,
+`--connection-mode cold|warm`, `--tls true|false`, `--requests`, `--concurrency`,
+`--pending`, `--rate`, `--delay-microseconds`, `--warmup-requests`, `--profile`,
+`--seed`, `--duration-seconds`, `--warmup-seconds`, and output options. Smoke admits
+at most 64 workers; other shared profiles allow 256. Requests cap at 100,000,
+warmup requests at 10,000, and active plus pending arrivals at 1,024. Native cold
+runs require one worker and a fresh adapter for every exchange. Non-native cases
+use the scripted adapter and warm policy. Foundation requires a supported native
+host; it has no injected test-root path. Verified fixture TLS is NIO-only and
+never disables hostname/certificate validation.
+
+Transport cases cover empty, 256-byte, 64-KiB streamed and 1-MiB response/upload
+bodies, delayed headers/body, malformed content, cancellation and timeout.
+Construction is separate from adapter invocation. Whole requests include byte
+validation, EOF and awaited close; diagnostic snapshots occur afterward. Headers
+include unavailable pool/connect/TLS/upload internals. Producer chunks describe
+source pulls, not actual socket write boundaries. Explicit close can be an
+idempotent join after automatic EOF cleanup. No unavailable subphase is inferred
+by subtraction. Transport child distributions use the final caller outcome.
+
+REST cases cover no cache, misses, fresh hits, expiry, exact same-key coalescing,
+independent keys, streamed/large bodies, delayed headers/body, ordered mutations,
+429 and server retry, exhausted retries, malformed responses, cancellation and
+uncertain mutation. The real RESTClient owns rate/retry/order/cache/coalescing.
+New optional [REST phase hooks](../../Sources/DiscordHTTP/RESTTiming.swift) expose
+construction/order/cache/decode/backoff; existing hooks retain their meaning.
+Phase distributions retain boundary-local outcomes. Fresh hits exchange nothing;
+coalesced subscribers each retain a logical result while sharing one exchange.
+Setup priming and expiry waits are outside individual request timers. Inter-wave
+gaps remain in the whole throughput denominator.
+
+Arrival policy uses one scheduler and persistent fixed workers. It retains no
+task or timestamp record per offered arrival. Queue overflow counts a missed
+arrival as terminal rejection; it has no invented submission/latency. Queued
+cancellation is counted likewise. Metrics separately retain scheduled→response,
+submitted→response, lateness and closure service. Optional actual owner admission
+is unavailable in the current REST fixture. Service includes the REST owner hop
+and any admission. Native counts distinguish submitted completions, missed and
+rejected work, deferred arrivals, queue peaks, recovery and unoffered slots after
+cancellation. Common throughput counts all terminal outcomes, including missed
+rejections; native completion throughput counts submitted service returns.
+
+Histograms cover every observed outcome with 100-microsecond buckets over
+0...1 second. Out-of-range/lost data and insufficient tails remain explicit;
+P99 needs 10,000 observations per outcome. Distributions overlap and must not be
+summed or subtracted. Operation timers exclude final snapshots, statistics updates
+and report writes. Throughput spans first submission to last terminal (scheduled
+origin for arrival); driver elapsed separately includes final joining/diagnostics.
+Process gauges include setup, warmup and teardown; peer CPU/RSS are excluded.
+Warmup stays outside measured histograms. Async time caps stop new admission and
+join started work; underlying deadlines and cooperative cancellation remain in
+force. Direct invocation has no external RSS/signal supervision.
+
+Local smoke proves case semantics, bounded overload and cleanup. It does not
+qualify controlled-host numerical baselines, Linux or other platforms, Discord
+requests, production capacity or later roadmap stages. Actual completed checks
+belong in the [validation record](../../Docs/Tasks/latency-timing/VALIDATION.md#phase-5-validation).

@@ -63,6 +63,11 @@ Common counts/distributions are batches; its native report separately records
 calls/rejections and gross normalized mean. Catalogs 2/3 remain readable and
 cannot claim the new metric. Runtime products still do not select this package.
 
+The [transport/REST suites](../DiscordKitLoadTests/README.md#phase-5-transport-and-rest-timing)
+emit catalog revision 5 with corrected native and REST operation boundaries and
+independent arrival populations. Earlier catalogs remain readable. New identities
+cannot relabel historical diagnostics-inclusive or successful-prefix artifacts.
+
 Run from the repository root with Python 3.10+ and Swift 6.4+. Keep receipts and
 outputs in ignored build directories. Finish source edits before preparation:
 receipts bind revision, exact dirty/untracked content, dependency pins, executable

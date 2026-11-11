@@ -23,6 +23,7 @@ let package = Package(
                 .product(name: "DiscordLogging", package: "DiscordKit"),
                 .product(name: "DiscordTransport", package: "DiscordKit"),
                 .product(name: "DiscordNIOTransport", package: "DiscordKit"),
+                .product(name: "DiscordFoundationTransport", package: "DiscordKit"),
                 .product(name: "DiscordHTTP", package: "DiscordKit"),
                 .product(name: "DiscordGateway", package: "DiscordKit"),
                 .product(name: "DiscordCache", package: "DiscordKit"),

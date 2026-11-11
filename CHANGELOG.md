@@ -9,6 +9,17 @@ https://aurum-studios.com
 
 ## Unreleased
 
+### Transport and REST timing suites — 2026-11-10
+
+- Add corrected Foundation/NIO loopback and scripted transport timings with cold
+  connections, warm reuse, verified NIO TLS, bounded bodies and explicit cleanup.
+- Add opt-in REST construction, ordering, cache, decode and retry-wait hooks,
+  preserving existing timing and request policy. Cover 17 bounded policy cases.
+- Add independent arrivals, fixed workers and bounded pending work with scheduled
+  and submitted response distributions, overload counts and recovery. Reuse shared
+  release supervision and preserve report catalogs. See the
+  [Phase 5 record](Docs/Tasks/latency-timing/PHASE-5.md).
+
 ### Foundation CPU timing suites — 2026-11-10
 
 - Add 77 development-only JSON, identifier/bitset, model, builder, permission and

@@ -157,6 +157,11 @@ Browse the public types and operations provided by DiscordHTTP.
 - ``DiscordHTTP/AssetClient``
 - ``DiscordHTTP/RESTClient``
 
+### REST Timing
+
+- ``DiscordHTTP/RESTTiming``
+- ``DiscordHTTP/RESTTimingSample``
+
 ### Retries and pagination
 
 - ``DiscordHTTP/CursorPage``

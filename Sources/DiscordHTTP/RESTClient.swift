@@ -31,6 +31,8 @@ public final class RESTClient<C: Clock>: Sendable, CustomStringConvertible, Cust
     private let timing: OperationTiming?
     /// Separate opt-in detailed lifecycle observer; nil creates no identities or instrumentation reads.
     private let intervals: DiscordIntervalTiming?
+    /// Separate opt-in pipeline attribution; nil reads no instrumentation clock.
+    private let phaseTiming: RESTTiming?
 
     /// Conceals credentials and injected owners from ordinary diagnostic formatting.
     public var description: String { "RESTClient(redacted)" }
@@ -64,6 +66,8 @@ public final class RESTClient<C: Clock>: Sendable, CustomStringConvertible, Cust
     ///     has one exchange owner; each caller retains its own logical and subscriber intervals. Detailed
     ///     elapsed values include their start callback, nested callbacks and any preceding scalar callback;
     ///     each boundary timestamp is captured before its own synchronous sink. Nil performs no timing work.
+    ///   - phaseTiming: Optional content-free construction, ordering, enabled cache lookup, decoder and
+    ///     explicit retry-sleep observer. Terminal endpoints precede their synchronous callback.
     /// - Precondition: Response byte and exchange-duration limits are positive.
     public init(credential: Credential, identity: RateLimitIdentity, transport: any HTTPTransport,
                 coordinator: RateLimitCoordinator<C>, clock: C, cache: ReadCache<C>? = nil,
@@ -71,13 +75,13 @@ public final class RESTClient<C: Clock>: Sendable, CustomStringConvertible, Cust
                 maximumResponseBytes: Int = 8 * 1_024 * 1_024,
                 maximumExchangeDuration: Duration = .seconds(30),
                 egress: UUID? = nil, userAgent: String = "DiscordBot (https://github.com/CarsonAurum/DiscordKit, 0.19.0)",
-                timing: OperationTiming? = nil, intervals: DiscordIntervalTiming? = nil) {
+                timing: OperationTiming? = nil, intervals: DiscordIntervalTiming? = nil, phaseTiming: RESTTiming? = nil) {
         precondition(maximumResponseBytes > 0 && maximumExchangeDuration > .zero)
         self.credential = credential; self.identity = identity; self.transport = transport
         self.coordinator = coordinator; self.clock = clock; self.cache = cache; self.coalescer = coalescer
         self.retryPolicy = retryPolicy; self.maximumResponseBytes = maximumResponseBytes
         self.maximumExchangeDuration = maximumExchangeDuration; self.userAgent = userAgent; self.egress = egress
-        self.timing = timing; self.intervals = intervals
+        self.timing = timing; self.intervals = intervals; self.phaseTiming = phaseTiming
     }
 
     /// Executes a typed or raw descriptor through authentication, admission and bounded decoding.
@@ -134,7 +138,13 @@ public final class RESTClient<C: Clock>: Sendable, CustomStringConvertible, Cust
             do {
                 let result = try await context.run {
                     let key = self.readKey(endpoint)
-                    if endpoint.readPolicy?.timeToLive != nil, let data = await self.cache?.value(for: key) {
+                    let cached: Data?
+                    if endpoint.readPolicy?.timeToLive != nil, let cache = self.cache {
+                        let lookup = self.phaseTiming?.begin(.cacheLookup)
+                        cached = await cache.value(for: key)
+                        lookup?.end()
+                    } else { cached = nil }
+                    if let data = cached {
                         try context.check()
                         DiscordLog.makeLogger("http.cache").trace("REST read cache hit", metadata: ["dk.event": "http.cache.hit"])
                         return try self.decode(endpoint, data: data)
@@ -239,7 +249,7 @@ public final class RESTClient<C: Clock>: Sendable, CustomStringConvertible, Cust
                     if case .transport = error, endpoint.retrySafety == .safe,
                        let delay = self.retryPolicy.delay(after: attempt) {
                         DiscordLog.makeLogger("http.retry").notice("Retrying safe REST transport failure", metadata: ["dk.event": "http.retry.transport", "dk.attempt": .stringConvertible(attempt)])
-                        try await self.clock.sleep(for: delay)
+                        try await self.retrySleep(delay)
                         continue
                     }
                     throw error
@@ -259,7 +269,7 @@ public final class RESTClient<C: Clock>: Sendable, CustomStringConvertible, Cust
                 if (500...599).contains(reply.status), endpoint.retrySafety == .safe,
                    let delay = self.retryPolicy.delay(after: attempt) {
                     DiscordLog.makeLogger("http.retry").warning("Retrying safe REST server failure", metadata: ["dk.event": "http.retry.server", "dk.attempt": .stringConvertible(attempt), "dk.status": .stringConvertible(reply.status)])
-                    try await self.clock.sleep(for: delay)
+                    try await self.retrySleep(delay)
                     continue
                 }
                 if (500...599).contains(reply.status), endpoint.retrySafety == .unsafe {
@@ -269,7 +279,19 @@ public final class RESTClient<C: Clock>: Sendable, CustomStringConvertible, Cust
             }
         } }
         if endpoint.retrySafety == .unsafe {
-            return try await coordinator.withOrdering(request: rateRequest(endpoint), deadline: deadline, operation: operation)
+            guard let phaseTiming else {
+                return try await coordinator.withOrdering(request: rateRequest(endpoint), deadline: deadline, operation: operation)
+            }
+            let ordering = phaseTiming.begin(.ordering)
+            do {
+                return try await coordinator.withOrdering(request: rateRequest(endpoint), deadline: deadline) {
+                    ordering.end()
+                    return try await operation()
+                }
+            } catch {
+                ordering.end(error: error)
+                throw error
+            }
         }
         return try await operation()
     }
@@ -326,11 +348,14 @@ public final class RESTClient<C: Clock>: Sendable, CustomStringConvertible, Cust
             throw error
         }
         let request: HTTPRequest
+        let construction = phaseTiming?.begin(.construction)
         do {
             request = try endpoint.makeRequest(credential: credential, userAgent: userAgent)
+            construction?.end()
             DiscordLog.makeLogger("http.execution").trace("REST request encoded", metadata: ["dk.event": "http.request.encoded", "dk.has_body": .stringConvertible(request.body != nil)])
         }
         catch {
+            construction?.end(error: error)
             do { try await coordinator.release(reservation, outcome: .notSent) }
             catch { await recordOwnerFailure(error) }
             throw error
@@ -409,6 +434,15 @@ public final class RESTClient<C: Clock>: Sendable, CustomStringConvertible, Cust
         DiscordLog.makeLogger("http.execution").trace("REST attempt admission released after response observation", metadata: ["dk.event": "http.request.completed", "dk.status": .stringConvertible(response.status)])
         if response.status == 429 { await evidence.markRejected() }
         return WireReply(status: response.status, headers: response.headers, data: data)
+    }
+
+    /// Observes only the retry policy's existing explicit sleep, including its cancellation return.
+    /// - Parameter delay: Accepted finite backoff, unchanged by instrumentation.
+    /// - Throws: Original clock sleep failure; no retry or error normalization is added.
+    private func retrySleep(_ delay: Duration) async throws {
+        let wait = phaseTiming?.begin(.retryWait)
+        do { try await clock.sleep(for: delay); wait?.end() }
+        catch { wait?.end(error: error); throw error }
     }
 
     /// Maps the existing finite scalar classification without retaining or formatting the failure.
@@ -558,11 +592,14 @@ public final class RESTClient<C: Clock>: Sendable, CustomStringConvertible, Cust
     /// - Throws: `DiscordError.transport(.invalidResponse)` for every decoding failure.
     private func decode<Response: Sendable>(_ endpoint: Endpoint<Response>, data: Data) throws -> Response {
         DiscordLog.makeLogger("http.codec").trace("REST response decoding started", metadata: ["dk.event": "http.decode.started", "dk.bytes": .stringConvertible(data.count)])
+        let decoding = phaseTiming?.begin(.decode)
         do {
             let value = try endpoint.decode(data)
+            decoding?.end()
             DiscordLog.makeLogger("http.codec").trace("REST response decoding completed", metadata: ["dk.event": "http.decode.completed"])
             return value
         } catch {
+            decoding?.end(error: error)
             DiscordLog.makeLogger("http.codec").debug("REST response decoding rejected", metadata: ["dk.event": "http.decode.rejected"])
             throw DiscordError.transport(.invalidResponse)
         }

@@ -20,6 +20,44 @@ public enum BenchmarkWorkload: String, CaseIterable, Sendable {
     case instrumentation = "instrumentation.operation.gross"
     /// External synchronous batch including minimal checksum consumption, never a call percentile.
     case pureBatch = "pure.batch"
+    /// Joined adapter request; response completion and awaited close precede diagnostics.
+    case transportRequest = "transport.request"
+    case transportConstruct = "transport.construct"
+    case transportHeaders = "transport.headers"
+    case transportBody = "transport.body"
+    case transportBodyClose = "transport.bodyClose"
+    /// Caller-visible REST operation and honestly observed child boundaries.
+    case restRequest = "rest.request"
+    case restConstruct = "rest.construct"
+    case restOrderWait = "rest.orderWait"
+    case restCacheLookup = "rest.cacheLookup"
+    case restDecode = "rest.decode"
+    case restRetryWait = "rest.retryWait"
+    case restAdmission = "rest.admission"
+    case restHeaders = "rest.headers"
+    case restBody = "rest.body"
+    case restSubscriber = "rest.subscriber"
+    case restExecution = "rest.executionJoined"
+    /// Scheduled and submitted whole workflows retain separate populations.
+    case arrivalScheduledResponse = "arrival.scheduledResponse"
+    case arrivalSubmittedResponse = "arrival.submittedResponse"
+    case arrivalLateness = "arrival.lateness"
+    case arrivalAdmissionWait = "arrival.admissionWait"
+    case arrivalService = "arrival.service"
+
+    /// Earliest catalog revision defining this identity; old readers retain old semantics.
+    public var minimumCatalogVersion: UInt32 {
+        /// Returns the frozen catalog introduction version without inspecting observations.
+        get {
+            switch self {
+            case .instrumentation: 3
+            case .pureBatch: 4
+            case .transport, .httpPolicy, .direct10, .direct100, .direct1000,
+                 .dsl10, .dsl100, .dsl1000, .voice: 2
+            default: 5
+            }
+        }
+    }
 
     /// Selects a declared DSL population without accepting arbitrary metric labels.
     /// - Parameters:
@@ -35,7 +73,7 @@ public enum BenchmarkWorkload: String, CaseIterable, Sendable {
 ///
 /// Initialization allocates every finite population before work. Each 100-microsecond
 /// bucket covers durations in 0...1 second; longer observations remain censored.
-/// Six outcome histograms per workload use less than 6 MiB across the entire enum.
+/// Six outcome histograms per workload use less than 16 MiB across the entire enum.
 /// A lock protects concurrent DSL workers. It never calls application code or does
 /// I/O, and completed timestamps are captured before entering it. Collection cost
 /// can still perturb scheduling and enclosing throughput measurements.

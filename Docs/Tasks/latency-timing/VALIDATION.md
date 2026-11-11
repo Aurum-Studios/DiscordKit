@@ -400,3 +400,78 @@ controlled-host noise floor, regression threshold, individual-call P99, hosted C
 Linux/other-platform performance, actual desktop IPC, live Discord behavior or
 later roadmap stages. Process CPU/current RSS/lifetime peak RSS retain documented
 scopes; allocation-event counts and exact retained heap are not measured.
+
+## Phase 5 validation
+
+Executed 2026-11-10 on local macOS arm64 with Apple Swift 6.4 from Phase 4
+revision `efa7e6d5`, plus the release receipt's explicit source fingerprint.
+The [implementation record](PHASE-5.md) and
+[suite guide](../../../Tools/DiscordKitLoadTests/README.md#phase-5-transport-and-rest-timing)
+define actual boundaries and scope. Historical validation above is preserved.
+
+| Check | Completed result |
+| --- | --- |
+| Root build and strict tests, forced pins, four jobs | Passed: 2,588 tests across 34 executable summaries; optional REST hooks and existing rate/retry/order/coalescing regressions included |
+| Load package strict tests | Passed: 54 tests in eight suites, including exact virtual endpoints, diagnostic exclusion, whole-run denominators, all 17 REST scenarios, independent arrivals, bounds, cancellation and once-only cleanup |
+| Shared support Swift tests | Passed: 38 tests in five suites; catalog-five gating and earlier-reader roundtrips |
+| Load-script Python tests | Passed: 21 tests, including TLS fixture, legacy readers, bounded matrix and real SIGTERM forwarding, cleanup gate and child reaping |
+| Shared supervisor Python tests | Passed: 29 tests |
+| Offline tooling tests | Passed: 106 Swift tests in eight suites and 230 Python tests |
+| Inventory, generation and parity | Passed: 18,245 inventory entries, 290 sources, 951 reviewed definitions and 255 mapped endpoints; five generated artifacts byte-identical |
+| Root dependency/import and consumer audits | Passed: 33 public products/33 runtime targets, 362 source files, 836 imports and eight resolved packages; all 13 independent examples retain their graph policy |
+| Callable documentation presence | Passed: 885 Swift files, 9,530 explicit callables, no missing comments; semantic review performed separately |
+| Public symbol graph and navigation | Passed: 37 symbol graphs emitted, DiscordHTTP navigation regenerated and byte check clean |
+| Strict DocC conversion | Passed: all 33 public-module archives with strict diagnostics |
+| Optimized final matrix | Passed: 65 serial fresh processes, 2,080 measured logical outcomes and 345 metric populations; all 65 common envelopes passed strict schema validation |
+| Capture ownership and statistics | All 27 native peers report zero active connections; all NIO pools and REST/arrival owners return to zero. Foundation close is awaited and private counts remain unavailable. Zero underflow, overflow, dropped observations or counter overflow; all P99 estimates explicitly insufficient-tail-data |
+| Native integrity smoke | NIO warm/cold/verified TLS and Foundation warm/cold passed. Streamed upload, large body, malformed response, cancellation and timeout passed on both adapters. Separate overload offered 64 at cohort 32 and adapter cap eight: eight successes, 56 refusals, peer peak eight, peer active zero after shutdown |
+
+Review corrected whole-run throughput denominators to stop at terminal operation
+endpoints before final diagnostics and include inter-wave setup gaps. Additional
+fixes preserve partial results under parent cancellation, reject overflowing
+pending counts, clamp small cohorts, expose clock regression/loss, separate actual
+from configured concurrency, and retain unavailable Foundation private counters
+without substituting zero. Explicit response close can be an idempotent join after
+EOF automatic cleanup. Child transport populations use the final caller outcome;
+REST phase populations retain boundary-local outcomes.
+
+The exact optimized capture commands are:
+
+```sh
+python3 Tools/DiscordBenchmarkSupport/scripts/run_benchmarks.py build \
+  --repository . --package Tools/DiscordKitLoadTests --product DiscordKitLoadTests \
+  --receipt .build/timing-phase5/release-final.json
+python3 Tools/DiscordKitLoadTests/scripts/run_timing_suites.py \
+  --executable Tools/DiscordKitLoadTests/.build/release/DiscordKitLoadTests \
+  --receipt .build/timing-phase5/release-final.json --output-dir .build/timing-phase5/matrix-final \
+  --requests 32 --warmup-requests 8
+```
+
+The optimized final matrix has 39 transport adapter/connection/TLS rows, 17 REST
+cases and nine rate/cohort rows. Its exact terminal populations are 1,576 success,
+160 expected failure, 128 cancellation, 96 timeout, 88 missed-arrival rejection
+and 32 uncertain mutation results. Fresh cache hits exchange nothing; the 32
+coalesced callers have exactly eight shared exchanges and 32 subscriber results.
+Timeout warmup uses the same deadline as the measured population.
+
+The 200-arrival/second sweep completed all 32 arrivals at each cohort. At 2,000
+and 20,000 arrivals/second, the one-worker rows missed 25 and 29 arrivals;
+four-worker rows missed 14 and 20; sixteen-worker rows admitted all arrivals.
+The queue never exceeded twice its worker count, every started call completed,
+and recovery drained all remaining work. These injected-service results show
+bounded saturation/recovery semantics, not a capacity threshold for Discord.
+
+The final release receipt binds dirty-source SHA-256
+`c50d3029e95fb83242d08c11921414c9a77ad64f06e01e4508677220a58b0c3c`
+and executable SHA-256
+`9868fd3fd8a50b3a977562f1bbd715f1e486685cad835f846d370ae141ce811b`.
+Reports and supervisor receipts remain in the ignored output directory named
+above. This final validation update is documentation only; SHA-256 comparison
+confirmed every executable/test/tool/manifests/pin input unchanged afterward.
+Local Markdown review resolves 279 links/anchors across 16 changed/new documents;
+whitespace checks pass.
+
+These checks do not qualify hosted CI, Linux/other native hosts, real Discord,
+controlled-host numerical baselines, individual-call P99 from sparse smoke,
+fleet capacity, publication, deployment or subsequent roadmap stages. Foundation
+private pool gauges and unavailable DNS/TLS/pool/upload endpoints remain explicit.

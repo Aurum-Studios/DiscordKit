@@ -16,6 +16,7 @@ Start with <doc:RESTClientSetup>, then read <doc:RateLimitsRetriesAndReuse>. The
 
 - <doc:RESTClientSetup>
 - <doc:RateLimitsRetriesAndReuse>
+- <doc:RESTPhaseTiming>
 - <doc:UploadsPaginationAndWorkflows>
 
 ### Resource catalog

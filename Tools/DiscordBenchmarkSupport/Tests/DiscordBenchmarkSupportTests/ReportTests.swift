@@ -51,7 +51,7 @@ import Testing
         oldCatalog.identity.catalogVersion = 2
         oldCatalog.metrics[0].id = BenchmarkWorkload.transport.rawValue
         #expect(!report.comparison(with: oldCatalog).isCompatible)
-        report.identity.catalogVersion = 5
+        report.identity.catalogVersion = 6
         #expect(throws: BenchmarkReportError.invalidIdentity) { try report.validate() }
     }
 
@@ -65,6 +65,22 @@ import Testing
         }
         report.identity.catalogVersion = 4
         #expect(try DiscordBenchmarkReport.decode(report.validatedData()) == report)
+    }
+
+    /// Every new workflow identity requires catalog five; historical populations remain distinct.
+    /// - Throws: Unexpected bounded fixture or serialization failure.
+    @Test func phaseFiveCatalogPreservesEarlierReports() throws {
+        var report = try completeReport()
+        for workload in BenchmarkWorkload.allCases where workload.minimumCatalogVersion == 5 {
+            report.metrics[0].id = workload.rawValue
+            for version: UInt32 in [2, 3, 4] {
+                report.identity.catalogVersion = version
+                #expect(throws: BenchmarkReportError.unsupportedMetric) { try report.validate() }
+            }
+            report.identity.catalogVersion = 5
+            #expect(try DiscordBenchmarkReport.decode(report.validatedData()) == report)
+        }
+        _ = try RunStatistics(workloads: BenchmarkWorkload.allCases)
     }
 
     /// Ensures stable common-envelope round trips preserve complete explicit evidence.

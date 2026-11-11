@@ -14,6 +14,11 @@ The implementation sequence remains in [PLAN.md](PLAN.md), metric identities
 and populations in [METRICS.md](METRICS.md), and compatibility, hook placement,
 resource limits in [CONTRACTS.md](CONTRACTS.md), and the reference-host procedure in [VALIDATION.md](VALIDATION.md).
 
+Phase 5 adds corrected native [transport and REST cases](../../../Tools/DiscordKitLoadTests/README.md#phase-5-transport-and-rest-timing)
+and bounded arrivals, with [optional REST owner hooks](../../../Sources/DiscordHTTP/RESTTiming.swift).
+The historical seams below retain their initial meaning; corrected cases have
+new identities and completed evidence in [PHASE-5.md](PHASE-5.md).
+
 ## Priority and qualification vocabulary
 
 - **P0:** measurement foundation and the first CPU, REST and interaction slice.

@@ -321,6 +321,14 @@ exchanges; coalescing counts exactly match exchange/subscriber ownership; rates,
 FIFO, retry limits and cancellation semantics remain unchanged. Queue/resource
 bounds and post-shutdown ownership checks pass at and beyond saturation.
 
+Stage 5 implementation: the [existing load executable](../../../Tools/DiscordKitLoadTests/README.md#phase-5-transport-and-rest-timing)
+adds 12 corrected transport cases, 17 real-REST scripted cases and a bounded
+independent arrival driver. Optional REST phase hooks retain legacy semantics;
+catalog revision 5 preserves earlier reports. Native cold/warm and verified NIO
+TLS remain distinct; unavailable internals are explicit. See the
+[implementation record](PHASE-5.md) and [local validation](VALIDATION.md#phase-5-validation).
+Numerical baselines, other hosts and live Discord remain separate qualifications.
+
 ## Stage 6 — Gateway, interactions and command latency suites
 
 Deliverables:
