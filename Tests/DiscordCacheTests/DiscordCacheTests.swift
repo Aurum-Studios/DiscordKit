@@ -305,6 +305,7 @@ import DiscordTestSupport
         await #expect(throws: CancellationError.self) { try await second.value }
         #expect(await cache.statistics().refreshes == 0)
         #expect(await cache.statistics().waiters == 0)
+        #expect(await cache.retainedIndexCounts().refreshIdentities == 0)
         #expect(loader.release.waitingCount == 0)
         let canceled = Task {
             withUnsafeCurrentTask { $0?.cancel() }
@@ -375,6 +376,7 @@ import DiscordTestSupport
         await #expect(throws: CancellationError.self) { try await read.value }
         #expect(await cache.statistics().refreshes == 0)
         #expect(await cache.statistics().waiters == 0)
+        #expect(await cache.retainedIndexCounts().refreshIdentities == 0)
         #expect(await cache.statistics().bytes == 0)
         #expect(await cache.value(for: key, scope: scope) == nil)
         await #expect(throws: EntityCacheFailure.closed) { try await cache.apply(EntitySnapshot(fields: [:]), for: key, scope: scope) }

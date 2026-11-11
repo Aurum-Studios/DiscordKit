@@ -871,3 +871,87 @@ alternating comparisons. Local observations remain informational; reserved-host
 noise-floor and profiler qualification, hosted CI, live Discord and production
 capacity require their own evidence. See the
 [phase record](../../Docs/Tasks/performance-improvements/PHASE-3.md).
+
+## Performance phase 4 cache scaling controls
+
+The `cache-scaling-timing` command adds versioned public-API experiments for
+both `EntityCache` and HTTP `ReadCache`. Existing `cache-client-timing`
+identities continue to cover sparse merge, projection, single-flight subscribers
+and superseded-loader fencing. Refresh cancellation has functional test coverage;
+there is no dedicated cancelled-loader timing case. The new command isolates
+lookup and retention scaling with one sequential caller.
+
+```sh
+swift run --package-path Tools/DiscordKitLoadTests DiscordKitLoadTests \
+  cache-scaling-timing --list-cases
+swift run -c release --package-path Tools/DiscordKitLoadTests DiscordKitLoadTests \
+  cache-scaling-timing --case cache.hotHitV1 --owner entity --requests 256 \
+  --working-set 4096 --identities 1 --payload-bytes 128 --churn-updates 0 \
+  --warmup-requests 8 --duration-seconds 300 --warmup-seconds 30 \
+  --output .build/cache-scaling.json --common-report .build/cache-scaling-common.json
+```
+
+| Case | Selected call and exact checks outside its timer |
+| --- | --- |
+| `cache.hotHitV1` | Lookup a prefilled key and verify the complete retained payload. |
+| `cache.missV1` | Lookup an absent representation while the fixed working set remains full. |
+| `cache.updateV1` | Replace an existing key with a prepared equal-size payload; verify the new value and unchanged entry count. Entity serialization and byte charging remain inside the actual write call. |
+| `cache.expiryStormV1` | Advance deterministic freshness to the inclusive TTL and time the lookup that prunes the whole working set. Refill before each selected call; verify zero survivors and one final untimed recovery read. |
+| `cache.capacityV1` | Insert a new key into a full cache. Maintain an untimed exact LRU model and verify the expected per-identity/global victim, retained payload and constant entry count. |
+| `cache.invalidationV1` | Invalidate one local-write entity key or one uniquely tagged HTTP representation. Verify absence, then restore and verify recovery outside the timer. |
+
+`--owner entity|read`, `--working-set` (1...4096 **aggregate** keys),
+`--identities` (1...min(32, working-set)), `--payload-bytes` (0...65536), and
+`--churn-updates` (0...64) are independent. Identity sweeps partition a fixed
+aggregate key count instead of multiplying it. Entry limits equal the aggregate
+working set and its ceiling per identity. Byte limits use `payload-bytes + 1024`
+per slot, allowing actual payload size to vary without unintentionally switching
+to byte-driven eviction. The combined fixture retained-charge guard is 16 MiB;
+key/index/allocator overhead and the two prepared variants need separate process
+memory observations. The HTTP cache charges raw response bytes, while the entity
+cache performs conservative JSON/metadata charging, so their byte receipts have
+different meanings. Prepared `Data`/string payload storage is shared across keys;
+accounted bytes do not measure unique payload allocations.
+
+Churn performs exactly the configured number of existing-key replacements before
+each selected call, outside call/owner timers. This exercises repeated expiry-index
+updates without changing the key count or offered lookup population. Prepared
+payloads, key strings/tags, prefill, HTTP generation acquisition, exact equality,
+LRU-model updates, diagnostics and recovery are outside selected call intervals.
+The entity write still includes its production JSON serialization, accounting,
+expiry and eviction work. HTTP writes use prepared `Data`. Profile serialization
+separately before inferring its allocation contribution or changing byte semantics.
+
+`--requests` is 1...100000 and `--warmup-requests` is 0...10000. The combined
+setup/churn/recovery guard is ten million untimed writes, including each active
+owner's initial fill and expiry recovery. Warmup uses separate owners.
+Measured/warmup caps are 1...300/0...60 seconds; a cooperative cap
+joins cleanup and aborts export instead of accepting a partial population. Shared
+driver profile, seed, cap, warmup and sidecar environment defaults are supported;
+explicit options take precedence. Concurrency is always one and ignores the
+driver's concurrency default.
+
+Native schema 1 embeds common schema-1/catalog-7 evidence. Common identities append
+the owner, for example `cache.hotHitV1.entity` and `cache.hotHitV1.read`, preventing
+cross-owner pairing. `cache.call` spans immediately before the public operation
+through its return. Entity `cache.owner` uses the actual owner hook after actor
+admission and excludes all setup work through a task-local filter. The HTTP read
+cache has direct caller timing only. These distributions overlap and cannot be
+subtracted to infer queue residence. Histograms use 100 µs buckets over 0...1 second
+with explicit censoring; a shared bucket cannot distinguish small-call changes,
+and insufficient samples leave P99 unavailable. Freshness time stays fixed except
+for explicit expiry advances; wall durations use a separate real clock. Native
+`retainedBeforeCleanup` and `accountedBytesBeforeCleanup` are sampled after the
+selected population but before the final untimed expiry recovery. Cleanup itself
+checks every restored entry is released. Gross throughput and CPU include setup,
+churn, array LRU-model work, equality checks, diagnostics, recovery and teardown;
+they do not isolate cache service capacity. Maximum RSS covers the process lifetime.
+
+Use identical harness sources and release settings against both runtime revisions.
+Start with hot-hit/miss working sets 16 and 4096, capacity 256 and 4096, identity
+counts 1 and 16 at fixed 4096 keys, payloads 128 and 4096 at fixed 256 keys, and
+churn 0 and 32 at fixed 256 keys. Keep expiry request counts small enough for its
+explicit refill budget. Run serial fresh-process no-change controls and
+alternating baseline/candidate pairs. Local distributions remain informational;
+reserved-host noise-floor/profiler qualification and existing tail-population rules
+remain required before accepting numerical performance budgets.

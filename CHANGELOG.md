@@ -9,6 +9,20 @@ https://aurum-studios.com
 
 ## Unreleased
 
+### Performance plan phase 4
+
+- Replace entity/read cache-wide hot-lookup scans with bounded expiry indexes,
+  global/scoped LRU links and exact identity accounting. Preserve inclusive expiry,
+  visibility, byte limits, generation fencing and independent refresh cancellation.
+- Release refresh identity accounting when each admitted loader actually finishes,
+  preventing metadata accumulation across completed flights.
+- Add independent cache working-set/identity/payload/churn and permission
+  role/overwrite/bit-width measurement controls, plus scan-reference regression
+  coverage. The public API is unchanged. See the
+  [phase record](Docs/Tasks/performance-improvements/PHASE-4.md) for validation,
+  improved large-cache reads/eviction, slower full expiry drains, increased entity
+  process RSS and separately open numerical/platform qualification gates.
+
 ### Performance plan phase 3
 
 - Maintain Gateway subscriber creation order and exact hub accounting so fan-out

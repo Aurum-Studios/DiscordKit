@@ -28,9 +28,22 @@ public actor EntityCache<C: Clock> where C.Duration == Duration {
     }
     private struct Entry {
         let snapshot: EntitySnapshot
-        let expires: C.Instant
         let bytes: Int
-        var access: UInt64
+        var expiryIndex: Int
+        var previous: ScopedKey?
+        var next: ScopedKey?
+        var identityPrevious: ScopedKey?
+        var identityNext: ScopedKey?
+    }
+    private struct Expiry {
+        let key: ScopedKey
+        let deadline: C.Instant
+    }
+    private struct IdentityUsage {
+        var count = 0
+        var bytes = 0
+        var oldest: ScopedKey?
+        var newest: ScopedKey?
     }
     private struct Refresh {
         let token: UUID
@@ -43,10 +56,16 @@ public actor EntityCache<C: Clock> where C.Duration == Duration {
     /// Optional synchronous owner observer; nil performs no instrumentation-clock reads.
     private let intervals: DiscordIntervalTiming?
     private var entries: [ScopedKey: Entry] = [:]
+    /// One indexed deadline per live entry; replacements never append stale expiry records.
+    private var expiry: [Expiry] = []
+    private var oldest: ScopedKey?
+    private var newest: ScopedKey?
+    /// Exact quotas and intrusive LRU endpoints, removed when an identity's final entry leaves.
+    private var identities: [String: IdentityUsage] = [:]
     private var refreshes: [ScopedKey: Refresh] = [:]
+    private var identityRefreshes: [String: Int] = [:]
     private var bytes = 0
     private var waiters = 0
-    private var access: UInt64 = 0
     private var revision: UInt64 = 0
     private var closed = false
     private var hits: UInt64 = 0
@@ -104,14 +123,12 @@ public actor EntityCache<C: Clock> where C.Duration == Duration {
                 return nil
             }
             let scoped = ScopedKey(entity: key, scope: scope)
-            guard var entry = entries[scoped] else {
+            guard let entry = entries[scoped] else {
                 misses &+= 1
                 DiscordLog.makeLogger("cache.storage").trace("Entity cache miss", metadata: ["dk.event": "cache.read.miss", "dk.entries": .stringConvertible(entries.count)])
                 return nil
             }
-            access &+= 1
-            entry.access = access
-            entries[scoped] = entry
+            promote(scoped)
             hits &+= 1
             DiscordLog.makeLogger("cache.storage").trace("Entity cache hit", metadata: ["dk.event": "cache.read.hit"])
             return entry.snapshot
@@ -154,23 +171,20 @@ public actor EntityCache<C: Clock> where C.Duration == Duration {
                 DiscordLog.makeLogger("cache.storage").trace("Entity observation excluded by retention policy", metadata: ["dk.event": "cache.write.not_retained"])
                 return .notRetained
             }
-            while identityCount(scope.identity) >= limits.maximumEntriesPerIdentity
-                || identityBytes(scope.identity) > limits.maximumBytesPerIdentity - retainedBytes {
-                guard let oldest = entries.filter({ $0.key.scope.identity == scope.identity })
-                    .min(by: { $0.value.access < $1.value.access })?.key else { return .notRetained }
+            while (identities[scope.identity]?.count ?? 0) >= limits.maximumEntriesPerIdentity
+                || (identities[scope.identity]?.bytes ?? 0) > limits.maximumBytesPerIdentity - retainedBytes {
+                guard let oldest = identities[scope.identity]?.oldest else { return .notRetained }
                 remove(oldest)
                 evictions &+= 1
                 DiscordLog.makeLogger("cache.storage").trace("Entity evicted under identity budget", metadata: ["dk.event": "cache.entry.evicted", "dk.budget": "identity", "dk.entries": .stringConvertible(entries.count)])
             }
             while entries.count >= limits.maximumEntries || bytes > limits.maximumBytes - retainedBytes {
-                guard let oldest = entries.min(by: { $0.value.access < $1.value.access })?.key else { return .notRetained }
+                guard let oldest else { return .notRetained }
                 remove(oldest)
                 evictions &+= 1
                 DiscordLog.makeLogger("cache.storage").trace("Entity evicted under aggregate budget", metadata: ["dk.event": "cache.entry.evicted", "dk.budget": "aggregate", "dk.entries": .stringConvertible(entries.count)])
             }
-            access &+= 1
-            entries[scoped] = Entry(snapshot: merged, expires: clock.now.advanced(by: ttl), bytes: retainedBytes, access: access)
-            bytes += retainedBytes
+            retain(merged, for: scoped, deadline: clock.now.advanced(by: ttl), bytes: retainedBytes)
             DiscordLog.makeLogger("cache.storage").trace("Entity snapshot retained", metadata: ["dk.event": "cache.write.stored", "dk.entries": .stringConvertible(entries.count), "dk.bytes": .stringConvertible(bytes)])
             return .stored
         }
@@ -315,6 +329,10 @@ public actor EntityCache<C: Clock> where C.Duration == Duration {
         closed = true
         revision &+= 1
         entries.removeAll()
+        expiry.removeAll()
+        identities.removeAll()
+        oldest = nil
+        newest = nil
         bytes = 0
         let tasks = refreshes.values.map(\.task)
         for task in tasks { task.cancel() }
@@ -514,7 +532,7 @@ public actor EntityCache<C: Clock> where C.Duration == Duration {
             return
         }
         guard refreshes.count < limits.maximumRefreshes,
-              refreshes.keys.filter({ $0.scope.identity == key.scope.identity }).count < limits.maximumRefreshesPerIdentity else {
+              (identityRefreshes[key.scope.identity] ?? 0) < limits.maximumRefreshesPerIdentity else {
             continuation.resume(throwing: EntityCacheFailure.capacityExceeded); return
         }
         let token = UUID()
@@ -536,6 +554,7 @@ public actor EntityCache<C: Clock> where C.Duration == Duration {
             finish(key, token: token, revision: captured, result: result)
         }
         refreshes[key] = Refresh(token: token, task: task, waiters: [waiter: continuation])
+        identityRefreshes[key.scope.identity, default: 0] += 1
         waiters += 1
         refreshStarts &+= 1
         DiscordLog.makeLogger("cache.refresh").trace("Entity refresh admitted", metadata: ["dk.event": "cache.refresh.admitted", "dk.refreshes": .stringConvertible(refreshes.count), "dk.waiters": .stringConvertible(waiters)])
@@ -568,6 +587,8 @@ public actor EntityCache<C: Clock> where C.Duration == Duration {
                         result: Result<EntitySnapshot, any Error>) {
         guard let refresh = refreshes[key], refresh.token == token else { return }
         refreshes.removeValue(forKey: key)
+        if identityRefreshes[key.scope.identity] == 1 { identityRefreshes.removeValue(forKey: key.scope.identity) }
+        else { identityRefreshes[key.scope.identity, default: 0] -= 1 }
         waiters -= refresh.waiters.count
         let delivered: Result<EntitySnapshot, any Error>
         switch result {
@@ -605,30 +626,135 @@ public actor EntityCache<C: Clock> where C.Duration == Duration {
 
     /// Drops inclusively expired entries and all associated ordering metadata without timers.
     private func prune() {
-        for key in entries.filter({ $0.value.expires <= clock.now }).map(\.key) {
-            remove(key)
+        let now = clock.now
+        while let first = expiry.first, first.deadline <= now {
+            remove(first.key)
             expirations &+= 1
             DiscordLog.makeLogger("cache.storage").trace("Entity cache entry expired", metadata: ["dk.event": "cache.entry.expired"])
         }
     }
 
-    /// Removes one projection and releases its exact retained-byte accounting.
+    /// Removes one projection, its exact quota charges, both LRU links and its indexed deadline.
     /// - Parameter key: Scoped entry; missing values are harmless.
     private func remove(_ key: ScopedKey) {
-        if let old = entries.removeValue(forKey: key) { bytes -= old.bytes }
+        guard let entry = entries[key] else { return }
+        unlink(key, entry: entry)
+        removeExpiry(at: entry.expiryIndex)
+        entries.removeValue(forKey: key)
+        bytes -= entry.bytes
+        identities[key.scope.identity]?.count -= 1
+        identities[key.scope.identity]?.bytes -= entry.bytes
+        if identities[key.scope.identity]?.count == 0 { identities.removeValue(forKey: key.scope.identity) }
     }
 
-    /// Counts retained entries across every visibility partition of one identity.
-    /// - Parameter identity: Opaque application-owned credential label.
-    /// - Returns: Bounded retained-entry count.
-    private func identityCount(_ identity: String) -> Int {
-        entries.keys.filter({ $0.scope.identity == identity }).count
+    /// Retains one new projection with exactly one deadline and one link in each LRU order.
+    /// - Parameters:
+    ///   - snapshot: Merged evidence whose bounded byte charge already passed admission.
+    ///   - key: Absent scoped entry, after replacement and quota eviction removed old state.
+    ///   - deadline: Inclusive monotonic expiry, independent of access order.
+    ///   - retainedBytes: Exact payload and metadata charge, excluding allocator overhead.
+    private func retain(_ snapshot: EntitySnapshot, for key: ScopedKey, deadline: C.Instant, bytes retainedBytes: Int) {
+        entries[key] = Entry(snapshot: snapshot, bytes: retainedBytes, expiryIndex: expiry.count)
+        identities[key.scope.identity, default: IdentityUsage()].count += 1
+        identities[key.scope.identity]?.bytes += retainedBytes
+        bytes += retainedBytes
+        append(key)
+        expiry.append(Expiry(key: key, deadline: deadline))
+        moveExpiryUp(from: expiry.count - 1)
     }
 
-    /// Sums retained payload/metadata bytes across every partition of one identity.
-    /// - Parameter identity: Opaque application-owned credential label.
-    /// - Returns: Accounted bytes, excluding runtime and allocator overhead.
-    private func identityBytes(_ identity: String) -> Int {
-        entries.filter({ $0.key.scope.identity == identity }).reduce(0) { $0 + $1.value.bytes }
+    /// Promotes one retained projection in both exact LRU orders without scanning entries.
+    /// - Parameter key: Existing scoped entry; an already newest global entry is also newest for its identity.
+    private func promote(_ key: ScopedKey) {
+        guard newest != key, let entry = entries[key] else { return }
+        unlink(key, entry: entry)
+        append(key)
+    }
+
+    /// Detaches a retained projection from both LRU orders without releasing quota or expiry state.
+    /// - Parameters:
+    ///   - key: Existing projection whose neighbor links are being detached.
+    ///   - entry: Current links captured before any neighbor changes.
+    private func unlink(_ key: ScopedKey, entry: Entry) {
+        if let previous = entry.previous { entries[previous]?.next = entry.next }
+        else { oldest = entry.next }
+        if let next = entry.next { entries[next]?.previous = entry.previous }
+        else { newest = entry.previous }
+        if let previous = entry.identityPrevious { entries[previous]?.identityNext = entry.identityNext }
+        else { identities[key.scope.identity]?.oldest = entry.identityNext }
+        if let next = entry.identityNext { entries[next]?.identityPrevious = entry.identityPrevious }
+        else { identities[key.scope.identity]?.newest = entry.identityPrevious }
+    }
+
+    /// Appends a detached projection to global and identity LRU tails in constant expected work.
+    /// - Parameter key: Retained projection with an existing identity usage record.
+    private func append(_ key: ScopedKey) {
+        entries[key]?.previous = newest
+        entries[key]?.next = nil
+        if let newest { entries[newest]?.next = key }
+        else { oldest = key }
+        newest = key
+        let identityNewest = identities[key.scope.identity]?.newest
+        entries[key]?.identityPrevious = identityNewest
+        entries[key]?.identityNext = nil
+        if let identityNewest { entries[identityNewest]?.identityNext = key }
+        else { identities[key.scope.identity]?.oldest = key }
+        identities[key.scope.identity]?.newest = key
+    }
+
+    /// Erases an arbitrary retained deadline and repairs its one-entry-per-projection heap.
+    /// - Parameter index: Exact position stored by the entry being removed.
+    /// Replacement moves the final node into the hole, then repairs in the necessary direction.
+    private func removeExpiry(at index: Int) {
+        let last = expiry.count - 1
+        if index != last { exchangeExpiry(index, last) }
+        expiry.removeLast()
+        guard index < expiry.count else { return }
+        if index > 0, expiry[index].deadline < expiry[(index - 1) / 2].deadline {
+            moveExpiryUp(from: index)
+        } else { moveExpiryDown(from: index) }
+    }
+
+    /// Restores minimum-deadline ordering after insertion or upward replacement.
+    /// - Parameter index: Existing heap node whose descendant subtrees remain ordered.
+    private func moveExpiryUp(from index: Int) {
+        var child = index
+        while child > 0 {
+            let parent = (child - 1) / 2
+            guard expiry[child].deadline < expiry[parent].deadline else { return }
+            exchangeExpiry(child, parent)
+            child = parent
+        }
+    }
+
+    /// Restores minimum-deadline ordering after downward replacement.
+    /// - Parameter index: Existing heap node whose child subtrees remain ordered.
+    private func moveExpiryDown(from index: Int) {
+        var parent = index
+        while parent < expiry.count / 2 {
+            let left = parent * 2 + 1, right = left + 1
+            let child = right < expiry.count && expiry[right].deadline < expiry[left].deadline ? right : left
+            guard expiry[child].deadline < expiry[parent].deadline else { return }
+            exchangeExpiry(parent, child)
+            parent = child
+        }
+    }
+
+    /// Exchanges heap records and immediately synchronizes both retained-entry positions.
+    /// - Parameters:
+    ///   - left: Existing first heap position.
+    ///   - right: Existing distinct second heap position.
+    private func exchangeExpiry(_ left: Int, _ right: Int) {
+        expiry.swapAt(left, right)
+        entries[expiry[left].key]?.expiryIndex = left
+        entries[expiry[right].key]?.expiryIndex = right
+    }
+
+    /// Reports retained index record counts for deterministic bounded-metadata regression checks.
+    /// - Returns: Exactly one expiry record per retained projection and one quota record per
+    ///   identity with retained entries or active refreshes, without pruning or changing LRU order.
+    ///   Link and heap-position metadata live directly in entries, so neither can accumulate stale records.
+    func retainedIndexCounts() -> (expiry: Int, identities: Int, refreshIdentities: Int) {
+        (expiry.count, identities.count, identityRefreshes.count)
     }
 }

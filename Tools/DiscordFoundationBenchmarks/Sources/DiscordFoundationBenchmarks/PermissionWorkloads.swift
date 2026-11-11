@@ -12,7 +12,7 @@ import Foundation
 /// Permission arithmetic over prepared caller facts, without a cache or timing hooks in the resolver.
 enum PermissionWorkloads {
     /// Builds representative count/width scales and independent precedence, bypass and refusal oracles.
-    /// - Returns: Ten cases with four immutable variants each. Count/width growth is paired rather than Cartesian;
+    /// - Returns: Twenty-four cases with four immutable variants each. The ten historical cases retain paired growth;
     ///   owner and administrator bypasses have their own populations instead of mixing with ordinary resolution.
     /// - Throws: Bitset validation failures if the authored fixture positions become invalid.
     /// All snapshots, expected sets and fingerprint bytes are prepared synchronously before timing. No cache,
@@ -29,6 +29,14 @@ enum PermissionWorkloads {
         }
         result.append(try refusal(resourceLimit: true))
         result.append(try refusal(resourceLimit: false))
+        // Independent controls change exactly one dimension around 16 roles/16 overwrites/256 bits.
+        for (roles, overwrites, width) in [(16, 16, 256), (1, 16, 256), (128, 16, 256),
+            (16, 1, 256), (16, 128, 256), (16, 16, 64), (16, 16, 4_096)] {
+            for mode in [Mode.allow, .deny] {
+                result.append(try workload(mode: mode, count: roles, width: width,
+                    overwriteCount: overwrites))
+            }
+        }
         return result
     }
 
@@ -49,21 +57,25 @@ enum PermissionWorkloads {
     /// Resolves complete snapshots; all width/count configuration and expected bitsets precede timing.
     /// - Parameters:
     ///   - mode: Fixed precedence or bypass semantics shared by all four variants in this population.
-    ///   - count: Assigned role and overwrite count, selected from 1, 16 and 128; the everyone role is additional.
+    ///   - count: Assigned role count and default overwrite count, selected from 1, 16 and 128; everyone is additional.
     ///   - width: Highest supplied permission width, selected from 64, 256 and 4,096 bits.
+    ///   - overwriteCount: Independent positive overwrite count, or nil to preserve historical paired fixtures/IDs.
     /// - Returns: A workload whose operation consumes finite result features and whose verifier compares complete sets.
     /// - Throws: Bitset validation failures during fixture preparation. Operation or verification closures subsequently
     ///   throw `integrityFailure` if complete supplied facts unexpectedly fail resolution or disagree with the oracle.
     /// The aggregate input bound is explicitly raised to 16,777,216 bits for the largest prepared case. Resolution
     /// remains synchronous and caller-owned; the operation creates no asynchronous work or retained cache state.
-    private static func workload(mode: Mode, count: Int, width: Int) throws -> FoundationWorkload {
-        let variants = try (0..<4).map { try prepare(mode: mode, count: count, width: width, variant: $0) }
+    private static func workload(mode: Mode, count: Int, width: Int,
+                                 overwriteCount: Int? = nil) throws -> FoundationWorkload {
+        let variants = try (0..<4).map { try prepare(mode: mode, count: count, width: width,
+            variant: $0, overwriteCount: overwriteCount) }
         // The largest case intentionally raises the aggregate cap above the public conservative default.
         let limits = PermissionResolutionLimits(maximumTotalBitWidth: 16_777_216)
-        let id = "permission.\(mode.rawValue).r\(count).w\(width)"
+        let id = overwriteCount.map { "permission.v2.\(mode.rawValue).r\(count).o\($0).w\(width)" }
+            ?? "permission.\(mode.rawValue).r\(count).w\(width)"
         return FoundationWorkload(id: id,
             dimensions: ["role_count": UInt64(count + 1), "assigned_role_count": UInt64(count),
-                "overwrite_count": UInt64(count), "bit_width": UInt64(width), "variant_count": 4,
+                "overwrite_count": UInt64(overwriteCount ?? count), "bit_width": UInt64(width), "variant_count": 4,
                 "maximum_total_bit_width": 16_777_216],
             fixture: fixtureBytes(variants), operation: { input in
                 let fixture = variants[Int(input % 4)]
@@ -91,14 +103,17 @@ enum PermissionWorkloads {
     /// Known positions independently define the result; no resolver output constructs the oracle.
     /// - Parameters:
     ///   - mode: Allow/deny precedence, assigned-role administrator bypass, or known-owner bypass to exercise.
-    ///   - count: Positive number of assigned roles and channel overwrites; the matrix supplies 1, 16 or 128.
+    ///   - count: Positive assigned-role count; also the overwrite count when no independent override is supplied.
     ///   - width: Supplied maximum bit width, at least 64 for this matrix; variable high positions remain distinct.
     ///   - variant: An index in `0..<4`, varying identifiers and retained/overwritten high bits.
+    ///   - overwriteCount: Optional independent count in 1...128; nil uses the assigned-role count.
     /// - Returns: Complete guild/member/channel snapshots and an independent exact expected result. Owner expectations
     ///   retain an empty finite mask and an explicit unrestricted flag rather than inventing an all-permissions value.
     /// - Throws: `UnsignedBitSet.ValidationError` if fixture mask positions exceed supported construction bounds.
     /// All collection/mask allocation and oracle construction occur during setup, with no resolver call or I/O.
-    private static func prepare(mode: Mode, count: Int, width: Int, variant: Int) throws -> Fixture {
+    private static func prepare(mode: Mode, count: Int, width: Int, variant: Int,
+                                overwriteCount: Int? = nil) throws -> Fixture {
+        let overwriteCount = overwriteCount ?? count
         let guildID = GuildID(rawValue: UInt64(100 + variant))
         let everyone = RoleID(rawValue: guildID.rawValue)
         let user = UserID(rawValue: UInt64(200 + variant))
@@ -117,15 +132,15 @@ enum PermissionWorkloads {
         let mask = try UnsignedBitSet(bits: [11, probe])
         var overwrites = [PermissionOverwrite(target: .member(user),
             allow: mode == .allow ? mask : .init(), deny: mask)]
-        if count > 1 {
+        if overwriteCount > 1 {
             // Everyone denial precedes selected-role restoration; member denial has final precedence.
             overwrites.append(.init(target: .role(everyone), deny: mask))
         }
-        if count > 2 {
+        if overwriteCount > 2 {
             let role = RoleID(rawValue: UInt64(1_000 + variant * 1_000))
             overwrites.append(.init(target: .role(role), allow: mask, deny: mask))
         }
-        while overwrites.count < count {
+        while overwrites.count < overwriteCount {
             // Unassigned role overwrites must never grant administrator or remove viewing.
             overwrites.append(.init(target: .role(.init(rawValue: UInt64(100_000 + overwrites.count))),
                 allow: try UnsignedBitSet(bits: [3]), deny: base))

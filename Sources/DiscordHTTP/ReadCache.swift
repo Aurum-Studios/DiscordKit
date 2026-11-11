@@ -58,18 +58,51 @@ public struct ReadCachePolicy: Sendable {
 /// visibility/scope changes; local successful writes invalidate their declared tags.
 /// A global revision fences completions started before any invalidation, conservatively
 /// declining their insertion even when another identity was invalidated.
+/// Fresh lookups inspect only the earliest expiry and promote constant-time global and
+/// scoped LRU links. Each retained entry owns exactly one expiry record; replacements,
+/// invalidation and eviction remove index metadata immediately without tombstones.
 public actor ReadCache<C: Clock> where C.Duration == Duration {
-    private struct Entry {
+    /// Actor-owned payload and its exact positions in the expiry and two LRU indexes.
+    private final class Entry {
+        let key: HTTPReadKey
         let data: Data
         let expires: C.Instant
         let tags: Set<String>
-        var access: UInt64
+        var expiryIndex: Int
+        var previous: HTTPReadKey?
+        var next: HTTPReadKey?
+        var identityPrevious: HTTPReadKey?
+        var identityNext: HTTPReadKey?
+
+        /// Creates one unlinked retained entry before the actor installs all index memberships.
+        /// - Parameters:
+        ///   - key: Complete scoped representation key.
+        ///   - data: Validated retained payload.
+        ///   - expires: Inclusive removal boundary.
+        ///   - tags: Endpoint invalidation tags.
+        ///   - expiryIndex: Initial final position in the expiry heap before upward restoration.
+        init(key: HTTPReadKey, data: Data, expires: C.Instant, tags: Set<String>, expiryIndex: Int) {
+            self.key = key
+            self.data = data
+            self.expires = expires
+            self.tags = tags
+            self.expiryIndex = expiryIndex
+        }
+    }
+    private struct IdentityState {
+        var count = 0
+        var bytes = 0
+        var oldest: HTTPReadKey?
+        var newest: HTTPReadKey?
     }
     private let clock: C
     private let policy: ReadCachePolicy
     private var entries: [HTTPReadKey: Entry] = [:]
+    private var expiries: [Entry] = []
+    private var identities: [RateLimitIdentity: IdentityState] = [:]
+    private var oldest: HTTPReadKey?
+    private var newest: HTTPReadKey?
     private var revision: UInt64 = 0
-    private var access: UInt64 = 0
     private var bytes = 0
 
     /// Creates an empty cache without launching tasks or scheduling refreshes.
@@ -90,13 +123,14 @@ public actor ReadCache<C: Clock> where C.Duration == Duration {
     /// - Returns: Retained successful bytes, or nil for a missing/expired entry.
     public func value(for key: HTTPReadKey) -> Data? {
         prune()
-        guard var entry = entries[key] else {
+        guard let entry = entries[key] else {
             DiscordLog.makeLogger("http.cache").trace("REST response cache lookup missed", metadata: ["dk.event": "http.cache.lookup.missed", "dk.entries": .stringConvertible(entries.count)])
             return nil
         }
-        access &+= 1
-        entry.access = access
-        entries[key] = entry
+        if newest != key {
+            unlink(entry)
+            append(entry)
+        }
         DiscordLog.makeLogger("http.cache").trace("REST response cache lookup succeeded", metadata: ["dk.event": "http.cache.lookup.hit", "dk.bytes": .stringConvertible(entry.data.count)])
         return entry.data
     }
@@ -117,18 +151,24 @@ public actor ReadCache<C: Clock> where C.Duration == Duration {
               policy.maximumEntries > 0, policy.maximumEntriesPerIdentity > 0,
               data.count <= min(policy.maximumBytes, policy.maximumBytesPerIdentity) else { return }
         remove(key)
-        while entries.keys.filter({ $0.identity == key.identity }).count >= policy.maximumEntriesPerIdentity
-            || identityBytes(key.identity) > policy.maximumBytesPerIdentity - data.count {
-            guard let oldest = entries.filter({ $0.key.identity == key.identity }).min(by: { $0.value.access < $1.value.access })?.key else { return }
-            remove(oldest)
+        while let state = identities[key.identity],
+              state.count >= policy.maximumEntriesPerIdentity || state.bytes > policy.maximumBytesPerIdentity - data.count {
+            guard let victim = state.oldest else { return }
+            remove(victim)
         }
         while entries.count >= policy.maximumEntries || bytes > policy.maximumBytes - data.count {
-            guard let oldest = entries.min(by: { $0.value.access < $1.value.access })?.key else { return }
-            remove(oldest)
+            guard let victim = oldest else { return }
+            remove(victim)
         }
-        access &+= 1
-        entries[key] = Entry(data: data, expires: clock.now.advanced(by: timeToLive), tags: tags, access: access)
+        let entry = Entry(key: key, data: data, expires: clock.now.advanced(by: timeToLive),
+                          tags: tags, expiryIndex: expiries.count)
+        entries[key] = entry
+        append(entry)
+        identities[key.identity, default: IdentityState()].count += 1
+        identities[key.identity, default: IdentityState()].bytes += data.count
         bytes += data.count
+        expiries.append(entry)
+        moveUp(from: entry.expiryIndex)
         DiscordLog.makeLogger("http.cache").trace("REST response cache retained validated bytes", metadata: ["dk.event": "http.cache.inserted", "dk.entries": .stringConvertible(entries.count), "dk.bytes": .stringConvertible(bytes)])
     }
 
@@ -138,14 +178,21 @@ public actor ReadCache<C: Clock> where C.Duration == Duration {
     ///   - tags: Intersecting endpoint tags; empty invalidates every scoped representation.
     public func invalidate(identity: RateLimitIdentity, tags: Set<String> = []) {
         revision &+= 1
-        let keys = entries.filter { $0.key.identity == identity && (tags.isEmpty || !$0.value.tags.isDisjoint(with: tags)) }.map(\.key)
-        for key in keys { remove(key) }
+        var key = identities[identity]?.oldest
+        while let current = key, let entry = entries[current] {
+            key = entry.identityNext
+            if tags.isEmpty || !entry.tags.isDisjoint(with: tags) { remove(current) }
+        }
     }
 
     /// Drops every retained snapshot and fences all outstanding fetch generations.
     public func removeAll() {
         revision &+= 1
         entries.removeAll()
+        expiries.removeAll()
+        identities.removeAll()
+        oldest = nil
+        newest = nil
         bytes = 0
     }
 
@@ -156,28 +203,117 @@ public actor ReadCache<C: Clock> where C.Duration == Duration {
         return (entries.count, bytes)
     }
 
-    /// Removes inclusive-expired entries without timers or background tasks.
+    /// Reports bounded metadata counts without pruning or exposing scoped keys and payloads.
+    /// - Returns: One expiry record per retained entry and one state per nonempty identity.
+    func indexSnapshot() -> (expiryEntries: Int, identities: Int) { (expiries.count, identities.count) }
+
+    /// Removes inclusive-expired entries in O(k log n), stopping at the first live expiry.
+    /// Capturing time once gives every entry the same observation boundary without timers.
     private func prune() {
-        let expired = entries.filter { $0.value.expires <= clock.now }.map(\.key)
-        for key in expired { remove(key) }
-        if !expired.isEmpty {
-            DiscordLog.makeLogger("http.cache").trace("REST response cache expired entries pruned", metadata: ["dk.event": "http.cache.expired", "dk.removed": .stringConvertible(expired.count)])
+        let now = clock.now
+        var removed = 0
+        while let first = expiries.first, first.expires <= now {
+            remove(first.key)
+            removed += 1
+        }
+        if removed > 0 {
+            DiscordLog.makeLogger("http.cache").trace("REST response cache expired entries pruned", metadata: ["dk.event": "http.cache.expired", "dk.removed": .stringConvertible(removed)])
         }
     }
 
     /// Releases one entry and its exact payload accounting; missing keys are harmless.
     /// - Parameter key: Representation to remove.
     private func remove(_ key: HTTPReadKey) {
-        if let old = entries.removeValue(forKey: key) {
+        if let old = entries[key] {
+            unlink(old)
+            removeExpiry(at: old.expiryIndex)
+            entries.removeValue(forKey: key)
+            if var state = identities[key.identity] {
+                state.count -= 1
+                state.bytes -= old.data.count
+                if state.count == 0 { identities.removeValue(forKey: key.identity) }
+                else { identities[key.identity] = state }
+            }
             bytes -= old.data.count
             DiscordLog.makeLogger("http.cache").trace("REST response cache entry released", metadata: ["dk.event": "http.cache.removed", "dk.entries": .stringConvertible(entries.count), "dk.bytes": .stringConvertible(bytes)])
         }
     }
 
-    /// Sums one identity's retained payload accounting within the finite entry bound.
-    /// - Parameter identity: Opaque scope to measure.
-    /// - Returns: Retained bytes for that scope.
-    private func identityBytes(_ identity: RateLimitIdentity) -> Int {
-        entries.filter { $0.key.identity == identity }.reduce(0) { $0 + $1.value.data.count }
+    /// Detaches one entry from both LRU lists without changing membership or payload accounting.
+    /// - Parameter entry: Retained actor-owned node whose neighboring keys remain in membership.
+    private func unlink(_ entry: Entry) {
+        if let previous = entry.previous { entries[previous]?.next = entry.next }
+        else { oldest = entry.next }
+        if let next = entry.next { entries[next]?.previous = entry.previous }
+        else { newest = entry.previous }
+        if let previous = entry.identityPrevious { entries[previous]?.identityNext = entry.identityNext }
+        else { identities[entry.key.identity]?.oldest = entry.identityNext }
+        if let next = entry.identityNext { entries[next]?.identityPrevious = entry.identityPrevious }
+        else { identities[entry.key.identity]?.newest = entry.identityPrevious }
+        entry.previous = nil
+        entry.next = nil
+        entry.identityPrevious = nil
+        entry.identityNext = nil
+    }
+
+    /// Appends an unlinked retained node as newest in the aggregate and its identity's LRU list.
+    /// - Parameter entry: Node already installed in membership; accounting is owned by the caller.
+    private func append(_ entry: Entry) {
+        entry.previous = newest
+        if let newest { entries[newest]?.next = entry.key }
+        else { oldest = entry.key }
+        newest = entry.key
+        var state = identities[entry.key.identity, default: IdentityState()]
+        entry.identityPrevious = state.newest
+        if let previous = state.newest { entries[previous]?.identityNext = entry.key }
+        else { state.oldest = entry.key }
+        state.newest = entry.key
+        identities[entry.key.identity] = state
+    }
+
+    /// Removes one arbitrary expiry position immediately, retaining no stale replacement records.
+    /// - Parameter index: Exact heap position owned by the entry being removed.
+    private func removeExpiry(at index: Int) {
+        let last = expiries.removeLast()
+        guard index < expiries.count else { return }
+        expiries[index] = last
+        last.expiryIndex = index
+        if index > 0, last.expires < expiries[(index - 1) / 2].expires { moveUp(from: index) }
+        else { moveDown(from: index) }
+    }
+
+    /// Restores minimum-expiry order toward the root after inserting or moving one entry.
+    /// - Parameter index: Valid heap index whose children already satisfy heap order.
+    private func moveUp(from index: Int) {
+        var child = index
+        while child > 0 {
+            let parent = (child - 1) / 2
+            guard expiries[child].expires < expiries[parent].expires else { return }
+            exchange(child, parent)
+            child = parent
+        }
+    }
+
+    /// Restores minimum-expiry order toward the leaves after arbitrary removal.
+    /// - Parameter index: Valid heap index whose ancestors already satisfy heap order.
+    private func moveDown(from index: Int) {
+        var parent = index
+        while parent < expiries.count / 2 {
+            let left = parent * 2 + 1, right = left + 1
+            let child = right < expiries.count && expiries[right].expires < expiries[left].expires ? right : left
+            guard expiries[child].expires < expiries[parent].expires else { return }
+            exchange(parent, child)
+            parent = child
+        }
+    }
+
+    /// Swaps heap entries and synchronizes their actor-owned positions before further mutation.
+    /// - Parameters:
+    ///   - left: First valid heap index.
+    ///   - right: Second valid heap index.
+    private func exchange(_ left: Int, _ right: Int) {
+        expiries.swapAt(left, right)
+        expiries[left].expiryIndex = left
+        expiries[right].expiryIndex = right
     }
 }

@@ -16,13 +16,13 @@ import Testing
 @Suite struct PermissionRPCWorkloadTests {
     /// Prepared four-way input selection preserves exact outputs and refusal counts, including wrapping inputs.
     /// - Throws: Fixture construction, full semantic verification or unexpected measured-operation errors.
-    /// Exercises all ten permission and seventeen framing cases, their declared scale dimensions and both rejected
+    /// Exercises all twenty-four permission and seventeen framing cases, their declared scale dimensions and both rejected
     /// and admitted populations. Input values spanning four variants and UInt64.max qualify modulo selection without
     /// running a clock or asserting machine-dependent speed. Every operation owns only synchronous local values.
     @Test func workloadObservationsMatchIndependentOracles() throws {
         let permissions = try PermissionWorkloads.make()
         let rpc = try RPCWorkloads.make()
-        #expect(permissions.count == 10)
+        #expect(permissions.count == 24)
         #expect(rpc.count == 17)
         let workloads = permissions + rpc
         #expect(Set(workloads.map(\.id)).count == workloads.count)
@@ -39,6 +39,38 @@ import Testing
         #expect(Set(permissions.compactMap { $0.dimensions["bit_width"] }) == [64, 256, 4_096])
         #expect(Set(rpc.compactMap { $0.dimensions["payload_bytes"] }) == [1_024, 16_384, 262_144])
         #expect(Set(rpc.compactMap { $0.dimensions["fragment_bytes"] }) == [7, 256, 4_096])
+    }
+
+    /// Independent permission controls preserve the original catalog while separating role, overwrite and width costs.
+    /// - Throws: Fixture preparation, resolver integrity or missing baseline errors.
+    /// Every v2 fixture changes at most one dimension from its same-mode baseline. Full untimed verification and
+    /// measured checksum agreement exercise each variant; unchanged historical IDs retain the original paired counts.
+    @Test func permissionDimensionsVaryIndependently() throws {
+        let workloads = try PermissionWorkloads.make()
+        let historical = workloads.filter { !$0.id.hasPrefix("permission.v2.") }
+        #expect(historical.count == 10)
+        let independent = workloads.filter { $0.id.hasPrefix("permission.v2.") }
+        #expect(independent.count == 14)
+        let dimensions = ["assigned_role_count", "overwrite_count", "bit_width"]
+        for mode in ["allow", "deny"] {
+            let cases = independent.filter { $0.id.hasPrefix("permission.v2.\(mode).") }
+            let baseline = try #require(cases.first { $0.id == "permission.v2.\(mode).r16.o16.w256" })
+            #expect(cases.count == 7)
+            let original = try #require(historical.first { $0.id == "permission.\(mode).r16.w256" })
+            #expect(baseline.fixture == original.fixture)
+            #expect(baseline.dimensions == original.dimensions)
+            for workload in cases {
+                let changes = dimensions.filter { workload.dimensions[$0] != baseline.dimensions[$0] }
+                #expect(changes.count <= 1)
+                try workload.verify()
+                for input in UInt64(0)..<4 {
+                    #expect(try workload.operation(input) == workload.expected(input))
+                }
+            }
+            #expect(Set(cases.compactMap { $0.dimensions["assigned_role_count"] }) == [1, 16, 128])
+            #expect(Set(cases.compactMap { $0.dimensions["overwrite_count"] }) == [1, 16, 128])
+            #expect(Set(cases.compactMap { $0.dimensions["bit_width"] }) == [64, 256, 4_096])
+        }
     }
 
     /// Independently authored role/member precedence proves high-bit preservation and bypass semantics.

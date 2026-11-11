@@ -32,7 +32,7 @@ python3 Tools/DiscordFoundationBenchmarks/scripts/run_cases.py \
   --receipt .build/timing-phase4/release.json --output-dir .build/timing-phase4/cases
 ```
 
-The wrapper runs all 101 cases sequentially, in separate processes. Repeated
+The wrapper runs all 115 cases sequentially, in separate processes. Repeated
 `--case` options select a subset. Defaults are 100 measured batches, 16 calls per
 batch, eight warmup batches and one fresh process per case. Finite native limits
 for `--batches` / `--batch-size` / `--warmup-batches` are 100,000 / 1,024 / 10,000.
@@ -71,7 +71,7 @@ use the shared driver for retained performance evidence.
 | Identifiers/bitsets | 14 | Snowflake parse/format includes zero, leading zeroes and UInt64 maximum. Parse/serialize/algebra/mutation × 64/256/4096 bits. Decimal-digit doubling and position sets independently prove every bit. |
 | Models | 9 | Message decode, lossless model encode, field/unknown roundtrip × three sizes. Mentions 0/4/32, embeds 0/2/10, unknown fields 1/16/64, nesting 1/8/16; absent/null/value references and future numeric tokens remain distinct. |
 | Builders | 10 | Legacy messages and V2 components × three sizes, plus contribution/node/row/text-size rejections. Independent wire trees, component grammar and safe mention policy accompany every case. |
-| Permissions | 10 | Allow/deny × paired 1/16/128 assigned roles and overwrites, 64/256/4096-bit width. Owner/admin bypass and resource-limit/unknown-overwrite refusals have independently known results. |
+| Permissions | 24 | Allow/deny × paired 1/16/128 assigned roles and overwrites, 64/256/4096-bit width. Fourteen versioned one-factor controls vary assigned roles, overwrites and width separately around 16/16/256. Owner/admin bypass and resource-limit/unknown-overwrite refusals have independently known results. |
 | RPC frames | 17 | Encode × 1/16/256 KiB; incremental decode × those sizes × 7/256/4096-byte fragments. Independent little-endian wire bytes plus malformed-opcode, announced-size, append-size, truncation and encode-size rejections. |
 
 The 24 new `json.v2.parse.*` / `json.v2.serialize.*` cases keep all 77 original

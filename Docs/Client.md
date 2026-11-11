@@ -126,6 +126,16 @@ scope/key sizes; Swift heap/index/task/allocator overhead requires actual RSS
 measurement. A missing, expired, evicted or oversized value yields a miss or an
 explicit not-retained result; the cache never grows to satisfy a desired working set.
 
+Fresh lookups check the earliest retained expiry and promote exact global and
+per-identity LRU links without scanning the working set. One indexed expiry record
+per retained entry is removed immediately on replacement, expiry, invalidation or
+eviction. Identity count/byte and admitted-refresh counters are exact. Each expired
+entry costs logarithmic index maintenance; broad projection and
+event invalidation still inspect bounded retained state. Serialization for byte
+charging remains part of writes. These indices bound logical metadata cardinality;
+array/dictionary capacity and allocator overhead remain separate memory costs.
+See the [Phase 4 record](Tasks/performance-improvements/PHASE-4.md).
+
 Snapshots record provenance, completeness, redacted fields, nullable fields,
 availability/deletion and optional source ordering. Sparse patches preserve omitted
 fields; explicit null is accepted only for declared nullable keys. Nested JSON is

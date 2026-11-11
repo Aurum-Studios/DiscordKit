@@ -13,8 +13,10 @@ a dedicated causal timing reproduction here; the CPU observations expose workloa
 cost and fragmentation sensitivity, not attributed profile stacks. F01's local admission refinement is tracked in [Phase 1](PHASE-1.md).
 F02/F03/F04/F06 refinements and the retained F05/F07 decisions are tracked in
 [Phase 2](PHASE-2.md). F08/F09 event-delivery refinements and retained F10/F11
-ownership/routing decisions are tracked in [Phase 3](PHASE-3.md); later-stage
-candidates remain proposed. See [stage gates](PLAN.md) and
+ownership/routing decisions are tracked in [Phase 3](PHASE-3.md). F12 cache indexes
+and F13 retained byte-charging/stateless-permission decisions are tracked in
+[Phase 4](PHASE-4.md), including slower full expiry drains and higher entity RSS;
+later-stage candidates remain proposed. See [stage gates](PLAN.md) and
 [planning evidence](EVIDENCE.md).
 
 ## Shared runtime paths

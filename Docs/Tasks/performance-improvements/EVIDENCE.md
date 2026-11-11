@@ -188,3 +188,14 @@ The event-delivery refinements, retained ownership/routing decisions, determinis
 control-progress checks and finite comparison receipts are recorded separately in
 [Phase 3](PHASE-3.md). This preserves the original planning observations above;
 implementation receipts do not promote them to controlled-host numerical evidence.
+
+## Phase 4 implementation evidence
+
+The bounded entity/read cache indexes, exact identity accounting, retained
+serialization and stateless-permission decisions, independent workload controls
+and correctness checks are recorded in [Phase 4](PHASE-4.md). Its
+[capture index](phase-4-observations.json) retains 160 paired cache processes,
+58 functional release sweeps and 14 permission processes. Large-cache lookup and
+eviction improve locally, while full expiry drains slow and entity process RSS
+increases. These observations do not close the reserved-host numerical, profiler
+or representative workflow gates.

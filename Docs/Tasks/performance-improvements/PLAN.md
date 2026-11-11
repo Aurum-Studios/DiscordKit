@@ -10,12 +10,14 @@ https://aurum-studios.com
 Status: Stage 0 implementation validated locally; Stage 1 implementation and
 local validation are recorded in [Phase 1](PHASE-1.md). Stage 2 implementation and
 local evidence are tracked in [Phase 2](PHASE-2.md). Stage 3 implementation and
-validation are tracked in [Phase 3](PHASE-3.md). Reserved-host numerical and
-profiler qualification remain open. Stages 4–10 remain planned. Source
-investigation and exploratory planning measurements were prepared against
+validation are tracked in [Phase 3](PHASE-3.md). Stage 4 implementation, cache
+scaling observations and resource tradeoffs are recorded in [Phase 4](PHASE-4.md).
+Reserved-host numerical and profiler qualification remain open. Stages 5–10
+remain planned. Source investigation and exploratory planning measurements were prepared against
 `065e2b655c28250076ba53fca310f209be1d3fd5`. Stage 1 refines local admission;
 Stage 2 refines request work and NIO buffering; Stage 3 refines bounded event
-delivery. No numerical regression policy is selected.
+delivery; Stage 4 refines cache indexing and separates permission dimensions.
+No numerical regression policy is selected.
 
 The first target is avoidable waiting in shared request admission, followed by
 redundant request work and scale-sensitive event/cache algorithms. Shared JSON,
@@ -97,7 +99,8 @@ controlled-host numerical gate remains explicit. Stage 1 has a separate
 [implementation record](PHASE-1.md), authorized with that numerical gate still
 open. Stage 2 has its own [implementation and validation record](PHASE-2.md).
 Stage 3 has its own [implementation and validation record](PHASE-3.md).
-Stages 4–10 remain **planned**.
+Stage 4 has its own [implementation, validation and tradeoff record](PHASE-4.md).
+Stages 5–10 remain **planned**.
 Stage 0 qualifies measurement before any numerical claim. Stages 1–5 prioritize common library paths. Stages 6–9 are independently
 adopted product tracks after Stage 0; source investigations can overlap, but host
 builds and performance captures run sequentially. Stage 10 follows the selected
@@ -225,6 +228,10 @@ reconnect, shutdown and fast subscriptions keep progressing under slow handlers.
 Compare first acknowledgement and completed handler workflows independently.
 
 ### Stage 4 — Refine cache scaling and permission computation
+
+Local implementation and validation are complete; see [Phase 4](PHASE-4.md).
+Logical indexes stay bounded under churn. Full-expiry latency and entity process
+RSS increase in local captures; numerical and profiler qualification remain open.
 
 Measure hot hits, misses, updates, expiry storms, capacity eviction, invalidation,
 single-flight subscribers and cancelled/superseded loaders. Sweep working set,

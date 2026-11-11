@@ -134,6 +134,14 @@ TTL bounds staleness from unobserved external changes. Every key is capped at 12
 and invalidation metadata at 128 tags/64 KiB per entry; payload byte counters exclude
 that separately bounded metadata and Swift allocator/index overhead.
 
+Fresh cache lookups check the minimum indexed expiry and promote global and
+per-identity LRU links without full-cache scans. Each retained entry has exactly one
+expiry record and exact identity count/byte charges. Removal erases all memberships
+immediately, including repeated replacement; scoped invalidation visits only that
+identity's entries. Each expired entry costs logarithmic index maintenance. Index/allocator
+memory is separate from the unchanged payload budgets. See the
+[Phase 4 record](Tasks/performance-improvements/PHASE-4.md).
+
 The transport, authority, cache and coalescer are separately owned and injected;
 a RESTClient never implicitly closes a dependency shared with other clients.
 Call coalescer/coordinator close and adapter close after clients finish. Cache has

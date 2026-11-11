@@ -46,4 +46,6 @@ Invalidate on observed permission, membership, guild availability, channel delet
 
 TTL only limits unobserved staleness. Cache hits never establish current authorization. Accounted bytes include serialized data and bounded metadata, while allocator/index/task overhead requires real RSS measurement. Optional persistence is an injected contract; monotonic expiry cannot simply survive process restart.
 
+Retention keeps one indexed expiry deadline and global/per-identity LRU links per retained entry. Repeated replacement removes old index records immediately; identity quota records disappear with their final entry, and refresh identity counters disappear after loader cleanup. Fresh hits inspect the earliest deadline and promote LRU links without scanning the working set. Each expired or evicted entry costs logarithmic expiry-index maintenance; a lazy expiry storm processes the expired entries in the calling operation. Exact serialized byte charging and identity count/byte limits still apply across all intent and visibility partitions. Explicit broad invalidations and projection-context recovery can still scan the bounded retained entries.
+
 Test sparse patches, valid/invalid nulls, redaction, tombstones, LRU/TTL boundaries, competing scopes, stale completion, cancelled waiters and aggregate limits using virtual clocks and barriers.
