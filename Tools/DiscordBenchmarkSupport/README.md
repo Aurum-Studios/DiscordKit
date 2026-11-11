@@ -80,6 +80,11 @@ and service orchestration populations. New identities require catalog eight;
 catalogs 2...7 retain their original semantics. Runtime products remain independent
 of this development package.
 
+The [media and voice suites](../../Docs/Tasks/latency-timing/PHASE-9.md) emit catalog
+revision 9 for externally timed media/MLS batches, scripted voice lifecycle,
+attributed local UDP ticks and actual Apple codec processing. Historical catalogs
+remain readable; component and child populations retain their separate meanings.
+
 Run from the repository root with Python 3.10+ and Swift 6.4+. Keep receipts and
 outputs in ignored build directories. Finish source edits before preparation:
 receipts bind revision, exact dirty/untracked content, dependency pins, executable

@@ -802,3 +802,103 @@ Local injected captures do not qualify numerical baselines, sparse P99, distribu
 OAuth locking, real desktop IPC, a browser process, live Discord, hosted CI,
 other platforms, release publication or subsequent roadmap stages. Runtime APIs,
 protocol contracts, dependency directions and legacy scalar timing are unchanged.
+
+## Phase 9 validation
+
+Implementation: [media, voice, MLS and DAVE timing](PHASE-9.md), prepared from
+Phase 8 revision `29024533` on 2026-11-10, macOS arm64 with Apple Swift 6.4.
+All source changes are development tooling, tests and documentation. Root runtime
+sources, manifest, dependency pins and legacy scalar timing remain unchanged.
+
+The semantic checks cover all 80 component cases, exact external batch boundaries,
+warmup separation, failure/cancellation cleanup, strict common envelopes, real
+manager/session control ownership, deterministic heartbeat/retry admission,
+two-generation moves, expected terminal failures, actual-ready cancellation,
+codec geometry, DTX suppression/refresh/restart, bounded impairment queues,
+contention joining and explicit native device-consent policy. Ordinary tests access
+no Apple audio devices or live Discord.
+
+| Check | Completed local evidence |
+| --- | --- |
+| Root build and strict tests | `swift build` and `SWIFTNIO_STRICT=1 swift test` passed; 2,602 tests in 323 suites across 32 test-module runs |
+| Shared, load, component, duplex and Apple tooling | 175 Swift tests passed: 42 shared support, 101 load, seven component, ten duplex and 15 Apple; the component test exercises all 80 cases |
+| Offline tooling | 106 Swift tests and 230 Python tests passed; benchmark supervision and load scripts add 29 and 37 passing Python tests |
+| Inventory, generation and parity | Passed: 18,245 inventory records, 290 sources, 951 reviewed definitions, 255 mapped endpoints and five byte-identical generated artifacts |
+| Documentation | 939 Swift files, 10,050 explicit callables, zero missing comments; all 359 local links/anchors in 19 task/tool documents resolve |
+| Optimized component capture | 82 fresh processes: all 80 cases plus jitter/transition batch-size sweeps; 656 measured batches containing 1,408 calls, with independent one-batch warmups |
+| Optimized voice lifecycle capture | 14 fresh processes across 11 scenarios and three concurrency sweeps; 112 terminal lifecycles, including eight deliberate terminal-close failures and 104 successes |
+| Optimized duplex capture | Nine fresh processes, including legacy schema 2 and eight attributed schema-3 profiles; 401 direct ticks including 400 catalog-nine ticks, each after a separate two-second warmup |
+| Capture integrity | All 105 common envelopes independently validate; 232 metric populations / 5,691 observations; zero histogram underflow, overflow, dropped observations or counter overflow; native/common projections agree |
+| Shutdown and artifact bounds | All 105 supervised owners reaped; no live process-group members, truncated artifacts or reported remaining runtime owners; all configured contention workers joined |
+| Actual-frame deadlines | Zero observed processing or scheduling misses across these short duplex profiles; this is a smoke observation, with sparse P99 and no numerical qualification |
+
+The full load run initially exposed a fixture race between a real-time heartbeat
+and injected EOF. The final fixture advances its bounded runtime clock only after
+observing heartbeat/ACK/next-sleep and retry admission. All elapsed metrics still
+use real `ContinuousClock`. The complete load suite passed after that correction.
+The independent report review also added a closure-receipt regression: failed
+native close receipts cannot become a common zero-owner cleanup assertion.
+
+The duplex matrix retains these explicit configurations (all omitted options use
+the documented defaults; every row passes `--seconds`):
+
+| Profile | Measured seconds | Additional options |
+| --- | ---: | --- |
+| Legacy compatibility | 0.02 | Legacy defaults, no attribution switch |
+| Attributed default | 0.2 | `--profile attributed` |
+| DTX silence | 1 | `--profile attributed --dtx on --signal silence` |
+| DTX talkspurts | 3 | `--profile attributed --dtx on --signal talkspurts` |
+| SILK stereo impairment | 0.2 | `--profile attributed --mode silk --frame-samples 480 --channels 2 --loss-every 20 --reorder-every 2 --jitter-ms 10 --contention-workers 1` |
+| Hybrid stereo | 0.2 | `--profile attributed --mode hybrid --frame-samples 480 --channels 2` |
+| Short CELT with jitter | 0.1 | `--profile attributed --frame-samples 120 --channels 2 --jitter-ms 100` |
+| CELT one-percent loss | 0.5 | `--profile attributed --frame-samples 240 --loss-every 100` |
+| Hybrid contention | 0.2 | `--profile attributed --mode hybrid --contention-workers 4` |
+
+DTX silence and talkspurts each intentionally suppress 76 direction-frames and
+send four refresh packets; talkspurts also record two direction restarts. All
+policy-cadence comparisons match. The one- and five-percent loss profiles each
+drop the expected two packets, with loss applied after actual UDP receipt. Raw
+pipeline gaps and encoder deadline counters retain their native lifetime scope.
+Final delayed playout drains outside measured tick histograms.
+
+Reproduce component/lifecycle sweeps using the
+[load guide](../../../Tools/DiscordKitLoadTests/README.md#phase-9-media-and-voice-timing),
+with eight measured operations and one independent warmup operation. Prepare the
+duplex executable with the same shared `build` command, selecting
+`Tools/VoiceSessionQualification` / `VoiceSessionQualification`. For each row,
+the generic supervisor uses a smoke profile, ten-second outer measurement cap,
+two-second participant warmup, concurrency two and separate fresh output roots.
+For example:
+
+```sh
+python3 Tools/DiscordBenchmarkSupport/scripts/run_benchmarks.py run \
+  --profile smoke --scenario dtx-talkspurts \
+  --receipt .build/timing-phase9/duplex-release.json \
+  --command '["Tools/VoiceSessionQualification/.build/release/VoiceSessionQualification","--profile","attributed","--seconds","3","--dtx","on","--signal","talkspurts","--seed","{seed}","--output","{output}"]' \
+  --output-dir .build/timing-phase9/duplex-talkspurts \
+  --concurrency 2 --scheduler-policy continuous-clock-fixed-frame \
+  --duration-seconds 10 --warmup-seconds 2 --warmup-policy participant-declared
+```
+
+Build receipts bind the frozen implementation, pins, fixtures and executables.
+Only this evidence ledger was updated after captures; all 3,458 other recorded
+source-file contents and executable/test/build inputs remain identical. Capture
+artifacts stay in ignored build output. An unrelated workspace test process was
+present on this host, so these are integrity smoke observations, not isolated
+reference-host performance measurements. Apple envelope checks use direct
+synthetic recorder inputs without opening devices; no native hardware report was
+produced or promoted from legacy summary percentiles.
+
+The complete release graph command also audits older developer-tool consumers.
+It currently fails on the pre-existing `Tools/DiscordDSLBenchmarks` policy: that
+consumer's shared benchmark-support dependency is absent from its reviewed release
+policy. Phase 9 changes neither that consumer nor the policy. Direct runtime graph
+validation passes (33 products/targets, 362 sources, 838 imports, eight resolved
+packages), and all 13 example consumers pass independently. This is an explicit
+existing audit limitation, not a successful aggregate release-policy check.
+
+Optimized component, lifecycle and duplex captures are informational software
+measurements. Every missed actual-frame processing/schedule deadline remains
+visible. They establish no numerical baseline, universal realtime guarantee,
+hardware/render/acoustic result, other-platform qualification, live Discord
+acceptance, independent cryptographic review, publication or later-stage completion.

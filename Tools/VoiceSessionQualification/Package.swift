@@ -23,5 +23,7 @@ let package = Package(
         .product(name: "DiscordVoice", package: "DiscordKit"),
         .product(name: "DiscordMLS", package: "DiscordKit"),
         .product(name: "DiscordDAVE", package: "DiscordKit"),
-    ], swiftSettings: [.enableUpcomingFeature("ApproachableConcurrency"), .defaultIsolation(nil)])]
+    ], swiftSettings: [.enableUpcomingFeature("ApproachableConcurrency"), .defaultIsolation(nil)]),
+    .testTarget(name: "VoiceSessionQualificationTests", dependencies: ["VoiceSessionQualification"],
+        swiftSettings: [.enableUpcomingFeature("ApproachableConcurrency"), .defaultIsolation(nil)])]
 )

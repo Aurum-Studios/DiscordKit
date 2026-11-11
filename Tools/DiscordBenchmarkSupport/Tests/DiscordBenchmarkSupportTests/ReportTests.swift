@@ -51,7 +51,7 @@ import Testing
         oldCatalog.identity.catalogVersion = 2
         oldCatalog.metrics[0].id = BenchmarkWorkload.transport.rawValue
         #expect(!report.comparison(with: oldCatalog).isCompatible)
-        report.identity.catalogVersion = 9
+        report.identity.catalogVersion = 10
         #expect(throws: BenchmarkReportError.invalidIdentity) { try report.validate() }
     }
 
@@ -92,6 +92,25 @@ import Testing
         _ = try RunStatistics(workloads: [.activitiesRequest, .activitiesHandshake, .activitiesWrite,
             .activitiesPeerWait, .activitiesEventDispatch, .activitiesClose, .activitiesSubscription])
         _ = try RunStatistics(workloads: [.serviceOperation, .serviceBackend, .serviceValidation, .serviceCleanup])
+    }
+
+    /// Voice, media and device codec observations cannot be relabeled as older catalog populations.
+    @Test func phaseNineCatalogPreservesEarlierReports() throws {
+        var report = try completeReport()
+        let workloads = BenchmarkWorkload.allCases.filter { $0.minimumCatalogVersion == 9 }
+        #expect(workloads.contains(.mediaBatch) && workloads.contains(.voiceTick) && workloads.contains(.appleAudioCodec))
+        for workload in workloads {
+            report.metrics[0].id = workload.rawValue
+            for version: UInt32 in [2, 3, 4, 5, 6, 7, 8] {
+                report.identity.catalogVersion = version
+                #expect(throws: BenchmarkReportError.unsupportedMetric) { try report.validate() }
+            }
+            report.identity.catalogVersion = 9
+            #expect(try DiscordBenchmarkReport.decode(report.validatedData()) == report)
+        }
+        for first in stride(from: 0, to: workloads.count, by: 12) {
+            _ = try RunStatistics(workloads: Array(workloads[first..<min(first + 12, workloads.count)]))
+        }
     }
 
     /// Pure batch metrics have a new catalog revision while earlier report semantics remain readable.

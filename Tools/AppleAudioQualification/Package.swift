@@ -16,14 +16,16 @@ let information = URL(fileURLWithPath: #filePath).deletingLastPathComponent()
 let package = Package(
     name: "AppleAudioQualification",
     platforms: [.macOS(.v13)],
-    dependencies: [.package(name: "DiscordKit", path: "../..")],
+    dependencies: [.package(name: "DiscordKit", path: "../.."), .package(path: "../DiscordBenchmarkSupport")],
     targets: [
         .target(name: "QualificationSupport", dependencies: [
+            .product(name: "DiscordBenchmarkSupport", package: "DiscordBenchmarkSupport"),
             .product(name: "DiscordApplePlatform", package: "DiscordKit"),
             .product(name: "DiscordMedia", package: "DiscordKit"),
         ], swiftSettings: concurrencySettings),
         .executableTarget(name: "AppleAudioQualification", dependencies: [
             "QualificationSupport",
+            .product(name: "DiscordBenchmarkSupport", package: "DiscordBenchmarkSupport"),
             .product(name: "DiscordLogging", package: "DiscordKit"),
             .product(name: "DiscordApplePlatform", package: "DiscordKit"),
             .product(name: "DiscordMedia", package: "DiscordKit"),
@@ -32,7 +34,8 @@ let package = Package(
             .unsafeFlags(["-Xlinker", "-sectcreate", "-Xlinker", "__TEXT",
                           "-Xlinker", "__info_plist", "-Xlinker", information]),
         ]),
-        .testTarget(name: "QualificationSupportTests", dependencies: ["QualificationSupport"],
+        .testTarget(name: "QualificationSupportTests", dependencies: ["QualificationSupport",
+            .product(name: "DiscordBenchmarkSupport", package: "DiscordBenchmarkSupport")],
                     swiftSettings: concurrencySettings),
     ]
 )

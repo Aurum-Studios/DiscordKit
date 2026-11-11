@@ -98,3 +98,28 @@ An interruption mode exists for explicit native interruption observations, but t
 macOS backend has no AVAudioSession interruption signal. A route/configuration event
 cannot be relabeled as one. Apple mobile permission/routing/interruption qualification
 requires an appropriate native host/device and remains outside this macOS tool.
+
+
+An optional `--common-output` companion writes a validated catalog-nine
+DiscordBenchmarkReport while retaining the native `--output` artifact. Use two
+distinct paths. Common recording is enabled only by this option and never grants
+device or permission consent. For example, add `--common-output
+/tmp/apple-duplex-common.json` to the explicit duplex command above. Ordinary
+QualificationSupport tests exercise this mapping entirely from synthetic numeric
+evidence and do not enumerate or open a device.
+
+The companion's `appleAudio.codec` histogram records each actual synchronous codec
+attempt, including failed attempts, using ContinuousClock nanoseconds. It includes
+output validation and preserves censored/lost observations; it is not reconstructed
+from the native histogram or percentile summary. Counts partition codec attempts,
+and deadline misses count directly observed intervals of at least 20ms. Throughput
+uses actual codec-loop elapsed time, including bounded capture/admission scheduling
+and excluding native start and playback drain. Native sample-frame counts remain
+separate resource gauges. Probe and fault modes have no codec population, clock,
+counts or throughput. Native stop and cleared queues supply the cleanup receipt;
+unobserved cleanup remains unavailable. The native report retains its own schema
+and timing definitions.
+
+All companions retain the hardware-render, acoustic, minimum-OS/mobile and live
+Discord limitations. Runtime host/executable facts do not fill absent build/compiler
+or source-attestation receipts, and local RSS maxima are sampled observations.

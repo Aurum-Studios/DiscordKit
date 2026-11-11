@@ -43,6 +43,12 @@ let package = Package(
                 .product(name: "DiscordGameServices", package: "DiscordKit"),
                 .product(name: "DiscordCommerce", package: "DiscordKit"),
                 .product(name: "DiscordCertifiedDevices", package: "DiscordKit"),
+                .product(name: "DiscordVoice", package: "DiscordKit"),
+                .product(name: "DiscordVoiceCrypto", package: "DiscordKit"),
+                .product(name: "DiscordVoiceCodecs", package: "DiscordKit"),
+                .product(name: "DiscordMedia", package: "DiscordKit"),
+                .product(name: "DiscordMLS", package: "DiscordKit"),
+                .product(name: "DiscordDAVE", package: "DiscordKit"),
                 .product(name: "Crypto", package: "swift-crypto"),
             ],
             swiftSettings: concurrencySettings

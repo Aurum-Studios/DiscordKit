@@ -130,11 +130,37 @@ public enum BenchmarkWorkload: String, CaseIterable, Sendable {
     case serviceValidation = "service.validation"
     case serviceCleanup = "service.cleanup"
 
+    /// Media wrappers and scripted voice boundaries introduced in catalog nine.
+    case mediaBatch = "media.batch"
+    case mlsTransition = "mls.transition"
+    case voiceJoin = "voice.join"
+    case voiceSecureReady = "voice.secureReady"
+    case voiceCredentialRendezvous = "voice.credentials"
+    case voiceHandshake = "voice.handshake"
+    case voiceHeartbeat = "voice.heartbeat"
+    case voiceReconnect = "voice.reconnect"
+    case voiceSpeaking = "voice.speaking"
+    case voiceTermination = "voice.termination"
+    case voiceShutdown = "voice.shutdown"
+    case voiceLifecycle = "voice.lifecycleJoined"
+    case voiceTick = "voice.tick"
+    case voicePacingLate = "voice.pacingLate"
+    case voiceEncode = "voice.encode"
+    case voiceEncrypt = "voice.encrypt"
+    case voiceSend = "voice.send"
+    case voiceReceiveDecrypt = "voice.receiveDecrypt"
+    case voiceDecode = "voice.decode"
+    case appleAudioCodec = "appleAudio.codec"
+
     /// Earliest catalog revision defining this identity; old readers retain old semantics.
     public var minimumCatalogVersion: UInt32 {
         /// Returns the frozen catalog introduction version without inspecting observations.
         get {
             switch self {
+            case .mediaBatch, .mlsTransition, .voiceJoin, .voiceSecureReady, .voiceCredentialRendezvous,
+                 .voiceHandshake, .voiceHeartbeat, .voiceReconnect, .voiceSpeaking, .voiceTermination,
+                 .voiceShutdown, .voiceLifecycle, .voiceTick, .voicePacingLate, .voiceEncode, .voiceEncrypt,
+                 .voiceSend, .voiceReceiveDecrypt, .voiceDecode, .appleAudioCodec: 9
             case .oauthLookup, .oauthInstall, .oauthRevoke, .oauthStorageLoad, .oauthStorageCAS, .oauthRefreshIO, .oauthRefreshJoined, .oauthRevokeIO, .oauthClose, .rpcRequest, .rpcHandshake, .rpcWrite, .rpcPeerWait, .rpcEventDispatch, .rpcClose, .activitiesRequest, .activitiesHandshake, .activitiesWrite, .activitiesPeerWait, .activitiesEventDispatch, .activitiesClose, .activitiesSubscription, .serviceOperation, .serviceBackend, .serviceValidation, .serviceCleanup: 8
             case .cacheCall, .cacheOwner, .cacheLoader, .cacheBroadcast, .clientConstruction, .clientDiscovery, .clientIngestion, .clientLocalReady, .clientShutdown, .clientLifecycle, .dslDefinition, .dslInvoke, .dslPolicy, .dslMiddleware, .compilerClean, .compilerIncremental: 7
             case .gatewayReceiveToAdmission, .gatewayReceiveToAcknowledgement, .gatewayAdmissionToAcknowledgement, .gatewayInitialResponse, .gatewayOriginalEdit, .gatewayAcknowledgementToOriginalEdit, .commandPolicy, .gatewaySession, .gatewaySocketReceipt, .gatewayDecode, .gatewayIngestionQueue, .gatewayPublication, .gatewayHubResidence, .gatewayDispatch, .gatewayLocalQueue, .gatewayAdmission, .gatewayHandler, .gatewayHeartbeatACK, .gatewayReconnect, .gatewayShutdown, .ingressApplicationResponse, .ingressBodyRead, .ingressSignature, .ingressAdmission, .ingressDecode, .commandRoute, .commandArguments, .commandAdmission, .commandHandler, .interactionHandler, .interactionWorkflow, .interactionProviderWait, .interactionInitialResponse, .interactionOriginalEdit, .syntheticInvoke, .syntheticProviderWait: 6

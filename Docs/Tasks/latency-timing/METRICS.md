@@ -7,7 +7,7 @@ https://aurum-studios.com
 
 # Timing metric catalog
 
-Catalog identifier: **discordkit.timing**, revision **8**. Revision 1 was frozen 2026-11-10 at
+Catalog identifier: **discordkit.timing**, revision **9**. Revision 1 was frozen 2026-11-10 at
 `c8d842f7ce51e9adc69ff9997e2c0f374dc2ee68`. Every metric below has semantic
 version **1**. The identity is `(catalog, metric ID, metric version)`; changing
 endpoints, population, units or aggregation creates a new metric version.
@@ -277,14 +277,33 @@ for size dimensions, cap/cancellation boundaries and unavailable qualifications.
 | `activities.request` | Caller before protocol request → correlated reply/error and pending ownership release | A; injected bridge vs actual browser are incompatible profiles; Stage 8 |
 | `service.operation` | Caller before implemented Social/GameServices/Commerce/CertifiedDevices operation → result/error and existing joins | A; fixed operation class; overlaps underlying REST/RPC, not additive; Stage 8 |
 | `voice.join` | Caller before manager join/move → installed session result/error and cleanup | A; installation is not secure/media readiness; Stage 9 |
-| `voice.secureReady` | Installed session begins handshake → confirmed selected transport/DAVE secure-ready milestone or joined failure | A; network/credential/epoch waits included; Stage 9 |
+| `voice.secureReady` | Before manager join/move → session control loop observed after verified secure-ready milestone | S with all-outcome `voice.lifecycleJoined`; includes credential/installation/handshake waits; injected E2EE authorization is not real DAVE acceptance; catalog 9 |
 | `media.batch` | External wrapper before DSP/codec/jitter/RTP/AEAD/DAVE batch → minimal observable result/checksum consumed; full correctness assertions excluded | B; fixed component class, no sample-loop logs; Stage 9 |
-| `mls.transition` | Group create/join/rekey/epoch operation starts → result/error and owned cleanup | A; separate transition class, not steady tick; Stage 9 |
-| `voice.tick` | Warmed duplex tick begins → both sends/receives/authentication/PCM decode complete | A; direct integrated tick excludes explicit main pacing wait; Stage 9 |
+| `mls.transition` | Prepared external batch starts → complete create/join/rekey or joined DAVE signaling results; verification and owned cleanup follow timer | B; real crypto/transition class, not steady tick; catalog 9 |
+| `voice.tick` | Warmed duplex tick begins → selected sends/receives/authentication/playout, bounded diagnostics and PCM checks complete | A; gross directly observed tick excludes pacing, warmup, RSS sampling and delayed drain; selected cadence/impairment determines included operations; catalog 9 |
 | `voice.pacingLate` | Profile's scheduled tick → actual tick start | A for started ticks; missed ticks counted separately; Stage 9 |
-| `audio.deviceOperation` | Explicit device permission/enumeration/open/route/close call → actual adapter completion/error | A; hardware-only qualification, no acoustic latency inference; Stage 9 |
+| `audio.deviceOperation` | Explicit device permission/enumeration/open/route/close call → actual adapter completion/error | Proposed distinct metric; not emitted by the codec-only Apple adapter; explicit device procedures remain native evidence |
 | `instrumentation.batch` | External wrapper before selected observation batch → batch consumption complete | B; mode/destination/concurrency fixed; includes synchronous callback/formatting cost; Stage 3 |
 | `instrumentation.flush` | Application requests output flush/close → awaited completion/error | A; separate from foreground workflow, bounded output; Stage 3 |
+
+Catalog 9 also implements these observed boundaries (all durations use H):
+
+| Metric ID | Owner and start → stop, inclusions/exclusions | Population / relationship |
+| --- | --- | --- |
+| `voice.lifecycleJoined` | Caller before manager join → awaited manager stop after selected script | A; primary all-outcome population including expected terminal close failure |
+| `voice.credentials` | First routed credential delivery → session factory admission after both halves | S; overlaps join; neither a wire exchange nor isolated actor residence |
+| `voice.handshake` | Session run begins → control loop observed after secure-ready milestone | S; overlaps caller secure-ready interval; injected peer/UDP/E2EE only |
+| `voice.heartbeat` | Observed heartbeat sleep admitted → exact-nonce ACK processed and next sleep parked | S; runtime virtual deadline advanced explicitly; elapsed measurement uses real ContinuousClock; not network RTT |
+| `voice.reconnect` | Injected resumable EOF → resumed secure readiness observed | S; retry clock advanced after admitted sleep; includes scheduling and caller observation |
+| `voice.speaking` | Before public true/false speaking calls → both writes return | A; scripted control writes, not audible delivery |
+| `voice.termination` | Injected terminal peer close → joined failed session run result | A; expected failure retained in primary lifecycle counts |
+| `voice.shutdown` | Before manager stop → joined session children finish | A; independent ownership snapshots follow terminal timestamps |
+| `voice.encode` | External encoder wrapper → production encode/DTX result/error | A; synchronous codec call, includes suppression decisions |
+| `voice.encrypt` | External transformer wrapper → DAVE seal result/error | A; DAVE only; concrete transport AEAD remains inside gross tick |
+| `voice.send` | Before actual UDP adapter send → adapter return/error | A; excludes preceding packet protection |
+| `voice.receiveDecrypt` | Before public pipeline receive → authentication, RTP and jitter insertion return/error | A; excludes preceding UDP receive wait; overlaps gross tick |
+| `voice.decode` | Before public playout → jitter pop, decode/PLC, PCM saturation return/error | A; isolated jitter operations use `media.batch`; overlaps gross tick |
+| `appleAudio.codec` | Actual synchronous native-tool encode/decode begins → returned PCM validation/error | A; no device scheduling, resampling, playback, render or acoustic delay |
 
 Each fixed operation/component class is an explicitly enumerated profile field;
 do not derive it from a method name, raw route, persistent identity or error text.

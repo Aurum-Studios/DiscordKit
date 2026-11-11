@@ -4,6 +4,7 @@
 // https://aurum-studios.com
 
 import DiscordApplePlatform
+import DiscordBenchmarkSupport
 import DiscordLogging
 import DiscordMedia
 import DiscordVoiceCodecs
@@ -33,6 +34,8 @@ private struct NativeReport: Codable {
     var inputAvailable = false
     var outputAvailable = false
     var nativeIOStarted = false
+    var nativeOwnerClosed: Bool?
+    var nativeQueuesCleared: Bool?
     var audioPath = "No device I/O"
     var nativeRenderUnderrunTelemetryAvailable = false
     var losslessDuplexQualified = false
@@ -66,14 +69,17 @@ private struct NativeReport: Codable {
         do {
             options = try QualificationOptions(arguments: Array(CommandLine.arguments.dropFirst()))
         } catch {
-            print("Usage: AppleAudioQualification --output report.json [--mode probe|duplex|route|unplug|interruption] [--seconds N] [--input-index N] [--output-index N] [--enable-device-io] [--request-permission]")
+            print("Usage: AppleAudioQualification --output report.json [--mode probe|duplex|route|unplug|interruption] [--seconds N] [--input-index N] [--output-index N] [--enable-device-io] [--request-permission] [--common-output common.json]")
             exit(2)
         }
         var report = NativeReport()
+        var benchmark: AppleAudioBenchmarkCapture?
+        var benchmarkElapsed: Duration?
         report.mode = options.mode.rawValue
         report.sourceSHA256 = (try? sourceFingerprints()) ?? [:]
         report.binarySHA256 = try? digest(URL(fileURLWithPath: CommandLine.arguments[0]))
         do {
+            if options.commonReportPath != nil { benchmark = try AppleAudioBenchmarkCapture() }
             let format = try PCMFormat(sampleRate: 48_000, channelCount: 1)
             let discovery = AppleAudioDevice(configuration: try AppleAudioConfiguration(playbackFormat: format))
             report.permissionBefore = String(describing: discovery.recordingPermission())
@@ -104,11 +110,19 @@ private struct NativeReport: Codable {
                     captureBufferFrames: 480, playbackFormat: format,
                     maximumCaptureBlocks: 32, maximumPlaybackBlocks: 16,
                     captureDeviceUID: input, playbackDeviceUID: output))
+                defer {
+                    device.stop()
+                    let stopped = device.snapshot()
+                    report.nativeOwnerClosed = stopped.state != .running
+                    report.nativeQueuesCleared = stopped.captureBytes == 0 && stopped.playbackBytes == 0 &&
+                        stopped.captureBlocks == 0 && stopped.playbackBlocks == 0
+                }
                 if options.requestPermission {
                     report.permissionAfter = String(describing: try await device.requestRecordingPermission())
                 }
                 if options.mode == .duplex {
-                    report.duplex = try await duplex(device: device, seconds: options.seconds, report: &report)
+                    report.duplex = try await duplex(device: device, seconds: options.seconds, report: &report,
+                        benchmark: benchmark, benchmarkElapsed: &benchmarkElapsed)
                     report.passed = report.failure == nil && report.duplex?.passed(seconds: options.seconds) == true
                 } else {
                     try await observe(device: device, endpoints: endpoints, input: input, output: output,
@@ -126,6 +140,24 @@ private struct NativeReport: Codable {
             encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
             encoder.dateEncodingStrategy = .iso8601
             try encoder.encode(report).write(to: URL(fileURLWithPath: options.reportPath), options: .atomic)
+            if let path = options.commonReportPath {
+                guard let benchmark else { throw QualificationError.invalidArguments }
+                var provenance = BenchmarkProvenance.capture()
+                provenance.executableHash = report.binarySHA256
+                let cleanup: BenchmarkCleanup
+                if options.mode == .probe {
+                    cleanup = .init(completed: true, remainingOwners: 0, reason: "Probe never starts native I/O.")
+                } else if report.nativeOwnerClosed == true && report.nativeQueuesCleared == true {
+                    cleanup = .init(completed: true, remainingOwners: 0)
+                } else {
+                    cleanup = .init(reason: "Native owner/queue cleanup was not completely observed.")
+                }
+                let common = try benchmark.report(mode: options.mode, requestedSeconds: options.seconds,
+                    elapsed: benchmarkElapsed, evidence: report.duplex, nativeIOStarted: report.nativeIOStarted,
+                    passed: report.passed, failed: report.failure != nil || report.sourceDriftDuringRun == true,
+                    cleanup: cleanup, provenance: provenance)
+                try common.validatedData().write(to: URL(fileURLWithPath: path), options: .atomic)
+            }
         } catch {
             print("Could not write qualification evidence.")
             exit(2)
@@ -145,7 +177,7 @@ private struct NativeReport: Codable {
         for _ in 0..<4 { repository.deleteLastPathComponent() }
         let directories = ["Sources/DiscordBits", "Sources/DiscordCore", "Sources/DiscordTransport",
             "Sources/DiscordMedia", "Sources/DiscordVoiceCodecs", "Sources/DiscordApplePlatform",
-            "Tools/AppleAudioQualification/Sources"]
+            "Tools/AppleAudioQualification/Sources", "Tools/DiscordBenchmarkSupport/Sources"]
         var result: [String: String] = [:]
         for directory in directories {
             guard let enumerator = FileManager.default.enumerator(at: repository.appendingPathComponent(directory),
@@ -158,7 +190,8 @@ private struct NativeReport: Codable {
                 result[relative] = try digest(file)
             }
         }
-        for relative in ["Tools/AppleAudioQualification/Package.swift", "Tools/AppleAudioQualification/Support/Info.plist"] {
+        for relative in ["Tools/AppleAudioQualification/Package.swift", "Tools/AppleAudioQualification/Support/Info.plist",
+                         "Tools/AppleAudioQualification/Package.resolved", "Tools/DiscordBenchmarkSupport/Package.swift"] {
             result[relative] = try digest(repository.appendingPathComponent(relative))
         }
         return result
@@ -182,13 +215,16 @@ private struct NativeReport: Codable {
     ///   - device: Fresh explicitly authorized native owner, always stopped on every return path.
     ///   - seconds: Validated 600...3600-second observation duration.
     ///   - report: Native-start and stop evidence updated before returning.
+    ///   - benchmark: Optional common-envelope recorder, enabled only by companion output.
+    ///   - benchmarkElapsed: Direct codec-loop interval, excluding native start and playback drain.
     /// - Returns: Frame counts, bounded frame timing histogram and final queue cleanup evidence.
     ///   Runtime read/codec/cancellation failures preserve partial measurements and set report.failure,
     ///   preventing a passing report; admission timeouts retain their separate failed-run counter.
     /// - Throws: Permission, cancellation, native-start or processing-configuration errors before
     ///   the measurement loop. Native cleanup still runs on every return or throw.
     @MainActor private static func duplex(device: AppleAudioDevice, seconds: Int,
-                                          report: inout NativeReport) async throws -> DuplexEvidence {
+                                          report: inout NativeReport, benchmark: AppleAudioBenchmarkCapture?,
+                                          benchmarkElapsed: inout Duration?) async throws -> DuplexEvidence {
         var evidence = DuplexEvidence()
         defer { device.stop() }
         guard let capture = try device.start() else { throw AppleAudioError.unavailableFormat }
@@ -203,6 +239,7 @@ private struct NativeReport: Codable {
         let format = try PCMFormat(sampleRate: 48_000, channelCount: 1)
         report.audioPath = "Microphone -> bandlimited 48kHz mono -> owned CELT 20ms/161-byte packets (64kbps payload, 64.4kbps including TOC) -> owned Opus decoder -> gain 0.025 -> native playback"
         let began = ProcessInfo.processInfo.systemUptime
+        let benchmarkClock = ContinuousClock(), benchmarkBegan = benchmarkClock.now
         var nextProgress = 10.0
         do {
             captureLoop: while ProcessInfo.processInfo.systemUptime - began < Double(seconds) {
@@ -225,12 +262,22 @@ private struct NativeReport: Codable {
                         let samples = Array(pending.prefix(960))
                         pending.removeFirst(960)
                         let started = ProcessInfo.processInfo.systemUptime
-                        let packet = try encoder.encode(samples, packetByteCount: 161)
-                        let decoded = try decoder.decode(packet)
-                        evidence.processing.record(milliseconds: (ProcessInfo.processInfo.systemUptime - started) * 1_000)
-                        guard decoded.count == 1, decoded[0].samples.count == 960,
-                              decoded[0].samples.allSatisfy(\.isFinite) else {
-                            throw AppleAudioError.incompatibleFormat
+                        let codecBegan = benchmarkClock.now
+                        let decoded: [OpusAudioDecodedFrame]
+                        do {
+                            let packet = try encoder.encode(samples, packetByteCount: 161)
+                            decoded = try decoder.decode(packet)
+                            evidence.processing.record(milliseconds: (ProcessInfo.processInfo.systemUptime - started) * 1_000)
+                            guard decoded.count == 1, decoded[0].samples.count == 960,
+                                  decoded[0].samples.allSatisfy(\.isFinite) else {
+                                throw AppleAudioError.incompatibleFormat
+                            }
+                            let codecEnded = benchmarkClock.now
+                            benchmark?.recordCodec(codecBegan.duration(to: codecEnded), outcome: .success)
+                        } catch {
+                            let codecEnded = benchmarkClock.now
+                            benchmark?.recordCodec(codecBegan.duration(to: codecEnded), outcome: .failure)
+                            throw error
                         }
                         evidence.processedFrames += 960
                         let playback = decoded[0].samples.map { max(-1, min(1, $0 * 0.025)) }
@@ -255,6 +302,7 @@ private struct NativeReport: Codable {
             // Retain all partial counters on cancellation/read/codec failure; no failed run can pass.
             report.failure = String(describing: error)
         }
+        benchmarkElapsed = benchmarkBegan.duration(to: benchmarkClock.now)
         evidence.elapsedSeconds = ProcessInfo.processInfo.systemUptime - began
         let drainBegan = ProcessInfo.processInfo.systemUptime
         if report.failure == nil {

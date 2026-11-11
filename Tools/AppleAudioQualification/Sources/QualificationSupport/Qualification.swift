@@ -85,10 +85,13 @@ public struct QualificationOptions: Sendable {
     public let outputIndex: Int?
     public let requestPermission: Bool
     public let reportPath: String
+    public let commonReportPath: String?
 
     /// Parses exact long options, rejecting unknown/duplicate flags before native work.
     /// - Parameter arguments: Arguments excluding the executable name. `--output` is mandatory;
-    ///   probe is the default. Native modes require `--enable-device-io`; duplex duration is
+    ///   probe is the default. Optional `--common-output` must be a distinct path, including
+    ///   normalized/symlink identity. It enables common codec recording but grants no native consent.
+    ///   Native modes require `--enable-device-io`; duplex duration is
     ///   600...3600 seconds, fault observations 1...600. Device indices address each direction's
     ///   probe order independently; omitted indices retain system routing.
     /// - Throws: `invalidArguments` for invalid/duplicate values, or `missingConsent` when native
@@ -103,7 +106,7 @@ public struct QualificationOptions: Sendable {
                 guard switches.insert(flag).inserted else { throw QualificationError.invalidArguments }
                 index += 1
             } else {
-                guard ["--mode", "--seconds", "--input-index", "--output-index", "--output"].contains(flag),
+                guard ["--mode", "--seconds", "--input-index", "--output-index", "--output", "--common-output"].contains(flag),
                       index + 1 < arguments.count, values[flag] == nil,
                       !arguments[index + 1].hasPrefix("--") else { throw QualificationError.invalidArguments }
                 values[flag] = arguments[index + 1]
@@ -138,6 +141,11 @@ public struct QualificationOptions: Sendable {
         self.outputIndex = values["--output-index"].flatMap(Int.init)
         self.requestPermission = switches.contains("--request-permission")
         self.reportPath = path
+        guard values["--common-output"].map({ !$0.isEmpty && URL(fileURLWithPath: $0).standardizedFileURL.resolvingSymlinksInPath() !=
+            URL(fileURLWithPath: path).standardizedFileURL.resolvingSymlinksInPath() }) ?? true else {
+            throw QualificationError.invalidArguments
+        }
+        self.commonReportPath = values["--common-output"]
     }
 
     /// Resolves a direction-local index without changing any route or retaining a catalog.

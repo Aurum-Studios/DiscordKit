@@ -73,6 +73,7 @@ struct QualificationReport: Codable {
     var closedDAVEOwners: Int
     var closedDatagramOwners: Int
     var successful: Bool
+    var attributed: AttributedEvidence? = nil
 }
 
 /// Runs an explicitly paced, bounded real localhost full-duplex media exchange.
@@ -80,7 +81,7 @@ struct QualificationReport: Codable {
 @main struct VoiceSessionQualification {
     /// Parses finite CLI policy, runs the exchange, and emits one JSON evidence object.
     /// `--seconds` defaults to 600 measured seconds and accepts 0.02...3600; a
-    /// separate 100-frame/two-second warmup precedes measurement. `--output`
+    /// separate two-second warmup precedes measurement (100 frames in the default profile). `--output`
     /// optionally writes the same report atomically. Errors terminate nonzero after cleanup.
     /// Process-owned SwiftLog diagnostics go to stderr, preserving stdout JSON.
     /// When common-envelope collection is requested, operation failures retain bounded
@@ -88,36 +89,29 @@ struct QualificationReport: Codable {
     /// - Throws: Invalid CLI input, local networking, cryptographic, codec or file errors.
     static func main() async throws {
         LoggingSystem.bootstrap(StreamLogHandler.standardError)
-        var seconds = 600.0
-        var output: String?
-        let arguments = Array(CommandLine.arguments.dropFirst())
-        var index = 0
-        while index < arguments.count {
-            guard index + 1 < arguments.count else { throw QualificationFailure.invalidArguments }
-            switch arguments[index] {
-            case "--seconds":
-                guard let value = Double(arguments[index + 1]), value.isFinite, (0.02...3600).contains(value) else {
-                    throw QualificationFailure.invalidArguments
-                }
-                seconds = value
-            case "--output": output = arguments[index + 1]
-            default: throw QualificationFailure.invalidArguments
-            }
-            index += 2
-        }
-        let statistics = try RunStatistics.requested(workloads: [.voice])
+        let configuration = try QualificationConfiguration.parse(Array(CommandLine.arguments.dropFirst()))
+        let seconds = configuration.seconds, output = configuration.output
+        let statistics = configuration.attributed
+            ? try RunStatistics(workloads: AttributionCapture.workloads)
+            : try RunStatistics.requested(workloads: [.voice])
         let report: QualificationReport
         do {
-            report = try await run(seconds: seconds, statistics: statistics)
+            report = configuration.attributed
+                ? try await runAttributed(configuration: configuration, statistics: statistics!)
+                : try await run(seconds: seconds, statistics: statistics)
         } catch {
             let operationError = error
             do {
-                try statistics?.writePartialSidecar(
-                    identity: ReportIdentity(scenario: "local-duplex", profile: "voice-paced-50hz",
-                        inputSizes: ["requestedFramesPerDirection": UInt64(ceil(seconds * 50)),
-                            "requestedWarmupFramesPerDirection": 100],
-                        instrumentation: "aggregate", scheduler: "paced-50hz"),
-                    adapter: LegacyReportFormat.voiceVersion2.rawValue, cancelled: operationError is CancellationError)
+                if configuration.attributed {
+                    try writeAttributedPartial(configuration: configuration, statistics: statistics!, error: operationError)
+                } else {
+                    try statistics?.writePartialSidecar(
+                        identity: ReportIdentity(scenario: "local-duplex", profile: "voice-paced-50hz",
+                            inputSizes: ["requestedFramesPerDirection": UInt64(ceil(seconds * 50)),
+                                "requestedWarmupFramesPerDirection": 100],
+                            instrumentation: "aggregate", scheduler: "paced-50hz"),
+                        adapter: LegacyReportFormat.voiceVersion2.rawValue, cancelled: operationError is CancellationError)
+                }
             } catch {
                 try? FileHandle.standardError.write(contentsOf: Data("Partial benchmark sidecar could not be written.\n".utf8))
             }
@@ -125,12 +119,16 @@ struct QualificationReport: Codable {
         }
         let encoder = JSONEncoder(); encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
         let bytes = try encoder.encode(report)
-        try statistics?.writeLegacySidecar(bytes, format: .voiceVersion2,
-            identity: ReportIdentity(scenario: "local-duplex", profile: "voice-paced-50hz",
-                profileVersion: 1,
-                inputSizes: ["framesPerDirection": UInt64(report.framesPerDirection),
-                    "warmupFramesPerDirection": UInt64(report.warmupFramesPerDirection)],
-                instrumentation: "aggregate", scheduler: "paced-50hz"))
+        if configuration.attributed {
+            try writeAttributedCommon(configuration: configuration, report: report, statistics: statistics!)
+        } else {
+            try statistics?.writeLegacySidecar(bytes, format: .voiceVersion2,
+                identity: ReportIdentity(scenario: "local-duplex", profile: "voice-paced-50hz",
+                    profileVersion: 1,
+                    inputSizes: ["framesPerDirection": UInt64(report.framesPerDirection),
+                        "warmupFramesPerDirection": UInt64(report.warmupFramesPerDirection)],
+                    instrumentation: "aggregate", scheduler: "paced-50hz"))
+        }
         if let output { try bytes.write(to: URL(fileURLWithPath: output), options: .atomic) }
         print(String(decoding: bytes, as: UTF8.self))
         guard report.successful else { throw QualificationFailure.invariant }
@@ -140,7 +138,7 @@ struct QualificationReport: Codable {
     /// - Parameter user: Nonzero fixture participant ID.
     /// - Returns: Exact inert Voice identity; no Gateway request or socket is created.
     /// - Throws: Fixture decoding/rendezvous failures.
-    private static func credentials(_ user: UInt64) throws -> VoiceConnectionCredentials {
+    static func credentials(_ user: UInt64) throws -> VoiceConnectionCredentials {
         var join = try VoiceJoinRendezvous(guildID: .init(rawValue: 5), userID: .init(rawValue: user), channelID: .init(rawValue: 6))
         let state = try VoiceState(data: Data("{\"guild_id\":\"5\",\"channel_id\":\"6\",\"user_id\":\"\(user)\",\"session_id\":\"localhost-\(user)\",\"deaf\":false,\"mute\":false,\"self_deaf\":false,\"self_mute\":false,\"self_video\":false,\"suppress\":false,\"request_to_speak_timestamp\":null}".utf8))
         _ = try join.receive(state: state, generation: join.generation)
@@ -193,7 +191,7 @@ struct QualificationReport: Codable {
     ///   - sender: Trusted public fixture external authority.
     ///   - externalKey: Public fixture scalar signing the authenticated external Add.
     /// - Throws: MLS/signaling failures or invalid expected transition responses.
-    private static func establish(_ first: DAVEVoiceSession, _ second: DAVEVoiceSession,
+    static func establish(_ first: DAVEVoiceSession, _ second: DAVEVoiceSession,
                                   sender: MLSExternalSender, externalKey: Data) async throws {
         _ = try await initialize(first, sender: sender)
         let package = try await initialize(second, sender: sender)
@@ -220,7 +218,7 @@ struct QualificationReport: Codable {
     /// - Parameter credentials: Exact adapter account/guild/channel/session/generation.
     /// - Returns: Reducer suspended after transport Session Description.
     /// - Throws: Voice framing, negotiation or fixture errors.
-    private static func suspended(_ credentials: VoiceConnectionCredentials) throws -> VoiceGatewaySessionState {
+    static func suspended(_ credentials: VoiceConnectionCredentials) throws -> VoiceGatewaySessionState {
         var state = try VoiceGatewaySessionState(credentials: credentials, maximumDAVEProtocolVersion: 1)
         _ = try state.receive(json(8, ["heartbeat_interval": .number(JSONNumber(rawValue: "1000"))]))
         _ = try state.receive(json(2, ["ssrc": .number(JSONNumber(rawValue: "111")), "ip": .string("127.0.0.1"),
@@ -235,7 +233,7 @@ struct QualificationReport: Codable {
     /// Measures current resident memory using the host OS rather than allocator accounting.
     /// - Returns: Actual resident bytes on supported macOS/Linux; unsupported hosts fail.
     /// - Throws: `unsupportedRSS` if the native gauge cannot be obtained.
-    private static func residentBytes() throws -> UInt64 {
+    static func residentBytes() throws -> UInt64 {
         #if canImport(Darwin)
         var info = mach_task_basic_info_data_t()
         var count = mach_msg_type_number_t(MemoryLayout<mach_task_basic_info_data_t>.size / MemoryLayout<integer_t>.size)
@@ -260,7 +258,7 @@ struct QualificationReport: Codable {
     /// Converts continuous elapsed duration to seconds without consulting wall time.
     /// - Parameter duration: Monotonic measured duration.
     /// - Returns: Fractional seconds, including subsecond attosecond components.
-    private static func seconds(_ duration: Duration) -> Double {
+    static func seconds(_ duration: Duration) -> Double {
         let components = duration.components
         return Double(components.seconds) + Double(components.attoseconds) / 1e18
     }
@@ -270,7 +268,7 @@ struct QualificationReport: Codable {
     ///   - sorted: Ascending nonempty processing-time milliseconds.
     ///   - fraction: Requested quantile from zero through one.
     /// - Returns: Nearest-rank sample; zero for empty input as a defensive report fallback.
-    private static func percentile(_ sorted: [Double], _ fraction: Double) -> Double {
+    static func percentile(_ sorted: [Double], _ fraction: Double) -> Double {
         guard !sorted.isEmpty else { return 0 }
         return sorted[min(sorted.count - 1, max(0, Int(ceil(Double(sorted.count) * fraction)) - 1))]
     }

@@ -556,6 +556,57 @@ controlled performance budget, hosted CI, live Discord or other platform is
 qualified. Direct/DSL runtime and manual/macro compiler comparisons are in the
 separate [authoring tool](../DiscordDSLBenchmarks/README.md).
 
+## Phase 9 media and voice timing
+
+The `voice-timing` command exercises real manager/session control ownership with
+finite injected credentials, WebSocket, discovery and E2EE fixtures. Installation,
+secure readiness and the primary joined lifecycle retain separate populations.
+Runtime heartbeat/retry deadlines use an explicitly advanced fixture clock;
+elapsed measurements use real `ContinuousClock`. This measures local orchestration,
+not network RTT, real DAVE acceptance, live Discord or device delivery.
+
+```sh
+swift run --package-path Tools/DiscordKitLoadTests DiscordKitLoadTests voice-timing --list-cases
+swift run --package-path Tools/DiscordKitLoadTests DiscordKitLoadTests voice-timing \
+  --case voice.lifecycleJoined --requests 8 --warmup-requests 1 --concurrency 2
+```
+
+Every offered terminal lifecycle is retained, including expected terminal-close
+failures. Separate warmup owners join before measurement. Child intervals overlap;
+cleanup receipts independently cover manager/session/adapter/task ownership.
+
+The independent [media component tool](../DiscordMediaBenchmarks/README.md)
+provides 80 real DSP, codec, jitter, RTP, AEAD, MLS and DAVE batch cases.
+The [existing duplex runner](../VoiceSessionQualification/README.md) adds opt-in
+public-boundary attribution, supported frame/channel/codec profiles, DTX cadence,
+receiver-side impairment emulation and bounded CPU contention. The
+[Apple tool](../AppleAudioQualification/README.md) maps actual codec observations
+into the common envelope while retaining explicit physical-device procedures.
+
+Freeze source edits before preparing optimized supervised captures:
+
+```sh
+swift build --package-path Tools/DiscordBenchmarkSupport --product DiscordBenchmarkReports
+python3 Tools/DiscordBenchmarkSupport/scripts/run_benchmarks.py build \
+  --repository . --package Tools/DiscordKitLoadTests --product DiscordKitLoadTests \
+  --receipt .build/timing-phase9/load-release.json
+python3 Tools/DiscordKitLoadTests/scripts/run_media_voice_timing_suites.py \
+  --family voice --executable Tools/DiscordKitLoadTests/.build/release/DiscordKitLoadTests \
+  --receipt .build/timing-phase9/load-release.json \
+  --validator Tools/DiscordBenchmarkSupport/.build/debug/DiscordBenchmarkReports \
+  --output-dir .build/timing-phase9/voice-matrix --operations 8 --warmup-operations 1
+```
+
+For components, prepare `Tools/DiscordMediaBenchmarks` / `DiscordMediaBenchmarks`,
+then select `--family media` with its executable and receipt. The driver lists every
+finite case by default; repeat `--case` to select cases. It sweeps queue batch size
+and lifecycle concurrency, requires exact input/seed/outcome identity, validates
+common envelopes independently, compares native/common bytes semantically, and
+retains completed rows if a later capture fails. Sparse P99 remains insufficient
+data. These local smoke captures establish no numerical baseline, universal
+realtime behavior, hardware, independent crypto or live-service qualification.
+See [Phase 9](../../Docs/Tasks/latency-timing/PHASE-9.md) for the metric contracts.
+
 ## Phase 8 optional service timing
 
 The separate `service-timing` command runs actual OAuth, RPC, Activities, Social,
