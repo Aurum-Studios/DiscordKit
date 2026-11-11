@@ -338,11 +338,16 @@
       }
     },
     "Examples/LoggingApp": {
+      "targetSystemImports": {
+        "LoggingApp": [
+          "Darwin",
+          "Glibc"
+        ]
+      },
       "forbidden": [
         "DiscordActivities",
         "DiscordApplePlatform",
         "DiscordBotDSL",
-        "DiscordCache",
         "DiscordCertifiedDevices",
         "DiscordClient",
         "DiscordCommandDSL",
@@ -358,7 +363,6 @@
         "DiscordKit",
         "DiscordMLS",
         "DiscordMedia",
-        "DiscordModels",
         "DiscordNIOTransport",
         "DiscordOAuth",
         "DiscordRPC",
@@ -370,6 +374,7 @@
       ],
       "targets": {
         "LoggingApp": [
+          "DiscordKit/DiscordCache",
           "DiscordKit/DiscordLogHandlers",
           "DiscordKit/DiscordLogging",
           "DiscordKit/DiscordTransport"

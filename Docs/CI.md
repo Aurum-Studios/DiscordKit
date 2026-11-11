@@ -195,6 +195,11 @@ review. None of these checks establishes publication or production capacity.
 
 ## Timing regression and periodic workloads
 
+Start with the [measurement guide](Measurements.md) for workload selection,
+compact report interpretation, compatible-host checks and the handoff ledger.
+A compact summary is presentation of the original envelope, not a gate or new
+baseline. Keep its uncertainty, loss and qualification notes with the numbers.
+
 Ordinary native CI builds and tests `DiscordBenchmarkSupport`,
 `DiscordTimingBenchmarks`, `DiscordFoundationBenchmarks` and
 `DiscordMediaBenchmarks` independently. Their test discovery uses the same
@@ -245,7 +250,7 @@ shared supervisor's RSS, diagnostic, report and process ownership bounds. They
 retain failures and partial results for 14 days and do not gate offline
 certification. The helper is [timing_jobs.py](../Tools/ci/timing_jobs.py).
 
-These workflow definitions have not been dispatched as part of Phase 10.
+These workflow definitions have not been dispatched as part of Phases 10 or 11.
 Hosted qualification requires completed runs at the exact implemented revision;
 local synthetic tests and locally readable reports establish only their stated
 offline scope.

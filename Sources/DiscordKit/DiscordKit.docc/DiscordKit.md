@@ -42,6 +42,7 @@ Follow the tutorials for a guided walkthrough, use the recipes for a particular 
 
 - <doc:ExampleCookbook>
 - <doc:TestingApplications>
+- <doc:MeasuringOperations>
 - <doc:ConcurrencyAndOwnership>
 - <doc:ErrorHandling>
 - <doc:DeploymentState>

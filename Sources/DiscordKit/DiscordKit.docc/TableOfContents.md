@@ -97,6 +97,7 @@ application semantic levels; pure values and realtime media paths remain quiet.
 ### Testing, operations and maintenance
 
 - <doc:TestingApplications>
+- <doc:MeasuringOperations>
 - <doc:ConcurrencyAndOwnership>
 - <doc:ErrorHandling>
 - <doc:DeploymentState>

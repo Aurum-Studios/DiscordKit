@@ -46,6 +46,9 @@ Build the independent package that matches your application. This verifies its s
 
 ### Measure capacity with a workload
 
+Follow <doc:MeasuringOperations> for timing outputs, bounded capture, comparison
+recipes and explicit qualification levels.
+
 The [local load harness](https://github.com/CarsonAurum/DiscordKit/tree/main/Tools/DiscordKitLoadTests) measures bounded request, socket, cache and event scenarios. Record actual connections, credential count, workload, queue bounds, throughput, tail latency, RSS and recovery. Logical accounts or a successful short test cannot establish fleet or long-duration behavior.
 
 Published vectors and synthetic media round trips validate named algorithms and framing. They do not establish complete codec interoperability, independent crypto review, a qualified device route or authorized Discord media.

@@ -12,7 +12,9 @@ Catalog identifier: **discordkit.timing**, revision **9**. Revision 1 was frozen
 version **1**. The identity is `(catalog, metric ID, metric version)`; changing
 endpoints, population, units or aggregation creates a new metric version.
 This catalog is a contract, not a new report schema or an implementation claim.
-See [ownership inventory](INVENTORY.md) and [compatibility decisions](CONTRACTS.md).
+See [ownership inventory](INVENTORY.md), [compatibility decisions](CONTRACTS.md)
+and the [measurement and report guide](../../Measurements.md). Phase 11 adds
+presentation and guidance without changing any metric identity or boundary.
 
 ## Shared interpretation
 

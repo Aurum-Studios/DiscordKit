@@ -367,6 +367,11 @@ with authentication still owned by the receiving MLS/DAVE session.
 
 ## Development measurement support
 
+The [measurement guide](Measurements.md) describes runtime observer/output
+composition separately from development capture and regression evaluation.
+Applications explicitly select output products; importing a runtime owner never
+selects benchmark packages, a subprocess supervisor or a network exporter.
+
 [DiscordBenchmarkSupport](../Tools/DiscordBenchmarkSupport/README.md) adds no
 external package. Load, DSL benchmarks and local voice qualification explicitly
 select this separate Swift package for bounded statistics and common report

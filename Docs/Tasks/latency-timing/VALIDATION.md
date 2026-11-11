@@ -968,3 +968,104 @@ Local checks do not qualify hosted CI, Linux execution, periodic stress/soak,
 controlled-host noise calibration, required numerical gate promotion, live
 Discord or physical audio. The new workflows are prepared but were not
 dispatched. Publication, deployment and Stage 11 remain separate work.
+
+## Phase 11 validation
+
+Implementation: [measurement guidance and qualification handoff](PHASE-11.md),
+prepared from `5f1792bd` on 2026-11-10, local macOS arm64 with Apple Swift 6.4
+(`swiftlang-6.4.0.34.1`). The [maintainer guide](../../Measurements.md) connects
+workload recipes, metric/schema contracts, compact reporting and troubleshooting.
+This phase adds development presentation, an offline example and documentation;
+root runtime declarations, metric boundaries and dependency pins are unchanged.
+
+| Check | Completed local evidence |
+| --- | --- |
+| Root native build and strict tests | Pinned native `swift build` and serial `SWIFTNIO_STRICT=1 swift test --no-parallel` passed; 2,613 tests in 325 suites |
+| Shared report package | 68 Swift tests in seven suites, including eight new compact-summary tests; 44 Python driver/comparison tests passed |
+| Offline LoggingApp | Four Swift tests and default/retained executable runs passed; five real cache owner intervals, ten endpoints, four artifacts, no capture loss and zero remaining cache owners |
+| Capture admission | Existing empty/artifact/file destinations and repeated directory creation are refused; repeated executable admission leaves all four retained artifact hashes unchanged |
+| Apple signpost adapter | Explicit `--instruments` example run passed adapter accounting with no active/incomplete state; no actual Instruments recording was performed |
+| Repository tooling | 106 Swift tests, 234 tooling Python tests, 183 CI Python tests and 37 load-driver Python tests passed |
+| Browser bridge | All 38 offline Node tests passed; simulated postMessage/URL adapters, no actual embedded browser/Discord host |
+| Inventory, generation and parity | Passed: 18,245 inventory records, 290 sources, 951 reviewed definitions, 255 mapped endpoints and five byte-identical generated artifacts |
+| Dependency graph | Full audit passed: 33 runtime products/targets, 362 runtime sources, 838 imports, eight runtime pins, all 13 examples, DSL benchmark, two authoring packages and the dependency-free shared development package |
+| Local links and anchors | All 529 local links/anchors in 27 changed Markdown documents resolve |
+| Callable documentation | Passed: 944 Swift files, 10,119 explicit callable declarations and zero missing comments; this checks presence, with separate source/recipe review |
+| Public API | Fresh export produced 37 graph files for 33 modules / 14,851 symbols; snapshot is identical to the retained Phase 7 API candidate after JSON decoding; reviewed 0.19.0 baseline comparison accepts existing pre-1.0 0.20.0 intent |
+| DocC and tutorials | All 33 public-module archives converted with strict diagnostics; curation reports no drift and all 32 tutorial example listings match |
+
+Summary tests retain directly observed end-to-end and phase populations, all
+outcomes and deadline misses, scoped available/unavailable resource gauges,
+partial/failed/interrupted reports, sparse p99, censored tails, dropped mass,
+counter overflow, bounded display omissions, escaped controls and optional
+unverified timeline references. Strict CLI checks reject malformed/native/wrong-
+version/oversized input and invalid timeline arguments. The view never pools
+percentiles, infers actor residence, reconstructs intervals from scalars or
+subtracts unrelated observations to manufacture observer overhead.
+
+Independent review found that Foundation directory creation permits an already
+existing directory, which could append diagnostics before artifact creation
+failed. Atomic POSIX directory admission now rejects existing destinations before
+opening any sink. Regression tests and repeated executable checks prove prior
+captures are preserved. The narrow LoggingApp graph policy explicitly admits
+Cache plus its Models dependency and Darwin/Glibc directory primitives for that
+consumer only. Runtime product/development-package boundaries remain intact.
+
+### Reproduction and compact report read-back
+
+The guide's supervised Foundation smoke and four profiling-candidate recipes
+ran from the frozen Phase 11 snapshot, using new `-final` receipt stems after the
+consumer import policy was finalized. Fresh optimized Foundation and evaluator
+preparation completed before capture. All five measurement processes reaped
+with zero live groups, unexpected descendants or truncated artifact bytes.
+
+The captures completed 228 measured batches / 2,624 calls and 24 separate warmup
+batches / 256 calls. Native/common projections agree exactly, every checksum
+matches, and there are zero dropped/censored observations, counter overflows,
+rejected calls, deadline misses or remaining owners. The 100-batch parse smoke
+reports directly measured batch p50 `[92000,92999]` ns and p95 `[97000,97999]` ns;
+p99 remains `insufficientTailData`. These are batch intervals, not call tails.
+The four larger cases each use 32 batches of eight calls with four warmup batches:
+
+| Current reproduction | Gross normalized batch mean (µs/call) |
+| --- | ---: |
+| `json.parse.262144.depth64.ascii` | 624.067 |
+| `json.serialize.262144.depth64.ascii` | 759.091 |
+| `permission.allow.r128.w4096` | 59.581 |
+| `rpc.decode.p262144.f256` | 117.405 |
+
+These single local observations validate recipes and expose costs for further
+profiling. They are not independent standard pairs, a controlled noise study,
+isolated bottlenecks, before/after speedups or performance budgets.
+
+The optimized CLI validates and summarizes the fresh envelopes. Its view also
+reads retained catalog-five REST evidence with seven separate populations and
+catalog-three instrumentation evidence with its original scope. Status, per-row
+quantiles, censor/loss, counts, resources, cleanup and qualifications remain
+visible. Standalone common envelopes retain their missing-provenance fields;
+the supervisor's source/pin/executable receipts are separate artifacts, not
+invented common fields. Observer cost remains unavailable as an isolated metric.
+The optional timeline arguments are unverified pointers, not correlation proof.
+
+Bounded outputs and read-back receipts remain in ignored build directories.
+Only this ledger changes after capture: all 3,473 other recorded source files,
+including executable/test/build inputs, are hash-identical to the frozen snapshot.
+The captures identify that exact dirty snapshot, not a fabricated clean release
+commit. The final commit records the implementation and ledger together.
+
+### Qualification levels and remaining work
+
+| Evidence level | Actual scope and remaining qualification |
+| --- | --- |
+| Local CPU | Current deterministic suites and the supervised recipe integrity capture below; historical Phase 4 scaling costs remain pinned to their own source/fixtures and gross batch populations |
+| Loopback transport | Current root adapter tests and retained Phase 5/9 HTTP/UDP measurements prove their stated local peer scope; no fresh transport performance comparison or remote-network claim in Phase 11 |
+| Scripted protocol | Current root and browser tests plus actual cache hooks in LoggingApp; prior workload records retain their own injected-delay/fixture boundaries |
+| Native platform | Local macOS build/test, API and strict DocC only; no Linux/Windows/Apple-device runtime or exact-revision hosted CI qualification in this phase |
+| Controlled numerical comparison | Pending isolated named-host capture, five independent no-change pairs, reviewed noise floors/budgets and explicit required-gate promotion; the Phase 10 pilot remains refused for recorded contention |
+| Profiler/hardware/live | Signpost adapter smoke is not an Instruments recording; native audio, acoustic/render latency, actual browser/desktop host, live Discord and production capacity remain separately invoked qualifications |
+
+The historical measured CPU candidates and exact reproduction commands are in
+[the optimization handoff](../../Measurements.md#hand-off-an-optimization).
+They identify workload costs to profile, not proven product bottlenecks. No
+baseline, budget, policy promotion, public API baseline, release identity,
+workflow dispatch, tracker state, publication or deployment is changed.

@@ -5,6 +5,10 @@ Copyright (c) 2026 Aurum Studios.
 https://aurum-studios.com
 -->
 
+
+The [measurement guide](../../Docs/Measurements.md) connects these workload
+recipes to the versioned metric catalog, compact reports, comparison procedure
+and qualification ledger.
 # DiscordMediaBenchmarks
 
 Release-only timing wrappers for local media, voice cryptography, MLS and DAVE.

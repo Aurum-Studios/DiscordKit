@@ -5,6 +5,10 @@ Copyright (c) 2026 Aurum Studios.
 https://aurum-studios.com
 -->
 
+
+The [measurement guide](../../Docs/Measurements.md) connects these workload
+recipes to the versioned metric catalog, compact reports, comparison procedure
+and qualification ledger.
 # Local runtime measurements
 
 This development-only Swift package exercises the implemented NIO HTTP adapter

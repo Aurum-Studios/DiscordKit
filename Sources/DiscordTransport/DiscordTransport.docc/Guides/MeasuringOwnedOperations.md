@@ -42,13 +42,20 @@ released, not a measurement of cancellation-only overhead.
 
 ```swift
 import DiscordTransport
+import DiscordLogHandlers
 
+let aggregate = try DiscordTimingAggregate()
 let timing = OperationTiming(sink: { sample in
-    // Emit only a fixed phase/outcome mapping and numeric elapsed duration.
-    // The destination must be thread safe, prompt and bounded.
-    print(sample.phase, sample.outcome, sample.elapsed)
+    aggregate.record(sample.observation)
 })
+// Inject timing, run the workload and join producers before aggregate.snapshot().
 ```
+
+`DiscordLogHandlers` is an optional application output dependency; the transport
+product does not acquire it. Its aggregate retains bounded numeric state without
+formatting or I/O in this callback. Snapshot copying, encoding and file writes
+belong outside the measured operation. Inspect accepted, invalid, dropped and
+row-level censored counts before interpreting the finite histogram ranges.
 
 Pass `timing` to `RESTClient`, `GatewayInteractionAdapter`, a standalone
 `GatewayEventHandlerDispatcher`, or `InteractionResponder`. The adapter shares
@@ -58,3 +65,27 @@ clock. Do not subtract percentiles from unrelated samples or pool subscriber and
 exchange observations. A local injected peer does not qualify network, native
 Linux, Discord-client or production latency. See <doc:TransportOwnership> and
 <doc:ImplementingAdapters> for the unchanged ownership contracts.
+
+## Scalar and detailed observations
+
+Scalar samples contain Swift `Duration` values. Their output bridge uses checked
+signed integer nanoseconds and marks an unrepresentable duration invalid. The
+legacy sample initializer still clamps a negative/regressing elapsed duration to
+zero; it does not retain raw endpoints or detailed clock validity. No scalar
+sample supplies operation identity, parent context, start/end timestamps or a
+historical profiler interval. Do not manufacture these by subtracting a scalar
+duration from a later timestamp.
+
+Use the independent `DiscordIntervalTiming` owner option for genuine begin/end
+callbacks and numeric parent/attempt propagation. Its shared clock-domain/origin,
+invalid-clock rules and once-only explicit termination apply to every detailed
+hook. Both observation paths execute synchronously on their caller and may run
+concurrently. Observer cost can consume deadline budget; it is present in gross
+end-to-end measurements. A terminal callback's own cost is excluded from that
+terminal's captured duration but can remain inside enclosing operations.
+
+Applications own all sink lifetimes. Stop/join producers before closing paired
+captures, profiler adapters or shared file writers; closing a destination does
+not cancel or join its producers. Aggregate-only timing requires no close, while
+sampled interval captures require explicit close before serialization. Pair loss,
+sampling and capture capacity are separate from the scalar population.

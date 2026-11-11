@@ -92,6 +92,10 @@ Apple signposts over the logging foundation's content-free values. Transport
 converts legacy scalar samples at the application composition boundary; it never
 imports output adapters. Applications join producers before closing capture and
 exporting files. The separate timing benchmark measures these synchronous costs.
+The [measurement guide](Measurements.md) connects owner boundaries to versioned
+workloads, compact reports, trace capture and compatible-host comparisons.
+Shared statistics, report evaluation and process supervision remain development
+tools; runtime products acquire no dependency on them.
 
 The [generation tool](Generation.md) produces reviewed committed output offline.
 Consumers do not fetch documentation or regenerate code. The independent

@@ -32,6 +32,39 @@ the [overhead executable](../Tools/DiscordTimingBenchmarks/README.md) and
 [Phase 3](Tasks/latency-timing/PHASE-3.md). Existing logging scopes retain their
 UUID/context work when trace is filtered; no fast-path change is included.
 
+For reproducible workloads and report interpretation, start with the
+[measurement guide](Measurements.md). The
+[timing output recipes](../Sources/DiscordLogHandlers/DiscordLogHandlers.docc/Guides/TimingOutputs.md)
+cover aggregate-only recording, a correlated operation, bounded slow-operation
+inspection, trace files and Apple Instruments. The runnable
+[LoggingApp](../Examples/LoggingApp/README.md) verifies actual cache projection,
+nested lookup/merge, caller lookup and invalidation without credentials. It can
+retain aggregate JSON, interval NDJSON, a Chrome timeline and diagnostic NDJSON in
+an explicitly selected new directory.
+
+Detailed endpoints, elapsed values, aggregate bounds and `dk.duration_ns` use
+nanoseconds from a monotonic origin. Chrome Trace Event `ts`/`dur` convert to
+microseconds; exact integer nanoseconds remain in arguments. Observers sharing a
+`clockDomain` must use the exact same clock source and origin. Numeric
+`DiscordIntervalScope.context` and diagnostic trace/span UUIDs are independent;
+structured children inherit scopes while shared readers, callbacks and detached
+work require deliberate capture/restoration where their ownership allows it.
+
+Aggregate-only timing retains histogram ranges, not exact percentiles or missing
+endpoint history. Keep invalid, dropped, underflow/overflow and workload population
+counts beside distributions. Bounded capture selects roots at begin and inherits
+that decision for tracked children. A finite all-root window can be inspected for
+slow records after close; there is no duration-triggered tail sampler or rolling
+history. Sampling can miss slow operations. Keep aggregate and captured populations
+separate, and retain capture loss/incomplete counters with exports.
+
+Clock reads, numeric locks, formatting and enabled output callbacks consume the
+observed caller's time. Begin/child callbacks can remain inside enclosing
+durations; a terminal timestamp excludes its own callback. Export serialization
+and writes occur after joined producers and explicit capture close. Close never
+joins producers or cancels runtime work. A separate profiler run adds live
+callback delivery cost; it cannot backdate Instruments signposts to numeric offsets.
+
 ## Logging model
 
 Logging is part of the runtime's operation contract: a trace should explain what was
@@ -235,7 +268,8 @@ try sink.close()
 
 These are alternative bootstrap examples; choose one per process. The independently
 compiled [LoggingApp](../Examples/LoggingApp/README.md) demonstrates process bootstrap,
-console/file multiplexing, dynamic metadata and a synthetic subsystem event offline.
+console/file multiplexing, dynamic metadata, a synthetic transport deadline and
+actual cache timing hooks offline.
 
 The default file budget is three files of at most 5 MiB each, including the active
 file; archives use `.1`, `.2`, and so on. A record includes its terminating newline

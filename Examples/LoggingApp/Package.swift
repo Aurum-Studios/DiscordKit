@@ -17,6 +17,7 @@ let package = Package(
             .product(name: "DiscordLogging", package: "DiscordKit"),
             .product(name: "DiscordLogHandlers", package: "DiscordKit"),
             .product(name: "DiscordTransport", package: "DiscordKit"),
+            .product(name: "DiscordCache", package: "DiscordKit"),
         ], swiftSettings: settings),
         .testTarget(name: "LoggingAppTests", dependencies: ["LoggingApp"], swiftSettings: settings),
     ]

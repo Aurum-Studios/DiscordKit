@@ -5,6 +5,10 @@ Copyright (c) 2026 Aurum Studios.
 https://aurum-studios.com
 -->
 
+
+The [measurement guide](../../Docs/Measurements.md) connects these workload
+recipes to the versioned metric catalog, compact reports, comparison procedure
+and qualification ledger.
 # Foundation, model and permission CPU benchmarks
 
 This development executable implements [Stage 4](../../Docs/Tasks/latency-timing/PHASE-4.md)

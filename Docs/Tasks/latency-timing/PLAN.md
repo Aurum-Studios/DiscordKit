@@ -7,7 +7,7 @@ https://aurum-studios.com
 
 # Latency instrumentation and timing suites
 
-Status: Stages 0–10 implemented; stage 11 remains proposed. Controlled-host
+Status: Stages 0–11 implemented. Controlled-host
 baseline review, numerical gate promotion and hosted execution remain unqualified.
 Runtime owner hooks are opt-in; no performance qualification is implied. The original
 plan was prepared 2026-11-10 against source revision
@@ -27,6 +27,7 @@ Stage 7 implementation: [cache, client and authoring timing suites](PHASE-7.md).
 Stage 8 implementation: [OAuth, RPC, Activities and service timing suites](PHASE-8.md).
 Stage 9 implementation: [media, voice, MLS and DAVE timing suites](PHASE-9.md).
 Stage 10 implementation: [baseline comparison, regression policy and CI](PHASE-10.md).
+Stage 11 implementation: [measurement guidance and qualification handoff](PHASE-11.md).
 
 ## Outcome and scope
 
@@ -532,6 +533,13 @@ Exit gate: another maintainer can reproduce a comparison, locate a slow stage,
 explain collection cost/loss, and distinguish a true regression from incompatible
 or noisy evidence. No release, publication, live Discord or production-capacity
 claim follows from offline results.
+
+Stage 11 implementation: the [maintainer measurement guide](../../Measurements.md),
+[compact report command](../../../Tools/DiscordBenchmarkSupport/README.md),
+[application timing example](../../../Examples/LoggingApp/README.md) and
+[handoff record](PHASE-11.md) make the completed stages discoverable. See
+[validation](VALIDATION.md#phase-11-validation) for actual local checks and remaining
+qualifications. No numerical baseline or required workload gate is promoted.
 
 ## Workload coverage matrix
 

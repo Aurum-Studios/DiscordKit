@@ -8,7 +8,7 @@ https://aurum-studios.com
 # Shared development measurements
 
 This dependency-free Swift package supplies bounded whole-population statistics,
-strict common reports and a Python process driver. Load, DSL and local voice
+strict common reports, a bounded compact report view and a Python process driver. Load, DSL and local voice
 tools adopt it; runtime products do not. It implements latency-plan
 [Stage 1](../../Docs/Tasks/latency-timing/PHASE-1.md).
 
@@ -54,6 +54,80 @@ gate. Source/executable hashes may differ between valid candidates. Actual elaps
 time is an observation, while requested policy and input dimensions must match.
 Resource gauges must retain matching names, units, collection methods, scopes and
 availability; their measured values may differ.
+
+## Compact report and schema reference
+
+[Stage 11](../../Docs/Tasks/latency-timing/PHASE-11.md) adds a deterministic,
+plain-text view of one validated common artifact:
+
+```sh
+swift run --package-path Tools/DiscordBenchmarkSupport DiscordBenchmarkReports summarize benchmark-envelope.json
+swift run --package-path Tools/DiscordBenchmarkSupport DiscordBenchmarkReports summarize benchmark-envelope.json \
+  --timeline capture.json --timeline trace.jsonl
+```
+
+The input must be `format: DiscordBenchmarkReport`, `schemaVersion: 1`, at most
+32 MiB. Native unversioned load, DSL-v1 and voice-v2 artifacts require their
+explicit existing adapters; series and policies use their own commands. The
+summary applies the same strict validation as `validate`. Invalid arguments,
+unsupported schemas, malformed counts and inconsistent serialized percentile
+claims fail without creating a partial successful summary. `summarize` exits
+successfully for structurally valid failed, interrupted and unqualified reports;
+inspect `status`. It never applies a numerical gate.
+
+Each metric identity/version/outcome has independent p50, p95, p99 and maximum
+values with integer nanoseconds. `[40,49] ns` is an inclusive histogram bucket,
+`<10 ns (censored)` and `>100 ns (censored)` are exclusive bounds, and
+`unavailable(insufficientTailData)` preserves the 10,000-observation p99 gate.
+Unknown aggregate loss or counter overflow prevents numerical estimates.
+Observed, in-range, underflow, overflow, dropped and counter-overflow accounting
+appears beside every displayed population, with its configured range and bucket
+width. Direct end-to-end and component/phase identities remain separate; locate
+their actual endpoints in the [metric catalog](../../Docs/Tasks/latency-timing/METRICS.md). The view
+never pools populations, adds marginal percentiles, derives distributions from
+native summaries or invents a correlated waterfall.
+
+The view retains offered/admitted/completed counts, all six terminal outcomes,
+deadline misses, observed throughput, requested/actual warmup and measurement
+interval, run status, resource gauge units/methods/scopes, cleanup, missing
+provenance and qualification limitations. Missing evidence displays as
+`unavailable`, independently of an observed zero. Resource values retain their
+reported scope; a process-lifetime maximum is not a measured-interval peak.
+`numericalQualification=false` remains explicit even for a completed artifact.
+`observerCost=unavailable` is deliberate: the current schema has no isolated
+observer-cost metric. `instrumentation.operation.gross` measures a whole fixture
+operation including its configured synchronous observers; the summary displays
+it as such and performs no overhead subtraction.
+
+Optional `--timeline REFERENCE` arguments are caller-supplied pointers, not
+timeline data added to the envelope. At most four nonempty references of at most
+512 UTF-8 bytes each are admitted. Their existence, contents, correlation,
+completeness and clock compatibility are unverified. Without references, timeline
+evidence is explicitly unavailable because the common schema has no correlated
+intervals. Inspect a separately captured bounded timing/trace artifact using its
+own tool and clock/context contract.
+
+Output has finite display ceilings: the first 64 metrics sorted by identity and
+outcome, 16 gauges sorted by name, eight notes in each note group, and 160 UTF-8
+bytes per metadata field. ASCII/C1 controls are escaped; `[truncated]` visibly
+marks shortened text. Exact omitted-row counts point back to the original JSON.
+These ceilings limit presentation, never collection or qualification. The common
+JSON remains the complete authoritative artifact, including preserved legacy
+bytes. Optional references also obey the field-display ceiling.
+
+The schema is defined by [Report.swift](Sources/DiscordBenchmarkSupport/Report.swift)
+(envelope/counts/gauges/cleanup and strict codecs),
+[Histogram.swift](Sources/DiscordBenchmarkSupport/Histogram.swift)
+(range/precision/loss and `QuantileEstimate`),
+[Provenance.swift](Sources/DiscordBenchmarkSupport/Provenance.swift)
+(build/host receipts), and
+[RunStatistics.swift](Sources/DiscordBenchmarkSupport/RunStatistics.swift)
+(finite metric identities and minimum catalog revisions). The rendering API and
+its display ceilings are in
+[Summary.swift](Sources/DiscordBenchmarkSupport/Summary.swift); the CLI implements
+`summarize`, `validate`, `compare`, `hash`, `hash-series` and `evaluate` in
+[main.swift](Sources/DiscordBenchmarkReports/main.swift). These are development
+contracts; the package is not a dependency of runtime products.
 
 ## Release preparation and fresh processes
 

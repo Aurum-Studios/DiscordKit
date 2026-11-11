@@ -13,7 +13,8 @@ private enum ReportCommandError: Error { case invalidArguments }
 @main struct DiscordBenchmarkReports {
     /// Validates one envelope or explains compatibility of two bounded local artifacts.
     ///
-    /// Commands are `validate FILE`, `compare BASELINE CANDIDATE`, `hash FILE`,
+    /// Commands are `validate FILE`, `summarize FILE [--timeline REFERENCE ...]`,
+    /// `compare BASELINE CANDIDATE`, `hash FILE`,
     /// `hash-series SERIES`, and `evaluate SERIES POLICY`. Validation
     /// proves structure; compare checks semantic evidence without numerical gating.
     /// Evaluate applies the reviewed policy mode and exits two when a required gate
@@ -28,6 +29,9 @@ private enum ReportCommandError: Error { case invalidArguments }
             let response: [String: Any] = ["valid": true, "status": report.status.rawValue,
                 "metricPopulations": report.metrics.count, "numericalQualification": false]
             print(String(decoding: try JSONSerialization.data(withJSONObject: response, options: [.sortedKeys]), as: UTF8.self))
+        case "summarize" where arguments.count >= 2:
+            let references = try timelineReferences(Array(arguments.dropFirst(2)))
+            print(try BenchmarkReportSummary.render(read(arguments[1]), timelineReferences: references))
         case "compare" where arguments.count == 3:
             let baseline = try read(arguments[1]), candidate = try read(arguments[2])
             let result = baseline.comparison(with: candidate)
@@ -48,6 +52,24 @@ private enum ReportCommandError: Error { case invalidArguments }
         default:
             throw ReportCommandError.invalidArguments
         }
+    }
+
+    /// Admits only repeated explicit timeline-reference pairs without opening optional artifacts.
+    /// - Parameter arguments: Zero or more `--timeline REFERENCE` pairs after the report filename.
+    /// - Returns: Caller-supplied references in their original order; rendering enforces string bounds.
+    /// - Throws: invalidArguments for unsupported switches, missing references or more than four pairs.
+    ///   No arbitrary option becomes a report field, and no referenced artifact is opened or qualified.
+    private static func timelineReferences(_ arguments: [String]) throws -> [String] {
+        guard arguments.count.isMultiple(of: 2),
+            arguments.count <= BenchmarkReportSummary.maximumTimelineReferences * 2 else {
+            throw ReportCommandError.invalidArguments
+        }
+        var references: [String] = []
+        for index in stride(from: 0, to: arguments.count, by: 2) {
+            guard arguments[index] == "--timeline" else { throw ReportCommandError.invalidArguments }
+            references.append(arguments[index + 1])
+        }
+        return references
     }
 
     /// Reads at most the schema's serialized ceiling before strict decoding.

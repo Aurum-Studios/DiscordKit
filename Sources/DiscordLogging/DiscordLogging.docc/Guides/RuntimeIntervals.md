@@ -7,8 +7,8 @@ Observe actual owner boundaries with optional, content-free numeric lifecycle ho
 ## Configuration and lifetime
 
 Create one ``DiscordIntervalTiming`` and pass it through the `intervals` option of
-cooperating REST, Gateway shard/hub/dispatcher, signed ingress, command router and
-interaction response owners. It works
+cooperating REST, Gateway shard/hub/dispatcher, signed ingress, command router,
+interaction response, entity cache and client lifecycle owners. It works
 without configuring SwiftLog. `clockDomain` identifies one run-local monotonic
 origin and clock source; every observer accepting the same domain must use that
 exact origin/source. Custom clocks and sinks must be prompt and concurrent-safe.
@@ -43,6 +43,12 @@ Numeric IDs use a random observer namespace and a nonwrapping local sequence;
 copies share the allocator. IDs are ephemeral correlation, never metric labels,
 persistent Discord identity, permissions or receipt trust. Existing diagnostic
 trace/span UUIDs remain independent.
+
+Context does not propagate merely because two calls reach the same actor. Capture
+the current context when handing off work and restore that exact value around its
+later owned callback. Pass `parent: nil` to `begin` when work is deliberately
+independent. A shared operation can retain its initiating ancestry after that
+subscriber has cancelled; ancestry does not transfer cancellation ownership.
 
 Checked nonnegative signed 64-bit nanosecond offsets identify actual begin/end
 boundaries. Endpoints truncate fractional nanoseconds toward zero; elapsed time
@@ -104,6 +110,20 @@ The first HTTP response clock is constructed before interval callbacks. Workflow
 begin precedes first-response begin, so its begin callback is excluded from that
 child interval while still consuming the original acknowledgement budget.
 Observers never extend deadlines or supply permission to retry uncertain sends.
+
+Entity cache hooks distinguish lookup, sparse merge, event projection, invalidation,
+refresh subscriber and shared loader. They start inside the owning actor, after
+admission. One projection can emit nested lookup/merge intervals; one shared loader
+can serve several refresh subscribers. Local client construction, discovery,
+ingestion, local-ready and joined shutdown are separate boundaries. Local readiness
+does not establish live Discord READY or successful remote work.
+
+All detailed boundaries use the same nanosecond endpoint and validity contract
+above. Each terminal outcome classifies that boundary only. Parent/child intervals
+can overlap; summing them or subtracting percentile rows cannot establish a new
+latency. Include invalid data, missing endpoints and adapter loss beside any
+derived distribution. For complete end-to-end distributions, time the caller's
+actual entry through joined result directly and reconcile workload populations.
 
 These hooks establish local timing semantics. Optional bounded outputs and local
 benchmarks have separate explicit lifetimes. Controlled performance baselines,
