@@ -7,7 +7,7 @@ https://aurum-studios.com
 
 # Latency instrumentation and timing suites
 
-Status: Stages 0–7 implemented; stages 8–11 remain proposed.
+Status: Stages 0–8 implemented; stages 9–11 remain proposed.
 Runtime owner hooks are opt-in; no performance qualification is implied. The original
 plan was prepared 2026-11-10 against source revision
 `27cd73f335b2b3058dfa317677c71991292706b8`; the Stage 0 checkpoint uses
@@ -23,6 +23,7 @@ Stage 4 implementation: [foundation/model/permission CPU suites](PHASE-4.md).
 Stage 5 implementation: [transport and REST timing suites](PHASE-5.md).
 Stage 6 implementation: [Gateway, interactions and command timing suites](PHASE-6.md).
 Stage 7 implementation: [cache, client and authoring timing suites](PHASE-7.md).
+Stage 8 implementation: [OAuth, RPC, Activities and service timing suites](PHASE-8.md).
 
 ## Outcome and scope
 
@@ -413,6 +414,12 @@ Deliverables:
 Exit gate: no undocumented wire operations, purchase, browser authorization or
 real desktop-host access in ordinary suites; concurrency, bounded correlation,
 single-flight and teardown assertions accompany all measured cases.
+
+Stage 8 implementation: [wrapper boundaries, workloads and compatibility](PHASE-8.md)
+are available through the separate `service-timing` command in the load tool.
+See [validation](VALIDATION.md#phase-8-validation) for completed local evidence.
+Injected peers do not qualify real desktop/browser hosts or distributed OAuth
+coordination; runtime timing APIs and manifests remain unchanged.
 
 ## Stage 9 — Media, voice, MLS and DAVE suites
 

@@ -102,11 +102,40 @@ public enum BenchmarkWorkload: String, CaseIterable, Sendable {
     case compilerClean = "compiler.clean"
     case compilerIncremental = "compiler.incremental"
 
+    /// Injected OAuth, RPC, Activities and service boundaries introduced in catalog eight.
+    case oauthLookup = "oauth.lookup"
+    case oauthInstall = "oauth.install"
+    case oauthRevoke = "oauth.revoke"
+    case oauthStorageLoad = "oauth.storage.load"
+    case oauthStorageCAS = "oauth.storage.cas"
+    case oauthRefreshIO = "oauth.refresh.io"
+    case oauthRefreshJoined = "oauth.refresh.joined"
+    case oauthRevokeIO = "oauth.revoke.io"
+    case oauthClose = "oauth.close"
+    case rpcRequest = "rpc.request"
+    case rpcHandshake = "rpc.handshake"
+    case rpcWrite = "rpc.write"
+    case rpcPeerWait = "rpc.peerWait"
+    case rpcEventDispatch = "rpc.eventDispatch"
+    case rpcClose = "rpc.close"
+    case activitiesRequest = "activities.request"
+    case activitiesHandshake = "activities.handshake"
+    case activitiesWrite = "activities.write"
+    case activitiesPeerWait = "activities.peerWait"
+    case activitiesEventDispatch = "activities.eventDispatch"
+    case activitiesClose = "activities.close"
+    case activitiesSubscription = "activities.subscription"
+    case serviceOperation = "service.operation"
+    case serviceBackend = "service.backend"
+    case serviceValidation = "service.validation"
+    case serviceCleanup = "service.cleanup"
+
     /// Earliest catalog revision defining this identity; old readers retain old semantics.
     public var minimumCatalogVersion: UInt32 {
         /// Returns the frozen catalog introduction version without inspecting observations.
         get {
             switch self {
+            case .oauthLookup, .oauthInstall, .oauthRevoke, .oauthStorageLoad, .oauthStorageCAS, .oauthRefreshIO, .oauthRefreshJoined, .oauthRevokeIO, .oauthClose, .rpcRequest, .rpcHandshake, .rpcWrite, .rpcPeerWait, .rpcEventDispatch, .rpcClose, .activitiesRequest, .activitiesHandshake, .activitiesWrite, .activitiesPeerWait, .activitiesEventDispatch, .activitiesClose, .activitiesSubscription, .serviceOperation, .serviceBackend, .serviceValidation, .serviceCleanup: 8
             case .cacheCall, .cacheOwner, .cacheLoader, .cacheBroadcast, .clientConstruction, .clientDiscovery, .clientIngestion, .clientLocalReady, .clientShutdown, .clientLifecycle, .dslDefinition, .dslInvoke, .dslPolicy, .dslMiddleware, .compilerClean, .compilerIncremental: 7
             case .gatewayReceiveToAdmission, .gatewayReceiveToAcknowledgement, .gatewayAdmissionToAcknowledgement, .gatewayInitialResponse, .gatewayOriginalEdit, .gatewayAcknowledgementToOriginalEdit, .commandPolicy, .gatewaySession, .gatewaySocketReceipt, .gatewayDecode, .gatewayIngestionQueue, .gatewayPublication, .gatewayHubResidence, .gatewayDispatch, .gatewayLocalQueue, .gatewayAdmission, .gatewayHandler, .gatewayHeartbeatACK, .gatewayReconnect, .gatewayShutdown, .ingressApplicationResponse, .ingressBodyRead, .ingressSignature, .ingressAdmission, .ingressDecode, .commandRoute, .commandArguments, .commandAdmission, .commandHandler, .interactionHandler, .interactionWorkflow, .interactionProviderWait, .interactionInitialResponse, .interactionOriginalEdit, .syntheticInvoke, .syntheticProviderWait: 6
             case .instrumentation: 3

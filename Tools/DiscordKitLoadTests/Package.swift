@@ -36,6 +36,13 @@ let package = Package(
                 .product(name: "DiscordCommands", package: "DiscordKit"),
                 .product(name: "DiscordCommandDSL", package: "DiscordKit"),
                 .product(name: "DiscordDSL", package: "DiscordKit"),
+                .product(name: "DiscordOAuth", package: "DiscordKit"),
+                .product(name: "DiscordRPC", package: "DiscordKit"),
+                .product(name: "DiscordActivities", package: "DiscordKit"),
+                .product(name: "DiscordSocial", package: "DiscordKit"),
+                .product(name: "DiscordGameServices", package: "DiscordKit"),
+                .product(name: "DiscordCommerce", package: "DiscordKit"),
+                .product(name: "DiscordCertifiedDevices", package: "DiscordKit"),
                 .product(name: "Crypto", package: "swift-crypto"),
             ],
             swiftSettings: concurrencySettings

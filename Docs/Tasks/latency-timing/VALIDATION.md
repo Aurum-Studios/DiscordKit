@@ -716,3 +716,89 @@ manifest and pin inputs remain unchanged. Final local links and whitespace pass.
 Local correctness and measurement evidence does not qualify hosted CI, Linux or
 other hosts, live Discord READY, client rendering, controlled-host numerical
 baselines, sparse P99, production capacity, publication or later roadmap stages.
+
+
+## Phase 8 validation
+
+Executed locally on macOS arm64 with Apple Swift 6.4 on 2026-11-10, starting from
+Phase 7 revision `1de88f8d`. The [implementation record](PHASE-8.md),
+[load guide](../../../Tools/DiscordKitLoadTests/README.md#phase-8-optional-service-timing)
+and [catalog-eight boundaries](METRICS.md#implemented-optional-service-durations--catalog-eight)
+define the fixture scope. Earlier phase evidence retains its original limits.
+
+| Check | Completed result |
+| --- | --- |
+| Root build and strict tests, forced pins, four jobs | Passed: 2,613 tests across 34 executable summaries; runtime implementation is unchanged |
+| Full load tool strict tests | Passed: 94 tests in 19 suites, including seven OAuth, fourteen RPC/Activities and thirteen service scenarios, bounded options, split warmup and strict common/native roundtrips |
+| Shared support tests | Passed: 41 tests in five suites; every new metric requires catalog eight, all earlier catalogs remain readable and collector budgets remain enforced |
+| Python capture/supervisor tests | Passed: 33 load-script tests and 29 shared-supervisor tests, including poisoned row identity/outcome projections, process timeout, signal forwarding and child reaping |
+| Browser bridge Node tests | Passed: 38 tests across the complete bridge package, including exact UTF-8 byte capacity, source/origin checks before payload inspection and idempotent callback-failure cleanup |
+| Offline tooling | Passed: 106 Swift tests in eight suites and 230 Python tests |
+| Inventory, generation and parity | Passed: 18,245 inventory records, 290 sources, 951 reviewed definitions, 255 mapped endpoints and five byte-identical generated artifacts |
+| Runtime dependency isolation | Passed: 33 public products/targets, 362 runtime sources, 838 imports and eight resolved packages; no runtime manifest/source changes |
+| Callable documentation and local links | Passed: 917 Swift files, 9,867 explicit callable declarations, zero missing comments; all 303 local documentation links resolve |
+| Optimized optional-service matrix | Passed: 63 fresh processes across 34 scenarios, 2,016 terminal outcomes, 316 metric populations and 16,809 observations |
+| Strict capture integrity | All 63 common envelopes validate independently and match native reports; reported fixture/runtime owner counts are zero, process owners are reaped, process groups contain no live members, and no artifacts are truncated |
+| Aggregate integrity | Zero histogram underflow, overflow, dropped observations or counter overflow across all 63 captures; sparse P99 remains insufficient data |
+| External wall caps | Debug integrity checks for OAuth single-flight and two-chunk GameServices under a one-second cap each preserve four admitted cancelled callers, interrupted status and zero reported remaining owners |
+
+
+The OAuth checks retain all readers at a real shared-flight barrier before
+releasing a single refresh. Exact load/CAS/backend counts, winning-generation
+preservation, independent reader cancellation, close and cleared storage receipts
+are asserted. A benchmark-owned admission callback allows a deterministic parent
+cancellation test without sleeps; ordinary runs leave it nil. Joined-refresh
+observations require an actual backend refresh invocation.
+
+RPC/Activities checks pass reversed distinct replies through real public clients,
+production IPC framing and injected peers. They verify single-byte fragmentation,
+pending capacity rejection, bounded events, subscription-token saturation with
+one shared upstream subscription, final unsubscribe, cancellation and mismatch
+failure. Supporting requests and adapter reads finish before cleanup receipts.
+Public Activity close retains its existing reader-task contract; fixture read
+joining is measured explicitly. External cancellation during startup/barriers can
+throw after joined fixture cleanup, retaining supervised failure artifacts rather
+than inventing a completed native envelope.
+
+Service checks use implemented public orchestration: scoped Social identity and
+relationship synchronization; two-chunk lobby membership with silent drops and
+preserved partial failure progress; snapshot-based descriptor reduction;
+authoritative entitlement verification with the existing bot-or-bearer policy;
+and CertifiedDevices HTTP publication with independently counted body disposal.
+Cancellation waits for actual backend entry. No external mutation, authorization,
+purchase or desktop request occurs. Backend actor residence before entry is
+excluded from child timings and retained in enclosing caller latency.
+
+Primary distributions must match terminal counts separately for every outcome.
+The matrix also matches native configuration and common identity to the selected
+case, concurrency, fanout, injected delay, request/warmup counts and wall caps.
+Overlapping child histograms never multiply primary counts or construct a
+synthetic waterfall. Setup, correctness checks, diagnostics and report writes
+remain outside primary timestamps. Shared joined-refresh timing deliberately
+includes its documented orchestration and cleanup work.
+
+Optimized capture commands use the existing finite process supervisor:
+
+```sh
+python3 Tools/DiscordBenchmarkSupport/scripts/run_benchmarks.py build \
+  --repository . --package Tools/DiscordKitLoadTests --product DiscordKitLoadTests \
+  --receipt .build/timing-phase8/load-release-capture.json
+python3 Tools/DiscordKitLoadTests/scripts/run_service_timing_suites.py \
+  --executable Tools/DiscordKitLoadTests/.build/release/DiscordKitLoadTests \
+  --receipt .build/timing-phase8/load-release-capture.json \
+  --output-dir .build/timing-phase8/service-matrix-capture --requests 32 --warmup-requests 4
+```
+
+The optimized matrix retains 1,536 successes, 128 expected failures, 160 expected
+rejections and 192 deliberate cancellations; no terminal population disappears
+from success-only percentiles. The first preparation receipt correctly rejected
+source changes during its build. The successful capture receipt binds the frozen
+implementation. Only this evidence ledger was then updated: all 3,431 other
+recorded source-tree file contents, executable/test/build inputs and the optimized
+binary remain unchanged. Local receipts live in ignored build output and are not
+committed as a numerical baseline.
+
+Local injected captures do not qualify numerical baselines, sparse P99, distributed
+OAuth locking, real desktop IPC, a browser process, live Discord, hosted CI,
+other platforms, release publication or subsequent roadmap stages. Runtime APIs,
+protocol contracts, dependency directions and legacy scalar timing are unchanged.

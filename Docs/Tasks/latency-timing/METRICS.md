@@ -7,7 +7,7 @@ https://aurum-studios.com
 
 # Timing metric catalog
 
-Catalog identifier: **discordkit.timing**, revision **7**. Revision 1 was frozen 2026-11-10 at
+Catalog identifier: **discordkit.timing**, revision **8**. Revision 1 was frozen 2026-11-10 at
 `c8d842f7ce51e9adc69ff9997e2c0f374dc2ee68`. Every metric below has semantic
 version **1**. The identity is `(catalog, metric ID, metric version)`; changing
 endpoints, population, units or aggregation creates a new metric version.
@@ -213,10 +213,52 @@ preallocates only its selected finite identities. Runtime aggregate outputs keep
 their configured retained-key cap; expanded identities cannot escape that cap and
 excess keys count as loss. New optional signpost codes append to existing codes.
 
+## Implemented optional service durations — catalog eight
+
+The `service-timing` command implements the following external wrapper boundaries
+with actual public runtime owners and injected, credential-free peers. All use H
+and A populations in integer nanoseconds. They introduce no runtime callback or
+public enum changes. Fixed case names and explicit injected delay/fanout/concurrency
+fields distinguish incomparable operations. Primary distributions account for
+every terminal call; supporting peer requests are separately counted and excluded
+from primary offered/completed counts. Timing stops before diagnostics except for
+the explicitly inclusive joined-refresh boundary below.
+
+| Metric ID | Start → stop and population |
+| --- | --- |
+| `oauth.lookup` | Immediately before `accessToken` → returned token/error. One per reader; refresh cohorts preserve independent caller cancellation. |
+| `oauth.install` | Immediately before public `install` → returned result/error; storage mutation and CAS included. |
+| `oauth.revoke` | Immediately before public `revokeToken` → returned result/error; remote fixture revoke and storage mutation included. |
+| `oauth.storage.load` | Injected storage method entry → result/error after configured wait; setup and diagnostic storage reads excluded. |
+| `oauth.storage.cas` | Injected compare-exchange entry → generation comparison and mutation result/error after configured wait. |
+| `oauth.refresh.io` | Injected refresh backend method entry after actor admission → returned rotated token/error, including configured wait or held gate. Once per actual backend invocation; excludes the closure-to-actor hop. |
+| `oauth.refresh.joined` | External independent-refresh caller or shared-cohort submission → every caller joined and coordinator close complete. Includes harness joining, diagnostic and close work; one per actual refresh flight. This does not claim internal flight admission. |
+| `oauth.revoke.io` | Injected revoke backend method entry after actor admission → returned result/error after configured wait. Excludes the closure-to-actor hop and its preceding storage-inspection precondition. |
+| `oauth.close` | Caller before coordinator close → joined return, before fixture storage disposal. Repeated close calls remain actual calls. |
+| `rpc.request`, `activities.request` | Caller before public request/execute → correlated reply or typed failure/rejection/cancellation. One primary call per independently owned fixture; supporting correlation/pressure calls excluded. |
+| `rpc.handshake`, `activities.handshake` | Caller before public connect/start → READY accepted or failure; separately followed by a primary request. |
+| `rpc.write`, `activities.write` | Injected adapter write after its initial cancellation/deadline check → frame/tuple processing and response submission complete. Includes fixture framing/preparation work; no internal admission claim. |
+| `rpc.peerWait`, `activities.peerWait` | Immediately before configured complete-frame delivery delay → delay completion/error, before fragment/tuple delivery. No samples when no configured wait is performed. |
+| `rpc.eventDispatch`, `activities.eventDispatch` | Injected event batch submission → sentinel reply and public event drain complete; includes queue residence and batch work, not an individual-event P99. |
+| `rpc.close`, `activities.close` | Caller before public close → joined return and explicit fixture adapter-read join; peer receipts follow the endpoint. |
+| `activities.subscription` | Public subscribe caller boundary → acquired token/error. Releases are verified by shared upstream subscribe/unsubscribe native counts; no release duration is inferred. |
+| `service.operation` | Caller before selected implemented Social/GameServices/Commerce/CertifiedDevices orchestration → result/error; local validation, snapshot work and backend waits included where selected. |
+| `service.backend` | Injected backend method entry after actor admission → provider/executor/body-read result/error after configured wait. Excludes preceding actor residence and does not time the entire HTTP transport call. |
+| `service.validation` | External selected public validation or snapshot-application call → returned result/error; excluded setup checks never become observations. |
+| `service.cleanup` | Before selected owner cleanup → joined return; actual closed-body/backend/in-flight receipts are read after timing. |
+
+Child populations can overlap primary work or cover separate lifecycle phases.
+Handshake precedes primary calls; close and service cleanup follow them. Their
+percentiles cannot be added to or subtracted from caller percentiles. The catalog does not fabricate internal refresh admission,
+RPC nonce-matching CPU time, browser-process latency or actual desktop delivery.
+See [Phase 8](PHASE-8.md) for independent ownership/correctness receipts.
+The earlier proposed `oauth.storage` and `oauth.refresh` identities below remain
+reserved and are not emitted; the concrete IDs above freeze observable boundaries.
+
 ## Planned pure, optional-product and instrumentation durations
 
-`pure.batch` is implemented in Stage 4. The remaining optional-product rows in
-this section retain their planned status. The CPU executable uses one finite case
+`pure.batch` is implemented in Stage 4. The Stage 8 rows implemented above use their concrete wrapper definitions;
+remaining optional-product rows retain their planned status. The CPU executable uses one finite case
 per process, four prepared variants, 1,000 ns histogram buckets over 0...100 ms,
 and exact success/rejected **batch** counts. Calls/rejections and normalized batch
 mean remain separate native fields; throughput is calls per wall second. Fixture

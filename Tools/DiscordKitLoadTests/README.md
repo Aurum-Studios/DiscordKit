@@ -555,3 +555,72 @@ insufficient data. A passing local smoke establishes integrity and cleanup; no
 controlled performance budget, hosted CI, live Discord or other platform is
 qualified. Direct/DSL runtime and manual/macro compiler comparisons are in the
 separate [authoring tool](../DiscordDSLBenchmarks/README.md).
+
+## Phase 8 optional service timing
+
+The separate `service-timing` command runs actual OAuth, RPC, Activities, Social,
+GameServices, Commerce and CertifiedDevices APIs with bounded injected storage,
+peers and backends. No credentials, desktop application, browser authorization or
+purchase operation is required. See the
+[phase record](../../Docs/Tasks/latency-timing/PHASE-8.md) and
+[catalog-eight boundaries](../../Docs/Tasks/latency-timing/METRICS.md#implemented-optional-service-durations--catalog-eight).
+
+```sh
+swift run --package-path Tools/DiscordKitLoadTests DiscordKitLoadTests \
+  service-timing --list-cases
+swift run --package-path Tools/DiscordKitLoadTests DiscordKitLoadTests \
+  service-timing --case oauth.singleFlight --requests 32 --concurrency 8 \
+  --delay-microseconds 2000 --warmup-requests 4 --output .build/oauth-single-flight.json
+python3 Tools/DiscordBenchmarkSupport/scripts/run_benchmarks.py build \
+  --repository . --package Tools/DiscordKitLoadTests --product DiscordKitLoadTests \
+  --receipt .build/timing-phase8/load-release.json
+python3 Tools/DiscordKitLoadTests/scripts/run_service_timing_suites.py \
+  --executable Tools/DiscordKitLoadTests/.build/release/DiscordKitLoadTests \
+  --receipt .build/timing-phase8/load-release.json \
+  --output-dir .build/timing-phase8/service-matrix --requests 32 --warmup-requests 4
+```
+
+OAuth cases distinguish valid lookup, install/load/CAS, refresh, contending
+single-flight readers, generation conflicts, revoke and cancelled readers followed
+by joined owner close. Coordinator storage and backend counts are actual receipts;
+a local coordinator never establishes distributed locking. `oauth.lookup` applies
+to access-token readers; install/revoke have separate primary metric identities.
+The inclusive joined-refresh population contains harness joining/diagnostic work
+and cannot identify exact internal admission or refresh CPU time.
+
+RPC cases use production IPC framing over an injected byte stream, including
+single-byte fragmentation. Both protocol families cover READY handshake, reversed
+reply correlation, bounded pending pressure, event drains, cancellation, mismatched
+commands and close. Activity subscriptions test shared upstream ownership and the
+last release. Each independent session contributes one primary request; supporting
+correlation/pressure/subscription calls have separate native write/ownership counts.
+Handshake/event/subscription/close populations remain distinct from primary calls.
+
+Service cases cover Social profile/snapshot validation and lifecycle admission,
+GameServices filtered lobby members and snapshot-based descriptor comparison, Commerce entitlement
+validation, and CertifiedDevices publication through an injected backend. Expected
+invalid input, injected failure and cancellation stay visible in outcome counts.
+Underlying REST/RPC observations and outer service observations overlap.
+
+`--requests` is bounded to 1...100000, `--concurrency` to 1...64, `--fan-out` to
+1...32 and `--delay-microseconds` to 0...1000000. Delay is an injected fixture
+wait, not a measured service latency assumption. The matrix sweeps contention
+1/4/8/32, event/subscriber fanout 1/2/8/32, and injected waits 0/2000/10000 µs in
+separate fresh processes. Default warmup and measured wall caps remain finite;
+warmup uses independent owners and never enters measured histograms.
+
+Native schema 1 embeds the common schema-1/catalog-8 envelope. Every primary
+terminal outcome is histogrammed with explicit precision, loss and censored tails.
+Incomplete populations, dropped aggregates or retained owners fail capture.
+Sparse P99 is insufficient data. The driver retains each successful matrix row
+before advancing and enforces process timeout, bounded artifacts and child reaping.
+
+Bridge boundary checks run separately with `node --test` from
+[DiscordActivityBridge](../../Browser/DiscordActivityBridge/README.md). Those Node
+checks do not measure a browser process. Actual browser timing requires a separate
+controlled browser owner using the documented bridge origin/source policy, with
+browser-side timestamps and independent close evidence; do not compare it to the
+injected bridge profile. Actual desktop IPC qualification likewise requires an
+explicit desktop host and remains separate from injected-byte-stream framing.
+Local captures establish fixture integrity and cleanup; numerical capacity,
+hosted CI, live Discord and other platforms require their own qualification.

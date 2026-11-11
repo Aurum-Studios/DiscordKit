@@ -51,7 +51,7 @@ import Testing
         oldCatalog.identity.catalogVersion = 2
         oldCatalog.metrics[0].id = BenchmarkWorkload.transport.rawValue
         #expect(!report.comparison(with: oldCatalog).isCompatible)
-        report.identity.catalogVersion = 8
+        report.identity.catalogVersion = 9
         #expect(throws: BenchmarkReportError.invalidIdentity) { try report.validate() }
     }
 
@@ -71,6 +71,27 @@ import Testing
         _ = try RunStatistics(workloads: [.cacheCall, .cacheOwner, .cacheLoader, .cacheBroadcast])
         _ = try RunStatistics(workloads: [.clientConstruction, .clientDiscovery, .clientIngestion,
             .clientLocalReady, .clientShutdown, .clientLifecycle])
+    }
+
+    /// Optional service populations require catalog eight and preserve every earlier report identity.
+    /// - Throws: Unexpected histogram configuration or strict serialization failure.
+    @Test func phaseEightCatalogPreservesEarlierReports() throws {
+        var report = try completeReport()
+        for workload in BenchmarkWorkload.allCases where workload.minimumCatalogVersion == 8 {
+            report.metrics[0].id = workload.rawValue
+            for version: UInt32 in [2, 3, 4, 5, 6, 7] {
+                report.identity.catalogVersion = version
+                #expect(throws: BenchmarkReportError.unsupportedMetric) { try report.validate() }
+            }
+            report.identity.catalogVersion = 8
+            #expect(try DiscordBenchmarkReport.decode(report.validatedData()) == report)
+        }
+        _ = try RunStatistics(workloads: [.oauthLookup, .oauthInstall, .oauthRevoke, .oauthStorageLoad, .oauthStorageCAS,
+            .oauthRefreshIO, .oauthRefreshJoined, .oauthRevokeIO, .oauthClose])
+        _ = try RunStatistics(workloads: [.rpcRequest, .rpcHandshake, .rpcWrite, .rpcPeerWait, .rpcEventDispatch, .rpcClose])
+        _ = try RunStatistics(workloads: [.activitiesRequest, .activitiesHandshake, .activitiesWrite,
+            .activitiesPeerWait, .activitiesEventDispatch, .activitiesClose, .activitiesSubscription])
+        _ = try RunStatistics(workloads: [.serviceOperation, .serviceBackend, .serviceValidation, .serviceCleanup])
     }
 
     /// Pure batch metrics have a new catalog revision while earlier report semantics remain readable.

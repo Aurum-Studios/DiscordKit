@@ -74,6 +74,12 @@ synthetic origins. New metrics require catalog six; earlier catalogs retain thei
 semantics. Allocate only the selected finite workload subset: the complete catalog
 exceeds one collector's 16 MiB budget and is rejected before histogram allocation.
 
+The [optional service suites](../DiscordKitLoadTests/README.md#phase-8-optional-service-timing)
+emit catalog revision 8 with credential-free OAuth storage/refresh, RPC, Activities
+and service orchestration populations. New identities require catalog eight;
+catalogs 2...7 retain their original semantics. Runtime products remain independent
+of this development package.
+
 Run from the repository root with Python 3.10+ and Swift 6.4+. Keep receipts and
 outputs in ignored build directories. Finish source edits before preparation:
 receipts bind revision, exact dirty/untracked content, dependency pins, executable

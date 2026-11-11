@@ -403,7 +403,7 @@ public struct DiscordBenchmarkReport: Codable, Equatable, Sendable {
     public func validate() throws {
         guard format == Self.formatIdentifier else { throw BenchmarkReportError.invalidFormat }
         guard schemaVersion == 1 else { throw BenchmarkReportError.invalidVersion }
-        guard identity.catalog == "discordkit.timing", [2, 3, 4, 5, 6, 7].contains(identity.catalogVersion),
+        guard identity.catalog == "discordkit.timing", [2, 3, 4, 5, 6, 7, 8].contains(identity.catalogVersion),
             identity.profileVersion > 0, !identity.scenario.isEmpty, !identity.profile.isEmpty,
             !identity.instrumentation.isEmpty, !identity.scheduler.isEmpty, !adapter.isEmpty,
             identity.concurrency != 0, identity.repetitions != 0 else { throw BenchmarkReportError.invalidIdentity }

@@ -512,3 +512,82 @@ test("raw adapter bounds frames and informs the Swift read owner once on invalid
     assert.throws(() => createActivityTransport({ activityWindow: {}, trustedSource: {}, hostOrigin: ORIGIN, allowedOrigins: [] }), category("invalidOrigin"));
     assert.throws(() => createActivityTransport({ activityWindow: {}, trustedSource: {}, hostOrigin: ORIGIN, allowedOrigins: ["https://other.example"] }), category("invalidOrigin"));
 });
+
+/** Verifies exact UTF-8 frame capacity before crossing the native owner boundary and teardown once. */
+test("raw transport accepts the exact UTF-8 byte limit and authenticates before inspecting over-limit data", () => {
+    const limit = 512;
+    const tuple = [1, { cmd: "DISPATCH", evt: "TIMING_EVENT", data: { text: "" } }];
+    const overhead = new TextEncoder().encode(JSON.stringify(tuple)).byteLength;
+    tuple[1].data.text = "é".repeat(Math.floor((limit - overhead) / 2)) + "x".repeat((limit - overhead) % 2);
+    const exact = new TextEncoder().encode(JSON.stringify(tuple));
+    assert.equal(exact.byteLength, limit);
+    let receiver;
+    let removed = 0;
+    let inspected = 0;
+    const posted = [];
+    const delivered = [];
+    const closed = [];
+    const source = {
+        /** Captures only validated bounded native-owner output sent to the exact allowed host. */
+        postMessage(data, origin) { posted.push({ data, origin }); },
+    };
+    const window = {
+        /** Retains the sole message listener so provenance can be varied without browser access. */
+        addEventListener(_name, callback) { receiver = callback; },
+        /** Counts idempotent listener teardown independently of read-owner close callbacks. */
+        removeEventListener() { removed++; },
+    };
+    const raw = createActivityTransport({ activityWindow: window, trustedSource: source,
+        hostOrigin: ORIGIN, allowedOrigins: [ORIGIN], maxFrameBytes: limit });
+    raw.start((bytes) => delivered.push(bytes), (error) => closed.push(error));
+    raw.send(exact);
+    assert.deepEqual(posted, [{ data: tuple, origin: ORIGIN }]);
+    const excessive = structuredClone(tuple);
+    excessive[1].data.text += "x";
+    assert.throws(() => raw.send(new TextEncoder().encode(JSON.stringify(excessive))), category("capacity"));
+    assert.equal(posted.length, 1);
+    assert.equal(closed.length, 0);
+    const hostile = {
+        /** Fails if an unauthenticated sender can make parsing inspect its payload. */
+        get value() { inspected++; throw new Error("Untrusted payload inspected"); },
+    };
+    receiver({ source: {}, origin: ORIGIN, data: hostile });
+    receiver({ source, origin: "https://evil.example", data: hostile });
+    assert.equal(inspected, 0);
+    receiver({ source, origin: ORIGIN, data: tuple });
+    assert.equal(delivered.length, 1);
+    assert.equal(delivered[0].byteLength, limit);
+    assert.deepEqual(JSON.parse(new TextDecoder().decode(delivered[0])), tuple);
+    receiver({ source, origin: ORIGIN, data: excessive });
+    receiver({ source, origin: ORIGIN, data: tuple });
+    raw.close();
+    assert.equal(delivered.length, 1);
+    assert.equal(closed.length, 1);
+    assert.equal(closed[0].code, "capacity");
+    assert.equal(removed, 1);
+});
+
+/** Checks that adapter delivery callback failures release listeners and notify pending native reads once. */
+test("raw owner callback failure terminates the authenticated boundary without a second delivery", () => {
+    let receiver;
+    let removed = 0;
+    let delivered = 0;
+    const errors = [];
+    const source = { postMessage() {} };
+    const window = {
+        /** Installs one explicit test-controlled host listener. */
+        addEventListener(_name, callback) { receiver = callback; },
+        /** Records ownership release without clearing the saved adversarial callback. */
+        removeEventListener() { removed++; },
+    };
+    const raw = createActivityTransport({ activityWindow: window, trustedSource: source,
+        hostOrigin: ORIGIN, allowedOrigins: [ORIGIN] });
+    raw.start(() => { delivered++; throw new Error("Native owner rejected delivery"); }, (error) => errors.push(error));
+    receiver({ source, origin: ORIGIN, data: [1, READY] });
+    receiver({ source, origin: ORIGIN, data: [1, READY] });
+    raw.close();
+    assert.equal(delivered, 1);
+    assert.equal(errors.length, 1);
+    assert.equal(errors[0].code, "invalidFrame");
+    assert.equal(removed, 1);
+});
