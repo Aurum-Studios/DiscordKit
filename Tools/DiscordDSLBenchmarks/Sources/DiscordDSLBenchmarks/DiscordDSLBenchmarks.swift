@@ -18,12 +18,15 @@ struct BenchmarkReport: Encodable, Sendable {
 
 /// Local offline authoring/handler measurements; the executable has no listener, credentials or remote adapter.
 @main struct DiscordDSLBenchmarks {
-    /// Executes deterministic direct-then-DSL pairs and emits one inspectable JSON artifact.
+    /// Dispatches opt-in Stage 7 suites or the retained deterministic legacy paired matrix.
     /// Process-owned SwiftLog diagnostics go to stderr, preserving the JSON destination.
     /// - Throws: Configuration, original workload validation or hard functional gate failure; no partial success artifact is written.
     static func main() async throws {
         LoggingSystem.bootstrap(StreamLogHandler.standardError)
-        let parsed = try BenchmarkConfiguration.parse(Array(CommandLine.arguments.dropFirst()))
+        let arguments = Array(CommandLine.arguments.dropFirst())
+        if arguments.first == "compiler-report" { try CompilerTimingCommand.run(Array(arguments.dropFirst())); return }
+        if arguments.first == "authoring" { try await AuthoringTimingCommand.run(Array(arguments.dropFirst())); return }
+        let parsed = try BenchmarkConfiguration.parse(arguments)
         let environment = BenchmarkEnvironment.capture()
         let modes = parsed.mode.map { [$0] } ?? ["direct", "dsl"]
         let selected = parsed.configuration.handlerCounts.flatMap { count in

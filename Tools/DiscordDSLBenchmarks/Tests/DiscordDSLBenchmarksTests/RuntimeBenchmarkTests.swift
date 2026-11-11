@@ -13,6 +13,89 @@ import Testing
 
 /// Schema instrumentation is process-global; serialize this independent suite to preserve exact deltas.
 @Suite(.serialized) struct RuntimeBenchmarkTests {
+    /// Stage 7 rejects malformed, duplicated and excessive dimensions before any schema or owner exists.
+    /// - Throws: Unexpected valid parsing failures; expected invalid arguments are captured by assertions.
+    @Test func authoringConfigurationBounds() throws {
+        let parsed = try AuthoringTimingConfiguration.parse(["--mode", "dsl", "--modules", "2", "--invocations", "23", "--definitions", "2"], environment: [:])
+        #expect(parsed.mode == "dsl")
+        #expect(parsed.modules == 2)
+        #expect(parsed.invocations == 23)
+        for invalid in [["--modules", "0"], ["--modules", "11"], ["--definitions", "101"], ["--invocations", "0"],
+            ["--mode", "macro"], ["--warmup-invocations", "1", "--warmup-seconds", "0"],
+            ["--mode", "dsl", "--mode", "direct"], ["--unknown", "1"], ["--output"], ["--profile", "arbitrary"],
+            ["--output", "same.json", "--common-report", "./same.json"]] {
+            #expect(throws: BenchmarkError.self) { try AuthoringTimingConfiguration.parse(invalid, environment: [:]) }
+        }
+        let environment = try AuthoringTimingConfiguration.parse(["--concurrency", "1"],
+            environment: ["DK_BENCHMARK_CONCURRENCY": "2", "DK_BENCHMARK_ENVELOPE": "common.json"])
+        #expect(environment.concurrency == 1)
+        #expect(environment.commonReport == "common.json")
+    }
+
+    /// Aliased symlink destinations fail before compiling definitions or overwriting either report.
+    /// - Throws: Temporary-file setup failures; rejected configuration is asserted explicitly.
+    @Test func authoringRejectsSymlinkOutputAlias() throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let original = directory.appendingPathComponent("common.json"), alias = directory.appendingPathComponent("alias.json")
+        try Data("retained".utf8).write(to: original)
+        try FileManager.default.createSymbolicLink(at: alias, withDestinationURL: original)
+        #expect(throws: BenchmarkError.self) {
+            try AuthoringTimingConfiguration.parse(["--output", alias.path, "--common-report", original.path], environment: [:])
+        }
+        #expect(try Data(contentsOf: original) == Data("retained".utf8))
+    }
+
+    /// Both Stage 7 paths execute equivalent real policies and exact responses over the full population.
+    /// Warmup is excluded from every phase histogram; measured schema captures occur only during definition builds.
+    /// - Throws: Original compiler/route/response failures or hard integrity violations.
+    @Test func authoringFullPopulationParity() async throws {
+        for mode in ["direct", "dsl"] {
+            var configuration = AuthoringTimingConfiguration()
+            configuration.mode = mode; configuration.invocations = 23; configuration.modules = 2
+            configuration.definitions = 2; configuration.warmupInvocations = 7; configuration.concurrency = 3
+            let report = try await AuthoringTimingCommand.measure(configuration)
+            #expect(report.invocations == 23)
+            #expect(report.schemaBuilds == 20)
+            #expect(report.definitionBuilds == 2)
+            #expect(report.counters.callbacks == 23)
+            #expect(report.counters.handlers == 23)
+            #expect(report.cleanup.activeWorkers == 0)
+            #expect(report.common.identity.catalogVersion == 7)
+            #expect(report.common.counts?.outcomes[.success] == 23)
+            #expect(report.common.metrics.count == 8)
+            for metric in report.common.metrics {
+                #expect(metric.outcome == .success)
+                #expect(metric.distribution.observedCount == (metric.id == "dsl.definition" ? 2 : 23))
+                #expect(metric.distribution.droppedCount == 0)
+            }
+            try report.common.validate()
+        }
+    }
+
+    /// Empty warmup is explicit, module endpoints are valid, and cancellation before authoring creates no schema.
+    /// - Throws: Unexpected validation/runtime failures; cooperative cancellation is checked explicitly.
+    @Test func authoringEmptyWarmupAndCancellation() async throws {
+        var configuration = AuthoringTimingConfiguration()
+        configuration.invocations = 1; configuration.concurrency = 1; configuration.modules = 10
+        configuration.definitions = 1; configuration.warmupInvocations = 0; configuration.warmupSeconds = 0
+        let report = try await AuthoringTimingCommand.measure(configuration)
+        #expect(report.common.identity.warmupNanoseconds == 0)
+        #expect(report.schemaBuilds == 10)
+        #expect(report.counters.callbacks == 1)
+        let initialSchemas = BenchmarkArguments.captures.snapshot().schemas
+        let gate = CallbackSignal(), cancelledConfiguration = configuration
+        let task = Task {
+            await gate.wait()
+            return try await AuthoringTimingCommand.measure(cancelledConfiguration)
+        }
+        task.cancel()
+        await gate.signal()
+        await #expect(throws: CancellationError.self) { try await task.value }
+        #expect(BenchmarkArguments.captures.snapshot().schemas == initialSchemas)
+    }
+
     /// Default qualification selects the complete million-invocation paired population and finite dimensions.
     /// - Throws: Unexpected configuration validation failure.
     @Test func defaultMatrix() throws {

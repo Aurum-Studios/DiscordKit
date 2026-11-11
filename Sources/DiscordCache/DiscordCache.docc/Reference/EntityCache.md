@@ -6,7 +6,7 @@
 
 ### Creating a value
 
-- ``DiscordCache/EntityCache/init(clock:policy:)``
+- ``DiscordCache/EntityCache/init(clock:policy:intervals:)``
 
 ### Instance methods
 

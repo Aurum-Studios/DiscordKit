@@ -131,3 +131,91 @@ partial artifacts. Legacy baseline readers remain available.
 measurement, bounded by 60 seconds. Defaults retain the paired matrix and zero
 explicit warmup. Native counters exclude these warmup calls; process-wide memory
 peaks still include them. The sidecar records the declared warmup population.
+
+## Stage 7 authoring populations
+
+The opt-in `authoring` subcommand produces catalog revision 7 evidence with a
+native details object and a validated common envelope. The existing executable
+options, v1 paired reports and baseline readers retain their original behavior.
+Each process selects one direct/DSL mode, declaration count and module fan-out.
+Both paths execute the same schema decoder, real `CommandPolicies` authorization
+and middleware, manual handler, exact initial callback oracle and fresh response
+owner. The handwritten path is explicitly adopted through `ExistingCommandFamily`.
+
+```sh
+swift run -c release --package-path Tools/DiscordDSLBenchmarks DiscordDSLBenchmarks authoring --mode dsl --handlers 10 --modules 2 --invocations 128 --definitions 3 --warmup-invocations 16 --common-report /tmp/authoring-common.json --output /tmp/authoring-native.json
+```
+
+Definitions and runtime invocations are separate populations. `dsl.definition`
+measures schema/declaration creation, explicit module lowering, policy application
+and validated catalog output. It excludes router admission, fixed input
+parsing, response-sink construction, process probes and compiler-process costs.
+The final catalog handles every measured invocation without another schema capture.
+Warmup uses separate owners, finishes before definition and invocation populations,
+and contributes no phase histogram or measured response counter.
+
+`dsl.invoke` includes fresh responder/context construction, routing and exact
+response/state validation. Existing real owner hooks produce `command.route`,
+`command.arguments`, `command.handler` and `interaction.initialResponse`.
+`dsl.policy` spans the complete applied policy including authorization, middleware,
+handler/response and joined continuation cleanup. `dsl.middleware` spans its body
+through the awaited handler/response continuation. These intervals nest and overlap;
+their percentiles cannot be added or subtracted. Every histogram covers its entire
+measured population and retains explicit censor/loss counts. Successful runs require
+exact definition, decode, policy, middleware, handler and response counts, unchanged
+runtime schema counts, and zero remaining workers/handlers/acknowledgement owners.
+
+The authoring CLI accepts modes `direct`/`dsl`, handlers `10`/`100`/`1000`, modules
+`1...min(handlers,100)`, definitions `1...100`, invocations `1...1000000`, warmup
+invocations `0...1000000`, and concurrency `1...64` no greater than invocations.
+`--profile`, `--seed`, `--duration-seconds`, `--warmup-seconds`, `--output`, and
+`--common-report` integrate with the shared supervisor. Warmup has a 60-second cap;
+measured caps are 10 seconds for smoke, 300 for standard/stress, and 3600 for soak.
+In-process caps are cooperative between finite rounds; the shared supervisor adds
+an enforced process timeout and awaited group teardown.
+
+Use the wrapper for process memory comparisons and counterbalanced order. Build
+the release receipt after finishing source edits, then use its executable path:
+
+```sh
+python3 Tools/DiscordBenchmarkSupport/scripts/run_benchmarks.py build --package Tools/DiscordDSLBenchmarks --product DiscordDSLBenchmarks --receipt .build/authoring-release.json --repository .
+python3 Tools/DiscordDSLBenchmarks/scripts/run_authoring.py --executable "$(swift build -c release --package-path Tools/DiscordDSLBenchmarks --show-bin-path)/DiscordDSLBenchmarks" --receipt .build/authoring-release.json --output-dir .build/authoring-smoke
+```
+
+`--profile standard` runs five paired fresh-process repetitions and alternates the
+first mode. Smoke runs one seeded pair, so it checks integrity without establishing
+order-independent numerical performance. Process RSS/CPU include setup, definition
+builds, warmup and invocation execution within the selected mode; they never mean
+per-row allocation counts. Retained plans and allocator pages can affect gauges.
+No optional module-extension package is imported or qualified by this suite.
+
+## Separate Stage 7 compiler receipts
+
+The compiler script retains its native v1 format and adds catalog7 integer
+`wallNanoseconds`, generated manifest/source and dependency pin hashes, build
+command and target receipts. Manual/macro clean and incremental builds stay in
+separate populations. `--handlers 10` selects a reduced functional smoke matrix;
+`--modules N` partitions concrete ten-handler files into `N` inert modules, up to
+`smallestSelectedHandlerCount / 10`. Every source is restored after the controlled
+incremental edit, including failures. Module-aware generated fixtures require new
+fixture-bound baselines; historical reports remain readable.
+
+```sh
+python3 Tools/DiscordDSLBenchmarks/scripts/compile_benchmarks.py --handlers 10 --modules 1 --output /tmp/compiler-native.json
+swift run -c release --package-path Tools/DiscordDSLBenchmarks DiscordDSLBenchmarks compiler-report --input /tmp/compiler-native.json --mode manual --handlers 10 --output /tmp/compiler-manual-common.json
+swift run -c release --package-path Tools/DiscordDSLBenchmarks DiscordDSLBenchmarks compiler-report --input /tmp/compiler-native.json --mode macro --handlers 10 --output /tmp/compiler-macro-common.json
+```
+
+The converter selects exactly one mode/population and uses shared bounded
+histograms with one-second cells over zero through one hour. Raw integer duration
+observations, including censored values, supply `compiler.clean` and
+`compiler.incremental`; legacy percentiles or floating summaries cannot substitute.
+The dependency/plugin bootstrap and fixture mutation/restoration remain outside
+these timers. Gross supervised duration includes bounded output collection, RSS
+probes, process-group teardown and reap. Receipt serialization follows its endpoint.
+The shared supervisor owns finite diagnostics and signal/timeout cleanup, including
+descendants; the compiler driver restores temporary signal handlers afterward. The native compiler
+artifact retains per-sample binary hashes and full build/target evidence. Its
+source hash is not claimed as a complete dirty-tree fingerprint. One to five
+samples cannot qualify p99 tails or a numerical regression baseline. Optional
+extension-package installations remain outside this compiler fixture.

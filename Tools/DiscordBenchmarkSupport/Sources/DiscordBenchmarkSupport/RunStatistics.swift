@@ -84,11 +84,30 @@ public enum BenchmarkWorkload: String, CaseIterable, Sendable {
     case gatewayOriginalEdit = "gateway.originalEdit"
     case gatewayAcknowledgementToOriginalEdit = "gateway.acknowledgementToOriginalEdit"
 
+    /// Cache, client and authoring boundaries introduced in catalog seven.
+    case cacheCall = "cache.call"
+    case cacheOwner = "cache.owner"
+    case cacheLoader = "cache.loader"
+    case cacheBroadcast = "cache.broadcast"
+    case clientConstruction = "client.construct"
+    case clientDiscovery = "client.discovery"
+    case clientIngestion = "client.ingestion"
+    case clientLocalReady = "client.start"
+    case clientShutdown = "client.shutdown"
+    case clientLifecycle = "client.lifecycleJoined"
+    case dslDefinition = "dsl.definition"
+    case dslInvoke = "dsl.invoke"
+    case dslPolicy = "dsl.policy"
+    case dslMiddleware = "dsl.middleware"
+    case compilerClean = "compiler.clean"
+    case compilerIncremental = "compiler.incremental"
+
     /// Earliest catalog revision defining this identity; old readers retain old semantics.
     public var minimumCatalogVersion: UInt32 {
         /// Returns the frozen catalog introduction version without inspecting observations.
         get {
             switch self {
+            case .cacheCall, .cacheOwner, .cacheLoader, .cacheBroadcast, .clientConstruction, .clientDiscovery, .clientIngestion, .clientLocalReady, .clientShutdown, .clientLifecycle, .dslDefinition, .dslInvoke, .dslPolicy, .dslMiddleware, .compilerClean, .compilerIncremental: 7
             case .gatewayReceiveToAdmission, .gatewayReceiveToAcknowledgement, .gatewayAdmissionToAcknowledgement, .gatewayInitialResponse, .gatewayOriginalEdit, .gatewayAcknowledgementToOriginalEdit, .commandPolicy, .gatewaySession, .gatewaySocketReceipt, .gatewayDecode, .gatewayIngestionQueue, .gatewayPublication, .gatewayHubResidence, .gatewayDispatch, .gatewayLocalQueue, .gatewayAdmission, .gatewayHandler, .gatewayHeartbeatACK, .gatewayReconnect, .gatewayShutdown, .ingressApplicationResponse, .ingressBodyRead, .ingressSignature, .ingressAdmission, .ingressDecode, .commandRoute, .commandArguments, .commandAdmission, .commandHandler, .interactionHandler, .interactionWorkflow, .interactionProviderWait, .interactionInitialResponse, .interactionOriginalEdit, .syntheticInvoke, .syntheticProviderWait: 6
             case .instrumentation: 3
             case .pureBatch: 4

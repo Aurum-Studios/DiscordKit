@@ -7,7 +7,7 @@ https://aurum-studios.com
 
 # Latency instrumentation and timing suites
 
-Status: Stages 0–6 implemented; stages 7–11 remain proposed.
+Status: Stages 0–7 implemented; stages 8–11 remain proposed.
 Runtime owner hooks are opt-in; no performance qualification is implied. The original
 plan was prepared 2026-11-10 against source revision
 `27cd73f335b2b3058dfa317677c71991292706b8`; the Stage 0 checkpoint uses
@@ -22,6 +22,7 @@ Stage 3 implementation: [bounded outputs and observer overhead](PHASE-3.md).
 Stage 4 implementation: [foundation/model/permission CPU suites](PHASE-4.md).
 Stage 5 implementation: [transport and REST timing suites](PHASE-5.md).
 Stage 6 implementation: [Gateway, interactions and command timing suites](PHASE-6.md).
+Stage 7 implementation: [cache, client and authoring timing suites](PHASE-7.md).
 
 ## Outcome and scope
 
@@ -385,6 +386,12 @@ Deliverables:
 Exit gate: existing semantic/fencing/cache bounds remain intact; cache operations
 have distributions across the full run; direct/DSL paths perform equivalent work
 and exactly counted responses; compiler and runtime comparisons remain distinct.
+
+Stage 7 implementation: [owner boundaries, workloads and compatibility](PHASE-7.md)
+extend the existing load and authoring tools. See the
+[validation record](VALIDATION.md#phase-7-validation) for completed local evidence.
+Compiler/runtime costs remain separate; no controlled-host numerical or live
+Discord qualification follows from local smoke.
 
 ## Stage 8 — OAuth, RPC, Activities and service composition
 

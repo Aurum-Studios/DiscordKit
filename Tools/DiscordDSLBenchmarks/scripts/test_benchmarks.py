@@ -6,7 +6,11 @@
 """Deterministic failure, isolation and budget checks; no compiler timing assertions."""
 
 import copy
+import contextlib
+import io
 import json
+import signal
+import sys
 from pathlib import Path
 import tempfile
 import unittest
@@ -14,7 +18,20 @@ from unittest import mock
 import subprocess
 
 import baseline
+import run_authoring
 import compile_benchmarks as compiler
+
+
+def process_receipt(directory, status="completed", stdout=b"", stderr=b"", elapsed=1):
+    """Provide exact bounded supervisor output for unit conversion tests, with no subprocess mutation."""
+    directory.mkdir(parents=True)
+    (directory / "stdout.log").write_bytes(stdout)
+    (directory / "stderr.log").write_bytes(stderr)
+    result = {"status": status, "elapsed_ns": elapsed,
+              "cleanup": {"owner_reaped": True, "group_has_live_members_after_cleanup": False, "unexpected_descendants": False},
+              "dropped_bytes": {"stdout": 0, "stderr": 0, "report_files": 0}}
+    (directory / "process.json").write_text(json.dumps(result))
+    return result
 
 
 def reports():
@@ -74,6 +91,40 @@ class CompilerFixtureTests(unittest.TestCase):
         for invalid in (0, 11, 1001, 10000):
             with self.assertRaises(ValueError):
                 compiler.generated_sources(invalid, True)
+
+    def test_module_fanout_is_hash_bound_and_rejects_invalid_populations(self):
+        """Module dimensions alter exact fixture hashes and reject unsupported workspace inputs first."""
+        one = compiler.generated_sources(100, False, 1)
+        ten = compiler.generated_sources(100, False, 10)
+        self.assertIn("0..<1", one["Main.swift"])
+        self.assertIn("0..<10", ten["Main.swift"])
+        self.assertIn('Module(id: "module\\(index)")', ten["Main.swift"])
+        self.assertEqual(one["Handlers000.swift"], ten["Handlers000.swift"])
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            path = root / "Main.swift"
+            path.write_text(one["Main.swift"])
+            first = compiler.digest_files([path], root)
+            path.write_text(ten["Main.swift"])
+            self.assertNotEqual(first, compiler.digest_files([path], root))
+            for counts, modules in (((), 1), ((10, 10), 1), ((11,), 1), ((10,), 2), ((100,), 0)):
+                with self.assertRaises(ValueError):
+                    compiler.prepare_workspace(root, root / "must-not-exist", counts, modules)
+                self.assertFalse((root / "must-not-exist").exists())
+
+    def test_integer_wall_receipt_keeps_full_monotonic_population(self):
+        """Compiler timing preserves shared launch-through-reap nanoseconds before parsing diagnostics."""
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            def supervise(command, destination, limits, cancellation, **kwargs):
+                """Provide a completed shared-supervisor receipt without starting any compiler."""
+                return process_receipt(destination, stderr=b"123 maximum resident set size\n", elapsed=2_000_000_023)
+            with mock.patch.object(compiler.SUPERVISOR, "run_process", side_effect=supervise), mock.patch.object(compiler.platform, "system", return_value="Darwin"):
+                result = compiler.run_timed(["swift"], 1, root, root / "log")
+            self.assertEqual(result["wallNanoseconds"], 2_000_000_023)
+            self.assertEqual(result["wallSeconds"], 2_000_000_023 / 1e9)
+            self.assertIn("collection", result["wallSemantics"])
+            self.assertTrue(Path(result["processReceipt"]).is_file())
 
     def test_workspace_does_not_overwrite_unrelated_files(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -137,44 +188,116 @@ class CompilerFixtureTests(unittest.TestCase):
                 compiler.run_incremental(source, ["swift"], 1, root, root / "log", timed)
             self.assertEqual(source.read_text(), "unrelated source")
 
-    def test_process_timeout_failure_and_missing_rss_rejected(self):
+    def test_process_failure_and_missing_rss_rejected(self):
+        """Supervisor failure and absent /usr/bin/time evidence cannot become qualified compiler rows."""
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            for status, text in ((3, b"error: compiler failed\n"), (0, b"no resource evidence\n")):
-                process = mock.Mock()
-                process.wait.return_value = status
-
-                def start(command, **kwargs):
-                    kwargs["stdout"].write(text)
-                    return process
-
-                with mock.patch.object(compiler.subprocess, "Popen", side_effect=start), mock.patch.object(compiler.platform, "system", return_value="Darwin"):
+            for status in ("process_failed", "timed_out", "completed"):
+                def supervise(command, destination, limits, cancellation, **kwargs):
+                    """Supply a finite failed or resource-incomplete supervisor receipt."""
+                    return process_receipt(destination, status=status, stderr=b"no resource evidence\n")
+                with mock.patch.object(compiler.SUPERVISOR, "run_process", side_effect=supervise):
                     with self.assertRaises(RuntimeError):
                         compiler.run_timed(["swift"], 1, root, root / "log")
-            process = mock.Mock(pid=123)
-            process.wait.side_effect = [subprocess.TimeoutExpired("swift", 1), 0]
-            with mock.patch.object(compiler.subprocess, "Popen", return_value=process), mock.patch.object(compiler.os, "killpg") as kill:
-                with self.assertRaisesRegex(RuntimeError, "exceeded"):
-                    compiler.run_timed(["swift"], 1, root, root / "log")
-                kill.assert_called_once()
-                self.assertEqual(process.wait.call_count, 2)
 
     def test_process_resource_evidence_uses_platform_units(self):
+        """The supervisor retains raw time diagnostics; platform RSS units are converted exactly once."""
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             for system, output, expected in (("Darwin", b"123 maximum resident set size\n", 123),
                                               ("Linux", b"Maximum resident set size (kbytes): 123\n", 125952)):
-                process = mock.Mock()
-                process.wait.return_value = 0
-
-                def start(command, **kwargs):
+                def supervise(command, destination, limits, cancellation, **kwargs):
+                    """Check exact command delegation and provide bounded platform diagnostics."""
                     self.assertEqual(command[:2], ["/usr/bin/time", "-l" if system == "Darwin" else "-v"])
-                    self.assertTrue(kwargs["start_new_session"])
-                    kwargs["stdout"].write(output)
-                    return process
-
-                with mock.patch.object(compiler.subprocess, "Popen", side_effect=start), mock.patch.object(compiler.platform, "system", return_value=system):
+                    self.assertEqual(kwargs["cwd"], root)
+                    return process_receipt(destination, stderr=output)
+                with mock.patch.object(compiler.SUPERVISOR, "run_process", side_effect=supervise), mock.patch.object(compiler.platform, "system", return_value=system):
                     self.assertEqual(compiler.run_timed(["swift"], 1, root, root / "log")["peakRSSBytes"], expected)
+
+    def test_linux_completed_receipt_does_not_require_darwin_live_member_probe(self):
+        """Linux shared cleanup has no Darwin ps live-member probe; successful reap/status still establish ownership."""
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            def supervise(command, destination, limits, cancellation, **kwargs):
+                """Model the shared Linux receipt after its process-group cleanup already succeeded."""
+                result = process_receipt(destination)
+                result["cleanup"]["group_has_live_members_after_cleanup"] = None
+                return result
+            with mock.patch.object(compiler.SUPERVISOR, "run_process", side_effect=supervise):
+                result = compiler.run_supervised(["fixture"], 1, root, root / "process")
+            self.assertEqual(result["status"], "completed")
+            self.assertTrue(result["cleanup"]["owner_reaped"])
+            self.assertIsNone(result["cleanup"]["group_has_live_members_after_cleanup"])
+
+    def test_real_timeout_cancel_and_diagnostic_excess_join_process_groups(self):
+        """Real Python-only scripts exercise timeout, SIGTERM forwarding and diagnostic overflow cleanup."""
+        spawned = "import subprocess,sys,time; child=subprocess.Popen([sys.executable,'-c','import time; time.sleep(60)']); print(child.pid,flush=True); "
+        scripts = {
+            "timed_out": spawned + "time.sleep(60)",
+            "cancelled": spawned + "import os,signal; os.kill(os.getppid(),signal.SIGTERM); time.sleep(60)",
+            "diagnostic_limit_exceeded": "import sys,time; sys.stdout.write('x'*1000000); sys.stdout.flush(); time.sleep(60)",
+        }
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            for status, script in scripts.items():
+                handlers = {value: signal.getsignal(value) for value in (signal.SIGINT, signal.SIGTERM)}
+                destination = root / status
+                limits = compiler.SUPERVISOR.ProcessLimits(.15 if status == "timed_out" else 5,
+                    grace_seconds=.1, diagnostic_bytes=1024, sample_seconds=.01)
+                with self.assertRaisesRegex(RuntimeError, status):
+                    compiler.run_supervised([sys.executable, "-c", script], limits.timeout_seconds,
+                        root, destination, limits=limits)
+                receipt = json.loads((destination / "process.json").read_text())
+                self.assertEqual(receipt["status"], status)
+                self.assertTrue(receipt["cleanup"]["owner_reaped"])
+                self.assertFalse(receipt["cleanup"]["group_has_live_members_after_cleanup"])
+                self.assertLessEqual((destination / "stdout.log").stat().st_size + (destination / "stderr.log").stat().st_size, 1024)
+                if status == "diagnostic_limit_exceeded":
+                    self.assertGreater(receipt["dropped_bytes"]["stdout"], 0)
+                for value, handler in handlers.items():
+                    self.assertEqual(signal.getsignal(value), handler)
+
+    def test_real_capture_is_bounded_and_restores_handlers(self):
+        """Environment/catalog capture shares cleanup and fails instead of returning truncated over-budget evidence."""
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            self.assertEqual(compiler.capture([sys.executable, "-c", "print('qualified local fixture')"], root), "qualified local fixture")
+            handlers = {value: signal.getsignal(value) for value in (signal.SIGINT, signal.SIGTERM)}
+            with self.assertRaisesRegex(RuntimeError, "diagnostic_limit_exceeded"):
+                compiler.capture([sys.executable, "-c", "print('x'*1000000)"], root)
+            for value, handler in handlers.items():
+                self.assertEqual(signal.getsignal(value), handler)
+
+
+class AuthoringDriverTests(unittest.TestCase):
+    """The convenience driver delegates lifecycle supervision and declares equivalent paired work."""
+
+    def test_equivalent_arms_and_shared_counterbalance(self):
+        """Every dimension is identical across fresh-process arms except the explicit direct/DSL mode."""
+        from argparse import Namespace
+        arguments = Namespace(executable=Path("binary"), receipt=Path("receipt.json"), output_dir=Path("results"),
+                              profile="standard", seed=7, handlers=100, modules=10, invocations=128,
+                              definitions=3, warmup_invocations=16, concurrency=2)
+        command = run_authoring.supervised_command(arguments)
+        direct = json.loads(command[command.index("--baseline-command") + 1])
+        dsl = json.loads(command[command.index("--candidate-command") + 1])
+        self.assertEqual(direct[:-1], dsl[:-1])
+        self.assertEqual(direct[-1], "direct")
+        self.assertEqual(dsl[-1], "dsl")
+        self.assertEqual(command[command.index("--profile") + 1], "standard")
+        self.assertEqual(command[command.index("--baseline-receipt") + 1], command[command.index("--candidate-receipt") + 1])
+        self.assertIn("{output}", direct)
+        self.assertIn("{concurrency}", direct)
+
+    def test_driver_propagates_failure_and_rejects_before_subprocess(self):
+        """Unknown dimensions start no process; a shared supervisor failure remains nonzero."""
+        base = ["--executable", "binary", "--receipt", "receipt", "--output-dir", "results"]
+        with mock.patch.object(run_authoring.subprocess, "run", return_value=mock.Mock(returncode=17)) as run:
+            self.assertEqual(run_authoring.main(base), 17)
+            self.assertEqual(run.call_count, 1)
+            with self.assertRaises(SystemExit), contextlib.redirect_stderr(io.StringIO()):
+                run_authoring.main(base + ["--modules", "11"])
+            self.assertEqual(run.call_count, 1)
 
 
 class BaselineTests(unittest.TestCase):
@@ -242,6 +365,12 @@ class BaselineTests(unittest.TestCase):
             report["configuration"][key] = value
             with self.assertRaises(ValueError):
                 baseline.collect_report(report, "runtime")
+
+    def test_compiler_supervised_boundary_cannot_reuse_legacy_budget(self):
+        """Gross supervised build costs have an explicit configuration identity distinct from old wall timers."""
+        self.compile["configuration"]["timingBoundary"] = "supervised-process-lifetime-v1"
+        with self.assertRaises(ValueError):
+            baseline.check(self.record, self.budgets, self.compile, self.runtime)
 
     def test_duration_floor_requires_real_elapsed_time(self):
         self.runtime["configuration"]["minimumDurationSeconds"] = 60

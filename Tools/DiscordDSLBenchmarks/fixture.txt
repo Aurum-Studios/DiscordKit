@@ -1,0 +1,4 @@
+DiscordDSLBenchmarks authoring fixture v1
+Synthetic normalized HTTP interaction, one required payload string of 64 ASCII x bytes.
+Exactly one fresh typed decode, authorization, middleware, manual handler and initial response per invocation.
+Definitions and invocations use separate metrics; optional module-extension packages are excluded.

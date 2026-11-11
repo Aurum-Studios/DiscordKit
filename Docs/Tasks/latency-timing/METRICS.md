@@ -7,7 +7,7 @@ https://aurum-studios.com
 
 # Timing metric catalog
 
-Catalog identifier: **discordkit.timing**, revision **6**. Revision 1 was frozen 2026-11-10 at
+Catalog identifier: **discordkit.timing**, revision **7**. Revision 1 was frozen 2026-11-10 at
 `c8d842f7ce51e9adc69ff9997e2c0f374dc2ee68`. Every metric below has semantic
 version **1**. The identity is `(catalog, metric ID, metric version)`; changing
 endpoints, population, units or aggregation creates a new metric version.
@@ -150,8 +150,8 @@ counts and independent terminal result.
 | `client.shutdown` | Caller requests stop → all owned runtime tasks/subscriptions/transports joined | Direct lifecycle interval; Stage 7 |
 | `dsl.definition` | Definition compile/lower invocation → validated lowered definitions/error | Separate from runtime/compiler process costs; Stage 7 |
 | `dsl.invoke` | Synthetic direct/DSL route invocation → equivalent response validation and joined responder cleanup | Whole synthetic call; bypasses trusted ingress; Stage 7 |
-| `compiler.clean` | Driver starts consumer build subprocess → process exit and reap | Manual/macro consumer build, prepared dependencies excluded; Stage 7; compiler configuration explicit |
-| `compiler.incremental` | Driver starts build after a declared fixture edit → exit and reap | Separate process cost, excludes fixture mutation; Stage 7 |
+| `compiler.clean` | Driver starts supervised consumer build → bounded output collection, RSS probes, process-group teardown and reap; receipt serialization excluded | Manual/macro consumer build, prepared dependencies excluded; Stage 7; compiler configuration explicit |
+| `compiler.incremental` | Driver starts supervised build after a declared fixture edit → bounded collection/probes, group teardown and reap; receipt serialization excluded | Separate process cost, excludes fixture mutation; Stage 7 |
 
 `interaction.workflow` uses signed application caller origin. Trusted Gateway scalar
 milestones and synthetic invocation use distinct metric IDs and incompatible
@@ -160,6 +160,29 @@ add explicit paired submission/admission hooks before claiming residence. Do not
 subtract aggregate caller and owner distributions. Expiry/eviction are currently
 side effects of cache calls; profiles select the triggering public operation and
 state that setup, rather than inventing public expiry/eviction methods.
+
+## Additional Stage 7 registered populations
+
+Catalog revision 7 implements the Stage 7 rows above and adds these explicit
+version-1 populations. All durations use H aggregation across their measured
+terminal outcomes. Compiler histograms declare a separate range and precision.
+
+| Metric ID | Actual start and stop / population |
+| --- | --- |
+| `cache.broadcast` | Actual hub publication owner entry through retained-copy handling; caller delivery is separately enclosed by `cache.call` |
+| `client.construct` | Caller immediately before the complete client constructor through returned actor, including default storage/stream allocation and configured synchronous observer cost; excludes dependency construction and starts no runtime work |
+| `client.discovery` | Accepted run's shard preparation entry through discovery/budget/topology result or error; excludes socket startup |
+| `client.ingestion` | Per-event ingestion begins before package receiver/projection through public hub publication or error |
+| `client.lifecycleJoined` | Accepted client run entry through existing joined children, leases, subscriptions, budget and cleanup |
+| `dsl.policy` | Explicit equivalent application policy wrapper through its result/error; includes enclosed middleware/handler |
+| `dsl.middleware` | Explicit equivalent middleware wrapper through its result/error; includes enclosed handler |
+
+`cache.call` uses one selected fixed scenario per report, including permission,
+broadcast, expiry/eviction triggers and stale fencing. Owner and loader metrics
+are present only where actual hooks exist. Client `start` ends at its documented
+local milestone; absent readiness terminates with the joined failure/cancellation.
+The compiler driver measures a separate process population and retains exact
+fixture/dependency/build receipts. No elapsed clock crosses process domains.
 
 ## Additional Stage 6 registered populations
 

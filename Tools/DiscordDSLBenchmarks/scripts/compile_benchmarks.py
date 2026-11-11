@@ -15,6 +15,7 @@ in finally, and include ordinary SwiftPM planning, type checking, codegen and li
 import argparse
 import datetime
 import hashlib
+import importlib.util
 import json
 import math
 import os
@@ -22,8 +23,27 @@ from pathlib import Path
 import platform
 import re
 import shutil
+import signal
 import subprocess
-import time
+import sys
+import tempfile
+import threading
+import uuid
+
+
+def load_supervisor():
+    """Load the repository-owned process supervisor by exact path, including its dataclass module identity."""
+    name = "discordkit_compiler_process_supervisor"
+    if name not in sys.modules:
+        path = Path(__file__).resolve().parents[2] / "DiscordBenchmarkSupport/scripts/run_benchmarks.py"
+        spec = importlib.util.spec_from_file_location(name, path)
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[name] = module
+        spec.loader.exec_module(module)
+    return sys.modules[name]
+
+
+SUPERVISOR = load_supervisor()
 
 
 COUNTS = (10, 100, 1000)
@@ -39,10 +59,16 @@ def digest_files(paths, root):
     return digest.hexdigest()
 
 
-def generated_sources(count, macro):
-    """Return bounded concrete declarations with ten handlers per compilation file."""
+def generated_sources(count, macro, module_count=1):
+    """Return concrete ten-handler files partitioned over explicit inert DSL modules.
+
+    Module fan-out is finite, at most the number of files, and never changes the
+    selected manual/macro declaration count or shared argument schema.
+    """
     if count not in COUNTS:
         raise ValueError("handler count must be 10, 100 or 1000")
+    if type(module_count) is not int or not 1 <= module_count <= count // 10:
+        raise ValueError("modules must be 1...handlerCount/10")
     imports = "import DiscordCommandDSL\nimport DiscordDSL\n"
     if macro:
         imports += "import DiscordDSLMacros\n"
@@ -81,7 +107,12 @@ def generated_sources(count, macro):
         sources[f"Handlers{group:03}.swift"] = text
     sources["Main.swift"] = imports + "@main struct Consumer {\n    static func main() throws {\n        let groups = try [\n" + ",\n".join(f"            group{group}()" for group in range(count // 10)) + f"""
         ]
-        let compiled = try CommandCompilation.compile(BotDefinitionGroup(groups))
+        let modules = (0..<{module_count}).map {{ index in
+            Module(id: "module\\(index)") {{
+                BotDefinitionGroup(Array(groups[index * groups.count / {module_count}..<(index + 1) * groups.count / {module_count}]))
+            }}
+        }}
+        let compiled = try CommandCompilation.compile(BotDefinitionGroup(modules))
         precondition(compiled.routes.count == {count} && compiled.definitions.count == {count})
         print("qualified {count} inert declarations")
     }}
@@ -90,13 +121,19 @@ def generated_sources(count, macro):
     return sources
 
 
-def prepare_workspace(repository, workspace):
-    """Create only a marked generated workspace; reject unrelated nonempty directories."""
+def prepare_workspace(repository, workspace, counts=COUNTS, module_count=1):
+    """Create marked finite generated consumers; reject unrelated nonempty directories.
+
+    Selected counts are unique members of COUNTS. Module fan-out cannot exceed
+    the smallest consumer's compilation-file population; old generated sources
+    in each owned consumer directory are removed before writing current inputs.
+    """
+    validate_dimensions(counts, module_count)
     if workspace.exists() and any(workspace.iterdir()) and not (workspace / MARKER).is_file():
         raise ValueError("workspace must be empty or marked by this runner")
     workspace.mkdir(parents=True, exist_ok=True)
     (workspace / MARKER).write_text("generated compiler consumers version 1\n")
-    names = [f"{mode.title()}{count}" for count in COUNTS for mode in MODES]
+    names = [f"{mode.title()}{count}" for count in counts for mode in MODES]
     root_literal = json.dumps(str(repository))
     macro_literal = json.dumps(str(repository / "Packages/DiscordDSLMacros"))
     manifest = f"""// swift-tools-version: 6.4
@@ -119,11 +156,13 @@ let package = Package(name: "DSLCompilerCosts", platforms: [.macOS(.v13)],
     warmup = workspace / "Sources/Warmup"
     warmup.mkdir(parents=True, exist_ok=True)
     (warmup / "Warmup.swift").write_text("import DiscordCommandDSL\nimport DiscordDSLMacros\nstruct Warmup {}\n")
-    for count in COUNTS:
+    for count in counts:
         for mode in MODES:
             directory = workspace / "Sources" / f"{mode.title()}{count}"
             directory.mkdir(parents=True, exist_ok=True)
-            for name, content in generated_sources(count, mode == "macro").items():
+            for owned in directory.glob("*.swift"):
+                owned.unlink()
+            for name, content in generated_sources(count, mode == "macro", module_count).items():
                 (directory / name).write_text(content)
     return names
 
@@ -152,38 +191,82 @@ def remove_consumer_outputs(scratch, target):
     return removed
 
 
+def run_supervised(command, timeout, cwd, directory, cancellation=None, limits=None):
+    """Delegate bounded pipe collection, limits, descendant teardown and owner reap to shared supervision.
+
+    Temporary main-thread SIGINT/SIGTERM handlers request cooperative supervisor
+    cancellation and are restored even on collection failure. Explicit cancellation
+    works in worker threads as well. The elapsed integer duration includes pipe
+    collection, native RSS probes, group teardown and reap, excluding JSON export.
+    """
+    cancellation = cancellation or SUPERVISOR.Cancellation()
+    limits = limits or SUPERVISOR.ProcessLimits(timeout, rss_bytes=8 * 1024 * 1024 * 1024)
+    previous = {}
+    try:
+        if threading.current_thread() is threading.main_thread():
+            for value in (signal.SIGINT, signal.SIGTERM):
+                previous[value] = signal.signal(value, cancellation.request)
+        result = SUPERVISOR.run_process(command, directory, limits, cancellation, cwd=cwd)
+    finally:
+        for value, handler in previous.items():
+            signal.signal(value, handler)
+    clean = result["cleanup"]
+    if (result["status"] != "completed" or not clean["owner_reaped"] or
+            clean["group_has_live_members_after_cleanup"] is True or clean["unexpected_descendants"] or
+            any(result["dropped_bytes"].values())):
+        raise RuntimeError(f"compiler subprocess {result['status']}; see {directory}")
+    return result
+
+
 def run_timed(command, timeout, cwd, log_path):
-    """Run shell-free under a process-group timeout with bounded retained diagnostics."""
+    """Measure gross supervised build lifetime with bounded diagnostics and exact per-command cleanup receipts.
+
+    The shared monotonic interval starts before launch and ends after pipes, probes,
+    process group teardown and owner reap; report serialization and RSS parsing are
+    excluded. /usr/bin/time still supplies the compiler-family maximum process RSS.
+    """
     log_path.parent.mkdir(parents=True, exist_ok=True)
-    started = time.perf_counter()
+    directory = log_path.parent / (log_path.name + ".process-" + uuid.uuid4().hex)
     wrapper = ["/usr/bin/time", "-l" if platform.system() == "Darwin" else "-v"]
-    with log_path.open("wb") as output:
-        process = subprocess.Popen(wrapper + command, cwd=cwd, stdout=output, stderr=subprocess.STDOUT,
-                                   start_new_session=True)
-        try:
-            status = process.wait(timeout=timeout)
-        except subprocess.TimeoutExpired:
-            import signal
-            os.killpg(process.pid, signal.SIGKILL)
-            process.wait()
-            raise RuntimeError(f"compiler exceeded {timeout:g} seconds; see {log_path}")
-    elapsed = time.perf_counter() - started
+    try:
+        result = run_supervised(wrapper + command, timeout, cwd, directory)
+    finally:
+        # Combined compatibility log and native supervisor logs have finite shared
+        # byte budgets; failures retain the same partial diagnostics and receipts.
+        with log_path.open("wb") as output:
+            for name in ("stdout.log", "stderr.log"):
+                source = directory / name
+                if source.is_file():
+                    with source.open("rb") as stream:
+                        shutil.copyfileobj(stream, output, length=65536)
+    elapsed_nanoseconds = result["elapsed_ns"]
+    if not 0 <= elapsed_nanoseconds <= 2**63 - 1:
+        raise ValueError("compiler monotonic duration is out of range")
     with log_path.open("rb") as output:
         output.seek(max(0, log_path.stat().st_size - 65536))
         tail = output.read().decode(errors="replace")
-    if status:
-        raise RuntimeError(f"compiler failed ({status}): {tail[-12000:]}")
     pattern = r"(\d+)\s+maximum resident set size" if platform.system() == "Darwin" else r"Maximum resident set size \(kbytes\):\s*(\d+)"
     match = re.search(pattern, tail)
     if not match:
         raise RuntimeError("time did not report compiler peak RSS")
-    return {"wallSeconds": elapsed, "peakRSSBytes": int(match.group(1)) * (1 if platform.system() == "Darwin" else 1024)}
+    return {"wallSeconds": elapsed_nanoseconds / 1e9, "wallNanoseconds": elapsed_nanoseconds,
+            "wallSemantics": "gross supervised lifetime including collection, RSS probes, group teardown and reap; excludes receipt serialization",
+            "processReceipt": str(directory / "process.json"),
+            "peakRSSBytes": int(match.group(1)) * (1 if platform.system() == "Darwin" else 1024)}
 
 
 def capture(command, cwd):
-    """Read bounded version/environment evidence using a finite subprocess timeout."""
-    completed = subprocess.run(command, cwd=cwd, capture_output=True, text=True, timeout=30, check=True)
-    return completed.stdout.strip()[:16000]
+    """Collect finite environment/catalog evidence under the same signal-safe group and diagnostic limits.
+
+    The command's owned temporary artifacts are removed only after shared teardown
+    and reap. Returned UTF-8 diagnostics are capped at 16,000 characters after the
+    stricter shared byte limit has been enforced; failures never become evidence.
+    """
+    with tempfile.TemporaryDirectory(prefix="discordkit-compiler-capture-") as temporary:
+        directory = Path(temporary) / "process"
+        run_supervised(command, 30, cwd, directory,
+            limits=SUPERVISOR.ProcessLimits(30, diagnostic_bytes=65536, rss_bytes=8 * 1024 * 1024 * 1024))
+        return (directory / "stdout.log").read_text(errors="replace").strip()[:16000]
 
 
 def run_incremental(source, command, timeout, repository, log_path, timed=run_timed):
@@ -216,12 +299,26 @@ def environment(swift, repository):
     return value
 
 
-def run_matrix(repository, workspace, swift, jobs, timeout, samples, cache_path):
-    """Bootstrap once, then execute every clean/edit pair and qualify compiled catalogs."""
+def validate_dimensions(counts, module_count):
+    """Reject duplicate/unsupported counts and module fan-out before mutating any workspace."""
+    if not counts or len(counts) != len(set(counts)) or any(count not in COUNTS for count in counts):
+        raise ValueError("handler counts must be a unique nonempty subset of 10,100,1000")
+    if type(module_count) is not int or not 1 <= module_count <= min(counts) // 10:
+        raise ValueError("modules exceed the smallest selected consumer file population")
+
+
+def run_matrix(repository, workspace, swift, jobs, timeout, samples, cache_path, counts=COUNTS, module_count=1):
+    """Bootstrap dependencies once, then keep clean/edit subprocess costs separate from runtime.
+
+    Integer monotonic durations and exact fixture/pin/source hashes make Stage 7
+    envelope conversion possible without deriving populations from percentiles.
+    Optional reduced matrices and module fan-out have distinct configurations.
+    """
+    validate_dimensions(counts, module_count)
     if jobs not in range(1, 33) or samples not in range(1, 6) or not math.isfinite(timeout) or not 1 <= timeout <= 3600:
         raise ValueError("jobs must be 1...32, samples 1...5 and timeout 1...3600 finite seconds")
     evidence_environment = environment(swift, repository)
-    names = prepare_workspace(repository, workspace)
+    names = prepare_workspace(repository, workspace, counts, module_count)
     scratch = workspace / "build"
     command = [swift, "build", "--disable-sandbox", "--skip-update", "--disable-automatic-resolution",
                "--package-path", str(workspace), "--scratch-path", str(scratch),
@@ -252,13 +349,19 @@ def run_matrix(repository, workspace, swift, jobs, timeout, samples, cache_path)
     source_files = list((repository / "Sources").rglob("*.swift")) + list((repository / "Packages/DiscordDSLMacros/Sources").rglob("*.swift"))
     fixture_files = list((workspace / "Sources").rglob("*.swift"))
     return {"schemaVersion": 1, "reportKind": "dsl-compiler-cost", "recordedAt": datetime.datetime.now(datetime.timezone.utc).isoformat(),
-            "configuration": {"handlerCounts": list(COUNTS), "modes": list(MODES), "jobs": jobs, "samples": samples,
+            "metricCatalogVersion": 7,
+            "configuration": {"handlerCounts": list(counts), "modules": module_count, "extensionPackageInstallations": 0, "modes": list(MODES), "jobs": jobs, "samples": samples,
                               "configuration": "debug", "buildSystem": "native", "handlersPerFile": 10, "optionsPerHandler": 1,
+                              "timingBoundary": "supervised-process-lifetime-v1",
                               "incrementalEdit": "one response literal in the first ten-handler file", "dependencyColdBuildIncluded": False},
             "environment": evidence_environment, "revision": capture(["git", "rev-parse", "HEAD"], repository),
             "sourceHash": digest_files(source_files, repository), "fixtureHash": digest_files(fixture_files, workspace),
             "resolutionHash": hashlib.sha256((workspace / "Package.resolved").read_bytes()).hexdigest(),
             "bootstrap": bootstrap, "workloads": rows,
+            "buildCommand": command,
+            "targetInfo": json.loads(capture([swift, "-print-target-info"], repository)),
+            "fixtureHashIncludes": "generated Swift sources; manifest separately recorded below",
+            "manifestHash": hashlib.sha256((workspace / "Package.swift").read_bytes()).hexdigest(),
             "qualification": {"localOnly": True, "liveDiscordQualified": False, "productionQualified": False,
                               "timingIsolationQualified": False,
                               "processRSSSemantics": "time ru_maxrss is the largest reported process RSS, not simultaneous aggregate compiler-family RSS",
@@ -276,12 +379,15 @@ def main():
     parser.add_argument("--jobs", type=int, default=4)
     parser.add_argument("--timeout", type=float, default=1800)
     parser.add_argument("--samples", type=int, default=1)
+    parser.add_argument("--handlers", default="10,100,1000", help="unique comma-separated subset of 10,100,1000")
+    parser.add_argument("--modules", type=int, default=1, help="1...smallest handler count/10")
     arguments = parser.parse_args()
     repository = arguments.repository.resolve()
     workspace = (arguments.workspace or repository / ".build/dsl-benchmarks/compiler").resolve()
     try:
+        counts = tuple(int(value) for value in arguments.handlers.split(","))
         report = run_matrix(repository, workspace, arguments.swift, arguments.jobs, arguments.timeout, arguments.samples,
-                            (arguments.cache_path or repository / ".build/dsl-compile-cache").resolve())
+                            (arguments.cache_path or repository / ".build/dsl-compile-cache").resolve(), counts, arguments.modules)
         arguments.output.parent.mkdir(parents=True, exist_ok=True)
         arguments.output.write_text(json.dumps(report, indent=2, allow_nan=False) + "\n")
     except (ValueError, RuntimeError, OSError, subprocess.SubprocessError) as error:

@@ -30,6 +30,10 @@ public enum DiscordIntervalOperation: Sendable, Equatable {
     case interactionHTTP
     /// One exact command route, synchronous preparation and admitted handler.
     case commandRouting
+    /// Scoped bounded entity state and independently shared refresh ownership.
+    case entityCache
+    /// Local client composition, discovery, ingestion and joined shutdown.
+    case clientLifecycle
 }
 
 /// Actual owner boundaries, independent of the legacy scalar phase enumeration.
@@ -75,6 +79,26 @@ public enum DiscordIntervalStage: Sendable, Equatable {
     case preparation
     /// HTTP application entry through the first confirmed inline response sink return.
     case firstResponse
+    /// Cache actor lookup, including its lazy freshness checks.
+    case cacheLookup
+    /// Sparse cache state application at the owning actor.
+    case cacheMerge
+    /// Event projection into bounded cache state.
+    case cacheProjection
+    /// Explicit invalidation and stale-fetch fence advancement.
+    case cacheInvalidation
+    /// Cache refresh subscriber ownership through its existing joined result.
+    case cacheRefresh
+    /// One injected loader invocation per shared cache refresh flight.
+    case cacheLoader
+    /// Synchronous local construction; no discovery or runtime start is implied.
+    case construction
+    /// Local discovery and shard preparation, distinct from live Discord readiness.
+    case discovery
+    /// One client event projection/publication operation.
+    case ingestion
+    /// Run entry through the documented local readiness milestone.
+    case localReady
 }
 
 /// Result of this boundary only; successful headers do not promise successful API execution.

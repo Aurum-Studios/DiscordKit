@@ -51,8 +51,26 @@ import Testing
         oldCatalog.identity.catalogVersion = 2
         oldCatalog.metrics[0].id = BenchmarkWorkload.transport.rawValue
         #expect(!report.comparison(with: oldCatalog).isCompatible)
-        report.identity.catalogVersion = 7
+        report.identity.catalogVersion = 8
         #expect(throws: BenchmarkReportError.invalidIdentity) { try report.validate() }
+    }
+
+    /// Cache, client and authoring populations require revision seven while older artifacts remain readable.
+    /// - Throws: Unexpected histogram fixture or strict common-envelope roundtrip failure.
+    @Test func phaseSevenCatalogPreservesEarlierReports() throws {
+        var report = try completeReport()
+        for workload in BenchmarkWorkload.allCases where workload.minimumCatalogVersion == 7 {
+            report.metrics[0].id = workload.rawValue
+            for version: UInt32 in [2, 3, 4, 5, 6] {
+                report.identity.catalogVersion = version
+                #expect(throws: BenchmarkReportError.unsupportedMetric) { try report.validate() }
+            }
+            report.identity.catalogVersion = 7
+            #expect(try DiscordBenchmarkReport.decode(report.validatedData()) == report)
+        }
+        _ = try RunStatistics(workloads: [.cacheCall, .cacheOwner, .cacheLoader, .cacheBroadcast])
+        _ = try RunStatistics(workloads: [.clientConstruction, .clientDiscovery, .clientIngestion,
+            .clientLocalReady, .clientShutdown, .clientLifecycle])
     }
 
     /// Pure batch metrics have a new catalog revision while earlier report semantics remain readable.

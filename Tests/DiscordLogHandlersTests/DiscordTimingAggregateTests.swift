@@ -123,6 +123,25 @@ import Testing
         #expect(summary.storageUpperBoundBytes < 16 * 1_024 * 1_024)
     }
 
+    /// Cache and client identities map to independent bounded rows with their full finite stage set.
+    /// - Throws: Unexpected aggregate admission or missing mapped row.
+    @Test func phaseSevenOwnerMappings() throws {
+        let aggregate = try DiscordTimingAggregate(configuration: .init(maximumKeys: 10))
+        let timing = DiscordIntervalTiming(clockDomain: 7, sink: { aggregate.record($0) }, now: { .nanoseconds(7) })
+        for stage: DiscordIntervalStage in [.cacheLookup, .cacheMerge, .cacheProjection, .cacheInvalidation,
+            .cacheRefresh, .cacheLoader] {
+            timing.begin(.entityCache, stage: stage).end()
+        }
+        for stage: DiscordIntervalStage in [.construction, .discovery, .ingestion, .localReady] {
+            timing.begin(.clientLifecycle, stage: stage).end()
+        }
+        let result = aggregate.snapshot()
+        #expect(result.acceptedCount == 10 && result.rows.count == 10 && result.droppedCount == 0)
+        #expect(result.rows.filter { $0.operation == "entityCache" }.count == 6)
+        #expect(result.rows.filter { $0.operation == "clientLifecycle" }.count == 4)
+        #expect(Set(result.rows.map(\.stage)).count == 10)
+    }
+
     /// Exercises histogram edges and censored mass without fabricating a finite tail or invalid zero.
     /// - Throws: Unexpected configuration rejection or missing row.
     @Test func histogramInvalidAndCensoredValues() throws {

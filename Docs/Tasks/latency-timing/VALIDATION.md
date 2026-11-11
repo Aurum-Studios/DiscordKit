@@ -576,3 +576,143 @@ These checks do not qualify real Discord,
 client rendering, live READY, native WebSocket network throughput, hosted CI,
 other native hosts, controlled performance baselines, sparse individual-call P99,
 production capacity, release publication or subsequent roadmap stages.
+
+## Phase 7 validation
+
+Executed locally on macOS arm64 with Apple Swift 6.4 on 2026-11-10, starting from
+Phase 6 revision `2181ab7f`. The [implementation record](PHASE-7.md),
+[load guide](../../../Tools/DiscordKitLoadTests/README.md#phase-7-cache-and-client-timing)
+and [authoring guide](../../../Tools/DiscordDSLBenchmarks/README.md#stage-7-authoring-populations)
+define the actual timer boundaries and fixture scope. Earlier validation retains
+its original qualification limits.
+
+| Check | Completed result |
+| --- | --- |
+| Root build and strict tests, forced pins, four jobs | Passed: 2,613 tests across 34 executable summaries; cache fencing/single-flight, exact clock endpoints, cancellation/close joins, nil observer behavior, failed discovery/projection, shutdown during discovery and repeated shutdown included |
+| Full load tool strict tests | Passed: 77 tests in 15 suites, including all eleven cache and six client cases, complete populations, bounded options, common-envelope roundtrips and joined cleanup |
+| Final cache verification changes | Passed: three declared tests including all eleven parameterized cases, retained projection fields/metadata, exact refresh results and flight/coalescing/fencing counters |
+| Authoring tool tests | Passed: 17 tests in two suites, including direct/DSL equivalent full populations, warmup exclusion, cancellation, compiler conversion and report output alias rejection |
+| Shared support tests | Passed: 40 tests in five suites; catalog-seven metrics reject older catalogs and all earlier report revisions remain readable |
+| Offline tooling tests | Passed: 106 Swift tests in eight suites and 230 Python tests |
+| Inventory, generation and parity | Passed: 18,245 inventory records, 290 pinned sources, 951 reviewed definitions, 255 mapped endpoints and five byte-identical generated artifacts |
+| Runtime and example dependency audits | Passed: 33 public products/33 runtime targets, 362 runtime sources, 838 imports and eight resolved packages; all 13 example graphs reviewed |
+| Public API and DocC | Passed: 37 graph files, API comparison against 0.19.0 accepts the existing pre-1.0 0.20.0 candidate; four generated navigation files refreshed; all 33 public-module archives convert with strict diagnostics |
+| Independent consumer builds | GatewayBot and RESTOnly pass with forced pins; no example runs with real credentials |
+| Capture Python tests | Passed: 29 load-script, 29 shared-supervisor and 27 authoring/compiler tests; actual timeout, interruption, descendant cleanup, signal restoration and diagnostic overflow included |
+| Callable documentation | Passed: 908 Swift files and 9,751 explicit callable declarations, with zero missing comments |
+| Optimized cache/client matrix | Passed: 34 fresh processes, 1,088 terminal outcomes, 94 metric populations and 3,061 samples; all 34 common envelopes pass strict validation |
+| Optimized authoring pairs | Passed: five counterbalanced direct/DSL pairs at 10 handlers/two modules, plus smoke pairs at 100/ten and 1,000/100; 14 fresh processes, 448 invocations, 112 populations and 3,164 samples |
+| Separate compiler capture | Passed: manual and macro consumers at ten handlers/one module, each with a clean and literal-edit incremental build; four integer-nanosecond observations and two strictly validated common envelopes |
+| Capture integrity | All 50 common envelopes validate; all measured subprocess owners are reaped with no live group members, unexpected descendants or truncated artifacts; runtime cleanup and histogram underflow/overflow/drop counters are zero |
+
+The complete release-graph wrapper still reports the previously documented DSL
+benchmark consumer policy drift: Phase 1 added the development-only shared support
+package while the older release-consumer policy expects only the runtime checkout.
+The scoped runtime audit and every example audit pass without changing that policy.
+This is not a complete release audit or publication qualification.
+
+Runtime products gain no benchmark, output adapter, compiler plugin or SwiftSyntax
+dependency. Cache remains independent of Transport/HTTP/Gateway/Client. All new
+runtime observers use the existing logging foundation. Pure permission arithmetic
+remains quiet. The detailed enums and cache/client initializer signatures require
+downstream compatibility review; legacy scalar timing APIs remain unchanged.
+
+The cache cases use fixed working sets and bounded waves. Refresh and stale-fetch
+profiles retain every cohort waiter before releasing one shared loader, then
+verify exact flight/coalescing counts and newer-event fencing. Caller timers stop
+before retained-state correctness reads. Broadcast cases inspect actual post-finish
+hub snapshots; no cleanup zeros are inferred. Expiry freshness advancement is
+separate from real elapsed time. Compiler and runtime measurements are distinct.
+
+The client cases verify complete construction calls, local discovery/ingestion,
+local-ready milestones, and failure/cancellation cleanup using injected peers.
+Actual body-close, connection, lease, subscription, task, reservation and dependency
+receipts return to zero. Construction invokes no discovery or socket operation.
+Direct and DSL authoring use the same typed input, real policies/middleware and
+exact response oracle. Definition construction is separate from runtime invocation;
+warmup has independent owners and contributes no measured histogram samples.
+
+The final cache/client matrix has 992 successful, 64 expected failed and 32
+cancelled workflows; every offered workflow has a terminal result. It excludes
+136 warmup requests. All 94 cache/client and 112 authoring P99 populations report
+insufficient tail data. The ten-handler standard authoring schedule alternates
+which mode runs first across five pairs; the larger fixtures each use one seeded
+smoke pair. Both modes retain exactly two definition observations and 32 samples
+for each of the seven invocation metrics, with eight unmeasured warmup invocations.
+
+An earlier matrix attempt correctly failed the 4,096-entry row's one-second
+warmup cap and retained its failed process receipt. Lookup now populates its
+unchanged working set only once per run, checks cancellation during preparation,
+and that row explicitly uses the single-process `soak` profile with both warmup
+and measurement caps lowered to 60 seconds. Other rows retain smoke caps. This
+finite population establishes no sustained-soak qualification. Raw failed
+evidence remains in `.build/timing-phase7/cache-client-matrix-final`; the passing
+capture is `.build/timing-phase7/cache-client-matrix-capture`.
+
+The exact optimized capture commands are:
+
+```sh
+python3 Tools/DiscordBenchmarkSupport/scripts/run_benchmarks.py build \
+  --repository . --package Tools/DiscordKitLoadTests --product DiscordKitLoadTests \
+  --receipt .build/timing-phase7/load-release-capture.json
+python3 Tools/DiscordBenchmarkSupport/scripts/run_benchmarks.py build \
+  --repository . --package Tools/DiscordDSLBenchmarks --product DiscordDSLBenchmarks \
+  --receipt .build/timing-phase7/authoring-release-capture.json
+python3 Tools/DiscordKitLoadTests/scripts/run_cache_client_timing_suites.py \
+  --executable Tools/DiscordKitLoadTests/.build/out/Products/Release/DiscordKitLoadTests \
+  --receipt .build/timing-phase7/load-release-capture.json \
+  --output-dir .build/timing-phase7/cache-client-matrix-capture \
+  --requests 32 --warmup-requests 4
+python3 Tools/DiscordDSLBenchmarks/scripts/run_authoring.py \
+  --executable Tools/DiscordDSLBenchmarks/.build/out/Products/Release/DiscordDSLBenchmarks \
+  --receipt .build/timing-phase7/authoring-release-capture.json \
+  --output-dir .build/timing-phase7/authoring-pairs-capture --profile standard \
+  --handlers 10 --modules 2 --invocations 32 --definitions 2 \
+  --warmup-invocations 8 --concurrency 2
+```
+
+The two larger authoring captures use the same command with `--profile smoke`,
+`--handlers 100 --modules 10` and `--handlers 1000 --modules 100`, and distinct
+`authoring-100-capture`/`authoring-1000-capture` output directories. Compiler work
+was captured separately with:
+
+```sh
+python3 Tools/DiscordDSLBenchmarks/scripts/compile_benchmarks.py \
+  --handlers 10 --modules 1 --workspace .build/timing-phase7-compiler-final \
+  --cache-path .build/dsl-compile-cache --output .build/timing-phase7-compiler-final.json
+Tools/DiscordDSLBenchmarks/.build/out/Products/Release/DiscordDSLBenchmarks compiler-report \
+  --input .build/timing-phase7-compiler-final.json --mode manual --handlers 10 \
+  --output .build/timing-phase7/compiler-manual-common.json
+Tools/DiscordDSLBenchmarks/.build/out/Products/Release/DiscordDSLBenchmarks compiler-report \
+  --input .build/timing-phase7-compiler-final.json --mode macro --handlers 10 \
+  --output .build/timing-phase7/compiler-macro-common.json
+```
+
+Both release receipts bind revision
+`2181ab7f314d3dd5b24478c58f3bf3161700ba25` and dirty-source SHA-256
+`937d768760a3a93de5c488a1c3ac98ad0ec570b43456509397c3f0e374868523`.
+Load executable SHA-256 is
+`7c7cd1952c2d5612c56c1cae6c6c5464972e0144939b1874dce7aedfd7b43a2e`;
+authoring executable SHA-256 is
+`929db958afafe58bb6f1d82a83db584e453b94f7fa6d72d859aff74fbdf02b9a`.
+Receipt SHA-256 values, respectively, are
+`1b5865107a0f21ae64d47849a99e3405a7c586467c849c43f49cf50925b0163d` and
+`dffd43f5eac6b9756113ea965d29a5f2bb574ff4fe6a26664ee6b35e2a8dbe6f`.
+Cache/client matrix SHA-256 is
+`1110f2b522b15de6631d5b4d1da8f8c075e73314eff62ce409940da96330f01d`;
+five-pair authoring orchestration SHA-256 is
+`e9498e1981452fd13f8ee945337638f332199b75387255be685c85fa7c00be76`;
+raw compiler report SHA-256 is
+`0a0e6ddaa8d56f659d056722f06d4cc9ef9b311d121b66086c35b72f8e079eb1`.
+All native runtime envelopes equal their emitted common sidecars exactly, and
+the retained supervisor receipts bind fixture and artifact hashes. Compiler
+receipts separately bind source/fixture/manifest/resolution/binary hashes and
+the `supervised-process-lifetime-v1` boundary; its source hash is not a full dirty
+checkout fingerprint. Reports, receipts and verification remain in ignored build
+directories. This final validation update changes documentation only: comparison
+of all 3,420 captured source-snapshot files confirms executable, test, tool,
+manifest and pin inputs remain unchanged. Final local links and whitespace pass.
+
+Local correctness and measurement evidence does not qualify hosted CI, Linux or
+other hosts, live Discord READY, client rendering, controlled-host numerical
+baselines, sparse P99, production capacity, publication or later roadmap stages.

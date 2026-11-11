@@ -6,7 +6,9 @@
 
 ### Cases
 
+- ``DiscordLogging/DiscordIntervalOperation/clientLifecycle``
 - ``DiscordLogging/DiscordIntervalOperation/commandRouting``
+- ``DiscordLogging/DiscordIntervalOperation/entityCache``
 - ``DiscordLogging/DiscordIntervalOperation/gatewayDispatch``
 - ``DiscordLogging/DiscordIntervalOperation/gatewayFrame``
 - ``DiscordLogging/DiscordIntervalOperation/gatewayPublication``

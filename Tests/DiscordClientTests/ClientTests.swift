@@ -7,6 +7,7 @@ import DiscordClient
 import DiscordCore
 import DiscordGateway
 import DiscordHTTP
+import DiscordLogging
 import DiscordTransport
 import DiscordTestSupport
 import Foundation
@@ -150,6 +151,115 @@ struct ClientTests {
         #expect(fixture.clock.pendingSleepCount == 0)
     }
 
+    /// Construction, discovery, ingestion, local readiness and lifecycle hooks have actual paired
+    /// endpoints; every shutdown caller ends only after the existing owner cleanup has completed.
+    @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
+    @Test func lifecycleIntervals() async throws {
+        let observed = ClientIntervalRecords()
+        let fixture = try ClientFixture(intervals: observed.timing)
+        #expect(observed.clockReads == 2)
+        #expect(observed.ended(.construction).count == 1)
+        #expect(await fixture.http.executionCount == 0)
+        #expect(await fixture.leases.retainedLeaseCount() == 0)
+        let subscription = try await fixture.hub.subscribe()
+        let task = Task { try await fixture.client.run() }
+        var iterator = subscription.makeAsyncIterator()
+        #expect(try await iterator.next()?.name == "READY")
+        #expect(try await iterator.next()?.name == "FUTURE")
+        // Publication resumes consumers before its synchronous terminal callback, so await the
+        // recorded owner boundary independently instead of assuming a scheduling order.
+        while observed.ended(.ingestion).count < 2 { await Task.yield() }
+        #expect(observed.ended(.localReady).count == 1)
+        #expect(observed.ended(.discovery).count == 1)
+        #expect(observed.ended(.operation).isEmpty)
+        async let first: Void = fixture.client.shutdown()
+        async let second: Void = fixture.client.shutdown()
+        _ = await (first, second)
+        try await task.value
+        #expect(await fixture.cleanup.count == 1)
+        #expect(observed.ended(.shutdown).count == 2)
+        #expect(observed.ended(.operation).count == 1)
+        let events = observed.events
+        let lifecycle = try #require(observed.ended(.operation).first)
+        for stage in [DiscordIntervalStage.discovery, .ingestion, .localReady] {
+            #expect(observed.ended(stage).allSatisfy { $0.context.parentID == lifecycle.context.operationID })
+        }
+        #expect(events.filter { $0.kind == .began }.count == events.filter { $0.kind == .ended }.count)
+        #expect(events.allSatisfy { $0.validity == .valid })
+        #expect(events.filter { $0.kind == .ended }.allSatisfy { $0.outcome == .succeeded })
+    }
+
+    /// Pre-run shutdown emits no discovery/readiness/lifecycle work, and repeated caller waits remain
+    /// distinct observations while the dependency cleanup itself remains exactly once.
+    @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
+    @Test func preRunIntervals() async throws {
+        let observed = ClientIntervalRecords()
+        let fixture = try ClientFixture(intervals: observed.timing)
+        await fixture.client.shutdown(); await fixture.client.shutdown()
+        #expect(observed.ended(.construction).count == 1)
+        #expect(observed.ended(.shutdown).count == 2)
+        #expect(observed.ended(.discovery).isEmpty)
+        #expect(observed.ended(.localReady).isEmpty)
+        #expect(observed.ended(.operation).isEmpty)
+        #expect(await fixture.cleanup.count == 1)
+        #expect(await fixture.http.executionCount == 0)
+    }
+
+    /// Discovery and projection failures retain their own local outcomes, terminate pending readiness
+    /// honestly and report the joined lifecycle failure after reservation/socket cleanup.
+    @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
+    @Test(arguments: [true, false]) func failureIntervals(_ discoveryFailure: Bool) async throws {
+        let observed = ClientIntervalRecords()
+        let fixture = try ClientFixture(discovery: discoveryFailure ? "{}" : clientDiscovery,
+            project: { _ in throw GatewayFailure.invalidPayload }, intervals: observed.timing)
+        await #expect(throws: (any Error).self) { try await fixture.client.run() }
+        #expect(observed.ended(.discovery).first?.outcome == (discoveryFailure ? .failed : .succeeded))
+        #expect(observed.ended(.localReady).first?.outcome == .failed)
+        #expect(observed.ended(.operation).first?.outcome == .failed)
+        #expect(observed.ended(.ingestion).count == (discoveryFailure ? 0 : 1))
+        #expect(observed.ended(.ingestion).allSatisfy { $0.outcome == .failed })
+        #expect(await fixture.budget.snapshot().clients == 0)
+        #expect(await fixture.leases.retainedLeaseCount() == 0)
+        #expect(await fixture.cleanup.count == 1)
+    }
+
+    /// Owner cancellation during blocked discovery pairs every started interval only after the
+    /// underlying HTTP cancellation and aggregate reservation cleanup have joined.
+    @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
+    @Test func cancelledDiscoveryIntervals() async throws {
+        let observed = ClientIntervalRecords(), entered = TestBarrier(), blocked = TestBarrier()
+        let http = try ScriptedHTTPTransport(steps: [{ _ in entered.open(); try await blocked.wait(); throw CancellationError() }])
+        let fixture = try ClientFixture(httpOverride: http, intervals: observed.timing)
+        let task = Task { try await fixture.client.run() }
+        try await entered.wait(); task.cancel()
+        await #expect(throws: CancellationError.self) { try await task.value }
+        for stage in [DiscordIntervalStage.discovery, .localReady, .operation] {
+            #expect(observed.ended(stage).count == 1)
+            #expect(observed.ended(stage).first?.outcome == .cancelled)
+        }
+        #expect(await fixture.budget.snapshot().clients == 0)
+        #expect(await fixture.cleanup.count == 1)
+    }
+
+    /// Explicit shutdown cancels the discovery child and unfinished readiness while the joined
+    /// nonthrowing shutdown caller and normalized lifecycle retain their successful local outcomes.
+    @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
+    @Test func shutdownDuringDiscoveryIntervals() async throws {
+        let observed = ClientIntervalRecords(), entered = TestBarrier(), blocked = TestBarrier()
+        let http = try ScriptedHTTPTransport(steps: [{ _ in entered.open(); try await blocked.wait(); throw CancellationError() }])
+        let fixture = try ClientFixture(httpOverride: http, intervals: observed.timing)
+        let task = Task { try await fixture.client.run() }
+        try await entered.wait()
+        await fixture.client.shutdown()
+        try await task.value
+        #expect(observed.ended(.discovery).first?.outcome == .cancelled)
+        #expect(observed.ended(.localReady).first?.outcome == .cancelled)
+        #expect(observed.ended(.operation).first?.outcome == .succeeded)
+        #expect(observed.ended(.shutdown).first?.outcome == .succeeded)
+        #expect(await fixture.budget.snapshot().clients == 0)
+        #expect(await fixture.cleanup.count == 1)
+    }
+
     /// Services retain HTTP-only usability and invalidate entity evidence twice for every local
     /// write, including rejected requests, while safe reads never invalidate projections.
     @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
@@ -223,8 +333,12 @@ private struct ClientFixture {
     /// - Parameters:
     ///   - discovery: Bounded JSON discovery fixture; default selects one shard.
     ///   - httpOverride: Optional suspended/error script for lifecycle failure scenarios.
+    ///   - project: Optional state reducer, default empty; injected failures test sanitized ingestion.
+    ///   - intervals: Optional detailed observer, default disabled, with no hidden global lookup.
     /// - Throws: Fixture/script/configuration validation errors.
-    init(discovery: String = clientDiscovery, httpOverride: ScriptedHTTPTransport? = nil) throws {
+    init(discovery: String = clientDiscovery, httpOverride: ScriptedHTTPTransport? = nil,
+         project: @escaping @Sendable (GatewayEvent) async throws -> Void = { _ in },
+         intervals: DiscordIntervalTiming? = nil) throws {
         http = try httpOverride ?? ScriptedHTTPTransport(steps: [
             { _ in try clientResponse(discovery) },
             { _ in try clientResponse(#"{"id":"42","username":"bot","discriminator":"0","global_name":null,"avatar":null}"#) }
@@ -239,7 +353,7 @@ private struct ClientFixture {
         client = DiscordClient(token: try BotToken("client-test-sentinel"),
             configuration: try ClientConfiguration(intents: [.guilds]), services: ServiceContext(rest: rest),
             transport: ScriptedWebSocketTransport(connection: socket), clock: clock, leases: leases,
-            authority: authority, events: hub, cleanup: { await cleanup.increment() })
+            authority: authority, events: hub, project: project, cleanup: { await cleanup.increment() }, intervals: intervals)
     }
 }
 
@@ -317,4 +431,36 @@ private actor ClientSocket: WebSocketConnection {
 
     /// Releases pending receive and marks disposal; repeated closure remains harmless.
     func close() { closed = true; idle.open(); identified.open() }
+}
+
+/// Bounded test-only endpoint storage; synchronous sinks cannot await actor diagnostics.
+private final class ClientIntervalRecords: @unchecked Sendable {
+    private let lock = NSLock()
+    private var stored: [DiscordIntervalEvent] = []
+    private var reads = 0
+    /// Configures one deterministic offset source without reading it before an observed boundary.
+    var timing: DiscordIntervalTiming {
+        DiscordIntervalTiming(clockDomain: 707, sink: { self.record($0) }, now: { self.tick() })
+    }
+    /// Copies finite observed endpoints while holding the small test-only lock.
+    var events: [DiscordIntervalEvent] { lock.withLock { stored } }
+    /// Reads the exact number of instrumentation-clock calls independently of operation clock use.
+    var clockReads: Int { lock.withLock { reads } }
+    /// Stores only client-family events so child shard observations retain independent populations.
+    /// - Parameter event: Actual synchronous endpoint; no payload or credential is present.
+    private func record(_ event: DiscordIntervalEvent) {
+        guard event.operation == .clientLifecycle else { return }
+        lock.withLock { stored.append(event) }
+    }
+    /// Advances monotonically by one microsecond for each explicit instrumentation read.
+    /// - Returns: A bounded offset shared by every endpoint in this observer domain.
+    private func tick() -> Duration {
+        lock.withLock { reads += 1; return .microseconds(reads) }
+    }
+    /// Selects terminal endpoints without inferring a duration or reconstructing owner work.
+    /// - Parameter stage: Exact finite local boundary.
+    /// - Returns: Snapshot of matching client terminal events, in synchronous callback order.
+    func ended(_ stage: DiscordIntervalStage) -> [DiscordIntervalEvent] {
+        events.filter { $0.kind == .ended && $0.stage == stage }
+    }
 }

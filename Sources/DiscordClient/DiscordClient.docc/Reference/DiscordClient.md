@@ -6,7 +6,7 @@
 
 ### Creating a value
 
-- ``DiscordClient/DiscordClient/init(token:configuration:services:transport:clock:leases:authority:events:project:cleanup:)``
+- ``DiscordClient/DiscordClient/init(token:configuration:services:transport:clock:leases:authority:events:project:cleanup:intervals:)``
 
 ### Instance properties
 

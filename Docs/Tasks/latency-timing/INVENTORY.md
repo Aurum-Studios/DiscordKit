@@ -7,6 +7,7 @@ https://aurum-studios.com
 
 # Latency workload and ownership inventory
 
+Phase 7 adds [cache, client and authoring workloads](PHASE-7.md).
 Phase 6 adds [Gateway and command workloads](PHASE-6.md), real owner hooks and
 [catalog-six reports](../../../Tools/DiscordKitLoadTests/README.md#phase-6-gateway-and-command-timing).
 Trusted Gateway and signed application origins remain separate from synthetic routes.

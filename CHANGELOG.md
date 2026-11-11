@@ -9,6 +9,17 @@ https://aurum-studios.com
 
 ## Unreleased
 
+### Cache, client and authoring timing suites — 2026-11-10
+
+- Add opt-in cache and client lifecycle hooks with separate caller/owner/loader
+  timing, local-ready milestones and joined cleanup. Preserve cache fencing,
+  independent runtime products and nil zero-clock behavior.
+- Add bounded cache/client workloads, equivalent direct/DSL definition and
+  invocation workloads, and fresh-process comparisons. Keep manual/macro compiler
+  measurements separate with provenance and versioned report compatibility.
+- Record phase 7 measurement contracts and local checks in the
+  [implementation record](Docs/Tasks/latency-timing/PHASE-7.md).
+
 ### Transport and REST timing suites — 2026-11-10
 
 - Add corrected Foundation/NIO loopback and scripted transport timings with cold

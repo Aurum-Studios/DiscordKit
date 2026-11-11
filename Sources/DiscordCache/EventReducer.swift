@@ -4,6 +4,7 @@
 // https://aurum-studios.com
 
 import DiscordCore
+import DiscordLogging
 import DiscordModels
 
 extension EntityCache {
@@ -48,121 +49,123 @@ extension EntityCache {
     @discardableResult
     public func observeGateway(name: String, data: JSONValue, scope: CacheScope,
                                shard: Int, generation: UInt64, sequence: Int64?) throws -> CacheWriteResult {
-        guard shard >= 0, sequence.map({ $0 >= 0 }) ?? true else { throw EntityCacheFailure.invalidOrder }
-        let recognized: Set<String> = [
-            "READY", "GUILD_CREATE", "GUILD_UPDATE", "GUILD_DELETE", "CHANNEL_CREATE", "CHANNEL_UPDATE", "CHANNEL_DELETE",
-            "THREAD_CREATE", "THREAD_UPDATE", "THREAD_DELETE", "MESSAGE_CREATE", "MESSAGE_UPDATE", "MESSAGE_DELETE",
-            "MESSAGE_DELETE_BULK", "GUILD_MEMBER_ADD", "GUILD_MEMBER_UPDATE", "GUILD_MEMBER_REMOVE",
-            "GUILD_ROLE_CREATE", "GUILD_ROLE_UPDATE", "GUILD_ROLE_DELETE", "USER_UPDATE", "INTERACTION_CREATE",
-        ]
-        guard recognized.contains(name) else { return .ignoredEvent }
-        guard case .object(var fields) = data else { throw EntityCacheFailure.malformedEvent }
-        let order = sequence.map { CacheObservationOrder(shard: shard, generation: generation, sequence: $0) }
-        try validateObservation(EntitySnapshot(fields: [:], order: order), scope: scope)
-        if name == "READY" { return try observeReady(fields, scope: scope, shard: shard, order: order) }
-        if name == "INTERACTION_CREATE" {
-            return try observeInteraction(fields, scope: scope, order: order)
-        }
-        if name == "MESSAGE_DELETE_BULK" {
-            guard case .array(let rawIDs) = fields["ids"], rawIDs.allSatisfy({ cacheIdentifier($0) != nil }) else {
-                throw EntityCacheFailure.malformedEvent
+        return try withCacheInterval(.cacheProjection) {
+            guard shard >= 0, sequence.map({ $0 >= 0 }) ?? true else { throw EntityCacheFailure.invalidOrder }
+            let recognized: Set<String> = [
+                "READY", "GUILD_CREATE", "GUILD_UPDATE", "GUILD_DELETE", "CHANNEL_CREATE", "CHANNEL_UPDATE", "CHANNEL_DELETE",
+                "THREAD_CREATE", "THREAD_UPDATE", "THREAD_DELETE", "MESSAGE_CREATE", "MESSAGE_UPDATE", "MESSAGE_DELETE",
+                "MESSAGE_DELETE_BULK", "GUILD_MEMBER_ADD", "GUILD_MEMBER_UPDATE", "GUILD_MEMBER_REMOVE",
+                "GUILD_ROLE_CREATE", "GUILD_ROLE_UPDATE", "GUILD_ROLE_DELETE", "USER_UPDATE", "INTERACTION_CREATE",
+            ]
+            guard recognized.contains(name) else { return .ignoredEvent }
+            guard case .object(var fields) = data else { throw EntityCacheFailure.malformedEvent }
+            let order = sequence.map { CacheObservationOrder(shard: shard, generation: generation, sequence: $0) }
+            try validateObservation(EntitySnapshot(fields: [:], order: order), scope: scope)
+            if name == "READY" { return try observeReady(fields, scope: scope, shard: shard, order: order) }
+            if name == "INTERACTION_CREATE" {
+                return try observeInteraction(fields, scope: scope, order: order)
             }
-            guard rawIDs.count <= 256 else { invalidate(scope: scope); return .notRetained }
-            var result = CacheWriteResult.ignoredEvent
-            for rawID in rawIDs {
-                var deletion = fields
-                deletion.removeValue(forKey: "ids")
-                deletion["id"] = rawID
-                result = try observeGateway(name: "MESSAGE_DELETE", data: .object(deletion), scope: scope,
-                                            shard: shard, generation: generation, sequence: sequence)
+            if name == "MESSAGE_DELETE_BULK" {
+                guard case .array(let rawIDs) = fields["ids"], rawIDs.allSatisfy({ cacheIdentifier($0) != nil }) else {
+                    throw EntityCacheFailure.malformedEvent
+                }
+                guard rawIDs.count <= 256 else { invalidate(scope: scope); return .notRetained }
+                var result = CacheWriteResult.ignoredEvent
+                for rawID in rawIDs {
+                    var deletion = fields
+                    deletion.removeValue(forKey: "ids")
+                    deletion["id"] = rawID
+                    result = try observeGateway(name: "MESSAGE_DELETE", data: .object(deletion), scope: scope,
+                                                shard: shard, generation: generation, sequence: sequence)
+                }
+                return result
             }
-            return result
-        }
-        let guildID: GuildID?
-        if let value = fields["guild_id"] {
-            guard let id = cacheIdentifier(value) else { throw EntityCacheFailure.malformedEvent }
-            guildID = GuildID(rawValue: id)
-        } else { guildID = nil }
-        let kind: EntityKind
-        if name.hasPrefix("GUILD_ROLE_") {
-            kind = .role
-            guard let guildID else { throw EntityCacheFailure.malformedEvent }
-            if name == "GUILD_ROLE_DELETE" {
-                fields = ["id": fields["role_id"] ?? .null, "guild_id": .string(guildID.description)]
-            } else {
-                guard case .object(var role) = fields["role"] else { throw EntityCacheFailure.malformedEvent }
-                role["guild_id"] = .string(guildID.description)
-                fields = role
+            let guildID: GuildID?
+            if let value = fields["guild_id"] {
+                guard let id = cacheIdentifier(value) else { throw EntityCacheFailure.malformedEvent }
+                guildID = GuildID(rawValue: id)
+            } else { guildID = nil }
+            let kind: EntityKind
+            if name.hasPrefix("GUILD_ROLE_") {
+                kind = .role
+                guard let guildID else { throw EntityCacheFailure.malformedEvent }
+                if name == "GUILD_ROLE_DELETE" {
+                    fields = ["id": fields["role_id"] ?? .null, "guild_id": .string(guildID.description)]
+                } else {
+                    guard case .object(var role) = fields["role"] else { throw EntityCacheFailure.malformedEvent }
+                    role["guild_id"] = .string(guildID.description)
+                    fields = role
+                }
+            } else if name.hasPrefix("GUILD_MEMBER_") {
+                kind = .member
+                guard guildID != nil, case .object(let user) = fields["user"], let userID = user["id"] else {
+                    throw EntityCacheFailure.malformedEvent
+                }
+                fields["id"] = userID
+            } else if name.hasPrefix("MESSAGE_") { kind = .message }
+            else if name.hasPrefix("CHANNEL_") || name.hasPrefix("THREAD_") { kind = .channel }
+            else if name == "USER_UPDATE" { kind = .user }
+            else { kind = .guild }
+            guard let id = cacheIdentifier(fields["id"]) else { throw EntityCacheFailure.malformedEvent }
+            if kind == .guild, let availability = fields["unavailable"] {
+                guard case .bool = availability else { throw EntityCacheFailure.malformedEvent }
             }
-        } else if name.hasPrefix("GUILD_MEMBER_") {
-            kind = .member
-            guard guildID != nil, case .object(let user) = fields["user"], let userID = user["id"] else {
-                throw EntityCacheFailure.malformedEvent
+            let key = projectionKey(kind: kind, id: id, guildID: kind == .guild ? nil : guildID, scope: scope)
+            let deleted = name.hasSuffix("_DELETE") || name == "GUILD_MEMBER_REMOVE"
+            let unavailable = kind == .guild && fields["unavailable"] == .bool(true)
+            let availability: CacheAvailability = unavailable ? .unavailable : deleted ? .deleted : .available
+            if kind == .guild {
+                // Child lists have separate completeness/eviction lifecycles; a guild
+                // dispatch does not make every child known or all membership complete.
+                for field in ["members", "channels", "threads", "roles", "presences", "voice_states", "emojis", "stickers",
+                              "guild_scheduled_events", "stage_instances"] { fields.removeValue(forKey: field) }
             }
-            fields["id"] = userID
-        } else if name.hasPrefix("MESSAGE_") { kind = .message }
-        else if name.hasPrefix("CHANNEL_") || name.hasPrefix("THREAD_") { kind = .channel }
-        else if name == "USER_UPDATE" { kind = .user }
-        else { kind = .guild }
-        guard let id = cacheIdentifier(fields["id"]) else { throw EntityCacheFailure.malformedEvent }
-        if kind == .guild, let availability = fields["unavailable"] {
-            guard case .bool = availability else { throw EntityCacheFailure.malformedEvent }
-        }
-        let key = projectionKey(kind: kind, id: id, guildID: kind == .guild ? nil : guildID, scope: scope)
-        let deleted = name.hasSuffix("_DELETE") || name == "GUILD_MEMBER_REMOVE"
-        let unavailable = kind == .guild && fields["unavailable"] == .bool(true)
-        let availability: CacheAvailability = unavailable ? .unavailable : deleted ? .deleted : .available
-        if kind == .guild {
-            // Child lists have separate completeness/eviction lifecycles; a guild
-            // dispatch does not make every child known or all membership complete.
-            for field in ["members", "channels", "threads", "roles", "presences", "voice_states", "emojis", "stickers",
-                          "guild_scheduled_events", "stage_instances"] { fields.removeValue(forKey: field) }
-        }
-        fields["id"] = .string(String(id))
-        if let guildID, fields["guild_id"] != nil { fields["guild_id"] = .string(guildID.description) }
-        if let channel = cacheIdentifier(fields["channel_id"]) { fields["channel_id"] = .string(String(channel)) }
-        var redacted = kind == .message && availability == .available ? contentRedaction(fields, scope: scope) : []
-        var snapshot = EntitySnapshot(fields: fields, redactedFields: redacted,
-                                      nullableFields: nullableCacheFields(kind), availability: availability,
-                                      provenance: .gateway, order: order)
-        try validateObservation(snapshot, scope: scope)
-        let previous = value(for: key, scope: scope)
-        if isStale(order, comparedTo: previous?.order) { return .ignoredStale }
-        var obfuscated = false
-        if kind == .channel && availability == .available,
-           let flags = fields["flags"] ?? previous?.fields["flags"] {
-            guard case .number(let number) = flags, let bits = UInt64(number.rawValue) else {
-                throw EntityCacheFailure.malformedEvent
+            fields["id"] = .string(String(id))
+            if let guildID, fields["guild_id"] != nil { fields["guild_id"] = .string(guildID.description) }
+            if let channel = cacheIdentifier(fields["channel_id"]) { fields["channel_id"] = .string(String(channel)) }
+            var redacted = kind == .message && availability == .available ? contentRedaction(fields, scope: scope) : []
+            var snapshot = EntitySnapshot(fields: fields, redactedFields: redacted,
+                                          nullableFields: nullableCacheFields(kind), availability: availability,
+                                          provenance: .gateway, order: order)
+            try validateObservation(snapshot, scope: scope)
+            let previous = value(for: key, scope: scope)
+            if isStale(order, comparedTo: previous?.order) { return .ignoredStale }
+            var obfuscated = false
+            if kind == .channel && availability == .available,
+               let flags = fields["flags"] ?? previous?.fields["flags"] {
+                guard case .number(let number) = flags, let bits = UInt64(number.rawValue) else {
+                    throw EntityCacheFailure.malformedEvent
+                }
+                obfuscated = bits & (UInt64(1) << 17) != 0
+                if obfuscated {
+                    let reliable: Set<String> = ["id", "type", "position", "parent_id", "guild_id", "flags"]
+                    redacted.formUnion(["name", "topic", "permission_overwrites", "last_message_id", "icon",
+                                        "owner_id", "application_id", "last_pin_timestamp", "rtc_region",
+                                        "default_reaction_emoji", "default_sort_order", "thread_metadata",
+                                        "member", "recipients", "available_tags", "applied_tags"])
+                    redacted.formUnion(fields.keys.filter { !reliable.contains($0) })
+                    redacted.formUnion((previous?.fields.keys.map { $0 } ?? []).filter { !reliable.contains($0) })
+                    fields = fields.filter { reliable.contains($0.key) }
+                    fields["flags"] = flags
+                    snapshot = EntitySnapshot(fields: fields, redactedFields: redacted,
+                                              nullableFields: nullableCacheFields(kind), provenance: .gateway, order: order)
+                }
             }
-            obfuscated = bits & (UInt64(1) << 17) != 0
-            if obfuscated {
-                let reliable: Set<String> = ["id", "type", "position", "parent_id", "guild_id", "flags"]
-                redacted.formUnion(["name", "topic", "permission_overwrites", "last_message_id", "icon",
-                                    "owner_id", "application_id", "last_pin_timestamp", "rtc_region",
-                                    "default_reaction_emoji", "default_sort_order", "thread_metadata",
-                                    "member", "recipients", "available_tags", "applied_tags"])
-                redacted.formUnion(fields.keys.filter { !reliable.contains($0) })
-                redacted.formUnion((previous?.fields.keys.map { $0 } ?? []).filter { !reliable.contains($0) })
-                fields = fields.filter { reliable.contains($0.key) }
-                fields["flags"] = flags
-                snapshot = EntitySnapshot(fields: fields, redactedFields: redacted,
-                                          nullableFields: nullableCacheFields(kind), provenance: .gateway, order: order)
+            // Permissions can alter which previously retained fields are visible in
+            // every intent partition of this credential. Until explicit revalidation,
+            // retain only the new observation under a conservative identity-wide purge.
+            if obfuscated || (kind == .role && (fields["permissions"] != nil || deleted))
+                || (kind == .member && (fields["roles"] != nil || deleted))
+                || (kind == .channel && (fields["permission_overwrites"] != nil || deleted))
+                || (kind == .guild && (deleted || unavailable))
+                || (name == "GUILD_UPDATE" && fields["owner_id"] != nil) {
+                invalidateVisibility(identity: scope.identity)
             }
+            if kind == .guild {
+                if deleted || unavailable { invalidateGuild(GuildID(rawValue: id), scope: scope) }
+            } else if kind == .channel && deleted { invalidateChannelChildren(id, scope: scope) }
+            return try apply(snapshot, for: key, scope: scope)
         }
-        // Permissions can alter which previously retained fields are visible in
-        // every intent partition of this credential. Until explicit revalidation,
-        // retain only the new observation under a conservative identity-wide purge.
-        if obfuscated || (kind == .role && (fields["permissions"] != nil || deleted))
-            || (kind == .member && (fields["roles"] != nil || deleted))
-            || (kind == .channel && (fields["permission_overwrites"] != nil || deleted))
-            || (kind == .guild && (deleted || unavailable))
-            || (name == "GUILD_UPDATE" && fields["owner_id"] != nil) {
-            invalidateVisibility(identity: scope.identity)
-        }
-        if kind == .guild {
-            if deleted || unavailable { invalidateGuild(GuildID(rawValue: id), scope: scope) }
-        } else if kind == .channel && deleted { invalidateChannelChildren(id, scope: scope) }
-        return try apply(snapshot, for: key, scope: scope)
     }
 
     /// Applies bounded initial session state while retaining no session/resume credentials.

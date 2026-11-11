@@ -272,8 +272,8 @@ public final class DiscordTimingAggregate: @unchecked Sendable {
 
 /// Shared closed identity mapping for optional outputs; no application content enters these tables.
 enum TimingOutputNames {
-    static let operations = ["rest", "httpExchange", "httpSubscriber", "gatewayDispatch", "interactionResponse", "gatewaySession", "gatewayFrame", "gatewayPublication", "signedIngress", "interactionHTTP", "commandRouting"]
-    static let stages = ["operation", "admission", "headers", "body", "subscriber", "localQueue", "handler", "initialResponse", "originalEdit", "socketReceipt", "decode", "ingestionQueue", "hubResidence", "heartbeatACK", "reconnect", "shutdown", "signatureVerification", "replayAdmission", "preparation", "firstResponse"]
+    static let operations = ["rest", "httpExchange", "httpSubscriber", "gatewayDispatch", "interactionResponse", "gatewaySession", "gatewayFrame", "gatewayPublication", "signedIngress", "interactionHTTP", "commandRouting", "entityCache", "clientLifecycle"]
+    static let stages = ["operation", "admission", "headers", "body", "subscriber", "localQueue", "handler", "initialResponse", "originalEdit", "socketReceipt", "decode", "ingestionQueue", "hubResidence", "heartbeatACK", "reconnect", "shutdown", "signatureVerification", "replayAdmission", "preparation", "firstResponse", "cacheLookup", "cacheMerge", "cacheProjection", "cacheInvalidation", "cacheRefresh", "cacheLoader", "construction", "discovery", "ingestion", "localReady"]
 
     /// Maps a finite scalar phase directly without allocating an all-cases array on the hot path.
     /// - Parameter phase: Legacy scalar owner boundary.
@@ -325,6 +325,8 @@ enum TimingOutputNames {
         case .signedIngress: 8
         case .interactionHTTP: 9
         case .commandRouting: 10
+        case .entityCache: 11
+        case .clientLifecycle: 12
         }
     }
 
@@ -353,6 +355,16 @@ enum TimingOutputNames {
         case .replayAdmission: 17
         case .preparation: 18
         case .firstResponse: 19
+        case .cacheLookup: 20
+        case .cacheMerge: 21
+        case .cacheProjection: 22
+        case .cacheInvalidation: 23
+        case .cacheRefresh: 24
+        case .cacheLoader: 25
+        case .construction: 26
+        case .discovery: 27
+        case .ingestion: 28
+        case .localReady: 29
         }
     }
 

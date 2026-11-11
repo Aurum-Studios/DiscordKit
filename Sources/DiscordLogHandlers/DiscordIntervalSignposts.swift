@@ -298,6 +298,8 @@ extension DiscordIntervalSignposts {
         case .signedIngress: 9
         case .interactionHTTP: 10
         case .commandRouting: 11
+        case .entityCache: 12
+        case .clientLifecycle: 13
         }
     }
 
@@ -326,6 +328,16 @@ extension DiscordIntervalSignposts {
         case .replayAdmission: 18
         case .preparation: 19
         case .firstResponse: 20
+        case .cacheLookup: 21
+        case .cacheMerge: 22
+        case .cacheProjection: 23
+        case .cacheInvalidation: 24
+        case .cacheRefresh: 25
+        case .cacheLoader: 26
+        case .construction: 27
+        case .discovery: 28
+        case .ingestion: 29
+        case .localReady: 30
         }
     }
 

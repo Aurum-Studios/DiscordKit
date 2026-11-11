@@ -8,15 +8,25 @@
 
 - ``DiscordLogging/DiscordIntervalStage/admission``
 - ``DiscordLogging/DiscordIntervalStage/body``
+- ``DiscordLogging/DiscordIntervalStage/cacheInvalidation``
+- ``DiscordLogging/DiscordIntervalStage/cacheLoader``
+- ``DiscordLogging/DiscordIntervalStage/cacheLookup``
+- ``DiscordLogging/DiscordIntervalStage/cacheMerge``
+- ``DiscordLogging/DiscordIntervalStage/cacheProjection``
+- ``DiscordLogging/DiscordIntervalStage/cacheRefresh``
+- ``DiscordLogging/DiscordIntervalStage/construction``
 - ``DiscordLogging/DiscordIntervalStage/decode``
+- ``DiscordLogging/DiscordIntervalStage/discovery``
 - ``DiscordLogging/DiscordIntervalStage/firstResponse``
 - ``DiscordLogging/DiscordIntervalStage/handler``
 - ``DiscordLogging/DiscordIntervalStage/headers``
 - ``DiscordLogging/DiscordIntervalStage/heartbeatACK``
 - ``DiscordLogging/DiscordIntervalStage/hubResidence``
+- ``DiscordLogging/DiscordIntervalStage/ingestion``
 - ``DiscordLogging/DiscordIntervalStage/ingestionQueue``
 - ``DiscordLogging/DiscordIntervalStage/initialResponse``
 - ``DiscordLogging/DiscordIntervalStage/localQueue``
+- ``DiscordLogging/DiscordIntervalStage/localReady``
 - ``DiscordLogging/DiscordIntervalStage/operation``
 - ``DiscordLogging/DiscordIntervalStage/originalEdit``
 - ``DiscordLogging/DiscordIntervalStage/preparation``

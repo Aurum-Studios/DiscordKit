@@ -9,6 +9,7 @@ import DiscordCommands
 import DiscordCore
 import DiscordDSL
 import DiscordInteractions
+import DiscordLogging
 import DiscordModels
 import Foundation
 
@@ -112,6 +113,7 @@ struct RuntimePlan: Sendable {
     let admission: InteractionAcknowledgementAdmission
     let sink: InteractionResponseSink
     let accountedState: AccountedState
+    var intervals: DiscordIntervalTiming? = nil
 }
 
 /// Final owned counters must be zero even though the OS allocator may retain process pages.
@@ -161,14 +163,16 @@ enum RuntimeBenchmark {
     ///   - handlerCount: One validated declared population, at most 1,000.
     ///   - configuration: Previously validated finite workload dimensions.
     ///   - counters: Constant-size invocation/callback instrumentation shared with the finite worker cohort.
+    ///   - authoring: Optional Stage 7 module, policy and phase collection; nil retains legacy boundaries.
     /// - Returns: Bounded inert routes, fixtures and independently shared acknowledgement authority.
     /// - Throws: Invalid mode/configuration, original authoring/model validation or compilation failure.
     static func makePlan(mode: String, handlerCount: Int, configuration: BenchmarkConfiguration,
-        counters: BenchmarkCounters) throws -> RuntimePlan {
+        counters: BenchmarkCounters, authoring: AuthoringPlanOptions? = nil) throws -> RuntimePlan {
         try configuration.validate()
         guard ["direct", "dsl"].contains(mode), configuration.handlerCounts.contains(handlerCount) else {
             throw BenchmarkError.invalidConfiguration
         }
+        if let authoring { try authoring.validate(handlerCount: handlerCount) }
         let clock = ContinuousClock()
         let compileStart = clock.now
         let payload = String(repeating: "x", count: configuration.payloadBytes)
@@ -195,7 +199,13 @@ enum RuntimeBenchmark {
             }
         }
         var descriptionBytes = 0
-        if mode == "dsl" {
+        if let authoring {
+            let compiled = try authoring.compile(mode: mode, contributions: contributions, definitions: definitions, routes: routes)
+            definitions = compiled.definitions
+            routes = compiled.routes
+            descriptionBytes = compiled.description.textBytes
+            authoring.statistics?.record(compileStart.duration(to: clock.now), workload: .dslDefinition, outcome: .success)
+        } else if mode == "dsl" {
             let compiled = try CommandCompilation.compile(Module(id: "benchmark") { contributions },
                 limits: .init(maxModules: 1, maxDepth: 8, maxDeclarations: handlerCount,
                     maxTextBytes: 8 * 1_024 * 1_024, maxStructuralNodes: handlerCount + 8))
@@ -206,7 +216,7 @@ enum RuntimeBenchmark {
         let registrationBytes = try definitions.reduce(0) { try $0 + $1.request.jsonValue().serialized().count }
         let routeBytes = try routes.reduce(0) { try $0 + $1.key.metadata.serialized().count }
         let router = try CommandRouter(routes: routes, maximumRoutes: handlerCount,
-            maximumRouteTextBytes: max(1, routeBytes), maximumConcurrentHandlers: configuration.concurrency)
+            maximumRouteTextBytes: max(1, routeBytes), maximumConcurrentHandlers: configuration.concurrency, intervals: authoring?.intervals)
         let compilationMilliseconds = seconds(compileStart.duration(to: clock.now)) * 1_000
         var interactions: [Interaction] = [], interactionBytes = 0
         for index in 0..<handlerCount {
@@ -240,7 +250,8 @@ enum RuntimeBenchmark {
                 registrationJSONBytes: registrationBytes, routeMetadataJSONBytes: routeBytes,
                 planDescriptionTextBytes: descriptionBytes, maximumWorkers: configuration.concurrency,
                 maximumLatencySamples: configuration.sampleLimit, maximumMemorySamples: 121,
-                maximumPayloadBytes: configuration.payloadBytes, maximumActualInvocations: BenchmarkConfiguration.maximumInvocations))
+                maximumPayloadBytes: configuration.payloadBytes, maximumActualInvocations: BenchmarkConfiguration.maximumInvocations),
+            intervals: authoring?.intervals)
     }
 
     /// Executes one real route with a fresh exactly-once response owner and fixed-population input snapshot.
@@ -251,7 +262,7 @@ enum RuntimeBenchmark {
     static func invoke(_ plan: RuntimePlan, index: Int) async throws {
         let interaction = plan.interactions[index % plan.interactions.count]
         let responder = InteractionResponder(interaction: interaction, deliveryMode: .http,
-            clock: InteractionClock(ContinuousClock()), sink: plan.sink, admission: plan.admission)
+            clock: InteractionClock(ContinuousClock()), sink: plan.sink, admission: plan.admission, intervals: plan.intervals)
         let context = try InteractionContext(interaction: interaction, deliveryMode: .http, responder: responder)
         guard try await plan.router.route(context), await responder.snapshot() == .acknowledged(.channelMessageWithSource) else {
             throw BenchmarkError.functionalGate

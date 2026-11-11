@@ -175,3 +175,21 @@ tokens or authenticated calls. The separate [load harness](../Tools/DiscordKitLo
 records actual RSS alongside accounted cache bytes. Local scripted tests and
 measurements do not establish live Discord behavior, distributed storage conformance,
 other-host/device runtime, background execution or production deployment capacity.
+
+## Optional lifecycle timing
+
+`DiscordClient` accepts a default-nil `intervals` observer from DiscordLogging.
+It observes initializer-body construction, actual shard discovery/preparation,
+per-event ingestion/projection/publication, accepted-run entry to the local-ready
+milestone, complete joined lifecycle and each caller's awaited shutdown. Caller
+dependency allocation and the actor hop before `run` are excluded from owner
+intervals. Local-ready timing never establishes live Discord qualification.
+
+`EntityCache` accepts the same independent default-nil observer for owner lookup,
+sparse apply, event projection, explicit invalidation, refresh callers and actual
+shared loader invocations. Runtime products retain their existing dependency
+boundaries. Nil observers read no instrumentation clock. Applications own sinks
+and storage; callbacks must remain prompt, concurrent-safe and nonrecursive.
+The [phase 7 suites](Tasks/latency-timing/PHASE-7.md) wrap cache calls before their
+actor hop and keep caller, owner and loader populations distinct. Never subtract
+histogram percentiles to manufacture actor queue residence or a waterfall.

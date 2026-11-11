@@ -495,3 +495,63 @@ for tails. Smoke does not establish individual-call P99, production capacity,
 live Discord response delivery, real WebSocket/network throughput, hosted CI or
 other-host support. Completed evidence belongs in the
 [validation record](../../Docs/Tasks/latency-timing/VALIDATION.md#phase-6-validation).
+
+## Phase 7 cache and client timing
+
+The separate `cache-client-timing` subcommand measures cache caller/owner/loader
+populations and local client construction, discovery, ingestion, local-ready and
+joined shutdown. It uses bounded local state and injected peers without Discord
+credentials. Construction starts no runtime work; local-ready is an injected
+session milestone, not live Discord READY qualification. See the
+[phase record](../../Docs/Tasks/latency-timing/PHASE-7.md).
+
+```sh
+swift run --package-path Tools/DiscordKitLoadTests DiscordKitLoadTests \
+  cache-client-timing --list-cases
+swift run --package-path Tools/DiscordKitLoadTests DiscordKitLoadTests \
+  cache-client-timing --case cache.singleFlight --requests 32 --concurrency 8 \
+  --warmup-requests 4 --output .build/cache-single-flight.json
+python3 Tools/DiscordBenchmarkSupport/scripts/run_benchmarks.py build \
+  --repository . --package Tools/DiscordKitLoadTests --product DiscordKitLoadTests \
+  --receipt .build/timing-phase7/load-release.json
+python3 Tools/DiscordKitLoadTests/scripts/run_cache_client_timing_suites.py \
+  --executable Tools/DiscordKitLoadTests/.build/release/DiscordKitLoadTests \
+  --receipt .build/timing-phase7/load-release.json \
+  --output-dir .build/timing-phase7/cache-client-matrix --requests 32 --warmup-requests 4
+```
+
+Cache cases cover fresh lookup, sparse merge, event projection, pure permissions,
+lazy expiry, capacity eviction, invalidation, stale-fetch fencing, refresh,
+refresh single-flight and broadcast. Finite options select `--working-set`
+16/256/4096 entries per identity, `--identities` 1...32, `--hit-percent` 0/50/100,
+`--fan-out` 1...32 and `--slow-subscriber` true/false. Cohorts remain finite;
+refresh waiters cannot create tasks beyond the selected concurrency. The matrix
+sweeps these dimensions in separate processes and retains each completed row.
+Lookup fills its fixed working set once per run. The 4,096-entry row uses the
+single-process `soak` profile with both warmup and measured wall caps lowered to
+60 seconds to include its public-API setup; other rows use smoke caps. This
+finite row does not establish sustained-soak qualification.
+
+Expiry measures its triggering lookup after virtual freshness advancement;
+eviction measures its triggering apply. Real elapsed clocks remain independent.
+Single-flight gates wait for every bounded subscriber before releasing one loader.
+Broadcast includes actual publication and healthy delivery; held subscribers use
+explicit overflow behavior. Caller and owner intervals overlap; their percentile
+difference is not queue time. Permission arithmetic uses an external wrapper.
+
+The client cases cover construction, successful lifecycle, cancelled discovery,
+failed discovery/projection and a held subscriber. Each client has private finite
+HTTP, lease, budget, event and connection owners. Dependency construction precedes
+the benchmark constructor-call stopwatch. The narrower runtime initializer-body
+hook is excluded from that population. Shutdown awaits owner completion, and read-back
+receipts prove the run tasks, connections, bodies, subscriptions, leases and
+reservations have been released.
+
+`--warmup-requests` uses independent owners and is excluded from measured
+histograms. Shared profile/seed/wall-cap options and `--common-report` follow the
+existing supervised timing commands. Schema 1/catalog 7 keeps every measured
+outcome, bounded histogram precision and loss/censoring. Sparse P99 remains
+insufficient data. A passing local smoke establishes integrity and cleanup; no
+controlled performance budget, hosted CI, live Discord or other platform is
+qualified. Direct/DSL runtime and manual/macro compiler comparisons are in the
+separate [authoring tool](../DiscordDSLBenchmarks/README.md).
