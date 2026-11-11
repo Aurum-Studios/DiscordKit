@@ -23,6 +23,12 @@ an explicit reviewed host declaration and independent no-change pairs.
 
 ## Collection and reports
 
+Catalog nine adds `dsl.definitionPlanV1` for public compilation of a prepared raw
+catalog and `dsl.definitionSerializationControlV1` for its JSON writer control.
+They retain distinct populations: the writer does not perform structural admission.
+Existing metric versions and legacy authoring populations remain unchanged. See
+the [phase record](../../Docs/Tasks/performance-improvements/PHASE-7.md).
+
 `BoundedHistogram` uses checked integer nanoseconds, fixed absolute bucket widths
 and mergeable counts. Underflow and overflow retain censored mass. An affected
 quantile or maximum reports a bound; unknown loss blocks numerical estimates.

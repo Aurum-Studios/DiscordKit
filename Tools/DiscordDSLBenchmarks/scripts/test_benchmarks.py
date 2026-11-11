@@ -125,6 +125,8 @@ class CompilerFixtureTests(unittest.TestCase):
             self.assertEqual(result["wallSeconds"], 2_000_000_023 / 1e9)
             self.assertIn("collection", result["wallSemantics"])
             self.assertTrue(Path(result["processReceipt"]).is_file())
+            self.assertEqual(result["command"], ["/usr/bin/time", "-l", "swift"])
+            self.assertEqual(result["workingDirectory"], str(root))
 
     def test_workspace_does_not_overwrite_unrelated_files(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -133,6 +135,100 @@ class CompilerFixtureTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 compiler.prepare_workspace(root, root)
             self.assertEqual((root / "important").read_text(), "retain")
+
+    def test_selected_build_paths_remove_stale_generated_sources_and_macro_dependency(self):
+        """A manual-only consumer does not bootstrap the authoring package; reuse hashes only selected sources."""
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            pin = root / "Tests/Fixtures/DSLCompile/Package.resolved"
+            pin.parent.mkdir(parents=True)
+            pin.write_text('{"pins": []}')
+            workspace = root / "consumer"
+            self.assertEqual(compiler.prepare_workspace(root, workspace, (10, 100)),
+                             ["Manual10", "Macro10", "Manual100", "Macro100"])
+            self.assertEqual(compiler.prepare_workspace(root, workspace, (10,), modes=("manual",)), ["Manual10"])
+            manifest = (workspace / "Package.swift").read_text()
+            self.assertNotIn('.package(name: "DiscordDSLMacros"', manifest)
+            self.assertNotIn("DiscordDSLMacros", (workspace / "Sources/Warmup/Warmup.swift").read_text())
+            self.assertEqual(sorted(path.name for path in (workspace / "Sources").iterdir()), ["Manual10", "Warmup"])
+            for modes in ((), ("manual", "manual"), ("unknown",)):
+                with self.assertRaises(ValueError):
+                    compiler.prepare_workspace(root, root / "rejected", (10,), modes=modes)
+                self.assertFalse((root / "rejected").exists())
+
+    def test_build_input_identity_includes_manifests_and_pins_without_changing_legacy_source_hash(self):
+        """A manifest-only edit changes build identity while retaining source-only historical hashes."""
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "Sources/Runtime.swift"
+            source.parent.mkdir()
+            source.write_text("struct Runtime {}")
+            manifest = root / "Package.swift"
+            manifest.write_text("original manifest")
+            before = compiler.repository_inputs(root)
+            manifest.write_text("changed manifest")
+            after = compiler.repository_inputs(root)
+            self.assertEqual(before["sourceHash"], after["sourceHash"])
+            self.assertNotEqual(before["buildInputHash"], after["buildInputHash"])
+            self.assertNotEqual(before["manifestAndPinHashes"], after["manifestAndPinHashes"])
+            source.write_text("struct Changed {}")
+            self.assertNotEqual(after["sourceHash"], compiler.repository_inputs(root)["sourceHash"])
+
+    def test_native_time_cpu_and_rss_are_distinct_resource_gauges(self):
+        """Parse reported zero CPU, platform RSS units and an explicitly unavailable CPU pair."""
+        darwin = compiler.parse_time_resources("1.25 real 0.75 user 0.00 sys\n123 maximum resident set size", "Darwin")
+        self.assertEqual((darwin["cpuUserSeconds"], darwin["cpuSystemSeconds"], darwin["cpuSeconds"]), (.75, 0, .75))
+        self.assertEqual(darwin["peakRSSBytes"], 123)
+        self.assertIsNone(darwin["cpuUnavailableReason"])
+        linux = compiler.parse_time_resources("User time (seconds): 0.75\nSystem time (seconds): 0.25\nMaximum resident set size (kbytes): 123", "Linux")
+        self.assertEqual(linux["cpuSeconds"], 1)
+        self.assertEqual(linux["peakRSSBytes"], 125952)
+        missing = compiler.parse_time_resources("123 maximum resident set size", "Darwin")
+        self.assertIsNone(missing["cpuSeconds"])
+        self.assertIn("omitted", missing["cpuUnavailableReason"])
+
+    def test_probe_matrix_keeps_noop_startup_and_incremental_scopes_separate(self):
+        """An injected build creates only finite fixture outputs; every additional probe has its own command."""
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            pin = root / "Tests/Fixtures/DSLCompile/Package.resolved"
+            pin.parent.mkdir(parents=True)
+            pin.write_text('{"pins": []}')
+            workspace = root / "consumer"
+            commands = []
+
+            def timed(command, timeout, repository, log_path):
+                """Model a completed command and the one generated binary without launching a compiler."""
+                commands.append(command)
+                binary = workspace / "build/test/debug/Manual10"
+                if "--product" in command:
+                    binary.parent.mkdir(parents=True, exist_ok=True)
+                    binary.write_bytes(b"bounded binary")
+                return {"wallSeconds": 1, "wallNanoseconds": 1_000_000_000, "peakRSSBytes": 1,
+                        "command": command, "stdoutSHA256": compiler.hashlib.sha256(b"qualified 10 inert declarations\n").hexdigest()}
+
+            original_incremental = compiler.run_incremental
+
+            def edited(source, command, timeout, repository, log_path):
+                """Retain the unpatched edit helper while replacing only the subprocess clock."""
+                return original_incremental(source, command, timeout, repository, log_path, timed)
+
+            def captured(command, repository):
+                """Return exact finite environment command values without subprocesses."""
+                return "a" * 40 if command[0] == "git" else "{}" if "-print-target-info" in command else "qualified 10 inert declarations"
+
+            with mock.patch.object(compiler, "environment", return_value={}), mock.patch.object(compiler, "capture", side_effect=captured), \
+                    mock.patch.object(compiler, "run_timed", side_effect=timed), mock.patch.object(compiler, "run_incremental", side_effect=edited):
+                report = compiler.run_matrix(root, workspace, "swift", 4, 60, 1, root / "cache", (10,), 1, ("manual",), True)
+            sample = report["workloads"][0]["samples"][0]
+            self.assertEqual(len(commands), 5)
+            self.assertEqual(commands[1], commands[2])
+            self.assertEqual(len(sample["coldStartup"]["command"]), 1)
+            self.assertIn("not isolated package planning", sample["noOpBuild"]["scope"])
+            self.assertIn("OS file cache not flushed", sample["coldStartup"]["scope"])
+            self.assertEqual(report["configuration"]["additionalProbes"], ["no-op-build", "cold-startup"])
+            self.assertEqual(report["configuration"]["modes"], ["manual"])
+            self.assertNotIn("edited", (workspace / "Sources/Manual10/Handlers000.swift").read_text())
 
     def test_target_cleanup_preserves_dependencies(self):
         with tempfile.TemporaryDirectory() as directory:

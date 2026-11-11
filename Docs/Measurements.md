@@ -40,6 +40,12 @@ host reserved for comparisons.
 | What happens on an actual audio host? | [Apple audio qualification](../Tools/AppleAudioQualification/README.md) | Explicit native/device procedure; codec-only processing cannot establish render or acoustic delay |
 | What does observation cost? | [Instrumentation modes](../Tools/DiscordTimingBenchmarks/README.md) | Gross individual operation timings, callbacks, output failures, loss and explicit flush; no automatic overhead subtraction |
 
+Performance [Phase 7](Tasks/performance-improvements/PHASE-7.md) separates
+prepared DefinitionPlan admission, complete authoring and steady invocation into
+fresh-process populations. Its JSON writer control has a distinct identity.
+Compiler native reports retain CPU, peak RSS, clean/incremental consumer work,
+no-change SwiftPM invocation and inert startup as separate observations.
+
 Legacy account profiles describe 100/10,000/1,000,000 logical identities with
 bounded active cohorts, not that many simultaneous connections. Avoid comparing
 different input sizes or instrumentation modes as though they were the same

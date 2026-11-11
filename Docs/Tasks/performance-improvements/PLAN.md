@@ -14,14 +14,16 @@ validation are tracked in [Phase 3](PHASE-3.md). Stage 4 implementation, cache
 scaling observations and resource tradeoffs are recorded in [Phase 4](PHASE-4.md).
 Stage 5 implementation and local validation are recorded in [Phase 5](PHASE-5.md).
 Stage 6 implementation and local validation are recorded in [Phase 6](PHASE-6.md).
-Reserved-host numerical and profiler qualification remain open. Stages 7–10
+Stage 7 implementation and local validation are recorded in [Phase 7](PHASE-7.md).
+Reserved-host numerical and profiler qualification remain open. Stages 8–10
 remain planned. Source investigation and exploratory planning measurements were prepared against
 `065e2b655c28250076ba53fca310f209be1d3fd5`. Stage 1 refines local admission;
 Stage 2 refines request work and NIO buffering; Stage 3 refines bounded event
 delivery; Stage 4 refines cache indexing and separates permission dimensions;
 Stage 5 refines shared JSON strings and incremental RPC framing;
 Stage 6 refines OAuth and Activity subscriber bookkeeping; the RPC queue marker
-is deferred after measured tradeoffs.
+is deferred after measured tradeoffs. Stage 7 replaces serialized DSL payload
+accounting with exact byte counting and separates authoring/build populations.
 No numerical regression policy is selected.
 
 The first target is avoidable waiting in shared request admission, followed by
@@ -107,7 +109,8 @@ Stage 3 has its own [implementation and validation record](PHASE-3.md).
 Stage 4 has its own [implementation, validation and tradeoff record](PHASE-4.md).
 Stage 5 has its own [implementation, validation and observation record](PHASE-5.md).
 Stage 6 has its own [implementation and validation record](PHASE-6.md).
-Stages 7–10 remain **planned**.
+Stage 7 has its own [implementation and validation record](PHASE-7.md).
+Stages 8–10 remain **planned**.
 Stage 0 qualifies measurement before any numerical claim. Stages 1–5 prioritize common library paths. Stages 6–9 are independently
 adopted product tracks after Stage 0; source investigations can overlap, but host
 builds and performance captures run sequentially. Stage 10 follows the selected
@@ -305,6 +308,13 @@ publication, partial-progress reporting and closure remain intact. Injected back
 cannot qualify browser/desktop/provider latency or externally delivered responses.
 
 ### Stage 7 — Refine authoring and build performance
+
+Local implementation and validation are complete; see [Phase 7](PHASE-7.md).
+Prepared-plan and large-catalog authoring improve in local observations. Repeated
+small-catalog concurrent invocation controls and large macro clean builds are
+slower in local comparisons; attribution and
+reserved-host numerical acceptance remain open. Package boundaries, macro
+expansion and compiler parallelism are retained.
 
 Keep runtime invocation, in-process catalog construction, manual/macro expansion,
 clean consumer build, incremental build, dependency/plugin bootstrap, package

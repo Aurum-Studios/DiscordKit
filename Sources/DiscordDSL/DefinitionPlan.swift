@@ -4,6 +4,7 @@
 // https://aurum-studios.com
 
 import DiscordCore
+import Foundation
 
 /// A source coordinate retained with a declaration, without reading the source file.
 /// Zero line/column values indicate a synthetic or unavailable location. File identifiers
@@ -465,14 +466,11 @@ public struct DefinitionCollector: Sendable {
             var payloadNodes = 0
             try collector.validatePayloadShape(raw.payload, nodes: &payloadNodes, depth: 0, source: raw.source)
             try collector.preflightPayload(raw.payload, remaining: &lowerBoundRemaining, source: raw.source)
-            do {
-                let bytes = try raw.payload.serialized(limits: JSONLimits(maximumBytes: remaining))
-                collector.textBytes += bytes.count
-            } catch JSONValueError.maximumBytesExceeded {
-                throw collector.reject(.textLimit, source: raw.source)
-            } catch {
-                throw collector.reject(.invalidPayload, source: raw.source)
-            }
+            var exactRemaining = remaining
+            var payloadStringEncoder: JSONEncoder?
+            try collector.countPayloadBytes(raw.payload, remaining: &exactRemaining,
+                stringEncoder: &payloadStringEncoder, source: raw.source)
+            collector.textBytes += remaining - exactRemaining
             collector.declarationIDs.insert(identity)
             collector.declarations.append(PlannedDeclaration(declaration: raw, modulePath: collector.modulePath,
                 namespacePath: collector.namespacePath))
@@ -502,7 +500,7 @@ public struct DefinitionCollector: Sendable {
         }
     }
 
-    /// Bounds input metadata before the shared serializer sorts object keys or escapes strings.
+    /// Bounds aggregate raw metadata before exact counting can allocate temporary escaped strings.
     /// - Parameters:
     ///   - value: Current lossless JSON subtree, visited without allocating a key array.
     ///   - remaining: Remaining lower-bound output bytes, decremented for raw text and delimiters.
@@ -510,8 +508,8 @@ public struct DefinitionCollector: Sendable {
     /// - Throws: `textLimit` for an impossible byte fit; shape admission has already succeeded.
     ///
     /// Raw UTF-8 text is a lower bound because JSON escaping can expand it. The subsequent bounded
-    /// serializer enforces the exact byte count. This pass ensures even rejected preconstructed
-    /// dictionaries and strings cannot require sorting or scanning beyond admitted input bounds.
+    /// count-only pass enforces the exact byte count. This pass ensures even rejected preconstructed
+    /// dictionaries and strings cannot require escaping or scanning beyond admitted input bounds.
     private mutating func preflightPayload(_ value: JSONValue, remaining: inout Int,
         source: DefinitionSourceLocation) throws {
         switch value {
@@ -538,6 +536,74 @@ public struct DefinitionCollector: Sendable {
                 try consumePayloadText(key, remaining: &remaining, source: source)
                 try preflightPayload(child, remaining: &remaining, source: source)
             }
+        }
+    }
+
+    /// Measures exact compact JSON output without materializing a document or sorting object keys.
+    /// - Parameters:
+    ///   - value: Shape-validated subtree whose aggregate raw text already passed preflight admission.
+    ///   - remaining: Exact remaining serialized-byte capacity, reduced only after bounded admission.
+    ///   - stringEncoder: Lazily created operation-local Foundation encoder shared by escaped strings.
+    ///   - source: Original declaration coordinate retained by every bounded diagnostic.
+    /// - Throws: `textLimit` when exact escaped output exceeds admission; `invalidPayload` if a
+    ///   Foundation string encoding fails. Shape and raw lower-bound failures have already taken priority.
+    ///
+    /// Compact JSON length is independent of object-key order. Every number retains its validated
+    /// spelling, and string length follows the shared writer's safe-ASCII or default Foundation policy.
+    /// Temporary encoded storage is limited to one escaped key/string rather than the complete payload.
+    private mutating func countPayloadBytes(_ value: JSONValue, remaining: inout Int,
+        stringEncoder: inout JSONEncoder?, source: DefinitionSourceLocation) throws {
+        switch value {
+        case .null:
+            try consumePayloadBytes(4, remaining: &remaining, source: source)
+        case .bool(let flag):
+            try consumePayloadBytes(flag ? 4 : 5, remaining: &remaining, source: source)
+        case .number(let number):
+            try consumePayloadBytes(number.rawValue.utf8.count, remaining: &remaining, source: source)
+        case .string(let string):
+            try countPayloadString(string, remaining: &remaining, stringEncoder: &stringEncoder, source: source)
+        case .array(let values):
+            try consumePayloadBytes(2, remaining: &remaining, source: source)
+            try consumePayloadBytes(max(0, values.count - 1), remaining: &remaining, source: source)
+            for child in values {
+                try countPayloadBytes(child, remaining: &remaining, stringEncoder: &stringEncoder, source: source)
+            }
+        case .object(let values):
+            try consumePayloadBytes(2, remaining: &remaining, source: source)
+            try consumePayloadBytes(max(0, values.count - 1), remaining: &remaining, source: source)
+            for (key, child) in values {
+                try countPayloadString(key, remaining: &remaining, stringEncoder: &stringEncoder, source: source)
+                try consumePayloadBytes(1, remaining: &remaining, source: source)
+                try countPayloadBytes(child, remaining: &remaining, stringEncoder: &stringEncoder, source: source)
+            }
+        }
+    }
+
+    /// Measures a quoted JSON string with exactly the shared serializer's default escaping policy.
+    /// - Parameters:
+    ///   - value: Preflight-bounded Unicode content from a string value or object key.
+    ///   - remaining: Exact remaining byte capacity, including the string's two quotation marks.
+    ///   - stringEncoder: Operation-local encoder created only for content outside the safe ASCII path.
+    ///   - source: Original declaration coordinate used for bounded failures without exposing contents.
+    /// - Throws: `textLimit` for exact escaped-byte admission; `invalidPayload` for encoding failure.
+    ///
+    /// Forward slashes intentionally use Foundation alongside Unicode, controls, quotes and backslashes,
+    /// retaining the serializer's output across supported Foundation implementations. No encoded document
+    /// or sorted key list is retained, and the encoder has no global or cross-compilation state.
+    private mutating func countPayloadString(_ value: String, remaining: inout Int,
+        stringEncoder: inout JSONEncoder?, source: DefinitionSourceLocation) throws {
+        let utf8 = value.utf8
+        guard utf8.count <= remaining else { throw reject(.textLimit, source: source) }
+        if utf8.allSatisfy({ $0 >= 32 && $0 < 128 && $0 != 34 && $0 != 47 && $0 != 92 }) {
+            try consumePayloadBytes(2, remaining: &remaining, source: source)
+            try consumePayloadBytes(utf8.count, remaining: &remaining, source: source)
+        } else {
+            let encoder = stringEncoder ?? JSONEncoder()
+            stringEncoder = encoder
+            let count: Int
+            do { count = try encoder.encode(value).count }
+            catch { throw reject(.invalidPayload, source: source) }
+            try consumePayloadBytes(count, remaining: &remaining, source: source)
         }
     }
 

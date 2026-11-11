@@ -102,6 +102,10 @@ public enum BenchmarkWorkload: String, CaseIterable, Sendable {
     case compilerClean = "compiler.clean"
     case compilerIncremental = "compiler.incremental"
 
+    /// Prebuilt raw declaration admission and its explicitly distinct JSON writer CPU control.
+    case dslDefinitionPlanV1 = "dsl.definitionPlanV1"
+    case dslDefinitionSerializationControlV1 = "dsl.definitionSerializationControlV1"
+
     /// Injected OAuth, RPC, Activities and service boundaries introduced in catalog eight.
     case oauthLookup = "oauth.lookup"
     case oauthInstall = "oauth.install"
@@ -164,7 +168,8 @@ public enum BenchmarkWorkload: String, CaseIterable, Sendable {
             case .mediaBatch, .mlsTransition, .voiceJoin, .voiceSecureReady, .voiceCredentialRendezvous,
                  .voiceHandshake, .voiceHeartbeat, .voiceReconnect, .voiceSpeaking, .voiceTermination,
                  .voiceShutdown, .voiceLifecycle, .voiceTick, .voicePacingLate, .voiceEncode, .voiceEncrypt,
-                 .voiceSend, .voiceReceiveDecrypt, .voiceDecode, .appleAudioCodec: 9
+                 .voiceSend, .voiceReceiveDecrypt, .voiceDecode, .appleAudioCodec,
+                 .dslDefinitionPlanV1, .dslDefinitionSerializationControlV1: 9
             case .oauthLookup, .oauthInstall, .oauthRevoke, .oauthStorageLoad, .oauthStorageCAS, .oauthRefreshIO, .oauthRefreshJoined, .oauthRefreshCohortV2, .oauthRevokeIO, .oauthClose, .rpcRequest, .rpcQueuedReplyCohortV1, .rpcHandshake, .rpcWrite, .rpcPeerWait, .rpcEventDispatch, .rpcClose, .activitiesRequest, .activitiesHandshake, .activitiesWrite, .activitiesPeerWait, .activitiesEventDispatch, .activitiesClose, .activitiesSubscription, .serviceOperation, .serviceBackend, .serviceValidation, .serviceCleanup: 8
             case .cacheCall, .cacheOwner, .cacheLoader, .cacheBroadcast, .clientConstruction, .clientDiscovery, .clientIngestion, .clientLocalReady, .clientShutdown, .clientLifecycle, .dslDefinition, .dslInvoke, .dslPolicy, .dslMiddleware, .compilerClean, .compilerIncremental: 7
             case .gatewayReceiveToAdmission, .gatewayReceiveToAcknowledgement, .gatewayAdmissionToAcknowledgement, .gatewayInitialResponse, .gatewayOriginalEdit, .gatewayAcknowledgementToOriginalEdit, .commandPolicy, .gatewaySession, .gatewaySocketReceipt, .gatewayDecode, .gatewayIngestionQueue, .gatewayPublication, .gatewayHubResidence, .gatewayDispatch, .gatewayLocalQueue, .gatewayAdmission, .gatewayHandler, .gatewayHeartbeatACK, .gatewayReconnect, .gatewayShutdown, .ingressApplicationResponse, .ingressBodyRead, .ingressSignature, .ingressAdmission, .ingressDecode, .commandRoute, .commandArguments, .commandAdmission, .commandHandler, .interactionHandler, .interactionWorkflow, .interactionProviderWait, .interactionInitialResponse, .interactionOriginalEdit, .syntheticInvoke, .syntheticProviderWait: 6

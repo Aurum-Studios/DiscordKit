@@ -99,6 +99,7 @@ import Testing
         var report = try completeReport()
         let workloads = BenchmarkWorkload.allCases.filter { $0.minimumCatalogVersion == 9 }
         #expect(workloads.contains(.mediaBatch) && workloads.contains(.voiceTick) && workloads.contains(.appleAudioCodec))
+        #expect(workloads.contains(.dslDefinitionPlanV1) && workloads.contains(.dslDefinitionSerializationControlV1))
         for workload in workloads {
             report.metrics[0].id = workload.rawValue
             for version: UInt32 in [2, 3, 4, 5, 6, 7, 8] {

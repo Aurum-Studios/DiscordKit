@@ -26,6 +26,7 @@ let package = Package(
             "DiscordDSLBenchmarks",
             .product(name: "DiscordCommandDSL", package: "DiscordKit"),
             .product(name: "DiscordCore", package: "DiscordKit"),
+            .product(name: "DiscordDSL", package: "DiscordKit"),
             .product(name: "DiscordInteractions", package: "DiscordKit"),
         ], swiftSettings: settings),
     ]

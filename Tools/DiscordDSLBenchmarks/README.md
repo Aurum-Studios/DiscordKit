@@ -100,6 +100,29 @@ available to the selected cache; resolution and dependency updates are disabled.
 Measurements use the native backend without its optional explicit-import checker;
 the repository's independent graph/import audit checks product isolation separately.
 
+Focused compiler runs accept `--handlers 10,100,1000`, `--modules 1`, and
+`--build-paths manual,macro`; the defaults preserve the six-consumer matrix.
+A manual-only run omits the macro package from the generated manifest and warm-up.
+`--repository` selects the runtime checkout independently of the runner location,
+so original and candidate builds can use the same harness. Use isolated workspaces
+for independently retained receipts. Each command records its exact invocation,
+working directory, integer monotonic duration, native `time` user/system CPU,
+largest-process RSS and process-supervision receipt. Average active cores divides
+native CPU time by gross supervised wall time; it does not prove reserved CPU
+allocation. Missing native CPU fields remain explicitly unavailable.
+
+`--include-probes` adds two separately timed subprocesses to each clean/incremental
+sample: a no-change SwiftPM build, and a fresh execution of the clean inert consumer.
+The no-change build includes SwiftPM validation/planning and does not isolate
+planning alone. Fresh consumer execution includes the loader, catalog construction,
+count checks, output and supervision; handlers remain inert and OS file caches are
+not flushed. These probes cannot replace the fresh-process runtime workload.
+The legacy source hash keeps its original Swift-only boundary; a separate build
+input hash also covers present root/macro manifests and dependency pins. Receipts
+bind runner/supervisor hashes and reject source, manifest, pin or revision changes
+during measurement. Compiler type-checking, plugin expansion and linking still
+need separate diagnostic captures before changing package boundaries or job counts.
+
 Record observations **before** choosing tolerances:
 
 ```sh
@@ -200,6 +223,68 @@ order-independent numerical performance. Process RSS/CPU include setup, definiti
 builds, warmup and invocation execution within the selected mode; they never mean
 per-row allocation counts. Retained plans and allocator pages can affect gauges.
 No optional module-extension package is imported or qualified by this suite.
+
+## Independent Phase 7 populations
+
+The additive `phase7` subcommand selects exactly one workload per process. Use
+the same current harness and benchmark-support source in the baseline and
+candidate checkouts, and retain each checkout's source/build/executable receipts.
+The original paired v1 matrix and combined catalog7 `authoring` command retain
+their existing boundaries and report shapes.
+
+```sh
+swift run -c release --package-path Tools/DiscordDSLBenchmarks DiscordDSLBenchmarks phase7 --workload definition-plan --mode dsl --handlers 1000 --modules 10 --operations 100 --warmup-operations 3 --string-shape ascii --output /tmp/phase7-plan-native.json --common-report /tmp/phase7-plan-common.json
+swift run -c release --package-path Tools/DiscordDSLBenchmarks DiscordDSLBenchmarks phase7 --workload authoring --mode dsl --handlers 100 --operations 10 --warmup-operations 1 --output /tmp/phase7-authoring.json
+swift run -c release --package-path Tools/DiscordDSLBenchmarks DiscordDSLBenchmarks phase7 --workload invocation --mode direct --handlers 100 --operations 10000 --warmup-operations 16 --output /tmp/phase7-invocation.json
+```
+
+`definition-plan --mode dsl` measures public `DefinitionPlan.compile` over a
+prebuilt raw command-shaped declaration catalog. It excludes fixture construction,
+schema capture, command lowering, policies, router creation, invocation and output
+validation. `dsl.definitionPlanV1` identifies this new catalog9 population.
+`--mode direct` is the explicitly distinct `dsl.definitionSerializationControlV1`
+CPU control: it produces and counts compact JSON bytes for those same payloads,
+without structural admission. It supplies a writer control, without claiming the
+two modes perform equivalent work. Each target result is checked against exact
+writer-derived bytes, declaration snapshots, module/source paths and structural
+counts after the timer ends.
+
+`authoring` records the existing `dsl.definition` endpoint: schema/declaration
+creation, module compilation and policy application. The gross loop also builds
+router/input fixtures after that endpoint. It never invokes a handler.
+`invocation` builds one catalog and then records only `dsl.invoke`, including real
+typed decoding, policy/middleware execution, a fresh responder and exact callback
+validation. Schema captures stop before measured invocation work. Direct and DSL
+invocation arms execute the same handler and response oracle.
+
+The new command accepts `--operations 1...100000`, `--warmup-operations 0...1000`,
+and the existing mode, handler, module, concurrency, profile, seed, time-cap and
+output selections. Invocation concurrency cannot exceed its operation count.
+`--definitions`, `--invocations` and `--warmup-invocations` belong to the retained
+commands and are rejected here. Definition-only `--string-shape` accepts `ascii`,
+`escaped` (quotes, slash, backslash and controls), or `unicode` (combining text,
+BMP and supplementary scalars). `--string-length 1...1024` repeats the selected
+shape token; shapes intentionally have different UTF-8 and escaped lengths. The
+exact per-declaration bytes and module count enter a bounded SHA-256 fixture tree.
+Other workloads retain the existing 64-byte ASCII payload.
+
+Every measured target operation enters a complete bounded histogram with
+10-microsecond cells over zero through one second; longer observations remain
+explicitly censored. Exact target-duration sums and gross elapsed time are also
+reported. Warmup uses no target observations, response counters exclude warmup,
+and new invocation runs collect no legacy prefix samples. Process CPU covers the
+complete measurement loop, including validation and observation, while lifetime
+peak RSS includes fixture construction and warmup. Native before/after process
+snapshots expose current RSS and live allocator gauges where supported; these
+are retained-state observations, not allocation-event profiles.
+
+For comparisons, pass the selected baseline/candidate executable commands and
+their separate release receipts to the shared fresh-process supervisor. Keep
+five no-change pairs distinct from five alternating baseline/candidate pairs;
+repeat `definition-plan`, `authoring`, and `invocation` as separate scenarios.
+Builds and captures run serially. These local synthetic workloads cannot qualify
+cold startup, package planning, compiler/plugin work, clean/incremental builds,
+live Discord, another platform, or a controlled numerical regression gate.
 
 ## Separate Stage 7 compiler receipts
 

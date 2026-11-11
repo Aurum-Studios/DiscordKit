@@ -9,6 +9,17 @@ https://aurum-studios.com
 
 ## Unreleased
 
+### Performance plan phase 7
+
+- Count exact DSL payload bytes without constructing a complete serialized
+  document or sorting object keys; preserve payloads, diagnostic order and limits.
+- Add separate prepared-plan, full authoring and steady invocation populations
+  with complete bounded histograms and exact target duration totals.
+- Record compiler CPU, build inputs, no-change builds and inert startup separately
+  from dependency/plugin bootstrap and clean/incremental consumers. See the
+  [phase record](Docs/Tasks/performance-improvements/PHASE-7.md) for local evidence
+  and open reserved-host, allocation and other-platform qualification gates.
+
 ### Performance plan phase 6
 
 - Keep OAuth refresh subscriber dictionaries under one actor-confined flight owner,

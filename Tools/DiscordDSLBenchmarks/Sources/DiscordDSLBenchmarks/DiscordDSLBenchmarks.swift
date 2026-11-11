@@ -26,6 +26,7 @@ struct BenchmarkReport: Encodable, Sendable {
         let arguments = Array(CommandLine.arguments.dropFirst())
         if arguments.first == "compiler-report" { try CompilerTimingCommand.run(Array(arguments.dropFirst())); return }
         if arguments.first == "authoring" { try await AuthoringTimingCommand.run(Array(arguments.dropFirst())); return }
+        if arguments.first == "phase7" { try await Phase7TimingCommand.run(Array(arguments.dropFirst())); return }
         let parsed = try BenchmarkConfiguration.parse(arguments)
         let environment = BenchmarkEnvironment.capture()
         let modes = parsed.mode.map { [$0] } ?? ["direct", "dsl"]

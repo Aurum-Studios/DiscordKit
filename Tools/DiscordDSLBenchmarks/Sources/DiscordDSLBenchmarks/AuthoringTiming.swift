@@ -105,6 +105,8 @@ struct AuthoringPlanOptions: Sendable {
     let modules: Int
     let statistics: RunStatistics?
     let intervals: DiscordIntervalTiming?
+    /// Optional independent definition-only observation; nil preserves the catalog7 behavior.
+    var definitionObservation: (@Sendable (Duration) -> Void)? = nil
 
     /// Checks module fan-out before any schema capture, retaining bounded source and route populations.
     /// - Parameter handlerCount: Selected finite declaration population; every module has at least one handler.

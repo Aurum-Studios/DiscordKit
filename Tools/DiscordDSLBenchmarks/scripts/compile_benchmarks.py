@@ -121,21 +121,23 @@ def generated_sources(count, macro, module_count=1):
     return sources
 
 
-def prepare_workspace(repository, workspace, counts=COUNTS, module_count=1):
+def prepare_workspace(repository, workspace, counts=COUNTS, module_count=1, modes=MODES):
     """Create marked finite generated consumers; reject unrelated nonempty directories.
 
     Selected counts are unique members of COUNTS. Module fan-out cannot exceed
     the smallest consumer's compilation-file population; old generated sources
     in each owned consumer directory are removed before writing current inputs.
     """
-    validate_dimensions(counts, module_count)
+    validate_dimensions(counts, module_count, modes)
     if workspace.exists() and any(workspace.iterdir()) and not (workspace / MARKER).is_file():
         raise ValueError("workspace must be empty or marked by this runner")
     workspace.mkdir(parents=True, exist_ok=True)
     (workspace / MARKER).write_text("generated compiler consumers version 1\n")
-    names = [f"{mode.title()}{count}" for count in counts for mode in MODES]
+    names = [f"{mode.title()}{count}" for count in counts for mode in modes]
     root_literal = json.dumps(str(repository))
     macro_literal = json.dumps(str(repository / "Packages/DiscordDSLMacros"))
+    macro_dependency = f',\n        .package(name: "DiscordDSLMacros", path: {macro_literal})' if "macro" in modes else ""
+    warmup_dependency = ' + [.product(name: "DiscordDSLMacros", package: "DiscordDSLMacros")]' if "macro" in modes else ""
     manifest = f"""// swift-tools-version: 6.4
 import PackageDescription
 let names = {json.dumps(names)}
@@ -145,9 +147,8 @@ let runtime: [Target.Dependency] = [
     .product(name: "DiscordDSL", package: "DiscordKit")]
 let package = Package(name: "DSLCompilerCosts", platforms: [.macOS(.v13)],
     products: names.map {{ .executable(name: $0, targets: [$0]) }},
-    dependencies: [.package(name: "DiscordKit", path: {root_literal}),
-        .package(name: "DiscordDSLMacros", path: {macro_literal})],
-    targets: [.target(name: "Warmup", dependencies: runtime + [.product(name: "DiscordDSLMacros", package: "DiscordDSLMacros")], swiftSettings: settings)] +
+    dependencies: [.package(name: "DiscordKit", path: {root_literal}){macro_dependency}],
+    targets: [.target(name: "Warmup", dependencies: runtime{warmup_dependency}, swiftSettings: settings)] +
         names.map {{ name in .executableTarget(name: name, dependencies: runtime +
             (name.hasPrefix("Macro") ? [.product(name: "DiscordDSLMacros", package: "DiscordDSLMacros")] : []), swiftSettings: settings) }})
 """
@@ -155,9 +156,16 @@ let package = Package(name: "DSLCompilerCosts", platforms: [.macOS(.v13)],
     shutil.copyfile(repository / "Tests/Fixtures/DSLCompile/Package.resolved", workspace / "Package.resolved")
     warmup = workspace / "Sources/Warmup"
     warmup.mkdir(parents=True, exist_ok=True)
-    (warmup / "Warmup.swift").write_text("import DiscordCommandDSL\nimport DiscordDSLMacros\nstruct Warmup {}\n")
-    for count in counts:
+    (warmup / "Warmup.swift").write_text("import DiscordCommandDSL\n" + ("import DiscordDSLMacros\n" if "macro" in modes else "") + "struct Warmup {}\n")
+    # Marked workspaces may be reused with a smaller matrix. Remove only owned
+    # generated directories; stale sources must not enter the new fixture hash.
+    for count in COUNTS:
         for mode in MODES:
+            directory = workspace / "Sources" / f"{mode.title()}{count}"
+            if directory.name not in names and directory.is_dir() and not directory.is_symlink():
+                shutil.rmtree(directory)
+    for count in counts:
+        for mode in modes:
             directory = workspace / "Sources" / f"{mode.title()}{count}"
             directory.mkdir(parents=True, exist_ok=True)
             for owned in directory.glob("*.swift"):
@@ -218,6 +226,37 @@ def run_supervised(command, timeout, cwd, directory, cancellation=None, limits=N
     return result
 
 
+def parse_time_resources(output, system):
+    """Parse native time RSS and CPU independently; absent CPU remains explicitly unavailable.
+
+    Darwin's user/sys values and Linux's named CPU fields describe the timed
+    command and waited descendants. RSS is the largest process observation, not
+    the simultaneous aggregate compiler-family working set. Native CPU precision
+    is retained; a reported zero is not an unavailable gauge.
+    """
+    pattern = r"(\d+)\s+maximum resident set size" if system == "Darwin" else r"Maximum resident set size \(kbytes\):\s*(\d+)"
+    match = re.search(pattern, output)
+    if not match:
+        raise RuntimeError("time did not report compiler peak RSS")
+    number = r"([0-9]+(?:\.[0-9]+)?)"
+    if system == "Darwin":
+        cpu = re.search(number + r"\s+real\s+" + number + r"\s+user\s+" + number + r"\s+sys", output)
+        user, kernel = (float(cpu.group(2)), float(cpu.group(3))) if cpu else (None, None)
+    else:
+        user_match = re.search(r"User time \(seconds\):\s*" + number, output)
+        system_match = re.search(r"System time \(seconds\):\s*" + number, output)
+        user = float(user_match.group(1)) if user_match else None
+        kernel = float(system_match.group(1)) if system_match else None
+    if any(value is not None and not math.isfinite(value) for value in (user, kernel)):
+        raise ValueError("time CPU duration must be finite")
+    available = user is not None and kernel is not None
+    return {"peakRSSBytes": int(match.group(1)) * (1 if system == "Darwin" else 1024),
+            "cpuUserSeconds": user, "cpuSystemSeconds": kernel,
+            "cpuSeconds": user + kernel if available else None,
+            "cpuUnavailableReason": None if available else "native time output omitted a complete user/system CPU pair",
+            "cpuSemantics": "native time user plus system CPU for the timed command and waited descendants; native reporting precision"}
+
+
 def run_timed(command, timeout, cwd, log_path):
     """Measure gross supervised build lifetime with bounded diagnostics and exact per-command cleanup receipts.
 
@@ -245,14 +284,14 @@ def run_timed(command, timeout, cwd, log_path):
     with log_path.open("rb") as output:
         output.seek(max(0, log_path.stat().st_size - 65536))
         tail = output.read().decode(errors="replace")
-    pattern = r"(\d+)\s+maximum resident set size" if platform.system() == "Darwin" else r"Maximum resident set size \(kbytes\):\s*(\d+)"
-    match = re.search(pattern, tail)
-    if not match:
-        raise RuntimeError("time did not report compiler peak RSS")
+    resources = parse_time_resources(tail, platform.system())
+    resources["averageActiveCores"] = resources["cpuSeconds"] / (elapsed_nanoseconds / 1e9) if resources["cpuSeconds"] is not None and elapsed_nanoseconds else None
+    resources["averageActiveCoresSemantics"] = "native CPU seconds divided by gross supervised wall seconds; observed utilization, not reserved CPU allocation"
     return {"wallSeconds": elapsed_nanoseconds / 1e9, "wallNanoseconds": elapsed_nanoseconds,
             "wallSemantics": "gross supervised lifetime including collection, RSS probes, group teardown and reap; excludes receipt serialization",
-            "processReceipt": str(directory / "process.json"),
-            "peakRSSBytes": int(match.group(1)) * (1 if platform.system() == "Darwin" else 1024)}
+            "processReceipt": str(directory / "process.json"), "command": wrapper + list(command), "workingDirectory": str(cwd),
+            "stdoutSHA256": hashlib.sha256((directory / "stdout.log").read_bytes()).hexdigest(),
+            **resources}
 
 
 def capture(command, cwd):
@@ -326,32 +365,47 @@ def environment(swift, repository):
     return value
 
 
-def validate_dimensions(counts, module_count):
+def validate_dimensions(counts, module_count, modes=MODES):
     """Reject duplicate/unsupported counts and module fan-out before mutating any workspace."""
     if not counts or len(counts) != len(set(counts)) or any(count not in COUNTS for count in counts):
         raise ValueError("handler counts must be a unique nonempty subset of 10,100,1000")
     if type(module_count) is not int or not 1 <= module_count <= min(counts) // 10:
         raise ValueError("modules exceed the smallest selected consumer file population")
+    if not modes or len(modes) != len(set(modes)) or any(mode not in MODES for mode in modes):
+        raise ValueError("build paths must be a unique nonempty subset of manual,macro")
 
 
-def run_matrix(repository, workspace, swift, jobs, timeout, samples, cache_path, counts=COUNTS, module_count=1):
+def repository_inputs(repository):
+    """Bind source names/bytes, manifests and pins without changing the legacy source hash boundary."""
+    sources = list((repository / "Sources").rglob("*.swift")) + list((repository / "Packages/DiscordDSLMacros/Sources").rglob("*.swift"))
+    named = [repository / path for path in ("Package.swift", "Package.resolved", "Packages/DiscordDSLMacros/Package.swift",
+             "Packages/DiscordDSLMacros/Package.resolved", "Tests/Fixtures/DSLCompile/Package.resolved")]
+    inputs = sources + [path for path in named if path.is_file()]
+    return {"sourceHash": digest_files(sources, repository), "buildInputHash": digest_files(inputs, repository),
+            "buildInputFileCount": len(inputs), "buildInputHashIncludes": "root and macro Swift sources plus present root/macro manifests and root/macro/compiler-fixture pins",
+            "manifestAndPinHashes": {str(path.relative_to(repository)): hashlib.sha256(path.read_bytes()).hexdigest() for path in named if path.is_file()}}
+
+
+def run_matrix(repository, workspace, swift, jobs, timeout, samples, cache_path, counts=COUNTS, module_count=1, modes=MODES, include_probes=False):
     """Bootstrap dependencies once, then keep clean/edit subprocess costs separate from runtime.
 
     Integer monotonic durations and exact fixture/pin/source hashes make Stage 7
     envelope conversion possible without deriving populations from percentiles.
     Optional reduced matrices and module fan-out have distinct configurations.
     """
-    validate_dimensions(counts, module_count)
+    validate_dimensions(counts, module_count, modes)
     if jobs not in range(1, 33) or samples not in range(1, 6) or not math.isfinite(timeout) or not 1 <= timeout <= 3600:
         raise ValueError("jobs must be 1...32, samples 1...5 and timeout 1...3600 finite seconds")
     evidence_environment = environment(swift, repository)
-    names = prepare_workspace(repository, workspace, counts, module_count)
+    input_identity = repository_inputs(repository)
+    revision = capture(["git", "rev-parse", "HEAD"], repository)
+    names = prepare_workspace(repository, workspace, counts, module_count, modes)
     scratch = workspace / "build"
     command = [swift, "build", "--disable-sandbox", "--skip-update", "--disable-automatic-resolution",
                "--package-path", str(workspace), "--scratch-path", str(scratch),
                "--cache-path", str(cache_path), "--jobs", str(jobs), "--configuration", "debug", "--build-system", "native",
                "--disable-build-manifest-caching"]
-    print("Bootstrapping pinned dependencies and macro plugin (separate from measured consumer builds)", flush=True)
+    print("Bootstrapping pinned dependencies" + (" and macro plugin" if "macro" in modes else "") + " (separate from measured consumer builds)", flush=True)
     bootstrap = run_timed(command + ["--target", "Warmup"], timeout, repository, workspace / "logs/bootstrap.log")
     rows = []
     for target in names:
@@ -362,30 +416,47 @@ def run_matrix(repository, workspace, swift, jobs, timeout, samples, cache_path,
             removed = remove_consumer_outputs(scratch, target)
             print(f"Measuring {target} sample {sample + 1}/{samples}: clean consumer", flush=True)
             clean = run_timed(command + ["--product", target], timeout, repository, workspace / f"logs/{target}-{sample}-clean.log")
+            probes = {}
+            if include_probes:
+                probes["noOpBuild"] = run_timed(command + ["--product", target], timeout, repository,
+                    workspace / f"logs/{target}-{sample}-noop.log")
+                probes["noOpBuild"]["scope"] = "warm no-change SwiftPM invocation including planning/cache validation; not isolated package planning"
+                clean_binaries = [path for path in scratch.glob(f"*/debug/{target}") if path.is_file()]
+                if len(clean_binaries) != 1:
+                    raise RuntimeError(f"missing clean consumer binary for {target}")
+                startup = run_timed([str(clean_binaries[0])], timeout, repository, workspace / f"logs/{target}-{sample}-startup.log")
+                if startup["stdoutSHA256"] != hashlib.sha256(f"qualified {count} inert declarations\n".encode()).hexdigest():
+                    raise RuntimeError(f"cold startup qualification failed for {target}")
+                startup["scope"] = "fresh process from clean binary: loader, inert catalog construction, count qualification, output and supervised teardown; no handler invocation; OS file cache not flushed"
+                probes["coldStartup"] = startup
             incremental = run_incremental(first, command + ["--product", target], timeout, repository,
                                           workspace / f"logs/{target}-{sample}-incremental.log")
             # Executing validates finite catalog construction only; handlers remain inert.
             binaries = [path for path in scratch.glob(f"*/debug/{target}") if path.is_file()]
             if len(binaries) != 1 or capture([str(binaries[0])], repository) != f"qualified {count} inert declarations":
                 raise RuntimeError(f"catalog qualification failed for {target}")
-            row["samples"].append({"clean": clean, "incremental": incremental,
+            row["samples"].append({"clean": clean, "incremental": incremental, **probes,
                                    "removedConsumerOutputs": removed, "binaryBytes": binaries[0].stat().st_size,
                                    "binarySHA256": hashlib.sha256(binaries[0].read_bytes()).hexdigest()})
         row["functionalGatesPassed"] = True
         rows.append(row)
-    source_files = list((repository / "Sources").rglob("*.swift")) + list((repository / "Packages/DiscordDSLMacros/Sources").rglob("*.swift"))
+    if repository_inputs(repository) != input_identity or capture(["git", "rev-parse", "HEAD"], repository) != revision:
+        raise RuntimeError("repository build inputs or revision changed during compiler measurement")
     fixture_files = list((workspace / "Sources").rglob("*.swift"))
     return {"schemaVersion": 1, "reportKind": "dsl-compiler-cost", "recordedAt": datetime.datetime.now(datetime.timezone.utc).isoformat(),
             "metricCatalogVersion": 7,
-            "configuration": {"handlerCounts": list(counts), "modules": module_count, "extensionPackageInstallations": 0, "modes": list(MODES), "jobs": jobs, "samples": samples,
+            "configuration": {"handlerCounts": list(counts), "modules": module_count, "extensionPackageInstallations": 0, "modes": list(modes), "jobs": jobs, "samples": samples,
                               "configuration": "debug", "buildSystem": "native", "handlersPerFile": 10, "optionsPerHandler": 1,
                               "timingBoundary": "supervised-process-lifetime-v1",
-                              "incrementalEdit": "one response literal in the first ten-handler file", "dependencyColdBuildIncluded": False},
-            "environment": evidence_environment, "revision": capture(["git", "rev-parse", "HEAD"], repository),
-            "sourceHash": digest_files(source_files, repository), "fixtureHash": digest_files(fixture_files, workspace),
+                              "incrementalEdit": "one response literal in the first ten-handler file", "dependencyColdBuildIncluded": False,
+                              **({"additionalProbes": ["no-op-build", "cold-startup"]} if include_probes else {})},
+            "environment": evidence_environment, "revision": revision, "repository": str(repository),
+            **input_identity, "fixtureHash": digest_files(fixture_files, workspace),
             "resolutionHash": hashlib.sha256((workspace / "Package.resolved").read_bytes()).hexdigest(),
             "bootstrap": bootstrap, "workloads": rows,
             "buildCommand": command,
+            "runnerHashes": {"compilerRunner": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+                             "processSupervisor": hashlib.sha256(Path(SUPERVISOR.__file__).read_bytes()).hexdigest()},
             "targetInfo": json.loads(capture([swift, "-print-target-info"], repository)),
             "fixtureHashIncludes": "generated Swift sources; manifest separately recorded below",
             "manifestHash": hashlib.sha256((workspace / "Package.swift").read_bytes()).hexdigest(),
@@ -408,13 +479,16 @@ def main():
     parser.add_argument("--samples", type=int, default=1)
     parser.add_argument("--handlers", default="10,100,1000", help="unique comma-separated subset of 10,100,1000")
     parser.add_argument("--modules", type=int, default=1, help="1...smallest handler count/10")
+    parser.add_argument("--build-paths", default="manual,macro", help="unique comma-separated subset of manual,macro")
+    parser.add_argument("--include-probes", action="store_true", help="record separate no-op SwiftPM and fresh inert-consumer startup probes")
     arguments = parser.parse_args()
     repository = arguments.repository.resolve()
     workspace = (arguments.workspace or repository / ".build/dsl-benchmarks/compiler").resolve()
     try:
         counts = tuple(int(value) for value in arguments.handlers.split(","))
         report = run_matrix(repository, workspace, arguments.swift, arguments.jobs, arguments.timeout, arguments.samples,
-                            (arguments.cache_path or repository / ".build/dsl-compile-cache").resolve(), counts, arguments.modules)
+                            (arguments.cache_path or repository / ".build/dsl-compile-cache").resolve(), counts, arguments.modules,
+                            tuple(arguments.build_paths.split(",")), arguments.include_probes)
         arguments.output.parent.mkdir(parents=True, exist_ok=True)
         arguments.output.write_text(json.dumps(report, indent=2, allow_nan=False) + "\n")
     except (ValueError, RuntimeError, OSError, subprocess.SubprocessError) as error:

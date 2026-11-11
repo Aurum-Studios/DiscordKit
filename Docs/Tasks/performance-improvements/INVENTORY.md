@@ -18,6 +18,10 @@ and F13 retained byte-charging/stateless-permission decisions are tracked in
 [Phase 4](PHASE-4.md), including slower full expiry drains and higher entity RSS.
 F14 ASCII/coder and F15 RPC-header refinements, local profiles/comparisons and
 retained F16 bitset/model/builder decisions are recorded in [Phase 5](PHASE-5.md).
+F17/F18 optional-service bookkeeping and retained RPC/provider decisions are
+recorded in [Phase 6](PHASE-6.md). F19 exact DSL payload byte accounting and F20
+separate consumer-build observations with retained package/macro boundaries are
+recorded in [Phase 7](PHASE-7.md).
 Later-stage candidates remain proposed. See [stage gates](PLAN.md) and
 [planning evidence](EVIDENCE.md).
 

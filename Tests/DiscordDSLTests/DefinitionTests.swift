@@ -398,6 +398,60 @@ private struct RecursiveDefinition: BotDefinition {
         }.code == .textLimit)
     }
 
+    /// Exact count-only admission matches serialization for every ASCII byte and scalar-preserving Unicode.
+    /// Keys and repeated nested strings exercise the shared escaping policy, including escaped forward slashes.
+    /// - Parameter text: Raw Unicode contents retained without normalization or interpretation.
+    /// - Throws: Unexpected serializer, exact-budget compilation or diagnostic-capture failures.
+    @Test(arguments: ["", "safe ASCII 0123456789", "/", "\\\"\n\r\t\u{0}\u{1F}", "é", "e\u{301}",
+        "雪🐶", "\u{2028}\u{2029}", "\u{FEFF}\u{10FFFF}"])
+    func escapedPayloadCountMatchesSerialization(text: String) throws {
+        let ascii = String(decoding: Array(UInt8(0)...UInt8(127)), as: UTF8.self)
+        let payload = JSONValue.object([text: .array([.string(text), .object([ascii: .string(ascii)])])])
+        let declaration = Self.raw("escaped", payload: payload)
+        let wire = try payload.serialized()
+        let expected = [declaration.id, declaration.kind, declaration.source.fileID]
+            .reduce(wire.count) { $0 + $1.utf8.count }
+        let plan = try DefinitionPlan.compile(declaration, supportedKinds: ["test"],
+            limits: DefinitionLimits(maxTextBytes: expected))
+        #expect(plan.description.textBytes == expected)
+        #expect(try plan.description.declarations.first?.declaration.payload.serialized() == wire)
+        #expect(try Self.failure {
+            try DefinitionPlan.compile(declaration, supportedKinds: ["test"],
+                limits: DefinitionLimits(maxTextBytes: expected - 1))
+        }.code == .textLimit)
+    }
+
+    /// Deterministically varied nested payloads retain exact serializer lengths and original numeric spellings.
+    /// This differential sample includes empty collections and keys, all scalar categories, repeated escaped
+    /// strings and differing object insertion orders rather than relying on one hand-authored wire fixture.
+    /// - Throws: Unexpected fixture parsing, serialization, exact-budget compilation or diagnostic capture.
+    @Test func variedPayloadCountsMatchSerialization() throws {
+        let numbers = try ["-0", "1.2300e+999", "1844674407370955161618446744073709551616"]
+            .map { JSONValue.number(try JSONNumber(rawValue: $0)) }
+        let atoms: [JSONValue] = [.null, .bool(false), .bool(true), .string(""), .string("alpha"),
+            .string("/\\\"\n雪🐶"), .array([]), .object([:])] + numbers
+        for index in 0..<64 {
+            let children = (0..<(index % 12)).map { atoms[(index + $0) % atoms.count] }
+            let pairs: [(String, JSONValue)] = [("", .array(children)),
+                ("path/\(index)\n", atoms[index % atoms.count]),
+                ("nested", .object(["e\u{301}": .array(Array(children.reversed()))]))]
+            let payload = JSONValue.object(Dictionary(uniqueKeysWithValues:
+                index.isMultiple(of: 2) ? pairs : Array(pairs.reversed())))
+            let declaration = Self.raw("sample", payload: payload)
+            let wire = try payload.serialized()
+            let expected = [declaration.id, declaration.kind, declaration.source.fileID]
+                .reduce(wire.count) { $0 + $1.utf8.count }
+            let plan = try DefinitionPlan.compile(declaration, supportedKinds: ["test"],
+                limits: DefinitionLimits(maxTextBytes: expected))
+            #expect(plan.description.textBytes == expected)
+            #expect(plan.description.declarations.first?.declaration.payload == payload)
+            #expect(try Self.failure {
+                try DefinitionPlan.compile(declaration, supportedKinds: ["test"],
+                    limits: DefinitionLimits(maxTextBytes: expected - 1))
+            }.code == .textLimit)
+        }
+    }
+
     /// Oversized caller-allocated string values and object keys fail the same bounded payload byte admission.
     /// - Parameter asObjectKey: Selects an oversized dictionary key instead of an oversized scalar value.
     /// - Throws: Unexpected diagnostic-capture failures.

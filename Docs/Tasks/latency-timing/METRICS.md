@@ -163,6 +163,27 @@ subtract aggregate caller and owner distributions. Expiry/eviction are currently
 side effects of cache calls; profiles select the triggering public operation and
 state that setup, rather than inventing public expiry/eviction methods.
 
+## Performance phase 7 registered populations — catalog nine
+
+The opt-in DSL `phase7` command adds two version-1 metrics. Both record every
+successful selected operation in bounded 10 µs histogram cells through one second;
+longer spans retain overflow. Native reports separately retain exact duration sums.
+Fixture construction, writer-byte oracles, validation, process probes and report
+writes are outside these target intervals. Gross loop throughput and CPU include
+validation and collection and are different observations.
+
+| Metric ID | Actual start and stop / population |
+| --- | --- |
+| `dsl.definitionPlanV1` | Immediately before public DefinitionPlan compilation of prepared raw command-shaped declarations through returned plan; includes shape, preflight, exact byte admission and result creation |
+| `dsl.definitionSerializationControlV1` | Before serializing prepared declaration payloads through summed produced byte lengths; writer CPU control, without structural admission or equivalent whole-authoring work |
+
+The separately selected `authoring` and `invocation` workloads retain the existing
+`dsl.definition` and `dsl.invoke` boundaries. Only one target population runs in a
+process. Clean/incremental compiler, dependency/plugin bootstrap, no-change SwiftPM
+invocation and inert startup remain external process workloads. Native compiler
+reports retain CPU and probes; the existing common compiler converter projects
+only clean/incremental wall durations and largest-process RSS.
+
 ## Additional Stage 7 registered populations
 
 Catalog revision 7 implements the Stage 7 rows above and adds these explicit

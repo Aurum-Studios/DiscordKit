@@ -14,6 +14,14 @@ uses public APIs and synthetic interactions; no credentials or Discord calls are
 required. [Release records](Release/README.md) preserve workload and external
 qualification limits.
 
+Performance [Phase 7](Tasks/performance-improvements/PHASE-7.md) adds the opt-in
+`phase7` command. It separates prepared raw-plan admission, complete authoring
+and steady invocation, with bounded whole-population histograms and exact target
+duration totals. The JSON writer control has its own metric because it does not
+perform structural admission. Historical matrices below retain their original
+prefix samples, boundaries and limitations. Compiler native reports add separate
+no-change build and fresh inert startup probes, CPU and full build-input hashes.
+
 Direct/DSL workloads use identical inputs and check functional invariants before
 accepting timings. Manual/macro compiler costs have separate measurements and
 finite regression tolerances. Cache/broadcast and handler workloads retain

@@ -204,7 +204,9 @@ enum RuntimeBenchmark {
             definitions = compiled.definitions
             routes = compiled.routes
             descriptionBytes = compiled.description.textBytes
-            authoring.statistics?.record(compileStart.duration(to: clock.now), workload: .dslDefinition, outcome: .success)
+            let definitionDuration = compileStart.duration(to: clock.now)
+            authoring.statistics?.record(definitionDuration, workload: .dslDefinition, outcome: .success)
+            authoring.definitionObservation?(definitionDuration)
         } else if mode == "dsl" {
             let compiled = try CommandCompilation.compile(Module(id: "benchmark") { contributions },
                 limits: .init(maxModules: 1, maxDepth: 8, maxDeclarations: handlerCount,
@@ -278,11 +280,14 @@ enum RuntimeBenchmark {
     ///   - counters: Synchronized worker and handler instrumentation; exit cleanup is unconditional.
     ///   - statistics: Optional whole-run collector; every timed invocation is recorded before aggregation.
     ///   - workload: Fixed mode/population identity, required when statistics is enabled.
+    ///   - observation: Optional completed-success observer for an independently selected Phase 7 population.
+    ///   - captureLegacySamples: False suppresses legacy prefix storage while preserving complete observations.
     /// - Returns: At most sampleLimit legacy prefix measurements across all workers and all rounds.
     /// - Throws: The first invocation/cancellation failure after group cancellation and child joining.
     static func runRound(_ plan: RuntimePlan, start: Int, count: Int, configuration: BenchmarkConfiguration,
         counters: BenchmarkCounters, statistics: RunStatistics? = nil,
-        workload: BenchmarkWorkload? = nil) async throws -> [Double] {
+        workload: BenchmarkWorkload? = nil,
+        observation: (@Sendable (Duration) -> Void)? = nil, captureLegacySamples: Bool = true) async throws -> [Double] {
         try await withThrowingTaskGroup(of: [Double].self) { group in
             for worker in 0..<min(configuration.concurrency, count) {
                 group.addTask {
@@ -293,13 +298,14 @@ enum RuntimeBenchmark {
                     for offset in stride(from: worker, to: count, by: configuration.concurrency) {
                         try Task.checkCancellation()
                         let index = start + offset
-                        if index < configuration.sampleLimit || statistics != nil {
+                        if (captureLegacySamples && index < configuration.sampleLimit) || statistics != nil || observation != nil {
                             let begin = clock.now
                             do {
                                 try await invoke(plan, index: index)
                                 let elapsed = begin.duration(to: clock.now)
-                                if index < configuration.sampleLimit { samples.append(seconds(elapsed) * 1_000) }
+                                if captureLegacySamples && index < configuration.sampleLimit { samples.append(seconds(elapsed) * 1_000) }
                                 if let workload { statistics?.record(elapsed, workload: workload, outcome: .success) }
+                                observation?(elapsed)
                             } catch {
                                 if let statistics, let workload {
                                     statistics.record(begin.duration(to: clock.now), workload: workload,
