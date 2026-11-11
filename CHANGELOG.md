@@ -9,6 +9,20 @@ https://aurum-studios.com
 
 ## Unreleased
 
+### Local admission notifications — 2026-11-11
+
+- Replace local order/rate eligibility polling with targeted FIFO handoff and a
+  shared timer for queue deadlines and authority retries. Preserve partition and
+  identity fairness, finite budgets, exact reservation cleanup and fail-closed
+  authority behavior; every rate grant still comes from the shared store.
+- Make coordinator `close()` explicitly asynchronous so it joins its owned timer
+  before returning; isolated synchronous callers must adopt `await`.
+- Add deterministic handoff and suspended-authority race coverage plus a
+  versioned held-owner workload with default scheduling and clock diagnostics.
+  Retain historical REST/arrival identities and record the local validation and
+  separate numerical qualification gates in the
+  [Phase 1 record](Docs/Tasks/performance-improvements/PHASE-1.md).
+
 ### Performance measurement controls — 2026-11-10
 
 - Add versioned default-policy ordering and arrival workloads, no-op generator

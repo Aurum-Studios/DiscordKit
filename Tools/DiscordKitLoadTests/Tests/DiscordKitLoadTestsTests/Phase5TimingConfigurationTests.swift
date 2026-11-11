@@ -28,6 +28,12 @@ import Testing
         ["--case", "unknown"], ["--adapter", "unknown"], ["--connection-mode", "cold"],
         ["--case", "transport.empty", "--adapter", "foundation", "--tls", "true"],
         ["--output", ""], ["--output", "same.json", "--common-report", "./same.json"],
+        ["--ordering-partitions", "2"], ["--ordering-identities", "2"], ["--release-offset-microseconds", "1"],
+        ["--case", "ordering.heldOwnerDefaultV1", "--ordering-partitions", "9"],
+        ["--case", "ordering.heldOwnerDefaultV1", "--ordering-identities", "0"],
+        ["--case", "ordering.heldOwnerDefaultV1", "--ordering-partitions", "8", "--ordering-identities", "9"],
+        ["--case", "ordering.heldOwnerDefaultV1", "--release-offset-microseconds", "10001"],
+        ["--case", "ordering.heldOwnerDefaultV1", "--profile", "standard", "--concurrency", "65"],
     ]) func invalidPolicies(arguments: [String]) {
         #expect(throws: (any Error).self) { try Phase5TimingConfiguration.parse(arguments, environment: [:]) }
     }
@@ -37,6 +43,7 @@ import Testing
         #expect(Phase5TimingCommand.cases.contains("rest.orderedMutation"))
         #expect(Phase5TimingCommand.cases.contains("rest.orderedMutationDefaultV1"))
         #expect(Phase5TimingCommand.cases.contains("arrival.rest"))
+        #expect(Phase5TimingCommand.cases.contains("ordering.heldOwnerDefaultV1"))
         for name in Phase5TimingCommand.arrivalCases where name != "arrival.rest" {
             var configuration = try Phase5TimingConfiguration.parse(["--case", name,
                 "--requests", "1", "--concurrency", "1", "--warmup-requests", "0",

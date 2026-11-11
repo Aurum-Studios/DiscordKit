@@ -11,7 +11,9 @@ Source coordinates refer to `065e2b65`, before the planning documents. A confirm
 code mechanism is distinct from a qualified performance bottleneck. Only F01 has
 a dedicated causal timing reproduction here; the CPU observations expose workload
 cost and fragmentation sensitivity, not attributed profile stacks. All candidate
-implementations remain proposed. See [stage gates](PLAN.md) and [evidence](EVIDENCE.md).
+implementations beyond F01 remain proposed. F01's local admission refinement and
+its validation are tracked in [Phase 1](PHASE-1.md). See [stage gates](PLAN.md) and
+[planning evidence](EVIDENCE.md).
 
 ## Shared runtime paths
 

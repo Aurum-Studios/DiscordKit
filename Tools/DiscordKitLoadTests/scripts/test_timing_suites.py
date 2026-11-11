@@ -6,6 +6,7 @@
 
 """Validate bounded sweep selection and fail-closed retained evidence."""
 import os
+import json
 from pathlib import Path
 import signal
 import subprocess
@@ -137,6 +138,62 @@ raise SystemExit(130 if processes.cancelled else 0)
         with self.assertRaises(ValueError):
             suites.compact(native, dict(name="case"))
 
+    def test_held_owner_matrix_has_independent_cardinality_and_release_controls(self):
+        """New non-transport cases never open sockets or acquire native adapter ownership."""
+        rows = suites.matrix(["ordering.heldOwnerDefaultV1"])
+        self.assertEqual(len(rows), 30)
+        self.assertEqual(len({row["name"] for row in rows}), len(rows))
+        self.assertEqual({row["concurrency"] for row in rows}, {1, 4, 16, 64})
+        self.assertEqual({row["release_offset_microseconds"] for row in rows}, {0, 2500, 7500})
+        self.assertEqual({(row["ordering_partitions"], row["ordering_identities"]) for row in rows},
+                         {(1, 1), (4, 1), (1, 4)})
+        self.assertTrue(all(row["adapter"] == "scripted" and row["connection"] == "warm" and not row["tls"]
+                            for row in rows))
+        self.assertTrue(all(row["ordering_partitions"] * row["ordering_identities"] <= row["concurrency"]
+                            for row in rows))
+        self.assertEqual(rows, suites.matrix(["ordering.heldOwnerDefaultV1"], native=False))
+
+    def test_held_owner_options_and_evidence_reach_the_supervisor(self):
+        """Exercise main command construction, fixture hashing and compact native handoff evidence."""
+        row = next(row for row in suites.matrix(["ordering.heldOwnerDefaultV1"])
+                   if row["concurrency"] == 64 and row["ordering_identities"] == 4
+                   and row["release_offset_microseconds"] == 7500)
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            native = dict(common=dict(status="completed", cleanup=dict(completed=True, remainingOwners=0),
+                                      metrics=[], counts=dict(completed=64), gauges={}, throughputPerSecond=9),
+                          measurement=dict(orderingHandoff={"_0": dict(successfulThroughputPerSecond=8,
+                              releaseToSuccessor=dict(observedCount=64), clock=dict(activeSleeps=0))}))
+            supervised = []
+
+            def execute(_processes, command, **_kwargs):
+                if command[-1] == "--list-cases":
+                    return subprocess.CompletedProcess(command, 0, "ordering.heldOwnerDefaultV1\n", "")
+                supervised.append(command)
+                destination = Path(command[command.index("--output-dir") + 1]) / "00-single"
+                destination.mkdir(parents=True)
+                (destination / "native-report.json").write_text(json.dumps(native))
+                return subprocess.CompletedProcess(command, 0)
+
+            with mock.patch.object(suites, "matrix", return_value=[row]), \
+                 mock.patch.object(suites.SuiteProcesses, "run", execute), \
+                 mock.patch.object(suites.signal, "signal"):
+                status = suites.main(["--executable", str(directory / "fixture"), "--receipt", str(directory / "receipt"),
+                                      "--output-dir", str(directory / "capture")])
+            self.assertEqual(status, 0)
+            self.assertEqual(len(supervised), 1)
+            invocation = supervised[0]
+            command = json.loads(invocation[invocation.index("--command") + 1])
+            for option, value in [("--ordering-partitions", "1"), ("--ordering-identities", "4"),
+                                  ("--release-offset-microseconds", "7500")]:
+                self.assertEqual(command[command.index(option) + 1], value)
+            self.assertEqual(Path(invocation[invocation.index("--fixture") + 1]).name, "OrderingHandoffTimingRunner.swift")
+            self.assertEqual(invocation[invocation.index("--scheduler-policy") + 1], "held-owner-default-v1")
+            summary = json.loads((directory / "capture" / "matrix.json").read_text())["cases"][0]
+            self.assertEqual(summary["successfulSuccessorsPerSecond"], 8)
+            self.assertEqual(summary["terminalOutcomesPerSecond"], 9)
+            self.assertEqual(summary["releaseToSuccessorObservedCount"], 64)
+            self.assertEqual(summary["clock"]["activeSleeps"], 0)
     def test_cancellation_stops_next_process(self):
         processes = suites.SuiteProcesses()
         processes.request(15, None)

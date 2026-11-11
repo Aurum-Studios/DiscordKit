@@ -26,6 +26,9 @@ struct Phase5TimingConfiguration: Codable, Equatable, Sendable {
     var delayMicroseconds = 2_000
     var durationSeconds: UInt64 = 10
     var warmupSeconds: UInt64 = 1
+    var orderingPartitions = 1
+    var orderingIdentities = 1
+    var releaseOffsetMicroseconds = 0
     var output: String?
     var commonReport: String?
 
@@ -45,6 +48,13 @@ struct Phase5TimingConfiguration: Codable, Equatable, Sendable {
         guard scenario.hasPrefix("transport.") || (adapter == "scripted" && connectionMode == "warm" && !tls),
             !tls || adapter == "nio", connectionMode != "cold" || concurrency == 1 else {
             throw Phase5TimingError.invalidConfiguration("Incompatible adapter, TLS or cold-connection policy")
+        }
+        guard (1...8).contains(orderingPartitions), (1...64).contains(orderingIdentities),
+            orderingPartitions * orderingIdentities <= 64, (0...10_000).contains(releaseOffsetMicroseconds),
+            scenario != "ordering.heldOwnerDefaultV1" || concurrency <= 64,
+            scenario == "ordering.heldOwnerDefaultV1" ||
+                (orderingPartitions == 1 && orderingIdentities == 1 && releaseOffsetMicroseconds == 0) else {
+            throw Phase5TimingError.invalidConfiguration("Unsupported held-owner ordering policy")
         }
         if let output, let commonReport {
             let native = URL(fileURLWithPath: output).standardizedFileURL.resolvingSymlinksInPath()
@@ -71,7 +81,8 @@ struct Phase5TimingConfiguration: Codable, Equatable, Sendable {
         }
         let known: Set<String> = ["--case", "--adapter", "--connection-mode", "--tls", "--profile", "--seed",
             "--requests", "--concurrency", "--warmup-requests", "--pending", "--rate", "--delay-microseconds",
-            "--duration-seconds", "--warmup-seconds", "--output", "--common-report"]
+            "--duration-seconds", "--warmup-seconds", "--output", "--common-report",
+            "--ordering-partitions", "--ordering-identities", "--release-offset-microseconds"]
         guard Set(options.keys).isSubset(of: known) else { throw Phase5TimingError.invalidConfiguration("Unknown option") }
         var result = Self()
         result.scenario = options["--case"] ?? result.scenario
@@ -85,7 +96,10 @@ struct Phase5TimingConfiguration: Codable, Equatable, Sendable {
         for (key, value) in [("--requests", options["--requests"]),
             ("--concurrency", options["--concurrency"] ?? environment["DK_BENCHMARK_CONCURRENCY"]),
             ("--warmup-requests", options["--warmup-requests"]), ("--pending", options["--pending"]),
-            ("--rate", options["--rate"]), ("--delay-microseconds", options["--delay-microseconds"])] {
+            ("--rate", options["--rate"]), ("--delay-microseconds", options["--delay-microseconds"]),
+            ("--ordering-partitions", options["--ordering-partitions"]),
+            ("--ordering-identities", options["--ordering-identities"]),
+            ("--release-offset-microseconds", options["--release-offset-microseconds"])] {
             guard let value else { continue }
             guard let number = Int(value) else { throw Phase5TimingError.invalidConfiguration("Invalid integer") }
             switch key {
@@ -94,6 +108,9 @@ struct Phase5TimingConfiguration: Codable, Equatable, Sendable {
             case "--warmup-requests": result.warmupRequests = number
             case "--pending": result.pending = number
             case "--rate": result.rate = number
+            case "--ordering-partitions": result.orderingPartitions = number
+            case "--ordering-identities": result.orderingIdentities = number
+            case "--release-offset-microseconds": result.releaseOffsetMicroseconds = number
             default: result.delayMicroseconds = number
             }
         }

@@ -4,7 +4,7 @@
 # Copyright (c) 2026 Aurum Studios.
 # https://aurum-studios.com
 
-"""Capture transport/REST cases and an arrival-rate sweep with shared process supervision."""
+"""Capture transport/REST, held-owner and arrival sweeps with shared process supervision."""
 from __future__ import annotations
 
 import argparse
@@ -54,7 +54,7 @@ class SuiteProcesses:
 
 
 def matrix(cases: list[str], *, native: bool = True) -> list[dict]:
-    """Select finite corrected cohorts and a 3-by-3 bounded overload/recovery sweep."""
+    """Select bounded cohorts while retaining historical transport/REST/arrival dimensions."""
     rows = []
     for case in cases:
         if case.startswith("arrival."):
@@ -64,6 +64,15 @@ def matrix(cases: list[str], *, native: bool = True) -> list[dict]:
                     rows.append(dict(name=f"{prefix}-c{concurrency}-r{rate}", case=case,
                                      adapter="scripted", concurrency=concurrency, rate=rate,
                                      pending=concurrency * 2, connection="warm", tls=False))
+        elif case == "ordering.heldOwnerDefaultV1":
+            for concurrency in (1, 4, 16, 64):
+                dimensions = [(1, 1)] if concurrency == 1 else [(1, 1), (4, 1), (1, 4)]
+                for partitions, identities in dimensions:
+                    for offset in (0, 2_500, 7_500):
+                        rows.append(dict(name=f"{case}-c{concurrency}-p{partitions}-i{identities}-o{offset}",
+                                         case=case, adapter="scripted", concurrency=concurrency, rate=1_000,
+                                         pending=16, connection="warm", tls=False, ordering_partitions=partitions,
+                                         ordering_identities=identities, release_offset_microseconds=offset))
         elif case.startswith("rest."):
             rows.append(dict(name=case, case=case, adapter="scripted", concurrency=4,
                              rate=1_000, pending=16, connection="warm", tls=False))
@@ -92,9 +101,15 @@ def compact(native: dict, row: dict) -> dict:
     metrics = []
     for metric in common["metrics"]:
         metrics.append({key: metric[key] for key in ("id", "outcome", "p50", "p95", "p99", "maximum")})
-    return dict(row, counts=common["counts"], metrics=metrics, gauges=common["gauges"],
-                terminalOutcomesPerSecond=common["throughputPerSecond"],
-                nativeReport=str(Path(row["name"]) / "00-single" / "native-report.json"))
+    result = dict(row, counts=common["counts"], metrics=metrics, gauges=common["gauges"],
+                  terminalOutcomesPerSecond=common["throughputPerSecond"],
+                  nativeReport=str(Path(row["name"]) / "00-single" / "native-report.json"))
+    if row["case"] == "ordering.heldOwnerDefaultV1":
+        handoff = native["measurement"]["orderingHandoff"]["_0"]
+        result["successfulSuccessorsPerSecond"] = handoff["successfulThroughputPerSecond"]
+        result["releaseToSuccessorObservedCount"] = handoff["releaseToSuccessor"]["observedCount"]
+        result["clock"] = handoff["clock"]
+    return result
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -138,11 +153,19 @@ def main(argv: list[str] | None = None) -> int:
                    "--requests", str(arguments.requests), "--warmup-requests", str(arguments.warmup_requests),
                    "--output", "{output}", "--profile", "{profile}", "--seed", "{seed}",
                    "--duration-seconds", "{duration_seconds}", "--warmup-seconds", "{warmup_seconds}"]
+        held_owner = row["case"] == "ordering.heldOwnerDefaultV1"
+        if held_owner:
+            command.extend(["--ordering-partitions", str(row["ordering_partitions"]),
+                            "--ordering-identities", str(row["ordering_identities"]),
+                            "--release-offset-microseconds", str(row["release_offset_microseconds"])])
+        fixture = "OrderingHandoffTimingRunner.swift" if held_owner else "RESTTimingRunner.swift"
+        scheduler = ("held-owner-default-v1" if held_owner else
+                     "bounded-independent-arrivals" if row["case"].startswith("arrival.") else "closed-loop-cohort")
         supervised = [sys.executable, str(shared), "run", "--profile", "smoke", "--scenario", row["name"],
-                      "--fixture", str(package / "Sources" / "DiscordKitLoadTests" / "RESTTimingRunner.swift"),
+                      "--fixture", str(package / "Sources" / "DiscordKitLoadTests" / fixture),
                       "--receipt", str(arguments.receipt.resolve()), "--command", json.dumps(command),
                       "--output-dir", str(destination), "--concurrency", str(row["concurrency"]),
-                      "--scheduler-policy", "bounded-independent-arrivals" if row["case"].startswith("arrival.") else "closed-loop-cohort",
+                      "--scheduler-policy", scheduler,
                       "--warmup-seconds", "1", "--warmup-policy", "participant-declared"]
         status = processes.run(supervised).returncode
         if processes.cancelled:

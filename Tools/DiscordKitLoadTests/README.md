@@ -312,8 +312,8 @@ coordination or sustained production capacity.
 ## Phase 5 transport and REST timing
 
 The explicit `timing` subcommand implements the [Phase 5 plan](../../Docs/Tasks/latency-timing/PHASE-5.md)
-without changing the legacy entry points or reports above. It lists 12 transport
-cases, 17 REST cases and a separate independent-arrival policy:
+without changing the legacy entry points or reports above. It lists finite transport,
+REST, independent-arrival and held-owner ordering cases:
 
 ```sh
 swift run --package-path Tools/DiscordKitLoadTests DiscordKitLoadTests timing --list-cases
@@ -383,10 +383,10 @@ Setup priming and expiry waits are outside individual request timers. Inter-wave
 gaps remain in the whole throughput denominator.
 
 Stage 0 adds explicit versioned scheduling controls. `rest.orderedMutationDefaultV1`
-uses an unmodified `SchedulingPolicy()` (10 ms polling, one-second provisional
+uses an unmodified `SchedulingPolicy()` (10 ms fairness interval, one-second provisional
 window, initial global allowance 50 requests/second, and the production capacity
 limits). `rest.orderedMutation` retains its tuned policy and workload name: 100 µs
-polling, 1 µs provisional window and enlarged allowance. Every new REST native
+fairness interval, 1 µs provisional window and enlarged allowance. Every new REST native
 receipt includes the complete constructed scheduling policy; scripted peer rate
 headers remain injected fixture behavior and do not establish Discord quotas.
 The default closed-loop variant injects the configured header-service delay.
@@ -401,6 +401,57 @@ callback, in the same uptime clock domain as driver submission. This is entry to
 after descriptor construction, before ordering/rate admission; it does not claim
 wire-service admission.
 `arrival.rest` retains its tuned GET rate-admission control and unknown owner entry.
+
+Stage 1 adds `ordering.heldOwnerDefaultV1`, a versioned public-API handoff fixture
+using the actual `SchedulingPolicy()`. A wave first holds each selected ordering
+partition, submits its measured successor cohort, confirms the public queued/held
+counts, then releases the owners. One caller means one queued successor behind
+one held setup owner. The measured population excludes those setup owners.
+
+```sh
+swift run -c release --package-path Tools/DiscordKitLoadTests DiscordKitLoadTests timing \
+  --case ordering.heldOwnerDefaultV1 --requests 256 --concurrency 64 \
+  --ordering-partitions 2 --ordering-identities 2 --release-offset-microseconds 2500 \
+  --warmup-requests 16 --output .build/ordering-native.json \
+  --common-report .build/ordering-common.json
+```
+
+Sweep `--concurrency` over 1/4/16/64, `--ordering-partitions` over 1...8 per
+identity and `--ordering-identities` over 1...64 (their product is at most 64).
+Each wave uses at most its caller count of partitions. Offsets 0/2500/7500 µs
+probe different release phases; `--release-offset-microseconds` accepts 0...10000
+and delays from confirmation that the full cohort is queued. The native receipt
+retains the actual phase from the first observed clock-sleep invocation when one
+exists. A sleep invocation does not prove suspension, and the notification
+implementation may queue callers without invoking a sleep. These options apply
+only to the held-owner case; older workload identities retain their dimensions.
+
+The common `rest.orderWait` histogram ends at actual successor operation entry
+or acquire error. The separate native `releaseToSuccessor` histogram measures
+release signal through every successful successor entry, including predecessor
+service for later same-partition callers; it uses 10 µs buckets over 0...1 second
+and retains censor/loss counts. The first 64 per-partition causal samples keep
+signal/owner-exit/owner-return offsets; owner-return offsets stay signed because
+the successor can enter before its predecessor caller resumes. These diagnostic
+samples are bounded and do not form a full-population percentile distribution.
+
+Native successful throughput divides successful successors by first submission
+through final terminal, including driver barriers, offsets and inter-wave setup.
+The common throughput field counts all terminal outcomes, as in the other timing
+families. Exact injected-clock invocation/completion/cancellation/peak-active
+counters and maximum caller/holder task counts expose fixture and sleep bounds;
+they do not count scheduler wakeups, allocations or all internal runtime tasks.
+Post-close clock-quiescence checks happen after terminal timestamps. Existing
+process CPU gauges include setup, warmup and joined cleanup. Separate profiler
+captures remain necessary for CPU stacks, allocations and actual executor wakeups.
+This fixture invokes no rate-store reservation or remote authority; slow/failing
+authority and genuine quota/retry/reset checks remain separate admission controls.
+The serial wrapper adds 30 held-owner rows: 1/4/16/64 successors, three release
+offsets, and separate four-partition or four-identity controls where the cohort
+can fill them. Its supervisor hashes the held-owner fixture source and retains
+successful throughput, handoff observation count and clock counters alongside
+the full native report. Historical transport/REST/arrival sweep dimensions stay
+unchanged.
 
 `arrival.noopV1` substitutes an immediate successful service for REST at identical
 worker/queue/rate settings. It ignores the configured peer delay. Every versioned

@@ -39,7 +39,8 @@ public struct SchedulingPolicy: Sendable {
     ///   - maximumConcurrentRequestsPerIdentity: In-flight reservations per identity, default 8; positive.
     ///   - maximumMetadata: Total retained rate keys and aliases, default 4,096; positive.
     ///   - maximumQueueAge: Maximum queue residence, default 30 seconds; positive.
-    ///   - fairnessInterval: Maximum polling interval for eligible waiters, default 10 ms; positive.
+    ///   - fairnessInterval: Minimum authority retry delay and shared-store capacity
+    ///     fallback, default 10 ms; positive. Local ownership handoff uses notifications.
     ///   - reservationLifetime: Maximum admission ownership, default 60 seconds; positive.
     ///   - provisionalWindow: Conservative unknown-route window, default one second; positive.
     ///   - initialGlobalRequestsPerSecond: Configurable initial credential-wide requests/second, default 50.

@@ -12,6 +12,7 @@ enum Phase5Measurement: Codable, Sendable {
     case rest(RESTTimingReport)
     case arrival(ArrivalTimingMeasurement, RESTTimingCleanup)
     case arrivalControl(ArrivalTimingMeasurement, RESTTimingCleanup?, RESTSchedulingReceipt?)
+    case orderingHandoff(OrderingHandoffTimingReport)
 
     /// Reads joined arrival data while preserving the historical native arrival enum shape.
     var arrivalDetails: (ArrivalTimingMeasurement, RESTTimingCleanup?, RESTSchedulingReceipt?)? {
@@ -42,7 +43,7 @@ enum Phase5TimingCommand {
     /// Finite workload names are inspectable without starting any fixture or opening outputs.
     static var cases: [String] {
         /// Lists independent transport, REST and arrival policies; arbitrary labels are rejected.
-        get { TransportTimingCase.allCases.map(\.rawValue) + RESTTimingScenario.allCases.map { "rest." + $0.rawValue } + arrivalCases }
+        get { TransportTimingCase.allCases.map(\.rawValue) + RESTTimingScenario.allCases.map { "rest." + $0.rawValue } + arrivalCases + ["ordering.heldOwnerDefaultV1"] }
     }
 
     /// Caps asynchronous work, cancels the losing child and awaits the entire task group.
@@ -97,6 +98,18 @@ enum Phase5TimingCommand {
             warmupNanoseconds = transport.warmupNanoseconds
             capped = transport.counts.offered < UInt64(configuration.requests)
             measured = .transport(transport)
+        } else if configuration.scenario == "ordering.heldOwnerDefaultV1" {
+            if configuration.warmupRequests > 0 && configuration.warmupSeconds > 0 {
+                let start = clock.now
+                _ = try await bounded(seconds: configuration.warmupSeconds) {
+                    try await orderingHandoff(configuration, requests: configuration.warmupRequests)
+                }
+                warmupNanoseconds = try BenchmarkTime.nanoseconds(duration: start.duration(to: clock.now))
+            }
+            let result = try await bounded(seconds: configuration.durationSeconds) {
+                try await orderingHandoff(configuration, requests: configuration.requests)
+            }
+            measured = .orderingHandoff(result.0); capped = result.1
         } else if arrivalCases.contains(configuration.scenario) {
             if configuration.warmupRequests > 0 && configuration.warmupSeconds > 0 {
                 let start = clock.now
@@ -131,6 +144,13 @@ enum Phase5TimingCommand {
         let common = try commonReport(configuration, measurement: measured, warmup: warmupNanoseconds,
             capped: capped, before: before, after: after)
         return Phase5TimingReport(configuration: configuration, measurement: measured, common: common)
+    }
+
+    /// Keeps held-owner setup separate from measured successor counts and warmup populations.
+    private static func orderingHandoff(_ configuration: Phase5TimingConfiguration, requests: Int) async throws -> OrderingHandoffTimingReport {
+        try await OrderingHandoffTimingRunner().run(requests: requests, concurrency: configuration.concurrency,
+            partitions: configuration.orderingPartitions, identities: configuration.orderingIdentities,
+            releaseOffsetMicroseconds: configuration.releaseOffsetMicroseconds)
     }
 
     /// Composes independent arrivals with a single shared, bounded REST owner.
@@ -186,6 +206,19 @@ enum Phase5TimingCommand {
         let owners: UInt64?, adapter: String, scheduler: String
         var gauges: [String: BenchmarkGauge] = [:]
         switch measurement {
+        case .orderingHandoff(let value):
+            metrics = value.metrics; domain = value.clockDomain; counts = value.counts
+            elapsed = value.durationNanoseconds; adapter = "public-ordering-api"; scheduler = "held-owner-default-v1"
+            owners = UInt64(value.remainingOwners)
+            for (key, count) in [("clockSleepInvocations", value.clock.sleepInvocations),
+                ("clockSleepsCompleted", value.clock.completedSleeps), ("clockSleepsCancelled", value.clock.cancelledSleeps),
+                ("clockPeakActiveSleeps", value.clock.peakActiveSleeps), ("clockRemainingSleeps", value.clock.activeSleeps),
+                ("maximumCallerTasks", value.maximumCallerTasks), ("maximumHolderTasks", value.maximumHolderTasks)] {
+                gauges[key] = .init(value: UInt64(count), unit: "count",
+                    method: "exact development fixture counter", scope: "measured held-owner waves")
+            }
+            gauges["schedulerFairnessInterval"] = .init(value: value.scheduling.fairnessIntervalNanoseconds,
+                unit: "nanoseconds", method: "constructed SchedulingPolicy()", scope: "fixture policy")
         case .transport(let value):
             metrics = value.metrics; domain = value.clockDomain; counts = value.counts
             guard let duration = value.durationNanoseconds else { throw BenchmarkReportError.invalidTime }
@@ -250,6 +283,11 @@ enum Phase5TimingCommand {
             requestedWarmupNanoseconds: configuration.warmupSeconds * 1_000_000_000,
             measuredNanoseconds: elapsed, repetitions: 1)
         identity.catalogVersion = 5
+        if case .orderingHandoff = measurement {
+            identity.inputSizes["orderingPartitionsPerIdentity"] = UInt64(configuration.orderingPartitions)
+            identity.inputSizes["orderingIdentities"] = UInt64(configuration.orderingIdentities)
+            identity.inputSizes["releaseOffsetMicroseconds"] = UInt64(configuration.releaseOffsetMicroseconds)
+        }
         if case .transport(let value) = measurement { identity.profileVersion = value.profileVersion }
         let report = DiscordBenchmarkReport(identity: identity, provenance: .capture(), adapter: adapter,
             clockDomain: domain, status: capped || Task.isCancelled ? .interrupted : .completed, counts: counts,

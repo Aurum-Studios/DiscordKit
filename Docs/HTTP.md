@@ -82,6 +82,16 @@ owner/order authority where mutation ordering spans processes. Cancellation remo
 queued work. Possible sends never refund quota. Token expiry cannot recall a network
 write already in flight, so adapters must honor deadlines before new sends.
 
+Local completion and queue removal notify the oldest eligible waiter directly.
+Ordering waiters no longer poll for a released partition. Rate waiters still ask
+the shared store for every grant and respect its retry instant; a local completion
+cannot shorten a learned reset or reveal another process's completion. One shared
+earliest-wake timer covers queued deadlines and authority retries. The existing
+`fairnessInterval` remains the minimum retry spacing for authority responses,
+including finite rechecks of external capacity; it is not a local handoff delay.
+Closing or losing authority wakes queued callers to reject them. Active operations
+retain caller ownership and must still finish their cleanup.
+
 Metadata is bounded and learned aliases are retained conservatively. Partition skew
 may refuse discovery before the aggregate cap. Exhaustion never evicts an exhausted
 budget to create new allowance; inability to retain learned restrictions latches the

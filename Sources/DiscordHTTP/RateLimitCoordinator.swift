@@ -10,9 +10,10 @@ import Foundation
 /// Cancellable bounded FIFO admission above a shared injectable rate authority.
 ///
 /// The oldest locally eligible partition head receives the next available slot.
-/// A blocked partition sleeps independently, so unrelated identities/resources can
-/// proceed. Each waiter owns at most one cancellable clock sleeper; there is no
-/// autonomous scheduler task. FIFO covers one coordinator's identity/route/major
+/// Local completion resumes only the oldest eligible partition head, so unrelated
+/// identities/resources can proceed without polling. Parked waiters share one
+/// cancellable clock sleeper for queue deadlines and authority retry instants.
+/// FIFO covers one coordinator's identity/route/major
 /// resource/class, including holding that partition until completion. Share the
 /// coordinator when mutation ordering must span clients; a distributed store alone
 /// coordinates rate admission, not cross-process application mutation ordering.
@@ -37,7 +38,7 @@ public actor RateLimitCoordinator<C: Clock> where C.Duration == Duration {
         let request: RateLimitRequest
         let deadline: C.Instant
         var blockedUntil: C.Instant
-        var sleeper: Task<Void, Error>?
+        var continuation: CheckedContinuation<Void, Never>?
     }
     private let clock: C
     private let store: any RateLimitStore<C.Instant>
@@ -50,6 +51,9 @@ public actor RateLimitCoordinator<C: Clock> where C.Duration == Duration {
     private var orderedOperations: [UUID: RateLimitRequest] = [:]
     private var active: [UUID: RateLimitReservation<C.Instant>] = [:]
     private var admitting: Set<QueuePartition> = []
+    private var timerDriver: Task<Void, Never>?
+    private var timerSleeper: Task<Void, Error>?
+    private var timerDeadline: C.Instant?
     private var closed = false
     private var unavailable = false
 
@@ -66,7 +70,7 @@ public actor RateLimitCoordinator<C: Clock> where C.Duration == Duration {
     }
 
     /// Waits for ordered admission while respecting every applicable finite budget.
-    /// Cancellation removes the waiter and its sleeper without advancing virtual time.
+    /// Cancellation removes the waiter and its notification without advancing virtual time.
     /// - Parameters:
     ///   - request: Nonnegative request-byte estimate and opaque authority scopes.
     ///   - deadline: Inclusive clock-local deadline; nil still applies maximumQueueAge.
@@ -86,65 +90,70 @@ public actor RateLimitCoordinator<C: Clock> where C.Duration == Duration {
         waiters[id] = Waiter(request: request, deadline: effectiveDeadline, blockedUntil: now)
         queuedBytes += request.queuedBytes
         DiscordLog.makeLogger("http.ratelimit").trace("REST admission queued", metadata: ["dk.event": "http.admission.queued", "dk.queued": .stringConvertible(queue.count)])
-        defer { removeWaiter(id) }
-        return try await withTaskCancellationHandler {
-            while true {
-                try Task.checkCancellation()
-                try ensureOpen()
-                guard var waiter = waiters[id] else { throw CancellationError() }
-                let current = clock.now
-                guard current < waiter.deadline else { throw RateLimitFailure.deadlineExceeded }
-                if eligibleHead(at: current) == id {
-                    let partition = QueuePartition(request)
-                    admitting.insert(partition)
-                    let result: RateLimitAdmission<C.Instant>
-                    DiscordLog.makeLogger("http.ratelimit").trace("REST shared authority reservation started", metadata: ["dk.event": "http.admission.reserve", "dk.active": .stringConvertible(active.count)])
-                    do { result = try await store.reserve(request, now: current) }
-                    catch {
-                        admitting.remove(partition)
-                        if let failure = error as? RateLimitFailure {
-                            if failure == .coordinatorUnavailable || failure == .unknownReservation || failure == .reservationExpired {
-                                failClosed()
-                            }
-                        } else if !(error is CancellationError) { failClosed() }
-                        throw authorityFailure(error)
-                    }
-                    admitting.remove(partition)
-                    switch result {
-                    case .admitted(let reservation):
-                        if closed || unavailable || Task.isCancelled || clock.now >= waiter.deadline {
-                            do { try await store.release(reservation, outcome: .notSent, now: clock.now) }
-                            catch { failClosed(); throw authorityFailure(error) }
-                            try Task.checkCancellation()
-                            try ensureOpen()
-                            throw RateLimitFailure.deadlineExceeded
-                        }
-                        active[reservation.id] = reservation
-                        DiscordLog.makeLogger("http.ratelimit").trace("REST admission granted", metadata: ["dk.event": "http.admission.granted"])
-                        return reservation
-                    case .retry(let instant):
-                        DiscordLog.makeLogger("http.ratelimit").trace("REST shared authority deferred admission", metadata: ["dk.event": "http.admission.deferred"])
-                        waiter.blockedUntil = max(instant, current.advanced(by: policy.fairnessInterval))
-                        waiters[id]?.blockedUntil = waiter.blockedUntil
-                    }
-                }
-                let wake = min(waiter.deadline, max(current.advanced(by: policy.fairnessInterval), waiter.blockedUntil))
-                let clock = self.clock
-                DiscordLog.makeLogger("http.ratelimit").trace("REST admission waiting for eligibility", metadata: ["dk.event": "http.admission.wait", "dk.queued": .stringConvertible(waiters.count), "dk.active": .stringConvertible(active.count)])
-                let sleeper = Task { try await clock.sleep(until: wake, tolerance: nil) }
-                waiters[id]?.sleeper = sleeper
-                do { try await sleeper.value }
-                catch {
-                    sleeper.cancel()
-                    try ensureOpen()
+        let result: Result<RateLimitReservation<C.Instant>, any Error>
+        do {
+            result = .success(try await withTaskCancellationHandler {
+                while true {
                     try Task.checkCancellation()
-                    throw error
+                    try ensureOpen()
+                    guard var waiter = waiters[id] else { throw CancellationError() }
+                    let current = clock.now
+                    guard current < waiter.deadline else { throw RateLimitFailure.deadlineExceeded }
+                    if eligibleHead(at: current) == id {
+                        let partition = QueuePartition(request)
+                        admitting.insert(partition)
+                        notifyEligibleWaiters()
+                        let result: RateLimitAdmission<C.Instant>
+                        DiscordLog.makeLogger("http.ratelimit").trace("REST shared authority reservation started", metadata: ["dk.event": "http.admission.reserve", "dk.active": .stringConvertible(active.count)])
+                        do { result = try await store.reserve(request, now: current) }
+                        catch {
+                            admitting.remove(partition)
+                            if let failure = error as? RateLimitFailure {
+                                if failure == .coordinatorUnavailable || failure == .unknownReservation || failure == .reservationExpired {
+                                    failClosed()
+                                }
+                            } else if !(error is CancellationError) { failClosed() }
+                            notifyEligibleWaiters()
+                            throw authorityFailure(error)
+                        }
+                        switch result {
+                        case .admitted(let reservation):
+                            if closed || unavailable || Task.isCancelled || clock.now >= waiter.deadline {
+                                do { try await store.release(reservation, outcome: .notSent, now: clock.now) }
+                                catch {
+                                    admitting.remove(partition)
+                                    failClosed()
+                                    throw authorityFailure(error)
+                                }
+                                admitting.remove(partition)
+                                notifyEligibleWaiters()
+                                try Task.checkCancellation()
+                                try ensureOpen()
+                                throw RateLimitFailure.deadlineExceeded
+                            }
+                            active[reservation.id] = reservation
+                            admitting.remove(partition)
+                            notifyEligibleWaiters()
+                            DiscordLog.makeLogger("http.ratelimit").trace("REST admission granted", metadata: ["dk.event": "http.admission.granted"])
+                            return reservation
+                        case .retry(let instant):
+                            DiscordLog.makeLogger("http.ratelimit").trace("REST shared authority deferred admission", metadata: ["dk.event": "http.admission.deferred"])
+                            waiter.blockedUntil = max(instant, current.advanced(by: policy.fairnessInterval))
+                            waiters[id]?.blockedUntil = waiter.blockedUntil
+                            admitting.remove(partition)
+                            notifyEligibleWaiters()
+                        }
+                    }
+                    DiscordLog.makeLogger("http.ratelimit").trace("REST admission waiting for eligibility", metadata: ["dk.event": "http.admission.wait", "dk.queued": .stringConvertible(waiters.count), "dk.active": .stringConvertible(active.count)])
+                    await waitForNotification(id, ordering: false)
                 }
-                waiters[id]?.sleeper = nil
-            }
-        } onCancel: {
-            Task { await self.cancelWaiter(id) }
-        }
+            } onCancel: {
+                Task { await self.cancelWaiter(id) }
+            })
+        } catch { result = .failure(error) }
+        removeWaiter(id)
+        await joinIdleTimer()
+        return try result.get()
     }
 
     /// Holds local mutation ordering across a complete operation, including every
@@ -178,39 +187,33 @@ public actor RateLimitCoordinator<C: Clock> where C.Duration == Duration {
         orderingQueue.append(id)
         orderingWaiters[id] = Waiter(request: request, deadline: effectiveDeadline, blockedUntil: now)
         queuedBytes += request.queuedBytes
-        defer {
-            removeOrderingWaiter(id)
-            orderedOperations.removeValue(forKey: id)
-            DiscordLog.makeLogger("http.ordering").trace("REST ordered operation released", metadata: ["dk.event": "http.ordering.released", "dk.active": .stringConvertible(orderedOperations.count)])
-        }
-        return try await withTaskCancellationHandler {
-            while true {
-                try Task.checkCancellation()
-                try ensureOpen()
-                guard let waiter = orderingWaiters[id] else { throw CancellationError() }
-                guard clock.now < waiter.deadline else { throw RateLimitFailure.deadlineExceeded }
-                if eligibleOrderingHead(at: clock.now) == id {
-                    removeOrderingWaiter(id)
-                    orderedOperations[id] = request
-                    DiscordLog.makeLogger("http.ordering").trace("REST ordered operation admitted", metadata: ["dk.event": "http.ordering.admitted", "dk.active": .stringConvertible(orderedOperations.count)])
-                    return try await operation()
-                }
-                let clock = self.clock
-                let wake = min(waiter.deadline, clock.now.advanced(by: policy.fairnessInterval))
-                let sleeper = Task { try await clock.sleep(until: wake, tolerance: nil) }
-                orderingWaiters[id]?.sleeper = sleeper
-                do { try await sleeper.value }
-                catch {
-                    sleeper.cancel()
-                    try ensureOpen()
+        let result: Result<Value, any Error>
+        do {
+            result = .success(try await withTaskCancellationHandler {
+                while true {
                     try Task.checkCancellation()
-                    throw error
+                    try ensureOpen()
+                    guard let waiter = orderingWaiters[id] else { throw CancellationError() }
+                    guard clock.now < waiter.deadline else { throw RateLimitFailure.deadlineExceeded }
+                    if eligibleOrderingHead(at: clock.now) == id {
+                        removeOrderingWaiter(id, notify: false)
+                        orderedOperations[id] = request
+                        notifyEligibleWaiters()
+                        DiscordLog.makeLogger("http.ordering").trace("REST ordered operation admitted", metadata: ["dk.event": "http.ordering.admitted", "dk.active": .stringConvertible(orderedOperations.count)])
+                        return try await operation()
+                    }
+                    await waitForNotification(id, ordering: true)
                 }
-                orderingWaiters[id]?.sleeper = nil
-            }
-        } onCancel: {
-            Task { await self.removeOrderingWaiter(id) }
-        }
+            } onCancel: {
+                Task { await self.removeOrderingWaiter(id) }
+            })
+        } catch { result = .failure(error) }
+        removeOrderingWaiter(id)
+        orderedOperations.removeValue(forKey: id)
+        notifyEligibleWaiters()
+        DiscordLog.makeLogger("http.ordering").trace("REST ordered operation released", metadata: ["dk.event": "http.ordering.released", "dk.active": .stringConvertible(orderedOperations.count)])
+        await joinIdleTimer()
+        return try result.get()
     }
 
     /// Learns response rate metadata before releasing the local FIFO partition.
@@ -225,7 +228,10 @@ public actor RateLimitCoordinator<C: Clock> where C.Duration == Duration {
     public func complete(_ reservation: RateLimitReservation<C.Instant>, status: Int, headers: [HTTPHeader],
                          retryAfter: Duration? = nil, global: Bool = false) async throws {
         guard active[reservation.id] != nil else { throw RateLimitFailure.unknownReservation }
-        defer { active.removeValue(forKey: reservation.id) }
+        defer {
+            active.removeValue(forKey: reservation.id)
+            notifyEligibleWaiters()
+        }
         do {
             try await store.complete(reservation, status: status, headers: headers,
                                      retryAfter: retryAfter, global: global, now: clock.now)
@@ -240,7 +246,10 @@ public actor RateLimitCoordinator<C: Clock> where C.Duration == Duration {
     /// - Throws: Unknown/expired ownership or authority failure; failure stops new admissions.
     public func release(_ reservation: RateLimitReservation<C.Instant>, outcome: RateLimitReleaseOutcome) async throws {
         guard active[reservation.id] != nil else { throw RateLimitFailure.unknownReservation }
-        defer { active.removeValue(forKey: reservation.id) }
+        defer {
+            active.removeValue(forKey: reservation.id)
+            notifyEligibleWaiters()
+        }
         do {
             try await store.release(reservation, outcome: outcome, now: clock.now)
             DiscordLog.makeLogger("http.ratelimit").trace("REST admission released without response", metadata: ["dk.event": "http.admission.released", "dk.uncertain": .stringConvertible(outcome == .uncertain)])
@@ -250,12 +259,13 @@ public actor RateLimitCoordinator<C: Clock> where C.Duration == Duration {
 
     /// Stops new admission and wakes every queued task immediately without sending.
     /// Already acquired tokens retain caller ownership and must still be completed
-    /// or released. This operation is idempotent and does not close an injected store.
-    public func close() {
+    /// or released. This operation joins the owned timer, is idempotent, and does
+    /// not close an injected store.
+    public func close() async {
         DiscordLog.makeLogger("http.ratelimit").info("REST admission closed", metadata: ["dk.event": "http.admission.closed"])
         closed = true
-        for waiter in waiters.values { waiter.sleeper?.cancel() }
-        for waiter in orderingWaiters.values { waiter.sleeper?.cancel() }
+        notifyEligibleWaiters()
+        await timerDriver?.value
     }
 
     /// Captures queue bytes/count and authority-wide active/metadata ownership.
@@ -337,22 +347,156 @@ public actor RateLimitCoordinator<C: Clock> where C.Duration == Duration {
         return nil
     }
 
-    /// Clears pending ordering accounting and its sleeper exactly once.
-    /// - Parameter id: Pending ordering registration; active operation leases are unaffected.
-    private func removeOrderingWaiter(_ id: UUID) {
+    /// Parks one caller without creating a task for subsequent local notifications.
+    /// Registration and eligible-head selection occur in the same actor turn, so a
+    /// completion cannot be lost between checking eligibility and suspending.
+    /// - Parameters:
+    ///   - id: Existing pending registration, or an already canceled registration.
+    ///   - ordering: Whether the registration belongs to whole-operation ordering.
+    private func waitForNotification(_ id: UUID, ordering: Bool) async {
+        await withCheckedContinuation { continuation in
+            if ordering {
+                guard orderingWaiters[id] != nil else { continuation.resume(); return }
+                orderingWaiters[id]?.continuation = continuation
+            } else {
+                guard waiters[id] != nil else { continuation.resume(); return }
+                waiters[id]?.continuation = continuation
+            }
+            notifyEligibleWaiters()
+        }
+    }
+
+    /// Resumes one parked registration exactly once while retaining its FIFO position.
+    /// A resumed head remains selected until its caller consumes eligibility; later
+    /// arrivals therefore cannot overtake a notified caller that has not run yet.
+    /// - Parameters:
+    ///   - id: Candidate registration; nil and already resumed callers are harmless.
+    ///   - ordering: Which bounded queue owns the continuation.
+    private func signal(_ id: UUID?, ordering: Bool) {
+        guard let id else { return }
+        let continuation: CheckedContinuation<Void, Never>?
+        if ordering {
+            continuation = orderingWaiters[id]?.continuation
+            orderingWaiters[id]?.continuation = nil
+        } else {
+            continuation = waiters[id]?.continuation
+            waiters[id]?.continuation = nil
+        }
+        continuation?.resume()
+    }
+
+    /// Notifies eligible FIFO heads directly, retaining every authority retry bound.
+    /// Expiry and terminal closure wake affected callers only to reject admission.
+    /// At most one eligible caller in each queue is resumed per state transition;
+    /// consuming its slot continues the bounded handoff chain without a herd.
+    private func notifyEligibleWaiters() {
+        let now = clock.now
+        for id in queue {
+            if let waiter = waiters[id], closed || unavailable || waiter.deadline <= now {
+                signal(id, ordering: false)
+            }
+        }
+        for id in orderingQueue {
+            if let waiter = orderingWaiters[id], closed || unavailable || waiter.deadline <= now {
+                signal(id, ordering: true)
+            }
+        }
+        if !closed && !unavailable {
+            signal(eligibleHead(at: now), ordering: false)
+            signal(eligibleOrderingHead(at: now), ordering: true)
+        }
+        updateTimer()
+    }
+
+    /// Finds the next useful clock wake among parked queue and authority deadlines.
+    /// Locally held slots need only completion notifications. An external store's
+    /// retry instant remains authoritative even after an unrelated local release.
+    /// - Returns: Nearest necessary wake, or nil when no parked caller needs a timer.
+    private func nextTimerDeadline() -> C.Instant? {
+        guard !closed && !unavailable else { return nil }
+        let now = clock.now
+        var deadline: C.Instant?
+        for waiter in waiters.values where waiter.continuation != nil {
+            let wake = waiter.blockedUntil > now ? min(waiter.deadline, waiter.blockedUntil) : waiter.deadline
+            deadline = min(deadline ?? wake, wake)
+        }
+        for waiter in orderingWaiters.values where waiter.continuation != nil {
+            deadline = min(deadline ?? waiter.deadline, waiter.deadline)
+        }
+        return deadline
+    }
+
+    /// Starts a single timer driver on demand or interrupts its current sleep when
+    /// an earlier deadline appears. Completion notifications themselves spawn no
+    /// tasks. The driver joins its canceled child before creating another sleeper.
+    private func updateTimer() {
+        let deadline = nextTimerDeadline()
+        if timerDriver == nil, deadline != nil {
+            timerDriver = Task { await self.runTimer() }
+        } else if let current = timerDeadline {
+            if let deadline {
+                if deadline < current { timerSleeper?.cancel() }
+            } else {
+                timerSleeper?.cancel()
+            }
+        }
+    }
+
+    /// Joins obsolete clock registration before the final waiting caller returns.
+    /// Only the captured canceled child is joined: a new caller may legitimately
+    /// keep the persistent driver alive during this suspension. Other parked
+    /// callers retain their shared timer and are never delayed by this cleanup.
+    private func joinIdleTimer() async {
+        guard nextTimerDeadline() == nil, let sleeper = timerSleeper else { return }
+        sleeper.cancel()
+        _ = try? await sleeper.value
+    }
+
+    /// Owns at most one clock-sleep child for all rate and ordering waiters.
+    /// Every interrupted child is joined before replacement, preventing stale timer
+    /// callbacks and bounding live tasks even during cancellation/enqueue churn.
+    /// The driver exits when queues drain or admission closes; it never polls local
+    /// ownership and never grants permission without a fresh authority reservation.
+    /// A non-cancellation clock failure latches coordinatorUnavailable for every
+    /// queue because deadlines can no longer be enforced; held ownership remains
+    /// releasable through the authority and must still be cleaned up by its caller.
+    private func runTimer() async {
+        while let deadline = nextTimerDeadline() {
+            let clock = self.clock
+            let sleeper = Task { try await clock.sleep(until: deadline, tolerance: nil) }
+            timerDeadline = deadline
+            timerSleeper = sleeper
+            do { try await sleeper.value }
+            catch {
+                if !(error is CancellationError) { failClosed() }
+            }
+            timerSleeper = nil
+            timerDeadline = nil
+            notifyEligibleWaiters()
+        }
+        timerDriver = nil
+    }
+
+    /// Clears pending ordering accounting and its continuation exactly once.
+    /// - Parameters:
+    ///   - id: Pending ordering registration; active operation leases are unaffected.
+    ///   - notify: False only while atomically transferring this waiter into ownership.
+    private func removeOrderingWaiter(_ id: UUID, notify: Bool = true) {
         guard let waiter = orderingWaiters.removeValue(forKey: id) else { return }
         queuedBytes -= waiter.request.queuedBytes
         orderingQueue.removeAll { $0 == id }
-        waiter.sleeper?.cancel()
+        waiter.continuation?.resume()
+        if notify { notifyEligibleWaiters() }
     }
 
-    /// Removes queue accounting exactly once and cancels any owned clock task.
+    /// Removes queue accounting and its notification exactly once.
     /// - Parameter id: Waiter identifier, possibly already removed after cancellation.
     private func removeWaiter(_ id: UUID) {
         guard let waiter = waiters.removeValue(forKey: id) else { return }
         queuedBytes -= waiter.request.queuedBytes
         queue.removeAll { $0 == id }
-        waiter.sleeper?.cancel()
+        waiter.continuation?.resume()
+        notifyEligibleWaiters()
         DiscordLog.makeLogger("http.ratelimit").trace("REST admission waiter removed", metadata: ["dk.event": "http.admission.waiter.removed", "dk.queued": .stringConvertible(waiters.count), "dk.bytes": .stringConvertible(queuedBytes)])
     }
 
@@ -367,7 +511,6 @@ public actor RateLimitCoordinator<C: Clock> where C.Duration == Duration {
             DiscordLog.makeLogger("http.ratelimit").critical("REST authority permanently unavailable; replace coordinator", metadata: ["dk.event": "http.admission.unavailable"])
         }
         unavailable = true
-        for waiter in waiters.values { waiter.sleeper?.cancel() }
-        for waiter in orderingWaiters.values { waiter.sleeper?.cancel() }
+        notifyEligibleWaiters()
     }
 }

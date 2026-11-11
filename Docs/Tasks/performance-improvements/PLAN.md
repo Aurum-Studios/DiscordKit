@@ -7,11 +7,12 @@ https://aurum-studios.com
 
 # Performance refinement plan
 
-Status: Stage 0 implementation validated locally; reserved-host numerical and
-profiler qualification remain open. Stages 1–10 remain planned. Source
+Status: Stage 0 implementation validated locally; Stage 1 implementation and
+local validation are recorded in [Phase 1](PHASE-1.md). Reserved-host numerical and
+profiler qualification remain open. Stages 2–10 remain planned. Source
 investigation and exploratory planning measurements were prepared against
-`065e2b655c28250076ba53fca310f209be1d3fd5`. No runtime optimization or numerical
-regression policy is implemented by this plan.
+`065e2b655c28250076ba53fca310f209be1d3fd5`. Stage 1 refines local admission;
+no numerical regression policy is selected.
 
 The first target is avoidable waiting in shared request admission, followed by
 redundant request work and scale-sensitive event/cache algorithms. Shared JSON,
@@ -89,7 +90,9 @@ about actual overlapping intervals and the critical path.
 ## Stage order and dependencies
 
 Stage 0 has an [implementation and qualification record](PHASE-0.md); its
-controlled-host numerical gate remains explicit. Other stages remain **planned**.
+controlled-host numerical gate remains explicit. Stage 1 has a separate
+[implementation record](PHASE-1.md), authorized with that numerical gate still
+open. Stages 2–10 remain **planned**.
 Stage 0 qualifies measurement before any numerical claim. Stages 1–5 prioritize common library paths. Stages 6–9 are independently
 adopted product tracks after Stage 0; source investigations can overlap, but host
 builds and performance captures run sequentially. Stage 10 follows the selected
