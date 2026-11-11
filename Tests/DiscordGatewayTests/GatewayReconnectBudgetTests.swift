@@ -12,10 +12,10 @@ import Testing
 @testable import DiscordGateway
 
 /// Exercises reconnect episodes through real shard supervision and finite offline adapters.
-@available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
 @Suite("Gateway reconnect budget episodes", .timeLimit(.minutes(1)))
 struct GatewayReconnectBudgetTests {
     /// Preserves omitted-argument compatibility and rejects health thresholds that cannot certify uptime.
+    @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
     @Test func configurationCompatibilityAndValidation() throws {
         let defaults = try GatewayShardConfiguration()
         #expect(defaults.maximumReconnectAttempts == 5)
@@ -41,6 +41,7 @@ struct GatewayReconnectBudgetTests {
 
     /// READY/RESUMED never replenish the default total-run limit, including custom positive and zero bounds.
     /// - Parameter budget: Replacements permitted; five intentionally uses the initializer's omitted default.
+    @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
     @Test(arguments: [0, 1, 3, 5])
     func totalRunRemainsFinite(_ budget: Int) async throws {
         let sockets = (0...budget).map { _ in BudgetSocket() }
@@ -60,6 +61,7 @@ struct GatewayReconnectBudgetTests {
 
     /// Seven independently healthy resumed sessions exceed the old lifetime limit without spending Identify quota.
     /// Each replacement must use the base delay again, proving that recovery resets backoff as well as count.
+    @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
     @Test func healthySessionsPermitMoreThanFiveRecoveries() async throws {
         let sockets = (0..<8).map { _ in BudgetSocket() }
         let fixture = try BudgetFixture(sockets: sockets, policy: .afterHealthySession(
@@ -82,6 +84,7 @@ struct GatewayReconnectBudgetTests {
     }
 
     /// Rapid READY/RESUMED transitions cannot convert an unhealthy reconnect storm into unlimited attempts.
+    @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
     @Test func briefReadyStormExhaustsEpisode() async throws {
         let sockets = [BudgetSocket(), BudgetSocket()]
         let fixture = try BudgetFixture(sockets: sockets, retries: 1, policy: .afterHealthySession(
@@ -98,6 +101,7 @@ struct GatewayReconnectBudgetTests {
     }
 
     /// Partial ACK counts in two different generations cannot combine into one healthy-session certificate.
+    @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
     @Test func healthObservationsStayWithinOneGeneration() async throws {
         let sockets = [BudgetSocket(), BudgetSocket()]
         let fixture = try BudgetFixture(sockets: sockets, retries: 1, policy: .afterHealthySession(
@@ -116,6 +120,7 @@ struct GatewayReconnectBudgetTests {
     }
 
     /// A prior healthy certificate is consumed by its own recovery and cannot mask the next brief failed generation.
+    @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
     @Test func previousHealthCannotCertifyFollowingStorm() async throws {
         let sockets = [BudgetSocket(), BudgetSocket()]
         let fixture = try BudgetFixture(sockets: sockets, retries: 1, policy: .afterHealthySession(
@@ -135,6 +140,7 @@ struct GatewayReconnectBudgetTests {
 
     /// Uses a nanosecond boundary after RESUMED, with one valid ACK, to separate elapsed time from READY alone.
     /// - Parameter exact: True tests the inclusive duration boundary; false stops one nanosecond before it.
+    @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
     @Test(arguments: [false, true])
     func healthDurationBoundary(_ exact: Bool) async throws {
         let sockets = [BudgetSocket(), BudgetSocket(), BudgetSocket()]
@@ -157,6 +163,7 @@ struct GatewayReconnectBudgetTests {
     }
 
     /// A certified healthy session cannot manufacture a replacement when the configured budget is zero.
+    @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
     @Test func zeroRemainsZeroAfterHealth() async throws {
         let socket = BudgetSocket()
         let fixture = try BudgetFixture(sockets: [socket], retries: 0, policy: .afterHealthySession(
@@ -173,6 +180,7 @@ struct GatewayReconnectBudgetTests {
 
     /// Exercises ACK shapes that cannot prove a confirmed, sole scheduled write after readiness.
     /// - Parameter sample: Independent missing, unsolicited, pre-ready, requested or ambiguous sample.
+    @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
     @Test(arguments: BudgetInvalidHealthSample.allCases)
     func invalidACKObservationsCannotReset(_ sample: BudgetInvalidHealthSample) async throws {
         let heldWrite = TestBarrier()
@@ -238,6 +246,7 @@ struct GatewayReconnectBudgetTests {
 
     /// Overflowing the bounded unacknowledged-observation window disables later health credit for that generation.
     /// Three requested beats precede all ACKs; a later sole confirmed scheduled beat must still earn no certificate.
+    @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
     @Test func ambiguousOverflowCannotLaterEarnHealth() async throws {
         let sockets = [BudgetSocket(), BudgetSocket()]
         let fixture = try BudgetFixture(sockets: sockets, retries: 1, policy: .afterHealthySession(
@@ -258,6 +267,7 @@ struct GatewayReconnectBudgetTests {
 
     /// Fatal close and terminal protocol/continuity failures retain precedence after a session qualifies as healthy.
     /// - Parameter terminal: Exact terminal cause that must escape without opening a replacement socket.
+    @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
     @Test(arguments: BudgetHealthTerminal.allCases)
     func healthySessionCannotRetryTerminalFailures(_ terminal: BudgetHealthTerminal) async throws {
         let socket = BudgetSocket(peerCode: terminal == .fatal ? 4014 : nil)
@@ -283,6 +293,7 @@ struct GatewayReconnectBudgetTests {
 
     /// Actual revoked ownership and injected coordinator loss remain terminal after a certified healthy session.
     /// - Parameter unavailable: True injects unavailable validation; false removes the real currently issued lease.
+    @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
     @Test(arguments: [false, true])
     func healthySessionCannotRetryLostAuthority(_ unavailable: Bool) async throws {
         let socket = BudgetSocket()
@@ -308,6 +319,7 @@ struct GatewayReconnectBudgetTests {
     }
 
     /// Monotonic time spent joining a held predecessor cannot mature an otherwise too-short healthy session.
+    @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
     @Test func cleanupTimeCannotEarnHealth() async throws {
         let closeGate = TestBarrier()
         let second = BudgetSocket(reconnectGate: closeGate)
@@ -329,6 +341,7 @@ struct GatewayReconnectBudgetTests {
 
     /// Cancelling upgrade, retry delay or shared Identify admission joins all owners and releases the lease.
     /// - Parameter boundary: Cooperative suspension to cancel without advancing its virtual deadline.
+    @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
     @Test(arguments: BudgetCancellation.allCases)
     func cancellationJoinsEveryBoundary(_ boundary: BudgetCancellation) async throws {
         let connectGate = TestBarrier()
@@ -360,6 +373,7 @@ struct GatewayReconnectBudgetTests {
     }
 
     /// Resetting reconnect allowance grants no new Identify allowance when invalid-session requires fresh authentication.
+    @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
     @Test func healthyRecoveryCannotRefillSharedIdentifyQuota() async throws {
         let limit = try GatewaySessionStartLimit(total: 1, remaining: 1, resetAfter: .zero, maxConcurrency: 1)
         let sockets = [BudgetSocket(), BudgetSocket()]
