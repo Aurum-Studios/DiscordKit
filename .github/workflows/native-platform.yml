@@ -16,6 +16,9 @@ on:
         description: Exact platform coverage observed by the fresh barrier
         value: ${{ jobs.complete.outputs.coverage }}
     inputs:
+      publication:
+        type: boolean
+        default: false
       mode:
         required: true
         type: string
@@ -52,6 +55,12 @@ permissions:
 env:
   SWIFTNIO_STRICT: '1'
   PYTHONUNBUFFERED: '1'
+  ADMISSION_MODE: ${{ inputs.mode }}
+  ADMISSION_PLATFORM: ${{ inputs.mode == 'diagnostic' && inputs.platform || '' }}
+  ADMISSION_COMPONENT: ${{ inputs.component }}
+  ADMISSION_SUITE: ${{ inputs.suite }}
+  ADMISSION_PUBLICATION: ${{ inputs.publication }}
+  ADMISSION_DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
 
 jobs:
   platform:
@@ -70,15 +79,14 @@ jobs:
       - uses: actions/checkout@v6
         with:
           persist-credentials: false
-      - name: Require contained rollout admission before native provisioning
+      - name: Check current-attempt spend reservation
+        id: admission
         env:
-          NATIVE_MODE: ${{ inputs.mode }}
-          NATIVE_PLATFORM: ${{ inputs.platform }}
-          NATIVE_COMPONENT: ${{ inputs.component }}
-          NATIVE_SUITE: ${{ inputs.suite }}
+          ADMISSION_JOB: ${{ inputs.platform }}/platform
+          ADMISSION_GROUP: ${{ inputs.runner-group }}
         run: >-
-          python3 Tools/ci/workflow_scope.py authorize --mode "$NATIVE_MODE"
-          --platform "$NATIVE_PLATFORM" --component "$NATIVE_COMPONENT" --suite "$NATIVE_SUITE"
+          python3 Tools/ci/spend_admission.py guard --job "$ADMISSION_JOB" --group "$ADMISSION_GROUP"
+          --output .build/spend/guard.json
       - uses: ./.github/actions/setup-native
         timeout-minutes: 10
         with:
@@ -87,12 +95,20 @@ jobs:
         run: >-
           python Tools/ci/platform_probe.py --platform ${{ inputs.platform }}
           --output .build/platform-ci/${{ inputs.platform }}
+      - name: Summarize local command and transfer receipts
+        if: always() && steps.admission.outcome == 'success'
+        run: >-
+          python3 Tools/ci/usage_report.py --plan .build/spend/guard.json
+          --receipts .build --receipts "$RUNNER_TEMP" --output .build/spend/usage.json
+
       - name: Retain platform check evidence
-        if: always()
+        if: always() && steps.admission.outcome == 'success'
         uses: ./.github/actions/upload-evidence
         with:
           name: platform-${{ inputs.platform }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
-          paths: .build/platform-ci/${{ inputs.platform }}
+          paths: |
+            .build/platform-ci/${{ inputs.platform }}
+            .build/spend
           retention-days: 14
           receipt: ${{ runner.temp }}/transfer-${{ github.job }}-${{ strategy.job-index }}.json
 
@@ -126,6 +142,14 @@ jobs:
       - uses: actions/checkout@v6
         with:
           persist-credentials: false
+      - name: Check current-attempt spend reservation
+        id: admission
+        env:
+          ADMISSION_JOB: ${{ inputs.platform }}/plan
+          ADMISSION_GROUP: ${{ inputs.runner-group }}
+        run: >-
+          python3 Tools/ci/spend_admission.py guard --job "$ADMISSION_JOB" --group "$ADMISSION_GROUP"
+          --output .build/spend/guard.json
       - uses: ./.github/actions/setup-native
         timeout-minutes: 10
         with:
@@ -151,10 +175,18 @@ jobs:
               scoped = json.loads(Path('.build/ci-plan/scope-plan.json').read_text())
               for key, value in scoped.items():
                   output.write(key + '=' + json.dumps(value, separators=(',', ':')) + '\n')
+      - name: Summarize local command and transfer receipts
+        if: always() && steps.admission.outcome == 'success'
+        run: >-
+          python3 Tools/ci/usage_report.py --plan .build/spend/guard.json
+          --receipts .build --receipts "$RUNNER_TEMP" --output .build/spend/usage.json
+
       - uses: ./.github/actions/upload-evidence
         with:
           name: ci-plan-${{ inputs.platform }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
-          paths: .build/ci-plan
+          paths: |
+            .build/ci-plan
+            .build/spend
           retention-days: 14
           receipt: ${{ runner.temp }}/transfer-${{ github.job }}-${{ strategy.job-index }}.json
 
@@ -185,6 +217,14 @@ jobs:
       - uses: actions/checkout@v6
         with:
           persist-credentials: false
+      - name: Check current-attempt spend reservation
+        id: admission
+        env:
+          ADMISSION_JOB: ${{ inputs.platform }}/build/${{ matrix.component }}
+          ADMISSION_GROUP: ${{ matrix.group }}
+        run: >-
+          python3 Tools/ci/spend_admission.py guard --job "$ADMISSION_JOB" --group "$ADMISSION_GROUP"
+          --output .build/spend/guard.json
       - uses: ./.github/actions/setup-native
         timeout-minutes: 10
         with:
@@ -206,12 +246,20 @@ jobs:
           receipt: ${{ runner.temp }}/compiled-transfer.json
           producer-metadata: .build/build-ci/${{ matrix.platform }}-${{ matrix.component }}/compilation.json
           producer-receipt-name: compiled-receipt-${{ matrix.platform }}-${{ matrix.component }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+      - name: Summarize local command and transfer receipts
+        if: always() && steps.admission.outcome == 'success'
+        run: >-
+          python3 Tools/ci/usage_report.py --plan .build/spend/guard.json
+          --receipts .build --receipts "$RUNNER_TEMP" --output .build/spend/usage.json
+
       - name: Retain build diagnostics
-        if: always()
+        if: always() && steps.admission.outcome == 'success'
         uses: ./.github/actions/upload-evidence
         with:
           name: build-evidence-${{ matrix.platform }}-${{ matrix.component }}-${{ github.run_id }}-${{ github.run_attempt }}
-          paths: .build/build-ci/${{ matrix.platform }}-${{ matrix.component }}
+          paths: |
+            .build/build-ci/${{ matrix.platform }}-${{ matrix.component }}
+            .build/spend
           retention-days: 14
           receipt: ${{ runner.temp }}/transfer-${{ github.job }}-${{ strategy.job-index }}.json
 
@@ -228,6 +276,14 @@ jobs:
       - uses: actions/checkout@v6
         with:
           persist-credentials: false
+      - name: Check current-attempt spend reservation
+        id: admission
+        env:
+          ADMISSION_JOB: ${{ inputs.platform }}/canary
+          ADMISSION_GROUP: ${{ inputs.runner-group }}
+        run: >-
+          python3 Tools/ci/spend_admission.py guard --job "$ADMISSION_JOB" --group "$ADMISSION_GROUP"
+          --output .build/spend/guard.json
       - uses: ./.github/actions/setup-native
         timeout-minutes: 10
         with:
@@ -245,19 +301,27 @@ jobs:
           --selection .build/artifact-index.json --output .build/canary-ci
       - name: Verify generated source and dependency pins remain unchanged
         run: git diff --exit-code
+      - name: Summarize local command and transfer receipts
+        if: always() && steps.admission.outcome == 'success'
+        run: >-
+          python3 Tools/ci/usage_report.py --plan .build/spend/guard.json
+          --receipts .build --receipts "$RUNNER_TEMP" --output .build/spend/usage.json
+
       - name: Retain canary receipt and failure diagnostics
-        if: always()
+        if: always() && steps.admission.outcome == 'success'
         uses: ./.github/actions/upload-evidence
         with:
           name: canary-${{ inputs.platform }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           paths: |
+            |
+            .build/spend
             .build/canary-ci
             .build/artifact-index.json
             .build/timing-smoke/load
           retention-days: 14
           receipt: ${{ runner.temp }}/canary-transfer.json
       - name: Retain canary executed leaf coverage
-        if: always()
+        if: always() && steps.admission.outcome == 'success'
         uses: ./.github/actions/upload-evidence
         with:
           name: test-coverage-${{ inputs.platform }}-load-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
@@ -287,6 +351,14 @@ jobs:
       - uses: actions/checkout@v6
         with:
           persist-credentials: false
+      - name: Check current-attempt spend reservation
+        id: admission
+        env:
+          ADMISSION_JOB: ${{ inputs.platform }}/build/${{ matrix.component }}
+          ADMISSION_GROUP: ${{ matrix.group }}
+        run: >-
+          python3 Tools/ci/spend_admission.py guard --job "$ADMISSION_JOB" --group "$ADMISSION_GROUP"
+          --output .build/spend/guard.json
       - uses: ./.github/actions/setup-native
         timeout-minutes: 10
         with:
@@ -308,12 +380,20 @@ jobs:
           receipt: ${{ runner.temp }}/compiled-transfer.json
           producer-metadata: .build/build-ci/${{ matrix.platform }}-${{ matrix.component }}/compilation.json
           producer-receipt-name: compiled-receipt-${{ matrix.platform }}-${{ matrix.component }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+      - name: Summarize local command and transfer receipts
+        if: always() && steps.admission.outcome == 'success'
+        run: >-
+          python3 Tools/ci/usage_report.py --plan .build/spend/guard.json
+          --receipts .build --receipts "$RUNNER_TEMP" --output .build/spend/usage.json
+
       - name: Retain build diagnostics
-        if: always()
+        if: always() && steps.admission.outcome == 'success'
         uses: ./.github/actions/upload-evidence
         with:
           name: build-evidence-${{ matrix.platform }}-${{ matrix.component }}-${{ github.run_id }}-${{ github.run_attempt }}
-          paths: .build/build-ci/${{ matrix.platform }}-${{ matrix.component }}
+          paths: |
+            .build/build-ci/${{ matrix.platform }}-${{ matrix.component }}
+            .build/spend
           retention-days: 14
           receipt: ${{ runner.temp }}/transfer-${{ github.job }}-${{ strategy.job-index }}.json
 
@@ -339,6 +419,14 @@ jobs:
       - uses: actions/checkout@v6
         with:
           persist-credentials: false
+      - name: Check current-attempt spend reservation
+        id: admission
+        env:
+          ADMISSION_JOB: ${{ inputs.platform }}/build/${{ matrix.component }}
+          ADMISSION_GROUP: ${{ matrix.group }}
+        run: >-
+          python3 Tools/ci/spend_admission.py guard --job "$ADMISSION_JOB" --group "$ADMISSION_GROUP"
+          --output .build/spend/guard.json
       - uses: ./.github/actions/setup-native
         timeout-minutes: 10
         with:
@@ -360,12 +448,20 @@ jobs:
           receipt: ${{ runner.temp }}/compiled-transfer.json
           producer-metadata: .build/build-ci/${{ matrix.platform }}-${{ matrix.component }}/compilation.json
           producer-receipt-name: compiled-receipt-${{ matrix.platform }}-${{ matrix.component }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+      - name: Summarize local command and transfer receipts
+        if: always() && steps.admission.outcome == 'success'
+        run: >-
+          python3 Tools/ci/usage_report.py --plan .build/spend/guard.json
+          --receipts .build --receipts "$RUNNER_TEMP" --output .build/spend/usage.json
+
       - name: Retain build diagnostics
-        if: always()
+        if: always() && steps.admission.outcome == 'success'
         uses: ./.github/actions/upload-evidence
         with:
           name: build-evidence-${{ matrix.platform }}-${{ matrix.component }}-${{ github.run_id }}-${{ github.run_attempt }}
-          paths: .build/build-ci/${{ matrix.platform }}-${{ matrix.component }}
+          paths: |
+            .build/build-ci/${{ matrix.platform }}-${{ matrix.component }}
+            .build/spend
           retention-days: 14
           receipt: ${{ runner.temp }}/transfer-${{ github.job }}-${{ strategy.job-index }}.json
 
@@ -375,11 +471,19 @@ jobs:
     if: always() && needs.canary.result == 'success' && (needs.build-core.result == 'success' || needs.build-core.result == 'skipped') && (needs.build-remaining.result == 'success' || needs.build-remaining.result == 'skipped') && (needs.plan.outputs.has-core-builds == 'true' || needs.plan.outputs.has-builds == 'true')
     runs-on:
       group: ${{ inputs.runner-group }}
-    timeout-minutes: 15
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v6
         with:
           persist-credentials: false
+      - name: Check current-attempt spend reservation
+        id: admission
+        env:
+          ADMISSION_JOB: ${{ inputs.platform }}/resolve
+          ADMISSION_GROUP: ${{ inputs.runner-group }}
+        run: >-
+          python3 Tools/ci/spend_admission.py guard --job "$ADMISSION_JOB" --group "$ADMISSION_GROUP"
+          --output .build/spend/guard.json
       - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
@@ -395,6 +499,21 @@ jobs:
                           '--platform', os.environ['NATIVE_PLATFORM'],
                           '--components-json', os.environ['EXPECTED_BUILDS'],
                           '--output', '.build/resolved-producers.json'], check=True)
+
+      - name: Summarize local command and transfer receipts
+        if: always() && steps.admission.outcome == 'success'
+        run: >-
+          python3 Tools/ci/usage_report.py --plan .build/spend/guard.json
+          --receipts .build --receipts "$RUNNER_TEMP" --output .build/spend/usage.json
+
+      - name: Retain local spend reservation and usage
+        if: always() && steps.admission.outcome == 'success'
+        uses: ./.github/actions/upload-evidence
+        with:
+          name: spend-${{ inputs.platform }}-${{ github.job }}-${{ strategy.job-index }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          paths: .build/spend
+          retention-days: 14
+          receipt: ${{ runner.temp }}/spend-transfer.json
 
   tests-root:
     name: ${{ matrix.suite && format('Tests / {0}', matrix.suite) || 'No remaining suites' }}
@@ -418,6 +537,14 @@ jobs:
       - uses: actions/checkout@v6
         with:
           persist-credentials: false
+      - name: Check current-attempt spend reservation
+        id: admission
+        env:
+          ADMISSION_JOB: ${{ inputs.platform }}/suite/${{ matrix.component }}/${{ matrix.suite }}
+          ADMISSION_GROUP: ${{ matrix.group }}
+        run: >-
+          python3 Tools/ci/spend_admission.py guard --job "$ADMISSION_JOB" --group "$ADMISSION_GROUP"
+          --output .build/spend/guard.json
       - uses: ./.github/actions/setup-native
         timeout-minutes: 10
         with:
@@ -438,19 +565,27 @@ jobs:
           --output .build/test-ci/${{ matrix.platform }}-${{ matrix.suite }}
       - name: Verify generated source and dependency pins remain unchanged
         run: git diff --exit-code
+      - name: Summarize local command and transfer receipts
+        if: always() && steps.admission.outcome == 'success'
+        run: >-
+          python3 Tools/ci/usage_report.py --plan .build/spend/guard.json
+          --receipts .build --receipts "$RUNNER_TEMP" --output .build/spend/usage.json
+
       - name: Retain selected suite evidence
-        if: always()
+        if: always() && steps.admission.outcome == 'success'
         uses: ./.github/actions/upload-evidence
         with:
           name: test-evidence-${{ matrix.platform }}-${{ matrix.suite }}-${{ github.run_id }}-${{ github.run_attempt }}
           paths: |
+            |
+            .build/spend
             .build/test-ci/${{ matrix.platform }}-${{ matrix.suite }}
             .build/dsl-measurements/runtime-smoke.json
             .build/timing-smoke/${{ matrix.component }}
           retention-days: 14
           receipt: ${{ runner.temp }}/transfer-${{ github.job }}-${{ strategy.job-index }}.json
       - name: Retain exact executed leaf coverage
-        if: always()
+        if: always() && steps.admission.outcome == 'success'
         uses: ./.github/actions/upload-evidence
         with:
           name: test-coverage-${{ matrix.platform }}-${{ matrix.suite }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
@@ -481,6 +616,14 @@ jobs:
       - uses: actions/checkout@v6
         with:
           persist-credentials: false
+      - name: Check current-attempt spend reservation
+        id: admission
+        env:
+          ADMISSION_JOB: ${{ inputs.platform }}/suite/${{ matrix.component }}/${{ matrix.suite }}
+          ADMISSION_GROUP: ${{ matrix.group }}
+        run: >-
+          python3 Tools/ci/spend_admission.py guard --job "$ADMISSION_JOB" --group "$ADMISSION_GROUP"
+          --output .build/spend/guard.json
       - uses: ./.github/actions/setup-native
         timeout-minutes: 10
         with:
@@ -501,19 +644,27 @@ jobs:
           --output .build/test-ci/${{ matrix.platform }}-${{ matrix.suite }}
       - name: Verify generated source and dependency pins remain unchanged
         run: git diff --exit-code
+      - name: Summarize local command and transfer receipts
+        if: always() && steps.admission.outcome == 'success'
+        run: >-
+          python3 Tools/ci/usage_report.py --plan .build/spend/guard.json
+          --receipts .build --receipts "$RUNNER_TEMP" --output .build/spend/usage.json
+
       - name: Retain selected suite evidence
-        if: always()
+        if: always() && steps.admission.outcome == 'success'
         uses: ./.github/actions/upload-evidence
         with:
           name: test-evidence-${{ matrix.platform }}-${{ matrix.suite }}-${{ github.run_id }}-${{ github.run_attempt }}
           paths: |
+            |
+            .build/spend
             .build/test-ci/${{ matrix.platform }}-${{ matrix.suite }}
             .build/dsl-measurements/runtime-smoke.json
             .build/timing-smoke/${{ matrix.component }}
           retention-days: 14
           receipt: ${{ runner.temp }}/transfer-${{ github.job }}-${{ strategy.job-index }}.json
       - name: Retain exact executed leaf coverage
-        if: always()
+        if: always() && steps.admission.outcome == 'success'
         uses: ./.github/actions/upload-evidence
         with:
           name: test-coverage-${{ matrix.platform }}-${{ matrix.suite }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
@@ -540,6 +691,14 @@ jobs:
       - uses: actions/checkout@v6
         with:
           persist-credentials: false
+      - name: Check current-attempt spend reservation
+        id: admission
+        env:
+          ADMISSION_JOB: ${{ inputs.platform }}/audit
+          ADMISSION_GROUP: ${{ inputs.runner-group }}
+        run: >-
+          python3 Tools/ci/spend_admission.py guard --job "$ADMISSION_JOB" --group "$ADMISSION_GROUP"
+          --output .build/spend/guard.json
       - uses: ./.github/actions/setup-native
         timeout-minutes: 10
         with:
@@ -556,12 +715,20 @@ jobs:
           --selection .build/artifact-index.json --output .build/audit-ci
       - name: Verify generated source and dependency pins remain unchanged
         run: git diff --exit-code
+      - name: Summarize local command and transfer receipts
+        if: always() && steps.admission.outcome == 'success'
+        run: >-
+          python3 Tools/ci/usage_report.py --plan .build/spend/guard.json
+          --receipts .build --receipts "$RUNNER_TEMP" --output .build/spend/usage.json
+
       - name: Retain audit diagnostics
-        if: always()
+        if: always() && steps.admission.outcome == 'success'
         uses: ./.github/actions/upload-evidence
         with:
           name: audit-evidence-${{ inputs.platform }}-${{ github.run_id }}-${{ github.run_attempt }}
-          paths: .build/audit-ci
+          paths: |
+            .build/audit-ci
+            .build/spend
           retention-days: 14
           receipt: ${{ runner.temp }}/transfer-${{ github.job }}-${{ strategy.job-index }}.json
 
@@ -573,7 +740,7 @@ jobs:
     # Keep their compiler work on the large pools rather than the runtime pool.
     runs-on:
       group: ${{ inputs.build-group }}
-    timeout-minutes: 90
+    timeout-minutes: 100
     defaults:
       run:
         shell: ${{ inputs.shell }}
@@ -590,6 +757,14 @@ jobs:
       - uses: actions/checkout@v6
         with:
           persist-credentials: false
+      - name: Check current-attempt spend reservation
+        id: admission
+        env:
+          ADMISSION_JOB: ${{ inputs.platform }}/fixture/${{ matrix.suite }}
+          ADMISSION_GROUP: ${{ inputs.build-group }}
+        run: >-
+          python3 Tools/ci/spend_admission.py guard --job "$ADMISSION_JOB" --group "$ADMISSION_GROUP"
+          --output .build/spend/guard.json
       - uses: ./.github/actions/setup-native
         timeout-minutes: 10
         with:
@@ -614,6 +789,21 @@ jobs:
       - name: Verify generated source and dependency pins remain unchanged
         run: git diff --exit-code
 
+      - name: Summarize local command and transfer receipts
+        if: always() && steps.admission.outcome == 'success'
+        run: >-
+          python3 Tools/ci/usage_report.py --plan .build/spend/guard.json
+          --receipts .build --receipts "$RUNNER_TEMP" --output .build/spend/usage.json
+
+      - name: Retain local spend reservation and usage
+        if: always() && steps.admission.outcome == 'success'
+        uses: ./.github/actions/upload-evidence
+        with:
+          name: spend-${{ inputs.platform }}-${{ github.job }}-${{ strategy.job-index }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          paths: .build/spend
+          retention-days: 14
+          receipt: ${{ runner.temp }}/spend-transfer.json
+
   public-api:
     outputs:
       documentation-inputs: ${{ steps.documentation.outputs.artifact }}
@@ -630,6 +820,14 @@ jobs:
       - uses: actions/checkout@v6
         with:
           persist-credentials: false
+      - name: Check current-attempt spend reservation
+        id: admission
+        env:
+          ADMISSION_JOB: ${{ inputs.platform }}/public-api
+          ADMISSION_GROUP: MacOS-26-5
+        run: >-
+          python3 Tools/ci/spend_admission.py guard --job "$ADMISSION_JOB" --group "$ADMISSION_GROUP"
+          --output .build/spend/guard.json
       - uses: ./.github/actions/setup-native
         timeout-minutes: 10
         with:
@@ -672,12 +870,20 @@ jobs:
       - name: Expose this nonmatrix immutable conversion identity
         id: documentation
         run: python3 Tools/ci/documentation_workflow.py artifact-output --receipt "$RUNNER_TEMP/documentation-inputs-transfer.json"
+      - name: Summarize local command and transfer receipts
+        if: always() && steps.admission.outcome == 'success'
+        run: >-
+          python3 Tools/ci/usage_report.py --plan .build/spend/guard.json
+          --receipts .build --receipts "$RUNNER_TEMP" --output .build/spend/usage.json
+
       - name: Retain API comparison diagnostics even on failure
-        if: always()
+        if: always() && steps.admission.outcome == 'success'
         uses: ./.github/actions/upload-evidence
         with:
           name: api-diagnostics-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           paths: |
+            |
+            .build/spend
             .build/current-api.json
             .build/current-macros-api.json
             .build/current-extensions-api.json
@@ -717,6 +923,14 @@ jobs:
       - uses: actions/checkout@v6
         with:
           persist-credentials: false
+      - name: Check current-attempt spend reservation
+        id: admission
+        env:
+          ADMISSION_JOB: ${{ inputs.platform }}/apple
+          ADMISSION_GROUP: MacOS-26-5
+        run: >-
+          python3 Tools/ci/spend_admission.py guard --job "$ADMISSION_JOB" --group "$ADMISSION_GROUP"
+          --output .build/spend/guard.json
       - uses: ./.github/actions/setup-native
         timeout-minutes: 10
         with:
@@ -728,10 +942,18 @@ jobs:
           xcodebuild -version
       - name: Emit selected modules with installed Xcode SDKs
         run: python3 Tools/ci/compile_apple.py
+      - name: Summarize local command and transfer receipts
+        if: always() && steps.admission.outcome == 'success'
+        run: >-
+          python3 Tools/ci/usage_report.py --plan .build/spend/guard.json
+          --receipts .build --receipts "$RUNNER_TEMP" --output .build/spend/usage.json
+
       - uses: ./.github/actions/upload-evidence
         with:
           name: apple-selected-module-compilation-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
-          paths: .build/apple-compile.json
+          paths: |
+            .build/apple-compile.json
+            .build/spend
           retention-days: 14
           receipt: ${{ runner.temp }}/apple-transfer.json
 
@@ -741,11 +963,19 @@ jobs:
     needs: [platform, plan, build, canary, build-core, build-remaining, resolve, tests-root, tests, audit, fixtures, public-api, apple-compilation]
     runs-on:
       group: ${{ inputs.runner-group }}
-    timeout-minutes: 25
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v6
         with:
           persist-credentials: false
+      - name: Check current-attempt spend reservation
+        id: admission
+        env:
+          ADMISSION_JOB: ${{ inputs.platform }}/coverage
+          ADMISSION_GROUP: ${{ inputs.runner-group }}
+        run: >-
+          python3 Tools/ci/spend_admission.py guard --job "$ADMISSION_JOB" --group "$ADMISSION_GROUP"
+          --output .build/spend/guard.json
       - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
@@ -766,13 +996,28 @@ jobs:
                           '--platform', manifest['platform'], '--components-json', os.environ['EXPECTED_BUILDS'],
                           '--output', '.build/pre-export-producers.json'], check=True)
 
+      - name: Summarize local command and transfer receipts
+        if: always() && steps.admission.outcome == 'success'
+        run: >-
+          python3 Tools/ci/usage_report.py --plan .build/spend/guard.json
+          --receipts .build --receipts "$RUNNER_TEMP" --output .build/spend/usage.json
+
+      - name: Retain local spend reservation and usage
+        if: always() && steps.admission.outcome == 'success'
+        uses: ./.github/actions/upload-evidence
+        with:
+          name: spend-${{ inputs.platform }}-${{ github.job }}-${{ strategy.job-index }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          paths: .build/spend
+          retention-days: 14
+          receipt: ${{ runner.temp }}/spend-transfer.json
+
   package:
     name: Export validated platform source
     needs: coverage
     if: inputs.mode == 'full'
     runs-on:
       group: ${{ inputs.runner-group }}
-    timeout-minutes: 25
+    timeout-minutes: 35
     defaults:
       run:
         shell: ${{ inputs.shell }}
@@ -784,6 +1029,14 @@ jobs:
       - uses: actions/checkout@v6
         with:
           persist-credentials: false
+      - name: Check current-attempt spend reservation
+        id: admission
+        env:
+          ADMISSION_JOB: ${{ inputs.platform }}/export
+          ADMISSION_GROUP: ${{ inputs.runner-group }}
+        run: >-
+          python3 Tools/ci/spend_admission.py guard --job "$ADMISSION_JOB" --group "$ADMISSION_GROUP"
+          --output .build/spend/guard.json
       - uses: ./.github/actions/setup-native
         timeout-minutes: 10
         with:
@@ -811,6 +1064,21 @@ jobs:
           retention-days: 14
           receipt: ${{ runner.temp }}/transfer-${{ github.job }}-${{ strategy.job-index }}.json
 
+      - name: Summarize local command and transfer receipts
+        if: always() && steps.admission.outcome == 'success'
+        run: >-
+          python3 Tools/ci/usage_report.py --plan .build/spend/guard.json
+          --receipts .build --receipts "$RUNNER_TEMP" --output .build/spend/usage.json
+
+      - name: Retain local spend reservation and usage
+        if: always() && steps.admission.outcome == 'success'
+        uses: ./.github/actions/upload-evidence
+        with:
+          name: spend-${{ inputs.platform }}-${{ github.job }}-${{ strategy.job-index }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          paths: .build/spend
+          retention-days: 14
+          receipt: ${{ runner.temp }}/spend-transfer.json
+
   complete:
     name: Platform validation passed
     if: always()
@@ -824,6 +1092,14 @@ jobs:
       - uses: actions/checkout@v6
         with:
           persist-credentials: false
+      - name: Check current-attempt spend reservation
+        id: admission
+        env:
+          ADMISSION_JOB: ${{ inputs.platform }}/complete
+          ADMISSION_GROUP: ${{ inputs.runner-group }}
+        run: >-
+          python3 Tools/ci/spend_admission.py guard --job "$ADMISSION_JOB" --group "$ADMISSION_GROUP"
+          --output .build/spend/guard.json
       - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
@@ -848,11 +1124,19 @@ jobs:
           subprocess.run([sys.executable, 'Tools/ci/workflow_coverage.py', 'certify',
                           '--manifest-json', json.dumps(manifest), '--output', '.build/platform-coverage.json',
                           '--github-output'], check=True)
+      - name: Summarize local command and transfer receipts
+        if: always() && steps.admission.outcome == 'success'
+        run: >-
+          python3 Tools/ci/usage_report.py --plan .build/spend/guard.json
+          --receipts .build --receipts "$RUNNER_TEMP" --output .build/spend/usage.json
+
       - name: Retain final platform coverage and producer selection
         uses: ./.github/actions/upload-evidence
         with:
           name: coverage-${{ inputs.platform }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           paths: |
+            |
+            .build/spend
             .build/platform-coverage.json
             .build/barrier-producers.json
           retention-days: 14

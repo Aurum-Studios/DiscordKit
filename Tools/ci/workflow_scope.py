@@ -19,11 +19,17 @@ ROLLOUT = Path(__file__).with_name('rollout.v1.json')
 PREFIXES = {'linux-x64': 'Linux x64', 'macos-arm64': 'macOS ARM64'}
 
 
+def execution_jobs(mode, **kwargs):
+    """Expose the single execution expansion to spend admission and reporting."""
+    from execution_plan import execution_jobs as expand
+    return expand(mode, **kwargs)
+
+
 def rollout():
-    """Phase 10 must replace this closed admission contract before native expansion."""
+    """Admission is implemented; native rollout still requires reviewed Phase 11 work."""
     value = json.loads(ROLLOUT.read_text())
     if value != {'schemaVersion': 1, 'automaticMode': 'preflight',
-                 'nativeExpansionEnabled': False, 'spendAdmissionImplemented': False}:
+                 'nativeExpansionEnabled': False, 'spendAdmissionImplemented': True}:
         raise ValueError('rollout settings require reviewed Phase 10 admission')
     return value
 
@@ -38,8 +44,8 @@ def authorize(mode):
     """Neither a dispatch input nor a repository variable supplies execution authorization."""
     rollout()
     if mode != 'preflight':
-        raise ValueError('native execution contained: Phase 10 spend admission is not implemented; '
-                         'a separately reviewed bounded bootstrap probe is required')
+        raise ValueError('native execution contained: Phase 10 admission and separately reviewed '
+                         'native rollout are required; use the current-attempt spend guard')
 
 
 CORE_COMPONENTS = frozenset(('root', 'macros', 'extensions', 'tooling'))

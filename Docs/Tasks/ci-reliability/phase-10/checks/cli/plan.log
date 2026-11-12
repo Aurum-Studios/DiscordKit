@@ -1,0 +1,1 @@
+/Library/Frameworks/Python.framework/Versions/3.14/bin/python3 Tools/ci/spend_admission.py plan --mode preflight --output Docs/Tasks/ci-reliability/phase-10/checks/cli/plan.json

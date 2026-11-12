@@ -28,13 +28,15 @@ qualification remain tracked in the plan.
 
 ## Offline validation
 
-[Offline validation](../.github/workflows/ci.yml) retains push, pull-request and
+[Offline validation](../.github/workflows/ci.yml) retains default-branch push, pull-request and
 manual entry points with read-only permissions and no Discord secrets. The
 [Phase 6 implementation](Tasks/ci-reliability/phase-6/IMPLEMENTATION.md) introduces
 explicit `preflight`, `diagnostic` and `full` scope. The checked-in
 [rollout setting](../Tools/ci/rollout.v1.json) selects **preflight** automatically
-and keeps native expansion disabled until reviewed Phase 10 spend admission.
-Manual full/diagnostic requests fail closed under this setting. Repository
+and keeps native expansion disabled for Phase 11 qualification. The
+[Phase 10 admission policy](../Tools/ci/admission.v1.json) separately retains zero
+allowances and unverified account pricing, so even helper fanout requires admission.
+Manual full/diagnostic requests fail closed under these settings. Repository
 variables or dispatch fields cannot grant paid execution. Documentation site preparation shares full CI inputs; Pages publication remains
 contained behind full certification and an explicit publication request.
 
@@ -437,8 +439,8 @@ barrier. It uploads a seven-day immutable site archive using read-only repositor
 permissions; it has no Pages permission. The
 [Documentation workflow](../.github/workflows/documentation.yml) has only a manual
 trigger and requests the ordinary full CI workflow at the selected ref. It has no
-separate compiler/conversion graph. Requests remain blocked by the reviewed
-Phase 10 containment setting until spend admission is implemented.
+separate compiler/conversion graph. Its own current-attempt spend guard precedes
+dispatch; the checked-in zero allowance keeps requests contained.
 
 Pages upload and deployment run in a separate job only when a manual request sets
 `publish-documentation=true` (or selects `publish` in Documentation). The job
@@ -518,3 +520,32 @@ Automation does not satisfy that human review by itself. The release maintenance
 validator rejects overdue reviews; before publishing, refresh affected source rows
 and resolve unclassified entries. Preserve the original frozen discovery pins so
 the review artifact remains reproducible and useful over time.
+
+## Spend admission and usage
+
+[Phase 10](Tasks/ci-reliability/phase-10/IMPLEMENTATION.md) expands the same platform
+execution partitions used by CI and reads actual workflow deadlines, rather than
+maintaining an approximate second build/test list. Each runner job and permitted
+attempt reserves its whole outer envelope, including startup, provisioning,
+commands, recovery, diagnostics, cleanup and uploads. Independent platform
+reservations add to one workflow allowance. Rate/mapping uncertainty, stale dates,
+unknown storage/transfer liability, excess cost or exhausted attempts reject work.
+
+Every job checks current source, policy, scope, runner group and attempt after
+minimal checkout and before provisioning. Partial consumer reruns cannot reuse a
+successful earlier admission output or reset their allowance. The native rollout
+remains closed independently. Pushes validate only the maintained default branch
+`main`; PR and explicit manual runs remain, avoiding branch-push/PR duplicates.
+
+The bootstrap and aggregation expose JSON and step summaries for planned maxima,
+per-SKU rounded observed minutes, queue/setup/transfer evidence, command outcomes,
+remaining coverage and admission reasons. Each native job retains its guard/local
+summary with diagnostics. Unavailable billing mappings or unfinished jobs stay
+unknown. Estimates are neither invoices nor exact provider-enforced dollar caps.
+Checkout occurs before refusal, and the source guard cannot cap arbitrarily many
+separately started rejected jobs or share allowance across workflow run IDs.
+
+The [operator checklist](Tasks/ci-reliability/phase-10/OPERATOR-BUDGET.md) prepares a
+concrete USD 50/month repository Actions backstop proposal with stop usage and
+75/90/100 alerts. It awaits operator selection, explicit authorization and complete
+read-back. No billing configuration or paid execution is claimed.

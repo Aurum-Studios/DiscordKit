@@ -32,6 +32,8 @@ Phase 8 has local helper/signature acceptance at implementation commit
 hosted cold/hit compatibility and savings remain Phase 11.
 Phase 9 has local shared-documentation helper and real synthetic DocC acceptance at
 `b6fe729d61f7355cd8bcfc9ab4dcd93d020f2467` on `ci/phase-9-documentation`; hosted proof remains Phase 11.
+Phase 10 has local spend-admission and usage-reporting acceptance on
+`ci/phase-10-spend-admission`; its scoped implementation commit receipt is pending.
 No hosted qualification, paid execution, external configuration change or publication
 is claimed. See [BOOTSTRAP.md](BOOTSTRAP.md) for the zero-paid execution sheet.
 
@@ -47,7 +49,7 @@ is claimed. See [BOOTSTRAP.md](BOOTSTRAP.md) for the zero-paid execution sheet.
 | 7 — Suite groups and resources | Implemented; local helper acceptance; hosted measurements pending Phase 11 | `4db6c5e6181d790fd1cd304220059397a501467b` | [Grouped suites, leaf coverage and resources](phase-7/IMPLEMENTATION.md); [validation](phase-7/validation.json), [review](phase-7/review.json) |
 | 8 — Verified provisioning | Implemented; local helper/signature acceptance; hosted measurements pending Phase 11 | `db705cb6dade43da579d555461f3f36a13586b48` | [Verified distribution reuse and profiles](phase-8/IMPLEMENTATION.md); [validation](phase-8/validation.json), [review](phase-8/review.json), [upstream pins](phase-8/upstream/SOURCES.json) |
 | 9 — Shared documentation inputs | Implemented; local helper and real synthetic DocC acceptance; hosted proof pending Phase 11 | `b6fe729d61f7355cd8bcfc9ab4dcd93d020f2467` | [Shared conversions and trust contracts](phase-9/IMPLEMENTATION.md); [validation](phase-9/validation.json), [review](phase-9/review.json), [real DocC counts/routes](phase-9/checks/real-docc/results.json) |
-| 10 — Spend admission | Not started | Pending | Pending |
+| 10 — Spend admission | Implemented; local acceptance; scoped commit receipt pending | Pending scoped commit | [Contracts and execution sheet](phase-10/IMPLEMENTATION.md); [validation](phase-10/validation.json), [review](phase-10/review.json), [operator proposal](phase-10/OPERATOR-BUDGET.md) |
 | 11 — Qualification and rollout | Not started | Pending | Pending exact-final-revision CI |
 
 ## Phase 1 handoff
@@ -301,3 +303,30 @@ Implementation commit `b6fe729d61f7355cd8bcfc9ab4dcd93d020f2467` contains all 13
 input blobs and 65 retained manifest artifacts. The [actual-blob commit receipt](phase-9/commit-receipt.json)
 verifies these objects and current bytes. This completion followup changes documentation
 only; executable/test/workflow inputs remain unchanged.
+
+
+## Phase 10 handoff
+
+Owner Codex `/root` prepared spend admission on `ci/phase-10-spend-admission`,
+sibling `DiscordKit-ci-phase10`, based on `f94520e3`. The
+[local plan/contracts](phase-10/IMPLEMENTATION.md) preserve zero paid allowances,
+all earlier phase checkouts and the original checkout's four planning edits.
+The exact execution partitions and workflow deadlines now produce central disjoint
+job/attempt reservations. Every current consumer checks its own source/scope/group/
+attempt before provisioning; retained earlier outputs cannot grant fresh work.
+Unknown/unverified/stale rates, unknown additional charges, over-budget plans,
+duplicate-trigger and matrix/runner drift fail closed. Default-branch push, PR and
+manual entry points avoid branch-push/PR duplication. Native rollout remains closed.
+
+[Validation](phase-10/validation.json) records 984 passing helper tests and six
+existing Linux-only skips on macOS, all seven workflows passing actionlint,
+source/example checks, actual local CLI refusal and retained synthetic rerun/usage
+specimens. [Review](phase-10/review.json) has no remaining blockers. JSON/step
+summaries retain rounded SKU minutes, command/transfer outcomes and missing coverage.
+They remain estimates and unfinished snapshots rather than invoices or certification.
+
+Operator selection/authorization/read-back of the proposed repository budget is
+pending. No hosted dispatch, paid job, billing change, native compilation or
+publication occurred. Phase 3 native x64 acceptance and Phase 11 real partial-rerun,
+final hosted qualification and measured savings remain open. The implementation
+commit and actual-blob receipt will be recorded after the scoped commit exists.

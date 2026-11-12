@@ -1,0 +1,132 @@
+{
+  "schemaVersion": 1,
+  "phase": 10,
+  "status": "passed-local-acceptance",
+  "recordedAt": "2026-11-12T16:32:28.579766+00:00",
+  "base": "f94520e322403b3a557de3440fbf2ff177a2459b",
+  "branch": "ci/phase-10-spend-admission",
+  "owner": "Codex /root",
+  "host": {
+    "system": "Darwin",
+    "architecture": "arm64",
+    "python": "3.14.0"
+  },
+  "inputSHA256": {
+    ".github/workflows/ci.yml": "0b46595f64a9123314d3a5d207d6f953f4d7ebebedb1a0687ca00806c095744f",
+    ".github/workflows/native-platform.yml": "fd0ea08626450b6e1fabd8f725e523d4700403e2b45f7cc8a0c45bf57eb3eeb4",
+    ".github/workflows/documentation.yml": "112803748bb37522a4367c7a55c58e9cb317951bb9263e0c5b60afbf39f50b20",
+    "Tools/ci/admission.v1.json": "fc9d35b18677b8b81039dbd436e4c0330c5686f29913e53ae5e50a6c577d23e3",
+    "Tools/ci/execution_plan.py": "5025ddc41342738535a7e2685e7cae8ae634c31d65eb00fc587e42bcad3419fd",
+    "Tools/ci/spend_admission.py": "c56e3085bba5844f95e448b5725f7298f8e7cd757fee99cbb2ffa4f705d5809c",
+    "Tools/ci/usage_report.py": "49d52281257fcfa52997ee61366cdd7817a6a9bdbaa0f663b7a8142da4c5294f",
+    "Tools/ci/test_execution_plan.py": "a59475f36ebbdbb06f56cdea6ad88e61d72a1c10208c30b1e122a57aa5ee66c5",
+    "Tools/ci/test_spend_admission.py": "f5de2c4834ea32ae33f2f4bad333f2147a110b8b36aec33c11e481d41fdd47fd",
+    "Tools/ci/test_usage_report.py": "6ba987390647353eb443e6ed9e39b8ebe76123a30cc9043475a3db5bb72fec96",
+    "Tools/ci/rollout.v1.json": "52c0ec7d503d8dc5602e97be6e082347f586ceb0e07df3a1c3c5a384acf70fe2",
+    "Tools/ci/workflow_scope.py": "d97714187de3d43dbe6d17648cab8f2c94c6578b2dafad9d4968e1d071e8f0c2"
+  },
+  "checks": [
+    {
+      "group": "ci-python",
+      "discovered": 577,
+      "passed": 571,
+      "skipped": 6,
+      "evidence": "checks/ci-python-final/commands.json"
+    },
+    {
+      "group": "tooling-python",
+      "discovered": 236,
+      "passed": 236,
+      "skipped": 0,
+      "evidence": "checks/tooling-python/commands.json"
+    },
+    {
+      "group": "load-python",
+      "discovered": 56,
+      "passed": 56,
+      "skipped": 0,
+      "evidence": "checks/tooling-python/commands.json"
+    },
+    {
+      "group": "benchmarks-python",
+      "discovered": 33,
+      "passed": 33,
+      "skipped": 0,
+      "evidence": "checks/benchmark-python/commands.json"
+    },
+    {
+      "group": "timing-support-python",
+      "discovered": 47,
+      "passed": 47,
+      "skipped": 0,
+      "evidence": "checks/benchmark-python/commands.json"
+    },
+    {
+      "group": "foundation-timing-python",
+      "discovered": 3,
+      "passed": 3,
+      "skipped": 0,
+      "evidence": "checks/benchmark-python/commands.json"
+    },
+    {
+      "group": "browser",
+      "discovered": 38,
+      "passed": 38,
+      "skipped": 0,
+      "evidence": "checks/browser/commands.json"
+    }
+  ],
+  "totals": {
+    "discovered": 990,
+    "passed": 984,
+    "skipped": 6
+  },
+  "focusedIndependentReviewTests": 46,
+  "actionlint": {
+    "status": "passed",
+    "version": "1.7.12",
+    "allWorkflowCount": 7,
+    "shellcheckAvailable": false,
+    "evidence": "checks/workflow/commands.json"
+  },
+  "sourceChecks": {
+    "status": "passed",
+    "displayedExamples": 32,
+    "relativeLinksChecked": 253,
+    "evidence": "checks/source/commands.json"
+  },
+  "actualCLI": "checks/cli/results.json",
+  "syntheticAdmissionAndRerunUsage": "checks/admission/usage.json",
+  "executionScope": {
+    "preflightJobs": 8,
+    "fullJobs": 81,
+    "fullMaximumRunnerMinutesPerAttempt": 7780,
+    "fullPublicationAdditionalJobs": 1,
+    "loadDiagnosticJobs": 14,
+    "documentationRequestJobs": 1
+  },
+  "boundaries": {
+    "paidJobs": 0,
+    "paidMinutes": 0,
+    "paidAttempts": 0,
+    "allowanceUSD": "0.00",
+    "nativeCompilations": 0,
+    "remoteWrites": 0,
+    "publication": false,
+    "providerBudgetConfigured": false
+  },
+  "qualificationLimits": [
+    "Per-run allowance only; distinct workflow runs do not share a ledger.",
+    "Arbitrarily repeated rejected startups have no offline provider-enforced cap.",
+    "Actual storage/transfer volume envelope and account billing mappings remain unverified.",
+    "Final reporting can observe running aggregation and later publication as incomplete.",
+    "Provider settings, native rollout and all hosted execution remain pending."
+  ],
+  "originalPlanningPreserved": true,
+  "notes": [
+    "The final 577-test CI-helper run includes matrix validation and the summary trailing-whitespace fix; ci-python-final is authoritative.",
+    "Other helper groups and workflows did not change after their checks.",
+    "CLI source identity records the current tracked checkout at local refusal time; inputSHA256 separately binds all new executable/policy/test files.",
+    "Planning/report specimens are synthetic or explicitly local refusal; none are native or hosted acceptance."
+  ]
+}

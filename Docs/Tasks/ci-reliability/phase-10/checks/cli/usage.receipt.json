@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "name": "phase10-cli-usage",
+  "stage": "phase10-cli-usage",
+  "operation": "localHelperCheck",
+  "arguments": [
+    "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+    "Tools/ci/usage_report.py",
+    "--plan",
+    "Docs/Tasks/ci-reliability/phase-10/checks/cli/plan.json",
+    "--output",
+    "Docs/Tasks/ci-reliability/phase-10/checks/cli/usage.json"
+  ],
+  "start": "2026-11-12T16:29:03.364655+00:00",
+  "startMonotonic": 358950.684339083,
+  "deadlineMonotonic": 359250.684339083,
+  "executionLimitSeconds": 300,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "operation",
+  "paths": {
+    "output": "Docs/Tasks/ci-reliability/phase-10/checks/cli/usage.log",
+    "stdout": "Docs/Tasks/ci-reliability/phase-10/checks/cli/usage.stdout",
+    "diagnostics": "Docs/Tasks/ci-reliability/phase-10/checks/cli/usage.diagnostics.jsonl",
+    "receipt": "Docs/Tasks/ci-reliability/phase-10/checks/cli/usage.receipt.json"
+  },
+  "identity": {
+    "executionID": "c30da1f6-6834-47ae-97e8-d00cd9faef00",
+    "supervisorPID": 65626,
+    "host": "Pokemon-GO-Plus",
+    "system": "Darwin",
+    "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase10"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 65652,
+  "group": 65652,
+  "cleanup": {
+    "status": "group-signalled",
+    "signals": [],
+    "parentReaped": true,
+    "allowanceSeconds": 8.0,
+    "seconds": 0.003,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "verificationMalformedRows": 0,
+    "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "Docs/Tasks/ci-reliability/phase-10/checks/cli/usage.log",
+      "retainedBytes": 217,
+      "observedBytes": 217,
+      "truncated": false
+    },
+    {
+      "path": "Docs/Tasks/ci-reliability/phase-10/checks/cli/usage.stdout",
+      "retainedBytes": 0,
+      "observedBytes": 0,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T16:29:03.430694+00:00",
+  "endMonotonic": 358950.750414916,
+  "elapsedSeconds": 0.066,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}

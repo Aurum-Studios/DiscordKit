@@ -7,6 +7,7 @@ name: Offline certification
 
 on:
   push:
+    branches: [main]
   pull_request:
   workflow_dispatch:
     inputs:
@@ -41,15 +42,22 @@ concurrency:
 env:
   SWIFTNIO_STRICT: '1'
   PYTHONUNBUFFERED: '1'
+  ADMISSION_MODE: ${{ inputs.mode || 'preflight' }}
+  ADMISSION_PLATFORM: ${{ inputs.platform }}
+  ADMISSION_COMPONENT: ${{ inputs.component }}
+  ADMISSION_SUITE: ${{ inputs.suite }}
+  ADMISSION_PUBLICATION: ${{ inputs.publish-documentation || false }}
+  ADMISSION_DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
 
 jobs:
   scope:
     name: Validate scope and contained rollout
     runs-on: ubuntu-24.04
-    timeout-minutes: 5
+    timeout-minutes: 15
     outputs:
       mode: ${{ steps.scope.outputs.mode }}
       native-enabled: ${{ steps.scope.outputs.native-enabled }}
+      admitted: ${{ steps.scope.outputs.admitted }}
     steps:
       - uses: actions/checkout@v6
         with:
@@ -62,18 +70,40 @@ jobs:
           SELECTED_COMPONENT: ${{ inputs.component }}
           SELECTED_SUITE: ${{ inputs.suite }}
         run: >-
-          python3 Tools/ci/workflow_scope.py select --mode "$REQUESTED_MODE"
+          python3 Tools/ci/spend_admission.py plan --mode "$REQUESTED_MODE"
           --platform "$SELECTED_PLATFORM" --component "$SELECTED_COMPONENT" --suite "$SELECTED_SUITE"
+          --output .build/spend/plan.json
+
+      - name: Summarize the bounded plan and rejected admission
+        if: always()
+        run: python3 Tools/ci/usage_report.py --plan .build/spend/plan.json --output .build/spend/usage.json
+      - name: Retain admitted plan and bootstrap usage
+        if: steps.scope.outputs.admitted == 'true'
+        uses: ./.github/actions/upload-evidence
+        with:
+          name: spend-plan-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          paths: .build/spend
+          retention-days: 14
+          receipt: ${{ runner.temp }}/spend-plan-transfer.json
 
   source:
     name: Source policy and workflow syntax
     needs: scope
+    if: needs.scope.outputs.admitted == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v6
         with:
           persist-credentials: false
+      - name: Check current-attempt spend reservation
+        id: admission
+        env:
+          ADMISSION_JOB: source
+          ADMISSION_GROUP: ubuntu-24.04
+        run: >-
+          python3 Tools/ci/spend_admission.py guard --job "$ADMISSION_JOB" --group "$ADMISSION_GROUP"
+          --output .build/spend/guard.json
       - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
@@ -93,6 +123,7 @@ jobs:
   helpers:
     name: Helper suites / ${{ matrix.group }}
     needs: scope
+    if: needs.scope.outputs.admitted == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     strategy:
@@ -104,6 +135,14 @@ jobs:
       - uses: actions/checkout@v6
         with:
           persist-credentials: false
+      - name: Check current-attempt spend reservation
+        id: admission
+        env:
+          ADMISSION_JOB: helpers/${{ matrix.group }}
+          ADMISSION_GROUP: ubuntu-24.04
+        run: >-
+          python3 Tools/ci/spend_admission.py guard --job "$ADMISSION_JOB" --group "$ADMISSION_GROUP"
+          --output .build/spend/guard.json
       - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
@@ -121,12 +160,21 @@ jobs:
   maintenance:
     name: Upstream maintenance review freshness
     needs: scope
+    if: needs.scope.outputs.admitted == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v6
         with:
           persist-credentials: false
+      - name: Check current-attempt spend reservation
+        id: admission
+        env:
+          ADMISSION_JOB: maintenance
+          ADMISSION_GROUP: ubuntu-24.04
+        run: >-
+          python3 Tools/ci/spend_admission.py guard --job "$ADMISSION_JOB" --group "$ADMISSION_GROUP"
+          --output .build/spend/guard.json
       - name: Require a current upstream review for certification
         run: python3 Tools/DiscordKitTools/scripts/release_check.py maintenance --repository . --record Docs/Release/maintenance.json
 
@@ -146,6 +194,7 @@ jobs:
       build-group: Linux-x64-64
       build-jobs: 2
       shell: bash
+      publication: ${{ inputs.publish-documentation || false }}
 
   native-macos:
     name: macOS ARM64
@@ -162,6 +211,7 @@ jobs:
       build-group: MacOS-26-5
       build-jobs: 2
       shell: bash
+      publication: ${{ inputs.publish-documentation || false }}
 
   documentation-site:
     name: Documentation site from validated archives
@@ -176,6 +226,14 @@ jobs:
       - uses: actions/checkout@v6
         with:
           persist-credentials: false
+      - name: Check current-attempt spend reservation
+        id: admission
+        env:
+          ADMISSION_JOB: documentation-site
+          ADMISSION_GROUP: MacOS-26-5
+        run: >-
+          python3 Tools/ci/spend_admission.py guard --job "$ADMISSION_JOB" --group "$ADMISSION_GROUP"
+          --output .build/spend/guard.json
       - uses: ./.github/actions/setup-native
         timeout-minutes: 10
         with:
@@ -201,7 +259,7 @@ jobs:
         id: site
         run: python3 Tools/ci/documentation_workflow.py artifact-output --receipt "$RUNNER_TEMP/documentation-site-transfer.json"
       - name: Retain site preparation diagnostics even on failure
-        if: always()
+        if: always() && steps.admission.outcome == 'success'
         uses: ./.github/actions/upload-evidence
         with:
           name: documentation-site-diagnostics-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
@@ -220,6 +278,14 @@ jobs:
       - uses: actions/checkout@v6
         with:
           persist-credentials: false
+      - name: Check current-attempt spend reservation
+        id: admission
+        env:
+          ADMISSION_JOB: complete
+          ADMISSION_GROUP: ubuntu-24.04
+        run: >-
+          python3 Tools/ci/spend_admission.py guard --job "$ADMISSION_JOB" --group "$ADMISSION_GROUP"
+          --output .build/spend/guard.json
       - uses: ./.github/actions/setup-artifact-sdk
         if: needs.scope.outputs.mode == 'full'
       - name: Verify full scope and complete coverage
@@ -246,13 +312,34 @@ jobs:
               raise SystemExit('Scoped CI incomplete: ' + json.dumps(results, sort_keys=True))
           PY
       - name: Retain fresh full certification evidence
-        if: always() && needs.scope.outputs.mode == 'full'
+        if: always() && steps.admission.outcome == 'success' && needs.scope.outputs.mode == 'full'
         uses: ./.github/actions/upload-evidence
         with:
           name: full-coverage-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           paths: .build/full-*.json
           retention-days: 14
           receipt: ${{ runner.temp }}/full-coverage-transfer.json
+
+      - name: Summarize refused admission without provisioning
+        if: always() && steps.admission.outcome != 'success'
+        run: |
+          python3 Tools/ci/spend_admission.py plan --output .build/spend/plan.json
+          python3 Tools/ci/usage_report.py --plan .build/spend/plan.json --output .build/spend/usage.json
+      - name: Reconcile observed attempts against the exact plan
+        if: always() && steps.admission.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 Tools/ci/spend_admission.py plan --output .build/spend/plan.json
+          python3 Tools/ci/usage_report.py --plan .build/spend/plan.json --github --receipts .build --receipts "$RUNNER_TEMP" --output .build/spend/usage.json
+      - name: Retain usage and admission evidence
+        if: always() && steps.admission.outcome == 'success' && needs.scope.outputs.admitted == 'true'
+        uses: ./.github/actions/upload-evidence
+        with:
+          name: spend-usage-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          paths: .build/spend
+          retention-days: 14
+          receipt: ${{ runner.temp }}/spend-usage-transfer.json
 
   publish-documentation:
     name: Publish GitHub Pages
@@ -280,6 +367,14 @@ jobs:
       - uses: actions/checkout@v6
         with:
           persist-credentials: false
+      - name: Check current-attempt spend reservation
+        id: admission
+        env:
+          ADMISSION_JOB: publish-documentation
+          ADMISSION_GROUP: ubuntu-24.04
+        run: >-
+          python3 Tools/ci/spend_admission.py guard --job "$ADMISSION_JOB" --group "$ADMISSION_GROUP"
+          --output .build/spend/guard.json
       - name: Download and authorize the exact immutable site
         env:
           GH_TOKEN: ${{ github.token }}

@@ -1,0 +1,497 @@
+[
+  {
+    "completed_at": "2026-11-12T12:01:01+00:00",
+    "conclusion": "success",
+    "created_at": "2026-11-12T11:59:50+00:00",
+    "head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "id": 1,
+    "name": "Validate scope and contained rollout",
+    "run_attempt": 1,
+    "run_id": 100,
+    "runner_group_name": "ubuntu-24.04",
+    "started_at": "2026-11-12T12:00:00+00:00",
+    "status": "completed",
+    "steps": [
+      {
+        "completed_at": "2026-11-12T12:00:05+00:00",
+        "conclusion": "success",
+        "name": "Checkout",
+        "started_at": "2026-11-12T12:00:00+00:00"
+      },
+      {
+        "completed_at": "2026-11-12T12:00:35+00:00",
+        "conclusion": "success",
+        "name": "setup-native",
+        "started_at": "2026-11-12T12:00:05+00:00"
+      },
+      {
+        "completed_at": "2026-11-12T12:01:00+00:00",
+        "conclusion": "success",
+        "name": "Upload evidence",
+        "started_at": "2026-11-12T12:00:35+00:00"
+      }
+    ]
+  },
+  {
+    "completed_at": "2026-11-12T12:01:01+00:00",
+    "conclusion": "success",
+    "created_at": "2026-11-12T11:59:50+00:00",
+    "head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "id": 2,
+    "name": "Source policy and workflow syntax",
+    "run_attempt": 1,
+    "run_id": 100,
+    "runner_group_name": "ubuntu-24.04",
+    "started_at": "2026-11-12T12:00:00+00:00",
+    "status": "completed",
+    "steps": [
+      {
+        "completed_at": "2026-11-12T12:00:05+00:00",
+        "conclusion": "success",
+        "name": "Checkout",
+        "started_at": "2026-11-12T12:00:00+00:00"
+      },
+      {
+        "completed_at": "2026-11-12T12:00:35+00:00",
+        "conclusion": "success",
+        "name": "setup-native",
+        "started_at": "2026-11-12T12:00:05+00:00"
+      },
+      {
+        "completed_at": "2026-11-12T12:01:00+00:00",
+        "conclusion": "success",
+        "name": "Upload evidence",
+        "started_at": "2026-11-12T12:00:35+00:00"
+      }
+    ]
+  },
+  {
+    "completed_at": "2026-11-12T12:01:01+00:00",
+    "conclusion": "success",
+    "created_at": "2026-11-12T11:59:50+00:00",
+    "head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "id": 3,
+    "name": "Upstream maintenance review freshness",
+    "run_attempt": 1,
+    "run_id": 100,
+    "runner_group_name": "ubuntu-24.04",
+    "started_at": "2026-11-12T12:00:00+00:00",
+    "status": "completed",
+    "steps": [
+      {
+        "completed_at": "2026-11-12T12:00:05+00:00",
+        "conclusion": "success",
+        "name": "Checkout",
+        "started_at": "2026-11-12T12:00:00+00:00"
+      },
+      {
+        "completed_at": "2026-11-12T12:00:35+00:00",
+        "conclusion": "success",
+        "name": "setup-native",
+        "started_at": "2026-11-12T12:00:05+00:00"
+      },
+      {
+        "completed_at": "2026-11-12T12:01:00+00:00",
+        "conclusion": "success",
+        "name": "Upload evidence",
+        "started_at": "2026-11-12T12:00:35+00:00"
+      }
+    ]
+  },
+  {
+    "completed_at": "2026-11-12T12:01:01+00:00",
+    "conclusion": "success",
+    "created_at": "2026-11-12T11:59:50+00:00",
+    "head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "id": 4,
+    "name": "Diagnostic scope passed",
+    "run_attempt": 1,
+    "run_id": 100,
+    "runner_group_name": "ubuntu-24.04",
+    "started_at": "2026-11-12T12:00:00+00:00",
+    "status": "completed",
+    "steps": [
+      {
+        "completed_at": "2026-11-12T12:00:05+00:00",
+        "conclusion": "success",
+        "name": "Checkout",
+        "started_at": "2026-11-12T12:00:00+00:00"
+      },
+      {
+        "completed_at": "2026-11-12T12:00:35+00:00",
+        "conclusion": "success",
+        "name": "setup-native",
+        "started_at": "2026-11-12T12:00:05+00:00"
+      },
+      {
+        "completed_at": "2026-11-12T12:01:00+00:00",
+        "conclusion": "success",
+        "name": "Upload evidence",
+        "started_at": "2026-11-12T12:00:35+00:00"
+      }
+    ]
+  },
+  {
+    "completed_at": "2026-11-12T12:01:01+00:00",
+    "conclusion": "success",
+    "created_at": "2026-11-12T11:59:50+00:00",
+    "head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "id": 5,
+    "name": "Helper suites / ci-python",
+    "run_attempt": 1,
+    "run_id": 100,
+    "runner_group_name": "ubuntu-24.04",
+    "started_at": "2026-11-12T12:00:00+00:00",
+    "status": "completed",
+    "steps": [
+      {
+        "completed_at": "2026-11-12T12:00:05+00:00",
+        "conclusion": "success",
+        "name": "Checkout",
+        "started_at": "2026-11-12T12:00:00+00:00"
+      },
+      {
+        "completed_at": "2026-11-12T12:00:35+00:00",
+        "conclusion": "success",
+        "name": "setup-native",
+        "started_at": "2026-11-12T12:00:05+00:00"
+      },
+      {
+        "completed_at": "2026-11-12T12:01:00+00:00",
+        "conclusion": "success",
+        "name": "Upload evidence",
+        "started_at": "2026-11-12T12:00:35+00:00"
+      }
+    ]
+  },
+  {
+    "completed_at": "2026-11-12T12:01:01+00:00",
+    "conclusion": "success",
+    "created_at": "2026-11-12T11:59:50+00:00",
+    "head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "id": 6,
+    "name": "Helper suites / tooling-python",
+    "run_attempt": 1,
+    "run_id": 100,
+    "runner_group_name": "ubuntu-24.04",
+    "started_at": "2026-11-12T12:00:00+00:00",
+    "status": "completed",
+    "steps": [
+      {
+        "completed_at": "2026-11-12T12:00:05+00:00",
+        "conclusion": "success",
+        "name": "Checkout",
+        "started_at": "2026-11-12T12:00:00+00:00"
+      },
+      {
+        "completed_at": "2026-11-12T12:00:35+00:00",
+        "conclusion": "success",
+        "name": "setup-native",
+        "started_at": "2026-11-12T12:00:05+00:00"
+      },
+      {
+        "completed_at": "2026-11-12T12:01:00+00:00",
+        "conclusion": "success",
+        "name": "Upload evidence",
+        "started_at": "2026-11-12T12:00:35+00:00"
+      }
+    ]
+  },
+  {
+    "completed_at": "2026-11-12T12:01:01+00:00",
+    "conclusion": "success",
+    "created_at": "2026-11-12T11:59:50+00:00",
+    "head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "id": 7,
+    "name": "Helper suites / benchmark-python",
+    "run_attempt": 1,
+    "run_id": 100,
+    "runner_group_name": "ubuntu-24.04",
+    "started_at": "2026-11-12T12:00:00+00:00",
+    "status": "completed",
+    "steps": [
+      {
+        "completed_at": "2026-11-12T12:00:05+00:00",
+        "conclusion": "success",
+        "name": "Checkout",
+        "started_at": "2026-11-12T12:00:00+00:00"
+      },
+      {
+        "completed_at": "2026-11-12T12:00:35+00:00",
+        "conclusion": "success",
+        "name": "setup-native",
+        "started_at": "2026-11-12T12:00:05+00:00"
+      },
+      {
+        "completed_at": "2026-11-12T12:01:00+00:00",
+        "conclusion": "success",
+        "name": "Upload evidence",
+        "started_at": "2026-11-12T12:00:35+00:00"
+      }
+    ]
+  },
+  {
+    "completed_at": "2026-11-12T12:01:01+00:00",
+    "conclusion": "success",
+    "created_at": "2026-11-12T11:59:50+00:00",
+    "head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "id": 8,
+    "name": "Helper suites / browser",
+    "run_attempt": 1,
+    "run_id": 100,
+    "runner_group_name": "ubuntu-24.04",
+    "started_at": "2026-11-12T12:00:00+00:00",
+    "status": "completed",
+    "steps": [
+      {
+        "completed_at": "2026-11-12T12:00:05+00:00",
+        "conclusion": "success",
+        "name": "Checkout",
+        "started_at": "2026-11-12T12:00:00+00:00"
+      },
+      {
+        "completed_at": "2026-11-12T12:00:35+00:00",
+        "conclusion": "success",
+        "name": "setup-native",
+        "started_at": "2026-11-12T12:00:05+00:00"
+      },
+      {
+        "completed_at": "2026-11-12T12:01:00+00:00",
+        "conclusion": "success",
+        "name": "Upload evidence",
+        "started_at": "2026-11-12T12:00:35+00:00"
+      }
+    ]
+  },
+  {
+    "completed_at": "2026-11-12T12:01:01+00:00",
+    "conclusion": "success",
+    "created_at": "2026-11-12T11:59:50+00:00",
+    "head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "id": 9,
+    "name": "Linux x64 / Platform check",
+    "run_attempt": 1,
+    "run_id": 100,
+    "runner_group_name": "Linux-x64-8",
+    "started_at": "2026-11-12T12:00:00+00:00",
+    "status": "completed",
+    "steps": [
+      {
+        "completed_at": "2026-11-12T12:00:05+00:00",
+        "conclusion": "success",
+        "name": "Checkout",
+        "started_at": "2026-11-12T12:00:00+00:00"
+      },
+      {
+        "completed_at": "2026-11-12T12:00:35+00:00",
+        "conclusion": "success",
+        "name": "setup-native",
+        "started_at": "2026-11-12T12:00:05+00:00"
+      },
+      {
+        "completed_at": "2026-11-12T12:01:00+00:00",
+        "conclusion": "success",
+        "name": "Upload evidence",
+        "started_at": "2026-11-12T12:00:35+00:00"
+      }
+    ]
+  },
+  {
+    "completed_at": "2026-11-12T12:01:01+00:00",
+    "conclusion": "success",
+    "created_at": "2026-11-12T11:59:50+00:00",
+    "head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "id": 10,
+    "name": "Linux x64 / Plan platform builds and suites",
+    "run_attempt": 1,
+    "run_id": 100,
+    "runner_group_name": "Linux-x64-8",
+    "started_at": "2026-11-12T12:00:00+00:00",
+    "status": "completed",
+    "steps": [
+      {
+        "completed_at": "2026-11-12T12:00:05+00:00",
+        "conclusion": "success",
+        "name": "Checkout",
+        "started_at": "2026-11-12T12:00:00+00:00"
+      },
+      {
+        "completed_at": "2026-11-12T12:00:35+00:00",
+        "conclusion": "success",
+        "name": "setup-native",
+        "started_at": "2026-11-12T12:00:05+00:00"
+      },
+      {
+        "completed_at": "2026-11-12T12:01:00+00:00",
+        "conclusion": "success",
+        "name": "Upload evidence",
+        "started_at": "2026-11-12T12:00:35+00:00"
+      }
+    ]
+  },
+  {
+    "completed_at": "2026-11-12T12:01:01+00:00",
+    "conclusion": "success",
+    "created_at": "2026-11-12T11:59:50+00:00",
+    "head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "id": 11,
+    "name": "Linux x64 / Builds / linux-x64 / load",
+    "run_attempt": 1,
+    "run_id": 100,
+    "runner_group_name": "Linux-x64-64",
+    "started_at": "2026-11-12T12:00:00+00:00",
+    "status": "completed",
+    "steps": [
+      {
+        "completed_at": "2026-11-12T12:00:05+00:00",
+        "conclusion": "success",
+        "name": "Checkout",
+        "started_at": "2026-11-12T12:00:00+00:00"
+      },
+      {
+        "completed_at": "2026-11-12T12:00:35+00:00",
+        "conclusion": "success",
+        "name": "setup-native",
+        "started_at": "2026-11-12T12:00:05+00:00"
+      },
+      {
+        "completed_at": "2026-11-12T12:01:00+00:00",
+        "conclusion": "success",
+        "name": "Upload evidence",
+        "started_at": "2026-11-12T12:00:35+00:00"
+      }
+    ]
+  },
+  {
+    "completed_at": "2026-11-12T12:01:01+00:00",
+    "conclusion": "failure",
+    "created_at": "2026-11-12T11:59:50+00:00",
+    "head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "id": 12,
+    "name": "Linux x64 / Canary / load tests and smokes",
+    "run_attempt": 1,
+    "run_id": 100,
+    "runner_group_name": "Linux-x64-8",
+    "started_at": "2026-11-12T12:00:00+00:00",
+    "status": "completed",
+    "steps": [
+      {
+        "completed_at": "2026-11-12T12:00:05+00:00",
+        "conclusion": "success",
+        "name": "Checkout",
+        "started_at": "2026-11-12T12:00:00+00:00"
+      },
+      {
+        "completed_at": "2026-11-12T12:00:35+00:00",
+        "conclusion": "success",
+        "name": "setup-native",
+        "started_at": "2026-11-12T12:00:05+00:00"
+      },
+      {
+        "completed_at": "2026-11-12T12:01:00+00:00",
+        "conclusion": "success",
+        "name": "Upload evidence",
+        "started_at": "2026-11-12T12:00:35+00:00"
+      }
+    ]
+  },
+  {
+    "completed_at": "2026-11-12T12:01:01+00:00",
+    "conclusion": "success",
+    "created_at": "2026-11-12T11:59:50+00:00",
+    "head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "id": 13,
+    "name": "Linux x64 / Verify platform coverage before source export",
+    "run_attempt": 1,
+    "run_id": 100,
+    "runner_group_name": "Linux-x64-8",
+    "started_at": "2026-11-12T12:00:00+00:00",
+    "status": "completed",
+    "steps": [
+      {
+        "completed_at": "2026-11-12T12:00:05+00:00",
+        "conclusion": "success",
+        "name": "Checkout",
+        "started_at": "2026-11-12T12:00:00+00:00"
+      },
+      {
+        "completed_at": "2026-11-12T12:00:35+00:00",
+        "conclusion": "success",
+        "name": "setup-native",
+        "started_at": "2026-11-12T12:00:05+00:00"
+      },
+      {
+        "completed_at": "2026-11-12T12:01:00+00:00",
+        "conclusion": "success",
+        "name": "Upload evidence",
+        "started_at": "2026-11-12T12:00:35+00:00"
+      }
+    ]
+  },
+  {
+    "completed_at": "2026-11-12T12:01:01+00:00",
+    "conclusion": "success",
+    "created_at": "2026-11-12T11:59:50+00:00",
+    "head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "id": 14,
+    "name": "Linux x64 / Platform validation passed",
+    "run_attempt": 1,
+    "run_id": 100,
+    "runner_group_name": "Linux-x64-8",
+    "started_at": "2026-11-12T12:00:00+00:00",
+    "status": "completed",
+    "steps": [
+      {
+        "completed_at": "2026-11-12T12:00:05+00:00",
+        "conclusion": "success",
+        "name": "Checkout",
+        "started_at": "2026-11-12T12:00:00+00:00"
+      },
+      {
+        "completed_at": "2026-11-12T12:00:35+00:00",
+        "conclusion": "success",
+        "name": "setup-native",
+        "started_at": "2026-11-12T12:00:05+00:00"
+      },
+      {
+        "completed_at": "2026-11-12T12:01:00+00:00",
+        "conclusion": "success",
+        "name": "Upload evidence",
+        "started_at": "2026-11-12T12:00:35+00:00"
+      }
+    ]
+  },
+  {
+    "completed_at": "2026-11-12T12:01:01+00:00",
+    "conclusion": "success",
+    "created_at": "2026-11-12T11:59:50+00:00",
+    "head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "id": 1000,
+    "name": "Linux x64 / Canary / load tests and smokes",
+    "run_attempt": 2,
+    "run_id": 100,
+    "runner_group_name": "Linux-x64-8",
+    "started_at": "2026-11-12T12:00:00+00:00",
+    "status": "completed",
+    "steps": [
+      {
+        "completed_at": "2026-11-12T12:00:05+00:00",
+        "conclusion": "success",
+        "name": "Checkout",
+        "started_at": "2026-11-12T12:00:00+00:00"
+      },
+      {
+        "completed_at": "2026-11-12T12:00:35+00:00",
+        "conclusion": "success",
+        "name": "setup-native",
+        "started_at": "2026-11-12T12:00:05+00:00"
+      },
+      {
+        "completed_at": "2026-11-12T12:01:00+00:00",
+        "conclusion": "success",
+        "name": "Upload evidence",
+        "started_at": "2026-11-12T12:00:35+00:00"
+      }
+    ]
+  }
+]

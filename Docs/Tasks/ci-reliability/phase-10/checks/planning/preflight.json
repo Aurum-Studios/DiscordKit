@@ -1,0 +1,56 @@
+{
+  "mode": "preflight",
+  "selection": {},
+  "jobs": [
+    {
+      "id": "scope",
+      "group": "ubuntu-24.04",
+      "maximumSeconds": 900,
+      "jobName": "Validate scope and contained rollout"
+    },
+    {
+      "id": "source",
+      "group": "ubuntu-24.04",
+      "maximumSeconds": 900,
+      "jobName": "Source policy and workflow syntax"
+    },
+    {
+      "id": "maintenance",
+      "group": "ubuntu-24.04",
+      "maximumSeconds": 300,
+      "jobName": "Upstream maintenance review freshness"
+    },
+    {
+      "id": "complete",
+      "group": "ubuntu-24.04",
+      "maximumSeconds": 2400,
+      "jobName": "Preflight scope passed"
+    },
+    {
+      "id": "helpers/ci-python",
+      "group": "ubuntu-24.04",
+      "maximumSeconds": 900,
+      "jobName": "Helper suites / ci-python"
+    },
+    {
+      "id": "helpers/tooling-python",
+      "group": "ubuntu-24.04",
+      "maximumSeconds": 900,
+      "jobName": "Helper suites / tooling-python"
+    },
+    {
+      "id": "helpers/benchmark-python",
+      "group": "ubuntu-24.04",
+      "maximumSeconds": 900,
+      "jobName": "Helper suites / benchmark-python"
+    },
+    {
+      "id": "helpers/browser",
+      "group": "ubuntu-24.04",
+      "maximumSeconds": 900,
+      "jobName": "Helper suites / browser"
+    }
+  ],
+  "maximumRunnerMinutesPerAttempt": 135,
+  "hostedExecution": false
+}

@@ -24,7 +24,9 @@ implementation acceptance at `666f1371224fbe5bda03ec7b54be14a083bb6b09`; native 
 [its execution plan and contracts](phase-8/IMPLEMENTATION.md). Hosted cold/hit
 measurements remain open. Phase 9 has local shared-documentation helper and
 real synthetic DocC acceptance at `b6fe729d61f7355cd8bcfc9ab4dcd93d020f2467`; see [its execution plan and contracts](phase-9/IMPLEMENTATION.md).
-Its hosted producer/consumer proof remains Phase 11. Phases 10 and 11 remain proposed.
+Its hosted producer/consumer proof remains Phase 11. Phase 10 has local spend-admission
+and usage-reporting acceptance; see [its execution plan and contracts](phase-10/IMPLEMENTATION.md).
+Phase 11 qualification/rollout remains proposed.
 See [STATE.md](STATE.md) for the
 commit-backed completion record and [BOOTSTRAP.md](BOOTSTRAP.md) for execution limits.
 Source inspected: `85eac6f3c1d3b17e53596c49e7438efee366c1b3`.

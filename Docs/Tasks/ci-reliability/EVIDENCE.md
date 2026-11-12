@@ -496,3 +496,37 @@ Implementation commit `b6fe729d61f7355cd8bcfc9ab4dcd93d020f2467` contains all 13
 input blobs and 65 retained manifest artifacts. The [actual-blob commit receipt](phase-9/commit-receipt.json)
 checks both Git objects and unchanged current bytes. The completion followup is
 documentation only; no executable/test/workflow input changed after acceptance.
+
+
+## Phase 10 — spend admission and usage, November 12, 2026 UTC
+
+Owner Codex `/root`; isolated branch `ci/phase-10-spend-admission`, sibling
+`DiscordKit-ci-phase10`, base `f94520e3`. [Source preflight](phase-10/source-preflight.json)
+confirms the original planning edits are unchanged. The
+[execution sheet and contracts](phase-10/IMPLEMENTATION.md) retain zero paid work.
+
+The exact scoped execution partitions produce complete per-job/per-attempt
+reservations using enclosing workflow deadlines, all shared/preflight work,
+provisioning/command/transport reserves, platform barriers and documentation.
+The local full plan has 81 runner jobs and 7,780 maximum runner minutes for one
+attempt; these are conservative timeout ceilings, not observed usage or an admitted
+cost. Publication adds one separately requested job. The current zero/unverified
+policy rejects expansion, including helper fanout. Scope and every consumer
+recompute current attempt admission; stale successful scope outputs grant nothing.
+
+[Validation](phase-10/validation.json) retains 984 passing helper tests and six
+existing Linux-only skips, actionlint across seven workflows, source/32-example
+checks and actual local CLI refusal. [Synthetic specimens](phase-10/checks/admission/usage.json)
+retain a failed first consumer and successful second consumer, unchanged cumulative
+reservations, rejected stale/exhausted attempts and complete latest synthetic
+coverage without any hosted execution. [Review](phase-10/review.json) closed runner/
+matrix drift, denied-guard evidence bypass, CLI/type integration, entry-bound,
+reporting/receipt attribution and attempt-resource findings.
+
+The [operator proposal](phase-10/OPERATOR-BUDGET.md) is prepared with a concrete
+USD 50/month repository Actions budget, stop usage and 75/90/100 alerts. It remains
+unselected/unconfigured by an operator; no settings mutation or paid authorization
+is claimed. Native x64, hosted partial reruns and exact-final-revision certification
+remain Phase 11 work. No push, dispatch, paid job, native compilation or publication
+occurred. A subsequent documentation receipt will bind the actual implementation
+commit and verified Git blobs; current acceptance binds tested file hashes.

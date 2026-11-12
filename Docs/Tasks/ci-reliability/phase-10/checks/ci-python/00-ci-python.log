@@ -1,0 +1,17 @@
+/Library/Frameworks/Python.framework/Versions/3.14/bin/python3 -m unittest discover -s Tools/ci -p 'test_*.py'
+..artifact resolution failed: GitHub workflow run repository, workflow, event or source provenance differs
+.................................................................................................................{"artifact": {"digest": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc", "id": "56", "name": "documentation-site-abcdef0123abcdef0123abcdef0123abcdef0123-1234-2-t1", "producerAttempt": "2"}, "commit": "abcdef0123abcdef0123abcdef0123abcdef0123", "fullGateJobID": "101", "mode": "full", "repository": "Aurum-Studios/DiscordKit", "runAttempt": "2", "runID": "1234", "schemaVersion": 1, "site": {"bytes": 123, "files": 4}, "siteJobID": "102", "status": "verified"}
+.{"error": "publication checkout differs from the original source commit", "schemaVersion": 1, "status": "rejected"}
+{"error": "original CI run source, repository, event, workflow, latest attempt or result differs", "schemaVersion": 1, "status": "rejected"}
+.............................Built 4 public-module archives into /var/folders/3j/5mxmxjxn1z98m1c1y32z64zh0000gn/T/documentation test x0xisrcq/.build/site export
+.Built 4 public-module archives into /var/folders/3j/5mxmxjxn1z98m1c1y32z64zh0000gn/T/tmpzkmobp5l/site
+..Built 4 public-module archives into /var/folders/3j/5mxmxjxn1z98m1c1y32z64zh0000gn/T/tmpp21qo4mi/site
+....Built 4 public-module archives into /var/folders/3j/5mxmxjxn1z98m1c1y32z64zh0000gn/T/tmpl_y7ygxh/site
+..Built 4 public-module archives into /private/var/folders/3j/5mxmxjxn1z98m1c1y32z64zh0000gn/T/tmpgeggtg4f/site
+...............................................................Published v1.2.37 from abcdef0123abcdef0123abcdef0123abcdef0123
+.Published v1.2.37 from abcdef0123abcdef0123abcdef0123abcdef0123
+.................................sssss.....................s...........................................................................................................................................................................................................................................................................................................
+----------------------------------------------------------------------
+Ran 577 tests in 18.324s
+
+OK (skipped=6)

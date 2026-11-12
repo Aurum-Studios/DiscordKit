@@ -1,0 +1,96 @@
+{
+  "mode": "diagnostic",
+  "selection": {
+    "platform": "linux-x64",
+    "component": "load",
+    "suite": "load"
+  },
+  "jobs": [
+    {
+      "id": "scope",
+      "group": "ubuntu-24.04",
+      "maximumSeconds": 900,
+      "jobName": "Validate scope and contained rollout"
+    },
+    {
+      "id": "source",
+      "group": "ubuntu-24.04",
+      "maximumSeconds": 900,
+      "jobName": "Source policy and workflow syntax"
+    },
+    {
+      "id": "maintenance",
+      "group": "ubuntu-24.04",
+      "maximumSeconds": 300,
+      "jobName": "Upstream maintenance review freshness"
+    },
+    {
+      "id": "complete",
+      "group": "ubuntu-24.04",
+      "maximumSeconds": 2400,
+      "jobName": "Diagnostic scope passed"
+    },
+    {
+      "id": "helpers/ci-python",
+      "group": "ubuntu-24.04",
+      "maximumSeconds": 900,
+      "jobName": "Helper suites / ci-python"
+    },
+    {
+      "id": "helpers/tooling-python",
+      "group": "ubuntu-24.04",
+      "maximumSeconds": 900,
+      "jobName": "Helper suites / tooling-python"
+    },
+    {
+      "id": "helpers/benchmark-python",
+      "group": "ubuntu-24.04",
+      "maximumSeconds": 900,
+      "jobName": "Helper suites / benchmark-python"
+    },
+    {
+      "id": "helpers/browser",
+      "group": "ubuntu-24.04",
+      "maximumSeconds": 900,
+      "jobName": "Helper suites / browser"
+    },
+    {
+      "id": "linux-x64/platform",
+      "group": "Linux-x64-8",
+      "maximumSeconds": 1800,
+      "jobName": "Linux x64 / Platform check"
+    },
+    {
+      "id": "linux-x64/plan",
+      "group": "Linux-x64-8",
+      "maximumSeconds": 1500,
+      "jobName": "Linux x64 / Plan platform builds and suites"
+    },
+    {
+      "id": "linux-x64/build/load",
+      "group": "Linux-x64-64",
+      "maximumSeconds": 9000,
+      "jobName": "Linux x64 / Builds / linux-x64 / load"
+    },
+    {
+      "id": "linux-x64/canary",
+      "group": "Linux-x64-8",
+      "maximumSeconds": 4500,
+      "jobName": "Linux x64 / Canary / load tests and smokes"
+    },
+    {
+      "id": "linux-x64/coverage",
+      "group": "Linux-x64-8",
+      "maximumSeconds": 2100,
+      "jobName": "Linux x64 / Verify platform coverage before source export"
+    },
+    {
+      "id": "linux-x64/complete",
+      "group": "Linux-x64-8",
+      "maximumSeconds": 2100,
+      "jobName": "Linux x64 / Platform validation passed"
+    }
+  ],
+  "maximumRunnerMinutesPerAttempt": 485,
+  "hostedExecution": false
+}

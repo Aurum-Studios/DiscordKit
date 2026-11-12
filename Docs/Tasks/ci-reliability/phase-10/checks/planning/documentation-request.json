@@ -1,0 +1,14 @@
+{
+  "mode": "documentation-request",
+  "selection": {},
+  "jobs": [
+    {
+      "id": "documentation-request",
+      "group": "ubuntu-24.04",
+      "maximumSeconds": 300,
+      "jobName": "Request full CI with shared documentation inputs"
+    }
+  ],
+  "maximumRunnerMinutesPerAttempt": 5,
+  "hostedExecution": false
+}

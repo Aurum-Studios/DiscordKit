@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "phase": 10,
+  "reviewer": "Codex /root/review_phase10",
+  "status": "passed",
+  "remainingBlockingFindings": [],
+  "checks": [
+    {
+      "command": "python3 -m unittest discover -s Tools/ci -p test_execution_plan.py",
+      "passed": 7
+    },
+    {
+      "command": "python3 -m unittest discover -s Tools/ci -p test_spend_admission.py",
+      "passed": 14
+    },
+    {
+      "command": "python3 -m unittest discover -s Tools/ci -p test_usage_report.py",
+      "passed": 25
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    }
+  ],
+  "resolvedFindings": [
+    "Runner mappings and matrix origins could schedule unreserved work; bootstrap now rejects group, static/dynamic matrix and unexpected strategy drift.",
+    "Always-running evidence uploads could bypass denied admission; expensive failure steps now require successful entry admission.",
+    "Guard CLI ignored current selection environment and reporter attempt types disagreed; integrated CLI uses current context and normalized attempts.",
+    "Rejected entry used an unsupported one-minute maximum; entry maximum now conservatively equals the outer job ceiling.",
+    "Reports accepted unreserved attempts and job overruns; both remain unknown and cannot cover work.",
+    "Native usage summaries were written after retention; they now accompany diagnostic uploads or a separately budgeted spend upload.",
+    "Stale command receipts could inherit current-job attribution; mismatched embedded provenance remains unattributed.",
+    "Excessive configured attempt count could consume bootstrap memory; the policy bounds attempts to 100."
+  ],
+  "limitations": [
+    "Per-run allowance only; distinct workflow runs do not share a ledger.",
+    "Arbitrarily repeated rejected startups have no offline provider-enforced cap.",
+    "Actual storage/transfer volume envelope and account billing mappings remain unverified.",
+    "Final reporting can observe running aggregation and later publication as incomplete.",
+    "Provider settings, native rollout and all hosted execution remain pending."
+  ]
+}

@@ -1,0 +1,494 @@
+{
+  "mode": "full",
+  "selection": {},
+  "jobs": [
+    {
+      "id": "scope",
+      "group": "ubuntu-24.04",
+      "maximumSeconds": 900,
+      "jobName": "Validate scope and contained rollout"
+    },
+    {
+      "id": "source",
+      "group": "ubuntu-24.04",
+      "maximumSeconds": 900,
+      "jobName": "Source policy and workflow syntax"
+    },
+    {
+      "id": "maintenance",
+      "group": "ubuntu-24.04",
+      "maximumSeconds": 300,
+      "jobName": "Upstream maintenance review freshness"
+    },
+    {
+      "id": "complete",
+      "group": "ubuntu-24.04",
+      "maximumSeconds": 2400,
+      "jobName": "Offline certification passed"
+    },
+    {
+      "id": "helpers/ci-python",
+      "group": "ubuntu-24.04",
+      "maximumSeconds": 900,
+      "jobName": "Helper suites / ci-python"
+    },
+    {
+      "id": "helpers/tooling-python",
+      "group": "ubuntu-24.04",
+      "maximumSeconds": 900,
+      "jobName": "Helper suites / tooling-python"
+    },
+    {
+      "id": "helpers/benchmark-python",
+      "group": "ubuntu-24.04",
+      "maximumSeconds": 900,
+      "jobName": "Helper suites / benchmark-python"
+    },
+    {
+      "id": "helpers/browser",
+      "group": "ubuntu-24.04",
+      "maximumSeconds": 900,
+      "jobName": "Helper suites / browser"
+    },
+    {
+      "id": "linux-x64/platform",
+      "group": "Linux-x64-8",
+      "maximumSeconds": 1800,
+      "jobName": "Linux x64 / Platform check"
+    },
+    {
+      "id": "linux-x64/plan",
+      "group": "Linux-x64-8",
+      "maximumSeconds": 1500,
+      "jobName": "Linux x64 / Plan platform builds and suites"
+    },
+    {
+      "id": "linux-x64/build/load",
+      "group": "Linux-x64-64",
+      "maximumSeconds": 9000,
+      "jobName": "Linux x64 / Builds / linux-x64 / load"
+    },
+    {
+      "id": "linux-x64/build/root",
+      "group": "Linux-x64-64",
+      "maximumSeconds": 9000,
+      "jobName": "Linux x64 / Builds / linux-x64 / root"
+    },
+    {
+      "id": "linux-x64/build/macros",
+      "group": "Linux-x64-64",
+      "maximumSeconds": 9000,
+      "jobName": "Linux x64 / Builds / linux-x64 / macros"
+    },
+    {
+      "id": "linux-x64/build/extensions",
+      "group": "Linux-x64-64",
+      "maximumSeconds": 9000,
+      "jobName": "Linux x64 / Builds / linux-x64 / extensions"
+    },
+    {
+      "id": "linux-x64/build/tooling",
+      "group": "Linux-x64-8",
+      "maximumSeconds": 9000,
+      "jobName": "Linux x64 / Builds / linux-x64 / tooling"
+    },
+    {
+      "id": "linux-x64/build/benchmarks",
+      "group": "Linux-x64-64",
+      "maximumSeconds": 9000,
+      "jobName": "Linux x64 / Builds / linux-x64 / benchmarks"
+    },
+    {
+      "id": "linux-x64/build/timing-support",
+      "group": "Linux-x64-8",
+      "maximumSeconds": 9000,
+      "jobName": "Linux x64 / Builds / linux-x64 / timing-support"
+    },
+    {
+      "id": "linux-x64/build/timing",
+      "group": "Linux-x64-64",
+      "maximumSeconds": 9000,
+      "jobName": "Linux x64 / Builds / linux-x64 / timing"
+    },
+    {
+      "id": "linux-x64/build/foundation",
+      "group": "Linux-x64-64",
+      "maximumSeconds": 9000,
+      "jobName": "Linux x64 / Builds / linux-x64 / foundation"
+    },
+    {
+      "id": "linux-x64/build/media",
+      "group": "Linux-x64-64",
+      "maximumSeconds": 9000,
+      "jobName": "Linux x64 / Builds / linux-x64 / media"
+    },
+    {
+      "id": "linux-x64/build/consumers",
+      "group": "Linux-x64-64",
+      "maximumSeconds": 9000,
+      "jobName": "Linux x64 / Builds / linux-x64 / consumers"
+    },
+    {
+      "id": "linux-x64/build/release",
+      "group": "Linux-x64-64",
+      "maximumSeconds": 9000,
+      "jobName": "Linux x64 / Builds / linux-x64 / release"
+    },
+    {
+      "id": "linux-x64/canary",
+      "group": "Linux-x64-8",
+      "maximumSeconds": 4500,
+      "jobName": "Linux x64 / Canary / load tests and smokes"
+    },
+    {
+      "id": "linux-x64/resolve",
+      "group": "Linux-x64-8",
+      "maximumSeconds": 1500,
+      "jobName": "Linux x64 / Resolve immutable producers"
+    },
+    {
+      "id": "linux-x64/suite/root/root-01",
+      "group": "Linux-x64-8",
+      "maximumSeconds": 6300,
+      "jobName": "Linux x64 / Tests / root-01"
+    },
+    {
+      "id": "linux-x64/suite/root/root-02",
+      "group": "Linux-x64-8",
+      "maximumSeconds": 6300,
+      "jobName": "Linux x64 / Tests / root-02"
+    },
+    {
+      "id": "linux-x64/suite/root/root-03",
+      "group": "Linux-x64-8",
+      "maximumSeconds": 6300,
+      "jobName": "Linux x64 / Tests / root-03"
+    },
+    {
+      "id": "linux-x64/suite/root/root-04",
+      "group": "Linux-x64-8",
+      "maximumSeconds": 6300,
+      "jobName": "Linux x64 / Tests / root-04"
+    },
+    {
+      "id": "linux-x64/suite/macros/macros",
+      "group": "Linux-x64-8",
+      "maximumSeconds": 6300,
+      "jobName": "Linux x64 / Tests / macros"
+    },
+    {
+      "id": "linux-x64/suite/extensions/extensions",
+      "group": "Linux-x64-8",
+      "maximumSeconds": 6300,
+      "jobName": "Linux x64 / Tests / extensions"
+    },
+    {
+      "id": "linux-x64/suite/tooling/tooling",
+      "group": "Linux-x64-8",
+      "maximumSeconds": 6300,
+      "jobName": "Linux x64 / Tests / tooling"
+    },
+    {
+      "id": "linux-x64/suite/benchmarks/benchmarks",
+      "group": "Linux-x64-8",
+      "maximumSeconds": 6300,
+      "jobName": "Linux x64 / Tests / benchmarks"
+    },
+    {
+      "id": "linux-x64/suite/timing-support/timing-support",
+      "group": "Linux-x64-8",
+      "maximumSeconds": 6300,
+      "jobName": "Linux x64 / Tests / timing-support"
+    },
+    {
+      "id": "linux-x64/suite/timing/timing",
+      "group": "Linux-x64-8",
+      "maximumSeconds": 6300,
+      "jobName": "Linux x64 / Tests / timing"
+    },
+    {
+      "id": "linux-x64/suite/foundation/foundation",
+      "group": "Linux-x64-8",
+      "maximumSeconds": 6300,
+      "jobName": "Linux x64 / Tests / foundation"
+    },
+    {
+      "id": "linux-x64/suite/media/media",
+      "group": "Linux-x64-8",
+      "maximumSeconds": 6300,
+      "jobName": "Linux x64 / Tests / media"
+    },
+    {
+      "id": "linux-x64/suite/consumers/consumers",
+      "group": "Linux-x64-8",
+      "maximumSeconds": 6300,
+      "jobName": "Linux x64 / Tests / consumers"
+    },
+    {
+      "id": "linux-x64/audit",
+      "group": "Linux-x64-8",
+      "maximumSeconds": 3600,
+      "jobName": "Linux x64 / Documentation, inventory, generation and release audits"
+    },
+    {
+      "id": "linux-x64/fixture/dsl_compile_fixtures",
+      "group": "Linux-x64-64",
+      "maximumSeconds": 6000,
+      "jobName": "Linux x64 / Compiler fixtures / dsl_compile_fixtures"
+    },
+    {
+      "id": "linux-x64/fixture/dsl_extension_fixtures",
+      "group": "Linux-x64-64",
+      "maximumSeconds": 6000,
+      "jobName": "Linux x64 / Compiler fixtures / dsl_extension_fixtures"
+    },
+    {
+      "id": "linux-x64/export",
+      "group": "Linux-x64-8",
+      "maximumSeconds": 2100,
+      "jobName": "Linux x64 / Export validated platform source"
+    },
+    {
+      "id": "linux-x64/coverage",
+      "group": "Linux-x64-8",
+      "maximumSeconds": 2100,
+      "jobName": "Linux x64 / Verify platform coverage before source export"
+    },
+    {
+      "id": "linux-x64/complete",
+      "group": "Linux-x64-8",
+      "maximumSeconds": 2100,
+      "jobName": "Linux x64 / Platform validation passed"
+    },
+    {
+      "id": "macos-arm64/platform",
+      "group": "MacOS-26-5",
+      "maximumSeconds": 1800,
+      "jobName": "macOS ARM64 / Platform check"
+    },
+    {
+      "id": "macos-arm64/plan",
+      "group": "MacOS-26-5",
+      "maximumSeconds": 1500,
+      "jobName": "macOS ARM64 / Plan platform builds and suites"
+    },
+    {
+      "id": "macos-arm64/build/load",
+      "group": "MacOS-26-5",
+      "maximumSeconds": 9000,
+      "jobName": "macOS ARM64 / Builds / macos-arm64 / load"
+    },
+    {
+      "id": "macos-arm64/build/root",
+      "group": "MacOS-26-5",
+      "maximumSeconds": 9000,
+      "jobName": "macOS ARM64 / Builds / macos-arm64 / root"
+    },
+    {
+      "id": "macos-arm64/build/macros",
+      "group": "MacOS-26-5",
+      "maximumSeconds": 9000,
+      "jobName": "macOS ARM64 / Builds / macos-arm64 / macros"
+    },
+    {
+      "id": "macos-arm64/build/extensions",
+      "group": "MacOS-26-5",
+      "maximumSeconds": 9000,
+      "jobName": "macOS ARM64 / Builds / macos-arm64 / extensions"
+    },
+    {
+      "id": "macos-arm64/build/tooling",
+      "group": "MacOS-26-5",
+      "maximumSeconds": 9000,
+      "jobName": "macOS ARM64 / Builds / macos-arm64 / tooling"
+    },
+    {
+      "id": "macos-arm64/build/benchmarks",
+      "group": "MacOS-26-5",
+      "maximumSeconds": 9000,
+      "jobName": "macOS ARM64 / Builds / macos-arm64 / benchmarks"
+    },
+    {
+      "id": "macos-arm64/build/timing-support",
+      "group": "MacOS-26-5",
+      "maximumSeconds": 9000,
+      "jobName": "macOS ARM64 / Builds / macos-arm64 / timing-support"
+    },
+    {
+      "id": "macos-arm64/build/timing",
+      "group": "MacOS-26-5",
+      "maximumSeconds": 9000,
+      "jobName": "macOS ARM64 / Builds / macos-arm64 / timing"
+    },
+    {
+      "id": "macos-arm64/build/foundation",
+      "group": "MacOS-26-5",
+      "maximumSeconds": 9000,
+      "jobName": "macOS ARM64 / Builds / macos-arm64 / foundation"
+    },
+    {
+      "id": "macos-arm64/build/media",
+      "group": "MacOS-26-5",
+      "maximumSeconds": 9000,
+      "jobName": "macOS ARM64 / Builds / macos-arm64 / media"
+    },
+    {
+      "id": "macos-arm64/build/consumers",
+      "group": "MacOS-26-5",
+      "maximumSeconds": 9000,
+      "jobName": "macOS ARM64 / Builds / macos-arm64 / consumers"
+    },
+    {
+      "id": "macos-arm64/build/release",
+      "group": "MacOS-26-5",
+      "maximumSeconds": 9000,
+      "jobName": "macOS ARM64 / Builds / macos-arm64 / release"
+    },
+    {
+      "id": "macos-arm64/canary",
+      "group": "MacOS-26-5",
+      "maximumSeconds": 4500,
+      "jobName": "macOS ARM64 / Canary / load tests and smokes"
+    },
+    {
+      "id": "macos-arm64/resolve",
+      "group": "MacOS-26-5",
+      "maximumSeconds": 1500,
+      "jobName": "macOS ARM64 / Resolve immutable producers"
+    },
+    {
+      "id": "macos-arm64/suite/root/root-01",
+      "group": "MacOS-26-5",
+      "maximumSeconds": 6300,
+      "jobName": "macOS ARM64 / Tests / root-01"
+    },
+    {
+      "id": "macos-arm64/suite/root/root-02",
+      "group": "MacOS-26-5",
+      "maximumSeconds": 6300,
+      "jobName": "macOS ARM64 / Tests / root-02"
+    },
+    {
+      "id": "macos-arm64/suite/root/root-03",
+      "group": "MacOS-26-5",
+      "maximumSeconds": 6300,
+      "jobName": "macOS ARM64 / Tests / root-03"
+    },
+    {
+      "id": "macos-arm64/suite/root/root-04",
+      "group": "MacOS-26-5",
+      "maximumSeconds": 6300,
+      "jobName": "macOS ARM64 / Tests / root-04"
+    },
+    {
+      "id": "macos-arm64/suite/macros/macros",
+      "group": "MacOS-26-5",
+      "maximumSeconds": 6300,
+      "jobName": "macOS ARM64 / Tests / macros"
+    },
+    {
+      "id": "macos-arm64/suite/extensions/extensions",
+      "group": "MacOS-26-5",
+      "maximumSeconds": 6300,
+      "jobName": "macOS ARM64 / Tests / extensions"
+    },
+    {
+      "id": "macos-arm64/suite/tooling/tooling",
+      "group": "MacOS-26-5",
+      "maximumSeconds": 6300,
+      "jobName": "macOS ARM64 / Tests / tooling"
+    },
+    {
+      "id": "macos-arm64/suite/benchmarks/benchmarks",
+      "group": "MacOS-26-5",
+      "maximumSeconds": 6300,
+      "jobName": "macOS ARM64 / Tests / benchmarks"
+    },
+    {
+      "id": "macos-arm64/suite/timing-support/timing-support",
+      "group": "MacOS-26-5",
+      "maximumSeconds": 6300,
+      "jobName": "macOS ARM64 / Tests / timing-support"
+    },
+    {
+      "id": "macos-arm64/suite/timing/timing",
+      "group": "MacOS-26-5",
+      "maximumSeconds": 6300,
+      "jobName": "macOS ARM64 / Tests / timing"
+    },
+    {
+      "id": "macos-arm64/suite/foundation/foundation",
+      "group": "MacOS-26-5",
+      "maximumSeconds": 6300,
+      "jobName": "macOS ARM64 / Tests / foundation"
+    },
+    {
+      "id": "macos-arm64/suite/media/media",
+      "group": "MacOS-26-5",
+      "maximumSeconds": 6300,
+      "jobName": "macOS ARM64 / Tests / media"
+    },
+    {
+      "id": "macos-arm64/suite/consumers/consumers",
+      "group": "MacOS-26-5",
+      "maximumSeconds": 6300,
+      "jobName": "macOS ARM64 / Tests / consumers"
+    },
+    {
+      "id": "macos-arm64/audit",
+      "group": "MacOS-26-5",
+      "maximumSeconds": 3600,
+      "jobName": "macOS ARM64 / Documentation, inventory, generation and release audits"
+    },
+    {
+      "id": "macos-arm64/fixture/dsl_compile_fixtures",
+      "group": "MacOS-26-5",
+      "maximumSeconds": 6000,
+      "jobName": "macOS ARM64 / Compiler fixtures / dsl_compile_fixtures"
+    },
+    {
+      "id": "macos-arm64/fixture/dsl_extension_fixtures",
+      "group": "MacOS-26-5",
+      "maximumSeconds": 6000,
+      "jobName": "macOS ARM64 / Compiler fixtures / dsl_extension_fixtures"
+    },
+    {
+      "id": "macos-arm64/export",
+      "group": "MacOS-26-5",
+      "maximumSeconds": 2100,
+      "jobName": "macOS ARM64 / Export validated platform source"
+    },
+    {
+      "id": "macos-arm64/public-api",
+      "group": "MacOS-26-5",
+      "maximumSeconds": 9900,
+      "jobName": "macOS ARM64 / Public API and DocC / macOS ARM"
+    },
+    {
+      "id": "macos-arm64/apple",
+      "group": "MacOS-26-5",
+      "maximumSeconds": 2700,
+      "jobName": "macOS ARM64 / Build Apple minima / device and simulator modules"
+    },
+    {
+      "id": "macos-arm64/coverage",
+      "group": "MacOS-26-5",
+      "maximumSeconds": 2100,
+      "jobName": "macOS ARM64 / Verify platform coverage before source export"
+    },
+    {
+      "id": "macos-arm64/complete",
+      "group": "MacOS-26-5",
+      "maximumSeconds": 2100,
+      "jobName": "macOS ARM64 / Platform validation passed"
+    },
+    {
+      "id": "documentation-site",
+      "group": "MacOS-26-5",
+      "maximumSeconds": 3900,
+      "jobName": "Documentation site from validated archives"
+    }
+  ],
+  "maximumRunnerMinutesPerAttempt": 7780,
+  "hostedExecution": false
+}

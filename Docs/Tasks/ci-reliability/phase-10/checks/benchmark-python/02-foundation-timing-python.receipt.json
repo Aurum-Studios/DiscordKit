@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "name": "foundation-timing-python",
+  "stage": "preflight-benchmark-python",
+  "operation": "localHelperCheck",
+  "arguments": [
+    "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "Tools/DiscordFoundationBenchmarks/scripts",
+    "-p",
+    "test_*.py"
+  ],
+  "start": "2026-11-12T16:23:43.265910+00:00",
+  "startMonotonic": 358630.587809375,
+  "deadlineMonotonic": 358899.041195083,
+  "executionLimitSeconds": 300,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "aggregate",
+  "paths": {
+    "output": "/Users/carsonrau/Developer/DiscordKit-ci-phase10/Docs/Tasks/ci-reliability/phase-10/checks/benchmark-python/02-foundation-timing-python.log",
+    "stdout": null,
+    "diagnostics": "/Users/carsonrau/Developer/DiscordKit-ci-phase10/Docs/Tasks/ci-reliability/phase-10/checks/benchmark-python/02-foundation-timing-python.diagnostics.jsonl",
+    "receipt": "/Users/carsonrau/Developer/DiscordKit-ci-phase10/Docs/Tasks/ci-reliability/phase-10/checks/benchmark-python/02-foundation-timing-python.receipt.json"
+  },
+  "identity": {
+    "executionID": "a7e87006-ea82-4729-9f94-597a28fb90dc",
+    "supervisorPID": 61155,
+    "host": "Pokemon-GO-Plus",
+    "system": "Darwin",
+    "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase10"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 63927,
+  "group": 63927,
+  "cleanup": {
+    "status": "group-signalled",
+    "signals": [],
+    "parentReaped": true,
+    "allowanceSeconds": 8.0,
+    "seconds": 0.006,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "verificationMalformedRows": 0,
+    "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "/Users/carsonrau/Developer/DiscordKit-ci-phase10/Docs/Tasks/ci-reliability/phase-10/checks/benchmark-python/02-foundation-timing-python.log",
+      "retainedBytes": 245,
+      "observedBytes": 245,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T16:23:44.081681+00:00",
+  "endMonotonic": 358631.403616625,
+  "elapsedSeconds": 0.816,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}
