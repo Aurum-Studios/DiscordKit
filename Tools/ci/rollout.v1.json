@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
   "automaticMode": "preflight",
-  "nativeExpansionEnabled": false,
+  "nativeExpansionEnabled": true,
   "spendAdmissionImplemented": true
 }

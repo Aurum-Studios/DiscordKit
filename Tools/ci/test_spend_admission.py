@@ -29,10 +29,12 @@ IDENTITY = {'repository': 'Aurum-Studios/DiscordKit', 'repositoryID': '1',
 
 
 class SpendAdmissionTests(unittest.TestCase):
-    """A successful fixture never enables the retained checked-in zero policy."""
+    """Successful synthetic policies never change the checked-in authorization."""
 
     def setUp(self):
         self.policy = spend.load_policy()
+        self.policy['authorization'].pop('validFrom', None)
+        self.policy['authorization'].pop('validUntil', None)
         self.policy['authorization'].update(enabled=True, maximumRunAttempts=2)
         for rate in self.policy['runnerRates'].values():
             rate.update(usdPerMinute='0.01', verifiedOn=AS_OF.isoformat(),
@@ -58,11 +60,21 @@ class SpendAdmissionTests(unittest.TestCase):
         options.update(arguments)
         return spend.guard_job(job, **options)
 
-    def test_checked_in_policy_contains_zero_paid_work_and_unknown_bootstrap(self):
-        policy = spend.load_policy()
-        self.assertFalse(policy['authorization']['enabled'])
-        self.assertIsNone(policy['runnerRates']['ubuntu-24.04']['usdPerMinute'])
-        self.assertFalse(any(rate['billingMappingVerified'] for rate in policy['runnerRates'].values()))
+    def disabled_policy(self):
+        policy = copy.deepcopy(self.policy)
+        policy['authorization']['enabled'] = False
+        for rate in policy['runnerRates'].values():
+            rate['billingMappingVerified'] = False
+        policy['runnerRates']['ubuntu-24.04'].update(usdPerMinute=None, verifiedOn=None)
+        for charge in policy['additionalCharges'].values():
+            charge.update(applicability='unknown', maximumUnitsPerJobAttempt=None,
+                          usdPerUnit=None, verifiedOn=None)
+        policy['allowances'].update(workflowUSD='0.00', experimentUSD='0.00', safetyUSD='0.00',
+                                    maximumPaidJobs=0, maximumPaidMinutes=0, maximumPaidAttempts=0)
+        return policy
+
+    def test_disabled_policy_with_unknown_bootstrap_refuses_every_scope(self):
+        policy = self.disabled_policy()
         for mode, selection in [('preflight', {}), ('full', {}),
                 ('diagnostic', {'platform': 'linux-x64', 'component': 'load', 'suite': 'load'})]:
             with self.subTest(mode=mode):
@@ -72,6 +84,51 @@ class SpendAdmissionTests(unittest.TestCase):
                 self.assertIn('unknown runner rate: ubuntu-24.04', result['reasons'])
                 self.assertIsNone(result['totals']['maximumUSD'])
         self.assertFalse(self.guard(policy=policy)['admitted'])
+
+    def test_authorization_window_is_inclusive_and_old_policies_remain_valid(self):
+        self.assertTrue(self.plan()['admitted'])
+        first, last = AS_OF + timedelta(days=1), AS_OF + timedelta(days=2)
+        self.policy['authorization'].update(validFrom=first.isoformat(), validUntil=last.isoformat())
+        for current in (first, last):
+            with self.subTest(current=current):
+                self.assertTrue(self.plan(as_of=current)['admitted'])
+        for current in (first - timedelta(days=1), last + timedelta(days=1)):
+            with self.subTest(current=current):
+                result = self.plan(as_of=current)
+                self.assertFalse(result['admitted'])
+                self.assertFalse(result['native-enabled'])
+                self.assertIn('current date is outside hosted authorization validity window', result['reasons'])
+        self.policy['authorization']['validUntil'] = first.isoformat()
+        self.assertTrue(self.plan(as_of=first)['admitted'])
+
+    def test_expired_authorization_rejects_fresh_and_saved_rerun_guards(self):
+        self.policy['authorization'].update(validFrom=AS_OF.isoformat(), validUntil=AS_OF.isoformat())
+        previous = self.plan()
+        self.assertTrue(previous['admitted'])
+        for saved in (None, previous):
+            with self.subTest(saved=saved is not None):
+                result = self.guard(as_of=AS_OF + timedelta(days=1), plan=saved,
+                                    identity=dict(IDENTITY, runAttempt='2'))
+                self.assertFalse(result['admitted'])
+                self.assertEqual(result['guard']['reservation']['attempt'], 2)
+                self.assertIn('current date is outside hosted authorization validity window', result['reasons'])
+
+    def test_authorization_window_requires_paired_canonical_ordered_dates(self):
+        invalid_windows = [
+            {'validFrom': '2026-11-12'}, {'validUntil': '2026-11-30'},
+            {'validFrom': '2026-11-12', 'validUntil': '2026-11-11'},
+            {'validFrom': '20261112', 'validUntil': '2026-11-30'},
+            {'validFrom': '2026-11-12', 'validUntil': '2026-11-31'},
+            {'validFrom': None, 'validUntil': '2026-11-30'},
+            {'validFrom': '2026-11-12', 'validUntil': True},
+            {'validFrom': '2026-11-12T00:00:00Z', 'validUntil': '2026-11-30'},
+            {'validFrom': '2026-11-12', 'validUntil': '2026-11-30', 'validTo': '2026-11-30'},
+        ]
+        for window in invalid_windows:
+            with self.subTest(window=window), self.assertRaises(ValueError):
+                policy = copy.deepcopy(self.policy)
+                policy['authorization'].update(window)
+                spend.validate_policy(policy)
 
     def test_exact_workflow_planner_is_the_only_job_source(self):
         result = self.plan('full', publication=True)
@@ -139,7 +196,8 @@ class SpendAdmissionTests(unittest.TestCase):
         for name in ('storage', 'transfer'):
             with self.subTest(name=name):
                 policy = copy.deepcopy(self.policy)
-                policy['additionalCharges'][name] = spend.load_policy()['additionalCharges'][name]
+                policy['additionalCharges'][name].update(applicability='unknown',
+                    maximumUnitsPerJobAttempt=None, usdPerUnit=None, verifiedOn=None)
                 result = self.plan(policy=policy)
                 self.assertFalse(result['admitted'])
                 self.assertIn('unknown ' + name + ' pricing/applicability', result['reasons'])
@@ -240,10 +298,10 @@ class SpendAdmissionTests(unittest.TestCase):
                                 as_of=AS_OF, identity=IDENTITY)
             query.assert_not_called()
 
-    def test_enabled_rollout_still_refuses_checked_in_zero_authorization(self):
+    def test_enabled_rollout_still_refuses_disabled_authorization(self):
         result = self.plan('diagnostic', platform='linux-x64', component='root',
                            suite='DiscordBitsTests', qualification_fault=True,
-                           policy=spend.load_policy())
+                           policy=self.disabled_policy())
         self.assertFalse(result['admitted'])
         self.assertFalse(result['native-enabled'])
 
@@ -268,6 +326,7 @@ class SpendAdmissionTests(unittest.TestCase):
                    'GITHUB_OUTPUT': str(env_output), 'GITHUB_STEP_SUMMARY': str(step_summary)}
             with patch.dict(os.environ, env, clear=True), \
                     patch.object(spend.native_jobs, 'source_identity', return_value=SOURCE), \
+                    patch.object(spend, 'load_policy', return_value=self.disabled_policy()), \
                     redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
                 self.assertEqual(spend.main(['plan', '--output', str(output)]), 0)
                 result = json.loads(output.read_text())

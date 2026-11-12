@@ -1,0 +1,100 @@
+{
+  "observedAt": "2026-11-12T17:07:44.995950+00:00",
+  "localOnly": true,
+  "nativeQualificationEstablished": false,
+  "checks": [
+    {
+      "group": "final-ci-python",
+      "suite": "00-ci-python",
+      "discovered": 611,
+      "passed": 605,
+      "skipped": 6,
+      "status": "passed"
+    },
+    {
+      "group": "tooling-python",
+      "suite": "00-tooling-python",
+      "discovered": 236,
+      "passed": 236,
+      "skipped": 0,
+      "status": "passed"
+    },
+    {
+      "group": "tooling-python",
+      "suite": "01-load-python",
+      "discovered": 56,
+      "passed": 56,
+      "skipped": 0,
+      "status": "passed"
+    },
+    {
+      "group": "benchmark-python",
+      "suite": "00-benchmarks-python",
+      "discovered": 33,
+      "passed": 33,
+      "skipped": 0,
+      "status": "passed"
+    },
+    {
+      "group": "benchmark-python",
+      "suite": "01-timing-support-python",
+      "discovered": 47,
+      "passed": 47,
+      "skipped": 0,
+      "status": "passed"
+    },
+    {
+      "group": "benchmark-python",
+      "suite": "02-foundation-timing-python",
+      "discovered": 3,
+      "passed": 3,
+      "skipped": 0,
+      "status": "passed"
+    },
+    {
+      "group": "browser",
+      "suite": "00-browser",
+      "discovered": 38,
+      "passed": 38,
+      "skipped": 0,
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "discovered": 1024,
+    "passed": 1018,
+    "skipped": 6
+  },
+  "sourceChecks": "reviewed manifest/inventory and 32 DocC example snapshots passed",
+  "workflowChecks": "actionlint passed all seven workflow files",
+  "configuredPolicy": {
+    "status": "passed",
+    "sourceIdentity": "synthetic fixture; actual policies and workflow sources",
+    "full": {
+      "admitted": true,
+      "nativeEnabled": true,
+      "all81JobGuardsAdmitted": true,
+      "totals": {
+        "runnerUSD": "722.990",
+        "storageUSD": "0",
+        "transferUSD": "0",
+        "safetyUSD": "0.00",
+        "maximumUSD": "722.990",
+        "maximumMinutes": 7780,
+        "maximumJobs": 81,
+        "maximumAttempts": 1,
+        "allowanceUSD": "723.00",
+        "remainingUSD": "0.010",
+        "includedEntryReserveUSD": "722.990"
+      }
+    },
+    "expiryRejected": true
+  },
+  "inputSHA256": {
+    "Tools/ci/admission.v1.json": "0bc6ee1eee63f157dc05592a95e103bc2caee1724eb720b3d92e83d6be2a962d",
+    "Tools/ci/rollout.v1.json": "8b5ef4cf946e2df11bb7cc3570627a2193bfd4224b9c738f9e254491710bb624",
+    "Tools/ci/spend_admission.py": "8aebed2a8a845285bea6595bf9a39e7f2c653a76b18d96f22189071a0f545520",
+    "Tools/ci/test_spend_admission.py": "aaf4e66e132d210d321c484d685a18ab2e7b4f2bb9cf35c6181bf01f29c83a34"
+  },
+  "independentReview": "No blockers; actual full cost and all 81 job guards verified; monthly provider limit remains separate."
+}

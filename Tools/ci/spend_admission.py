@@ -8,7 +8,8 @@
 
 This is a fixed partition, not a mutable remaining-balance ledger. A current job
 recomputes the source-bound plan instead of trusting an earlier successful job's
-output. Checked-in unknown prices and zero authorization keep hosted work closed.
+output. Dated authorization and priced ceilings contain each admitted workflow;
+the provider budget supplies the separate monthly aggregate backstop.
 """
 
 import argparse
@@ -59,8 +60,17 @@ def _validate_policy(value):
     require(type(value['schemaVersion']) is int and value['schemaVersion'] == 1
             and value['policyID'] == 'ci-spend-admission-v1', 'unsupported admission policy version')
     authorization = value['authorization']
-    require(set(authorization) == {'enabled', 'repository', 'maximumRunAttempts'},
+    authorization_fields = {'enabled', 'repository', 'maximumRunAttempts'}
+    validity_fields = {'validFrom', 'validUntil'}
+    require(isinstance(authorization, dict)
+            and authorization_fields <= set(authorization) <= authorization_fields | validity_fields,
             'invalid authorization fields')
+    require(('validFrom' in authorization) == ('validUntil' in authorization),
+            'authorization validity requires both validFrom and validUntil')
+    if 'validFrom' in authorization:
+        valid_from = scheduling.iso_date(authorization['validFrom'], 'authorization validFrom')
+        valid_until = scheduling.iso_date(authorization['validUntil'], 'authorization validUntil')
+        require(valid_from <= valid_until, 'authorization validFrom must not follow validUntil')
     require(type(authorization['enabled']) is bool, 'authorization enabled must be boolean')
     require(isinstance(authorization['repository'], str) and re.fullmatch(
         r'[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+', authorization['repository']), 'invalid authorized repository')
@@ -247,6 +257,11 @@ def make_plan(mode, *, platform=None, component=None, suite=None, repository=ROO
     reasons = identity_errors(identity, policy)
     if not policy['authorization']['enabled']:
         reasons.append('hosted execution authorization is disabled')
+    if 'validFrom' in policy['authorization']:
+        valid_from = scheduling.iso_date(policy['authorization']['validFrom'], 'authorization validFrom')
+        valid_until = scheduling.iso_date(policy['authorization']['validUntil'], 'authorization validUntil')
+        if not valid_from <= as_of <= valid_until:
+            reasons.append('current date is outside hosted authorization validity window')
     maximum_attempts = policy['authorization']['maximumRunAttempts']
     current_attempt = int(identity['runAttempt']) if re.fullmatch(r'[1-9][0-9]*', identity['runAttempt']) else 1
     if current_attempt > maximum_attempts:

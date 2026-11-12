@@ -34,8 +34,14 @@ Phase 9 has local shared-documentation helper and real synthetic DocC acceptance
 `b6fe729d61f7355cd8bcfc9ab4dcd93d020f2467` on `ci/phase-9-documentation`; hosted proof remains Phase 11.
 Phase 10 has local spend-admission and usage-reporting acceptance on
 `ci/phase-10-spend-admission` at implementation commit `c5624f8a726880298092269716f49102ff87e636`.
-No hosted qualification, paid execution, external configuration change or publication
-is claimed. See [BOOTSTRAP.md](BOOTSTRAP.md) for the zero-paid execution sheet.
+These phase receipts describe local preparation. The current
+[November allocation](november-2026/BUDGET.md) supersedes their zero-paid setup:
+the operator authorized USD 50 remaining compute, the repository stop-usage
+budget was created and read back, and source preflight is enabled through
+November 30. One full hosted attempt is now explicitly authorized with a USD 723
+source reservation; monthly provider stop usage remains USD 50. Native
+qualification, Phase 11 completion and publication remain open.
+[BOOTSTRAP.md](BOOTSTRAP.md) retains the historical zero-paid execution sheet.
 
 | Phase | Status | Implementation commit | Acceptance evidence |
 | --- | --- | --- | --- |
@@ -49,8 +55,8 @@ is claimed. See [BOOTSTRAP.md](BOOTSTRAP.md) for the zero-paid execution sheet.
 | 7 — Suite groups and resources | Implemented; local helper acceptance; hosted measurements pending Phase 11 | `4db6c5e6181d790fd1cd304220059397a501467b` | [Grouped suites, leaf coverage and resources](phase-7/IMPLEMENTATION.md); [validation](phase-7/validation.json), [review](phase-7/review.json) |
 | 8 — Verified provisioning | Implemented; local helper/signature acceptance; hosted measurements pending Phase 11 | `db705cb6dade43da579d555461f3f36a13586b48` | [Verified distribution reuse and profiles](phase-8/IMPLEMENTATION.md); [validation](phase-8/validation.json), [review](phase-8/review.json), [upstream pins](phase-8/upstream/SOURCES.json) |
 | 9 — Shared documentation inputs | Implemented; local helper and real synthetic DocC acceptance; hosted proof pending Phase 11 | `b6fe729d61f7355cd8bcfc9ab4dcd93d020f2467` | [Shared conversions and trust contracts](phase-9/IMPLEMENTATION.md); [validation](phase-9/validation.json), [review](phase-9/review.json), [real DocC counts/routes](phase-9/checks/real-docc/results.json) |
-| 10 — Spend admission | Implemented; local acceptance; hosted qualification and operator settings pending | `c5624f8a726880298092269716f49102ff87e636` | [Contracts and execution sheet](phase-10/IMPLEMENTATION.md); [validation](phase-10/validation.json), [review](phase-10/review.json), [operator proposal](phase-10/OPERATOR-BUDGET.md) |
-| 11 — Qualification and rollout | Local preparation implemented and tested; hosted completion pending authorization | `d9e006de6a2dbcdf507cec852f51e2dece343937` | [Execution sheet](phase-11/IMPLEMENTATION.md), [1,015 passed / six existing skips](phase-11/validation.json), [review](phase-11/review.json); both native platforms, partial rerun and exact-final-revision full CI remain open |
+| 10 — Spend admission | Implemented; local acceptance; operator budget configured; hosted qualification pending | `c5624f8a726880298092269716f49102ff87e636` | [Contracts and execution sheet](phase-10/IMPLEMENTATION.md); [validation](phase-10/validation.json), [review](phase-10/review.json), [operator proposal](phase-10/OPERATOR-BUDGET.md) |
+| 11 — Qualification and rollout | Local preparation tested; one full hosted attempt authorized; completion pending | `d9e006de6a2dbcdf507cec852f51e2dece343937` | [Execution sheet](phase-11/IMPLEMENTATION.md), [1,015 passed / six existing skips](phase-11/validation.json), [review](phase-11/review.json); both native platforms, partial rerun and exact-final-revision full CI remain open |
 
 ## Phase 1 handoff
 

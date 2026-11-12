@@ -33,10 +33,15 @@ manual entry points with read-only permissions and no Discord secrets. The
 [Phase 6 implementation](Tasks/ci-reliability/phase-6/IMPLEMENTATION.md) introduces
 explicit `preflight`, `diagnostic` and `full` scope. The checked-in
 [rollout setting](../Tools/ci/rollout.v1.json) selects **preflight** automatically
-and keeps native expansion disabled for Phase 11 qualification. The
-[Phase 10 admission policy](../Tools/ci/admission.v1.json) separately retains zero
-allowances and unverified account pricing, so even helper fanout requires admission.
-Manual full/diagnostic requests fail closed under these settings. Repository
+and enables native expansion for an explicitly authorized manual Phase 11 full run. The
+[admission policy](../Tools/ci/admission.v1.json) authorizes preflight through
+November 30, 2026 UTC and records a USD 50 remaining compute allocation, verified
+runner mappings and included non-compute usage. The repository Actions budget
+has stop usage enabled at USD 50; scheduled timing remains active within that
+provider backstop. [The November allocation and read-back](Tasks/ci-reliability/november-2026/BUDGET.md)
+explain per-run limits, included usage and billing limitations. One manually monitored full certification attempt is separately authorized with a
+USD 723 source reservation. The monthly provider stop-usage budget remains USD 50
+and can block the run. Automatic scope remains preflight. Repository
 variables or dispatch fields cannot grant paid execution. Documentation site preparation shares full CI inputs; Pages publication remains
 contained behind full certification and an explicit publication request.
 
@@ -44,8 +49,8 @@ contained behind full certification and an explicit publication request.
 adds a fixed Linux `root` / `DiscordBitsTests` diagnostic fault after real passing
 tests, immutable selection retention and offline full/partial evidence verification.
 The fault is sealed into spend admission and fails only attempt one; a partial
-rerun must execute a fresh consumer while reusing valid producers. This source
-preparation leaves hosted execution and rollout activation pending authorization.
+rerun must execute a fresh consumer while reusing valid producers. The current operator authorization permits one full hosted attempt; successful
+execution and evidence remain pending.
 Phase 11 completion still requires both native platforms and exact-final-revision
 full certification; local snapshot fixtures cannot establish those results.
 
@@ -449,7 +454,9 @@ permissions; it has no Pages permission. The
 [Documentation workflow](../.github/workflows/documentation.yml) has only a manual
 trigger and requests the ordinary full CI workflow at the selected ref. It has no
 separate compiler/conversion graph. Its own current-attempt spend guard precedes
-dispatch; the checked-in zero allowance keeps requests contained.
+dispatch. Only one full certification dispatch is currently authorized by the
+operator; do not use a separate documentation request to launch another.
+Publication still requires successful full certification and an explicit request.
 
 Pages upload and deployment run in a separate job only when a manual request sets
 `publish-documentation=true` (or selects `publish` in Documentation). The job

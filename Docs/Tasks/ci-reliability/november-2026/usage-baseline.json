@@ -1,0 +1,79 @@
+{
+  "observedAt": "2026-11-12T17:01:03.512353+00:00",
+  "rowCount": 20,
+  "skus": {
+    "Actions storage": {
+      "netUSD": "0.0",
+      "grossUSD": "0.886941705",
+      "discountUSD": "0.886941705",
+      "quantity": "2639.550545958",
+      "unitType": "GigabyteHours",
+      "pricePerUnit": 0.00033602
+    },
+    "Actions Linux": {
+      "netUSD": "0.0",
+      "grossUSD": "0.360",
+      "discountUSD": "0.360",
+      "quantity": "60.0",
+      "unitType": "Minutes",
+      "pricePerUnit": 0.006
+    },
+    "Actions macOS 3-core": {
+      "netUSD": "0.0",
+      "grossUSD": "14.446",
+      "discountUSD": "14.446",
+      "quantity": "233.0",
+      "unitType": "Minutes",
+      "pricePerUnit": 0.062
+    },
+    "Actions Linux 4-core": {
+      "netUSD": "0.0",
+      "grossUSD": "0.432",
+      "discountUSD": "0.432",
+      "quantity": "36.0",
+      "unitType": "Minutes",
+      "pricePerUnit": 0.012
+    },
+    "Actions Linux 8-core": {
+      "netUSD": "7.458",
+      "grossUSD": "13.354",
+      "discountUSD": "5.896",
+      "quantity": "607.0",
+      "unitType": "Minutes",
+      "pricePerUnit": 0.022
+    },
+    "Actions macOS XLarge": {
+      "netUSD": "41.292",
+      "grossUSD": "132.804",
+      "discountUSD": "91.512",
+      "quantity": "1302.0",
+      "unitType": "Minutes",
+      "pricePerUnit": 0.102
+    },
+    "Actions Windows 8-core": {
+      "netUSD": "0.0",
+      "grossUSD": "0.714",
+      "discountUSD": "0.714",
+      "quantity": "17.0",
+      "unitType": "Minutes",
+      "pricePerUnit": 0.042
+    },
+    "Actions Windows 64-core": {
+      "netUSD": "0.0",
+      "grossUSD": "26.404",
+      "discountUSD": "26.404",
+      "quantity": "82.0",
+      "unitType": "Minutes",
+      "pricePerUnit": 0.322
+    },
+    "Actions Linux 64-core": {
+      "netUSD": "11.015999999999998",
+      "grossUSD": "47.952",
+      "discountUSD": "36.936",
+      "quantity": "296.0",
+      "unitType": "Minutes",
+      "pricePerUnit": 0.162
+    }
+  },
+  "note": "Locally filtered repository rows; usage may lag and does not establish instantaneous remaining budget."
+}

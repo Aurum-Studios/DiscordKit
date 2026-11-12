@@ -5,7 +5,14 @@ Copyright (c) 2026 Aurum Studios.
 https://aurum-studios.com
 -->
 
-# Proposed repository budget and read-back
+# Repository budget and read-back
+
+Current: the operator selected USD 50 remaining November compute on November 12,
+2026, confirmed included non-compute usage and kept timing scheduled. The
+repository stop-usage budget is configured and verified; see the
+[November allocation and complete read-back](../november-2026/BUDGET.md).
+Source preflight is enabled within a dated window. The proposal below is retained
+as the historical preparation checklist, not the current authorization state.
 
 Status: prepared operator checklist only. No settings were read as configured or
 changed. The concrete proposal below is not an operator-selected allowance and
