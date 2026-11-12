@@ -13,7 +13,8 @@ local helper implementation at `1bc5de45a6dbeef1ab31bd7f6fbbe85b69771600`.
 Phase 2 is complete as local Swift implementation at
 `4dbb085521f1977dc40ea5b8818edb9d61cd2f9f`.
 Phase 3 is implemented with local emulated acceptance; native x64 acceptance remains open.
-Phase 4 receipt contracts are implemented for local helper acceptance; see
+Phase 4 is complete as local helper implementation at
+`4590c5d76c1024d8eec5132a1be343220577cccf`; see
 [the implementation](phase-4/IMPLEMENTATION.md). Phases 5 through 11 remain proposed.
 See [STATE.md](STATE.md) for the
 commit-backed completion record and [BOOTSTRAP.md](BOOTSTRAP.md) for execution limits.

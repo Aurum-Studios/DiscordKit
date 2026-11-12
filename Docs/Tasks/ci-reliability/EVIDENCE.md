@@ -343,5 +343,7 @@ Phases 2 through 11 remained incomplete; later entries record subsequent work.
   honestly. Authenticated GitHub resolution, earlier attempts and partial reruns
   remain Phase 5 work. No workflow or source-export/release barrier changed.
 - Paid jobs/minutes/attempts/spend remain **0 / 0 / 0 / USD 0.00**; no push, dispatch,
-  native qualification, publication or live Discord claim. The implementation
-  commit and verified Git blobs will be recorded in the completion follow-up.
+  native qualification, publication or live Discord claim. Implementation commit
+  `4590c5d76c1024d8eec5132a1be343220577cccf` contains all six tested input hashes and
+  17 retained manifest artifacts. The [commit receipt](phase-4/commit-receipt.json)
+  verifies actual Git blobs; the completion follow-up changes documentation only.

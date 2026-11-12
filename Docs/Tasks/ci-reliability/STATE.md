@@ -16,6 +16,9 @@ Phase 1 is complete at implementation commit
 Phase 2 is complete at implementation commit
 `4dbb085521f1977dc40ea5b8818edb9d61cd2f9f` on `ci/phase-2-event-hub`
 with local macOS ARM64 Swift acceptance.
+Phase 4 is complete at implementation commit
+`4590c5d76c1024d8eec5132a1be343220577cccf` on `ci/phase-4-compatibility`,
+with local Python helper acceptance.
 No hosted qualification, paid execution, external configuration change or publication
 is claimed. See [BOOTSTRAP.md](BOOTSTRAP.md) for the zero-paid execution sheet.
 
@@ -25,7 +28,7 @@ is claimed. See [BOOTSTRAP.md](BOOTSTRAP.md) for the zero-paid execution sheet.
 | 1 — Process supervision | Complete; local helper acceptance only | `1bc5de45a6dbeef1ab31bd7f6fbbe85b69771600` | [231 helper tests](phase-1/validation.json), [nine retained fault specimens](phase-1/faults/results.json), [independent review](phase-1/review/results.json), [implementation and limits](phase-1/IMPLEMENTATION.md) |
 | 2 — Event-hub accounting | Complete; local macOS Swift acceptance | `4dbb085521f1977dc40ea5b8818edb9d61cd2f9f` | [Red/green, 23 load + 21 runtime tests, four CLI checks](phase-2/validation.json), [independent review](phase-2/review.json), [implementation and limits](phase-2/IMPLEMENTATION.md) |
 | 3 — Linux hang repair | Implemented and locally tested; native x64 acceptance pending | `69a21b325c4eaa6181eb31dcc7e78ab083ac6411` | [Stack-supported peer repair, red/green and whole-package checks](phase-3/IMPLEMENTATION.md); [native gate](phase-3/NATIVE-ACCEPTANCE.md) remains open |
-| 4 — Compatibility receipts | Implemented; local helper acceptance passed; commit receipt pending | Pending local commit | [270 helpers, six existing Linux-only skips](phase-4/validation.json), [review](phase-4/review.json), [v2 contracts and execution sheet](phase-4/IMPLEMENTATION.md) |
+| 4 — Compatibility receipts | Complete; local helper acceptance | `4590c5d76c1024d8eec5132a1be343220577cccf` | [270 helpers, six existing Linux-only skips](phase-4/validation.json), [review](phase-4/review.json), [v2 contracts and execution sheet](phase-4/IMPLEMENTATION.md) |
 | 5 — Transfer and partial reruns | Not started | Pending | Pending local and hosted proof |
 | 6 — Preflight and canaries | Not started | Pending | Pending |
 | 7 — Suite groups and resources | Not started | Pending | Pending coverage/cost comparison |
@@ -113,9 +116,12 @@ regressions and policy/hash/link checks. [Independent review](phase-4/review.jso
 has no remaining blockers. Metadata command availability was checked read-only on
 the host; its Swift 6.4 compiler does not qualify pinned Swift 6.4.1. No native
 compilation, hosted CI, paid execution, workflow mutation, push or publication occurred.
-The original planning edits and earlier worktrees remain preserved. The actual
-implementation commit will be recorded by a documentation-only follow-up after
-Git blob/hash verification; until then this entry is not marked complete.
+The original planning edits and earlier worktrees remain preserved. Implementation commit `4590c5d76c1024d8eec5132a1be343220577cccf`
+contains all six tested input hashes and 17 retained manifest artifacts. The
+[commit receipt](phase-4/commit-receipt.json) verifies them against actual Git blobs.
+This completion follow-up changes documentation only; tested executable/test/build
+inputs remain unchanged. Phase 4 is complete as local helper implementation;
+Phase 3 native x64 acceptance and all hosted qualification remain open.
 
 ## Outstanding execution decisions
 
