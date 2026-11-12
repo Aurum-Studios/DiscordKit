@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "name": "green-final-build",
+  "stage": "phase3-green-final-build",
+  "operation": "coldCompileCommand",
+  "arguments": [
+    "swift",
+    "build",
+    "--package-path",
+    "Tools/DiscordKitLoadTests",
+    "--scratch-path",
+    "/scratch",
+    "--build-system",
+    "native",
+    "--jobs",
+    "6",
+    "--force-resolved-versions",
+    "--disable-experimental-prebuilts",
+    "--explicit-target-dependency-import-check",
+    "error",
+    "--build-tests"
+  ],
+  "start": "2026-11-12T13:00:23.812744+00:00",
+  "startMonotonic": 75530.270796363,
+  "deadlineMonotonic": 76730.270796363,
+  "executionLimitSeconds": 1200,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "operation",
+  "paths": {
+    "output": "/work/Docs/Tasks/ci-reliability/phase-3/green-final-build.log",
+    "stdout": null,
+    "diagnostics": "/work/Docs/Tasks/ci-reliability/phase-3/green-final-build.diagnostics.jsonl",
+    "receipt": "/work/Docs/Tasks/ci-reliability/phase-3/green-final-build.receipt.json"
+  },
+  "identity": {
+    "executionID": "392e1e67-d6e5-42a3-903f-965cbbdae0e0",
+    "supervisorPID": 5841,
+    "host": "213b31596900",
+    "system": "Linux",
+    "repository": "/work"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 5847,
+  "group": 5847,
+  "cleanup": {
+    "status": "session-signalled",
+    "signals": [],
+    "groupSignals": [],
+    "parentReaped": true,
+    "session": 5847,
+    "allowanceSeconds": 8.0,
+    "discovery": {
+      "status": "available",
+      "truncated": false
+    },
+    "groups": [
+      5847
+    ],
+    "seconds": 0.082,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "boundary": "admitted Linux session; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "/work/Docs/Tasks/ci-reliability/phase-3/green-final-build.log",
+      "retainedBytes": 1181,
+      "observedBytes": 1181,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T13:00:35.951213+00:00",
+  "endMonotonic": 75542.409419082,
+  "elapsedSeconds": 12.139,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}

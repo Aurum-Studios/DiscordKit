@@ -24,7 +24,7 @@ is claimed. See [BOOTSTRAP.md](BOOTSTRAP.md) for the zero-paid execution sheet.
 | 0 — Baseline and initial limits | Complete; local preparation only | `5808ce32d867622ff6952d0f2057768a8a257f14` | [212 helper tests](baseline/validation.json), [retained capture](baseline/CAPTURE.md), [usage baseline](baseline/COST.md), [zero-paid sheet](BOOTSTRAP.md); hash/link/diff checks passed |
 | 1 — Process supervision | Complete; local helper acceptance only | `1bc5de45a6dbeef1ab31bd7f6fbbe85b69771600` | [231 helper tests](phase-1/validation.json), [nine retained fault specimens](phase-1/faults/results.json), [independent review](phase-1/review/results.json), [implementation and limits](phase-1/IMPLEMENTATION.md) |
 | 2 — Event-hub accounting | Complete; local macOS Swift acceptance | `4dbb085521f1977dc40ea5b8818edb9d61cd2f9f` | [Red/green, 23 load + 21 runtime tests, four CLI checks](phase-2/validation.json), [independent review](phase-2/review.json), [implementation and limits](phase-2/IMPLEMENTATION.md) |
-| 3 — Linux hang repair | Not started | Pending | Cause unresolved |
+| 3 — Linux hang repair | Implemented and locally tested; native x64 acceptance pending | Pending commit receipt | [Stack-supported peer repair, red/green and whole-package checks](phase-3/IMPLEMENTATION.md); [native gate](phase-3/NATIVE-ACCEPTANCE.md) remains open |
 | 4 — Compatibility receipts | Not started | Pending | Pending |
 | 5 — Transfer and partial reruns | Not started | Pending | Pending local and hosted proof |
 | 6 — Preflight and canaries | Not started | Pending | Pending |
@@ -48,8 +48,8 @@ This completion receipt changes documentation only; the seven tested input hashe
 match the implementation commit and remain unchanged.
 
 1. Subsequent authorized sessions can prepare Phases 2 and 4 independently.
-   Phase 3 uses this supervisor for diagnosis; its Linux blocked owner remains
-   unresolved. No later phase starts as part of Phase 1 completion.
+   Phase 3 uses this supervisor for diagnosis; its blocked owner was unresolved at
+   the Phase 1 handoff. No later phase started as part of Phase 1 completion.
 2. Re-read source/worktree/process state, existing receipts and zero-paid limits
    before the next implementation. Native experiments still require a concrete
    allowed scope and execution allowance; helper acceptance supplies neither.
@@ -67,21 +67,45 @@ preserved. Implementation commit `4dbb085521f1977dc40ea5b8818edb9d61cd2f9f`
 contains the tested inputs and retained evidence. All eight input hashes match
 that commit and remain unchanged; this completion receipt is documentation only.
 
-The next authorized implementation phase is Phase 3: diagnose the Linux synthetic
-command hang using Phase 1 supervision. Its blocked owner remains unresolved.
-Whole-package native load confirmation and final hosted certification remain
-later-phase work. No remote operation or later-phase implementation occurred here.
+The Phase 2 handoff required Phase 3 diagnosis using Phase 1 supervision, with its
+blocked owner still unresolved at that checkpoint. Whole-package native load
+confirmation and final hosted certification remained open. No remote operation or
+later-phase implementation occurred as part of Phase 2.
+
+## Phase 3 handoff
+
+Owner Codex `/root` prepared the repair on `ci/phase-3-synthetic-command`, sibling
+`DiscordKit-ci-phase3`, based on `07cdea35d6f9ad384bfb42a3005940ca69e76922`.
+The [execution sheet and findings](phase-3/IMPLEMENTATION.md) identify transport
+peer shutdown as the local blocked owner, supported by real Swift wait stacks and
+blocked/pending SIGTERM. The historical last synthetic log line was not proof of
+its owning operation. The peer now unmasks only its shutdown signal after installing
+its handler. Linux supervision also includes separately grouped descendants in the
+admitted session and fails closed on incomplete cleanup verification.
+
+[Validation](phase-3/validation.json) retains deterministic red/green regressions,
+237 passing CI helpers, 161 whole-package Swift tests, direct/DSL parity and both
+existing debug smokes. [Review](phase-3/review.json), final input/artifact hashes
+and owned container cleanup accompany the result. The original planning edits and
+all completed phase worktrees are preserved.
+
+The Ubuntu 24.04 x64 Swift 6.4.1 execution used Rosetta on an ARM64 VM. It is
+**emulated exploratory/local acceptance**, not native x64 or hosted qualification.
+Phase 3 remains pending native acceptance; the [next action](phase-3/NATIVE-ACCEPTANCE.md)
+requires a verified native host/access or a separately authorized bounded hosted
+probe. No later phase, push, dispatch, publication or paid execution occurred.
 
 ## Outstanding execution decisions
 
 - Paid execution remains unauthorized: experiment/workflow allowances are USD 0,
   and paid jobs/minutes/attempts are zero. Published dated list rates are retained;
   account billing/pool mapping and the reported USD 40 remain unreconciled.
-- Local matching Ubuntu environment versus separately authorized bounded hosted probe.
+- Native Ubuntu 24.04 x64 host/access versus separately authorized bounded hosted probe;
+  the retained local x64 container is emulated and cannot close Phase 3.
 - Operator-selected repository budget amount/scope and authorization to configure it.
 - Phase 0 uses `ci/phase-0-baseline` in sibling `DiscordKit-ci-phase0`, owner
   Codex `/root`, base `85eac6f3c1d3b17e53596c49e7438efee366c1b3`.
-  Phase 1 and Phase 2 ownership and local-only sheets are recorded above. Phases 3
+  Phase 1 through Phase 3 ownership and local-only sheets are recorded above. Phases 4
   through 11 owners and paid experiment sheets are not assigned/authorized.
 
 These do not prevent beginning local preparation/helper implementation. Missing

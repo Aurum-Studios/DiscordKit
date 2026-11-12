@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "name": "scenario-directCancelled",
+  "stage": "phase3-scenario-directCancelled",
+  "operation": "focusedScenario",
+  "arguments": [
+    "/scratch/x86_64-unknown-linux-gnu/debug/DiscordKitLoadTests",
+    "command-timing",
+    "--case",
+    "synthetic.directCancelled",
+    "--requests",
+    "7",
+    "--concurrency",
+    "3",
+    "--warmup-requests",
+    "0",
+    "--delay-microseconds",
+    "0",
+    "--duration-seconds",
+    "3",
+    "--warmup-seconds",
+    "0",
+    "--profile",
+    "smoke",
+    "--seed",
+    "1",
+    "--output",
+    "/work/Docs/Tasks/ci-reliability/phase-3/scenario-directCancelled.json",
+    "--common-report",
+    "/work/Docs/Tasks/ci-reliability/phase-3/scenario-directCancelled-common.json"
+  ],
+  "start": "2026-11-12T13:03:37.881387+00:00",
+  "startMonotonic": 75724.339551183,
+  "deadlineMonotonic": 75814.339551183,
+  "executionLimitSeconds": 90,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "operation",
+  "paths": {
+    "output": "/work/Docs/Tasks/ci-reliability/phase-3/scenario-directCancelled.log",
+    "stdout": null,
+    "diagnostics": "/work/Docs/Tasks/ci-reliability/phase-3/scenario-directCancelled.diagnostics.jsonl",
+    "receipt": "/work/Docs/Tasks/ci-reliability/phase-3/scenario-directCancelled.receipt.json"
+  },
+  "identity": {
+    "executionID": "a25afd40-7a00-437f-a930-d69fa82a9630",
+    "supervisorPID": 6656,
+    "host": "213b31596900",
+    "system": "Linux",
+    "repository": "/work"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 6730,
+  "group": 6730,
+  "cleanup": {
+    "status": "session-signalled",
+    "signals": [],
+    "groupSignals": [],
+    "parentReaped": true,
+    "session": 6730,
+    "allowanceSeconds": 8.0,
+    "discovery": {
+      "status": "available",
+      "truncated": false
+    },
+    "groups": [
+      6730
+    ],
+    "seconds": 0.079,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "boundary": "admitted Linux session; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "/work/Docs/Tasks/ci-reliability/phase-3/scenario-directCancelled.log",
+      "retainedBytes": 417,
+      "observedBytes": 417,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T13:03:38.158212+00:00",
+  "endMonotonic": 75724.616428168,
+  "elapsedSeconds": 0.277,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}

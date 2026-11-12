@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "name": "green-transport",
+  "stage": "phase3-green-transport",
+  "operation": "focusedTest",
+  "arguments": [
+    "swift",
+    "test",
+    "--package-path",
+    "Tools/DiscordKitLoadTests",
+    "--scratch-path",
+    "/scratch",
+    "--build-system",
+    "native",
+    "--jobs",
+    "6",
+    "--force-resolved-versions",
+    "--disable-experimental-prebuilts",
+    "--explicit-target-dependency-import-check",
+    "error",
+    "--skip-build",
+    "--no-parallel",
+    "--filter",
+    "TransportTimingRunnerTests"
+  ],
+  "start": "2026-11-12T13:02:18.139541+00:00",
+  "startMonotonic": 75644.597590574,
+  "deadlineMonotonic": 75734.597590574,
+  "executionLimitSeconds": 90,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "operation",
+  "paths": {
+    "output": "/work/Docs/Tasks/ci-reliability/phase-3/green-transport.log",
+    "stdout": null,
+    "diagnostics": "/work/Docs/Tasks/ci-reliability/phase-3/green-transport.diagnostics.jsonl",
+    "receipt": "/work/Docs/Tasks/ci-reliability/phase-3/green-transport.receipt.json"
+  },
+  "identity": {
+    "executionID": "680eed5f-c121-4c6c-9c32-8552274d04f9",
+    "supervisorPID": 6292,
+    "host": "213b31596900",
+    "system": "Linux",
+    "repository": "/work"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 6298,
+  "group": 6298,
+  "cleanup": {
+    "status": "session-signalled",
+    "signals": [],
+    "groupSignals": [],
+    "parentReaped": true,
+    "session": 6298,
+    "allowanceSeconds": 8.0,
+    "discovery": {
+      "status": "available",
+      "truncated": false
+    },
+    "groups": [
+      6298
+    ],
+    "seconds": 0.083,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "boundary": "admitted Linux session; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "/work/Docs/Tasks/ci-reliability/phase-3/green-transport.log",
+      "retainedBytes": 3413,
+      "observedBytes": 3413,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T13:02:20.814171+00:00",
+  "endMonotonic": 75647.272377384,
+  "elapsedSeconds": 2.675,
+  "lastObservedTest": "run",
+  "readerThreads": 0
+}

@@ -1,0 +1,7 @@
+◇ Test run started.
+↳ Testing Library Version: 6.4.1 (804dc4530ef3666)
+↳ Target Platform: x86_64-unknown-linux-gnu
+◇ Suite "Corrected transport timing" started.
+◇ Test nativeChunkControlsCloseOwnedResources(scenario:) started.
+◇ Test case passing 1 argument scenario → .body64KiBChunk257V1 to nativeChunkControlsCloseOwnedResources(scenario:) started.
+2026-11-12T12:59:06+0000 info discordkit.nio.http: dk.event=nio.http.closed dk.module=nio dk.subsystem=nio.http [DiscordNIOTransport] NIO HTTP transport closed

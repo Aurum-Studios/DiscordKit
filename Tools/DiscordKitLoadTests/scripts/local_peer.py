@@ -162,6 +162,10 @@ def main():
             raise SystemExit(0)
 
         signal.signal(signal.SIGTERM, terminate)
+        # Foundation can launch us from a thread that blocks SIGTERM. Own the
+        # shutdown signal after installing its handler, preserving every other mask.
+        if hasattr(signal, "pthread_sigmask"):
+            signal.pthread_sigmask(signal.SIG_UNBLOCK, {signal.SIGTERM})
         print(server.server_port, flush=True)
         server.serve_forever()
 

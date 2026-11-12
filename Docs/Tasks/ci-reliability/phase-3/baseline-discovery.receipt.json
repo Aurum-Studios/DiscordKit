@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "name": "baseline-discovery",
+  "stage": "phase3-baseline-discovery",
+  "operation": "testDiscovery",
+  "arguments": [
+    "swift",
+    "test",
+    "--package-path",
+    "Tools/DiscordKitLoadTests",
+    "--scratch-path",
+    "/scratch",
+    "--build-system",
+    "native",
+    "--jobs",
+    "6",
+    "--force-resolved-versions",
+    "--disable-experimental-prebuilts",
+    "--explicit-target-dependency-import-check",
+    "error",
+    "--skip-build",
+    "list"
+  ],
+  "start": "2026-11-12T12:44:38.697512+00:00",
+  "startMonotonic": 74585.155541998,
+  "deadlineMonotonic": 74645.155541998,
+  "executionLimitSeconds": 60,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "operation",
+  "paths": {
+    "output": "/work/Docs/Tasks/ci-reliability/phase-3/baseline-discovery.log",
+    "stdout": "/work/Docs/Tasks/ci-reliability/phase-3/baseline-discovery.stdout",
+    "diagnostics": "/work/Docs/Tasks/ci-reliability/phase-3/baseline-discovery.diagnostics.jsonl",
+    "receipt": "/work/Docs/Tasks/ci-reliability/phase-3/baseline-discovery.receipt.json"
+  },
+  "identity": {
+    "executionID": "af92aaa0-6554-42a1-b879-1b8528ede460",
+    "supervisorPID": 5226,
+    "host": "213b31596900",
+    "system": "Linux",
+    "repository": "/work"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 5232,
+  "group": 5232,
+  "cleanup": {
+    "status": "group-signalled",
+    "signals": [],
+    "parentReaped": true,
+    "allowanceSeconds": 8.0,
+    "seconds": 0.028,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "/work/Docs/Tasks/ci-reliability/phase-3/baseline-discovery.log",
+      "retainedBytes": 484,
+      "observedBytes": 484,
+      "truncated": false
+    },
+    {
+      "path": "/work/Docs/Tasks/ci-reliability/phase-3/baseline-discovery.stdout",
+      "retainedBytes": 13598,
+      "observedBytes": 13598,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T12:44:42.348613+00:00",
+  "endMonotonic": 74588.806817351,
+  "elapsedSeconds": 3.651,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}

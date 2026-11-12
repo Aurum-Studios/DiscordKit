@@ -1,0 +1,28 @@
+python3 -m unittest discover -s Tools/DiscordKitLoadTests/scripts -p test_local_peer.py -v
+test_cli_sigterm_shutdown (test_local_peer.LocalPeerShutdownTests.test_cli_sigterm_shutdown)
+Ordinary startup returns one exact metrics receipt and closes its listener. ... {"fixture": "local-peer-sigterm", "blockedSIGTERM": false, "terminatedBeforeCleanup": true, "forcedKill": false, "exitCode": 0, "reaped": true, "portClosed": true}
+ok
+test_cli_sigterm_shutdown_with_inherited_blocked_signal (test_local_peer.LocalPeerShutdownTests.test_cli_sigterm_shutdown_with_inherited_blocked_signal)
+A masked parent cannot leave the peer alive after the harness requests shutdown. ... {"fixture": "local-peer-sigterm", "blockedSIGTERM": true, "terminatedBeforeCleanup": true, "forcedKill": false, "exitCode": 0, "reaped": true, "portClosed": true}
+ok
+test_bad_upload_and_malformed_response (test_local_peer.LocalPeerTests.test_bad_upload_and_malformed_response)
+Bad uploads fail explicitly; malformed bodies keep valid framing with wrong contents. ... ok
+test_invalid_limits (test_local_peer.LocalPeerTests.test_invalid_limits)
+Negative and oversized payloads fail before binding any listener. ... ok
+test_invalid_timing_and_tls_configuration (test_local_peer.LocalPeerTests.test_invalid_timing_and_tls_configuration)
+Unknown cases and partial TLS configuration fail before binding a listener. ... ok
+test_payload_and_reuse (test_local_peer.LocalPeerTests.test_payload_and_reuse)
+Two requests on one connection return exactly the configured body. ... ok
+test_timing_payloads_and_uploads (test_local_peer.LocalPeerTests.test_timing_payloads_and_uploads)
+Streamed/large bodies and all upload sizes retain framing and bounded input validation. ... ok
+test_verified_tls_loopback (test_local_peer.LocalPeerTests.test_verified_tls_loopback)
+Private fixture TLS requires its explicit trust root and verifies the loopback hostname. ... ok
+test_versioned_chunk_controls_keep_identical_immediate_payloads (test_local_peer.LocalPeerTests.test_versioned_chunk_controls_keep_identical_immediate_payloads)
+Native chunk controls vary client configuration, retaining the same immediate wire body. ... ok
+test_versioned_chunk_controls_reject_payload_identity_changes (test_local_peer.LocalPeerTests.test_versioned_chunk_controls_reject_payload_identity_changes)
+A versioned fixed-size identity rejects any different body size before socket allocation. ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 7.760s
+
+OK

@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "capturedAtUTC": "2026-11-12T12:51:38.836328+00:00",
+  "scope": "One sacrificial Python child only; no compiler/test/Swift process",
+  "debuggerLimitSeconds": 5,
+  "overallLimitSeconds": 15,
+  "fixturePID": 5577,
+  "port": 41457,
+  "childSubreaperEnabled": true,
+  "probe": {
+    "arguments": [
+      "lldb",
+      "--batch",
+      "--no-lldbinit",
+      "-o",
+      "target create --arch x86_64 /usr/bin/python3",
+      "-o",
+      "breakpoint set --name Py_BytesMain",
+      "-o",
+      "gdb-remote 127.0.0.1:41457",
+      "-o",
+      "script import lldb,time; lldb.debugger.SetAsync(True); print(\"CONTINUE\",lldb.process.Continue()); time.sleep(0.2); print(\"STATE\",lldb.process.GetState())",
+      "-o",
+      "script exec(\"import lldb,os,struct\\nmodules={}\\nfor line in open('/proc/%d/maps' % lldb.process.GetProcessID()):\\n    fields=line.split(None,5)\\n    if len(fields)!=6 or not fields[5].startswith('/'):\\n        continue\\n    path=fields[5].strip()\\n    if path.endswith(' (deleted)') or not os.path.isfile(path):\\n        continue\\n    with open(path,'rb') as source:\\n        header=source.read(20)\\n    if len(header)!=20 or header[:4]!=b'\\\\x7fELF' or header[4]!=2 or struct.unpack('<H',header[18:20])[0]!=62:\\n        continue\\n    elf_type=struct.unpack('<H',header[16:18])[0]\\n    if elf_type not in (2,3):\\n        continue\\n    start=int(fields[0].split('-')[0],16)\\n    bias=start-int(fields[2],16) if elf_type==3 else 0\\n    modules[path]=min(modules.get(path,bias),bias)\\nfor path,bias in sorted(modules.items()):\\n    module=lldb.target.AddModule(path,'x86_64-unknown-linux-gnu',None)\\n    if not module.IsValid():\\n        print('MODULE_INVALID',path)\\n        continue\\n    error=lldb.target.SetModuleLoadAddress(module,bias)\\n    print('MODULE_LOAD',path,hex(bias),error)\\n\")",
+      "-o",
+      "expression --language c -- (int)unsetenv(\"ROSETTA_DEBUGSERVER_PORT\")",
+      "-o",
+      "script print(\"FINAL_CONTINUE\",lldb.process.Continue()); time.sleep(0.2); print(\"FINAL_STATE\",lldb.process.GetState())",
+      "-o",
+      "process status"
+    ],
+    "status": "failed",
+    "output": "(lldb) target create --arch x86_64 /usr/bin/python3\nCurrent executable set to '/usr/bin/python3' (x86_64).\n(lldb) breakpoint set --name Py_BytesMain\nBreakpoint 1: where = python3`Py_BytesMain, address = 0x00000000006bc790\n(lldb) gdb-remote 127.0.0.1:41457\nProcess 5577 stopped\n* thread #1, stop reason = signal SIGTRAP\n      frame #0: 0x00007ffffffe5540 \n->  0x7ffffffe5540: movq   %rsp, %rdi\n    0x7ffffffe5543: callq  0x7ffffffe61d0\n    0x7ffffffe5548: movq   %rax, %r12\n    0x7ffffffe554b: movq   %rsp, %r13\nTarget 0: (python3) stopped.\n(lldb) script import lldb,time; lldb.debugger.SetAsync(True); print(\"CONTINUE\",lldb.process.Continue()); time.sleep(0.2); print(\"STATE\",lldb.process.GetState())\nProcess 5577 stopped\n* thread #1, stop reason = breakpoint 1.1\n      frame #0: 0x00000000006bc790 python3`Py_BytesMain\npython3`Py_BytesMain:\n->  0x6bc790 <+0>: endbr64 \n    0x6bc794 <+4>: pushq  %rbp\n    0x6bc795 <+5>: movslq %edi, %rdi\n    0x6bc798 <+8>: xorl   %eax, %eax\nTarget 0: (python3) stopped.\nCONTINUE success\nSTATE 5\n(lldb) script exec(\"import lldb,os,struct\\nmodules={}\\nfor line in open('/proc/%d/maps' % lldb.process.GetProcessID()):\\n    fields=line.split(None,5)\\n    if len(fields)!=6 or not fields[5].startswith('/'):\\n        continue\\n    path=fields[5].strip()\\n    if path.endswith(' (deleted)') or not os.path.isfile(path):\\n        continue\\n    with open(path,'rb') as source:\\n        header=source.read(20)\\n    if len(header)!=20 or header[:4]!=b'\\\\x7fELF' or header[4]!=2 or struct.unpack('<H',header[18:20])[0]!=62:\\n        continue\\n    elf_type=struct.unpack('<H',header[16:18])[0]\\n    if elf_type not in (2,3):\\n        continue\\n    start=int(fields[0].split('-')[0],16)\\n    bias=start-int(fields[2],16) if elf_type==3 else 0\\n    modules[path]=min(modules.get(path,bias),bias)\\nfor path,bias in sorted(modules.items()):\\n    module=lldb.target.AddModule(path,'x86_64-unknown-linux-gnu',None)\\n    if not module.IsValid():\\n        print('MODULE_INVALID',path)\\n        continue\\n    error=lldb.target.SetModuleLoadAddress(module,bias)\\n    print('MODULE_LOAD',path,hex(bias),error)\\n\")\n1 location added to breakpoint 1\nMODULE_LOAD /usr/bin/python3.12 0x0 error: <NULL>\nMODULE_LOAD /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2 0x7ffffffc6000 error: <NULL>\nMODULE_LOAD /usr/lib/x86_64-linux-gnu/libc.so.6 0x7fffff479000 error: <NULL>\nMODULE_LOAD /usr/lib/x86_64-linux-gnu/libexpat.so.1.9.1 0x7fffff68c000 error: <NULL>\nMODULE_LOAD /usr/lib/x86_64-linux-gnu/libm.so.6 0x7fffff6d8000 error: <NULL>\nMODULE_LOAD /usr/lib/x86_64-linux-gnu/libz.so.1.3 0x7fffff6ba000 error: <NULL>\n(lldb) expression --language c -- (int)unsetenv(\"ROSETTA_DEBUGSERVER_PORT\")\n                                  \nnote: Expression evaluation in pure C not supported. Ran expression as 'ISO C++'.\nerror: Can't evaluate the expression without a running target due to: Interpreter doesn't handle one of the expression's opcodes\n",
+    "exitCode": 1,
+    "truncated": false,
+    "seconds": 1.19
+  },
+  "fixtureReaped": true,
+  "fixtureExitCode": -5,
+  "fixtureOutput": "rosetta error: no handlers found for <QSaveRegisterState>, length=<18>!\n\n ",
+  "adoptedChildrenReaped": [
+    {
+      "pid": 5578,
+      "waitStatus": 133
+    }
+  ],
+  "fixtureProcessGroupGone": true,
+  "seconds": 1.201
+}

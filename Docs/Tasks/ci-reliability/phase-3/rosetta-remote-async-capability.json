@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "capturedAtUTC": "2026-11-12T12:48:39.417361+00:00",
+  "scope": "One sacrificial sleep child only; no compiler, test or Swift process attached",
+  "debuggerLimitSeconds": 5,
+  "overallLimitSeconds": 15,
+  "fixturePID": 5507,
+  "port": 46951,
+  "childSubreaperEnabled": true,
+  "probe": {
+    "arguments": [
+      "lldb",
+      "--batch",
+      "--no-lldbinit",
+      "-o",
+      "target create --arch x86_64 /usr/bin/sleep",
+      "-o",
+      "gdb-remote 127.0.0.1:46951",
+      "-o",
+      "script import lldb,time; lldb.debugger.SetAsync(True); print(\"CONTINUE\",lldb.process.Continue()); time.sleep(0.25); print(\"STOP\",lldb.process.Stop()); time.sleep(0.1); print(\"STATE\",lldb.process.GetState())",
+      "-o",
+      "register read rip rsp rbp",
+      "-o",
+      "image list -o -f",
+      "-o",
+      "thread backtrace all",
+      "-o",
+      "process kill"
+    ],
+    "status": "available",
+    "output": "(lldb) target create --arch x86_64 /usr/bin/sleep\nCurrent executable set to '/usr/bin/sleep' (x86_64).\n(lldb) gdb-remote 127.0.0.1:46951\nProcess 5507 stopped\n* thread #1, stop reason = signal SIGTRAP\n      frame #0: 0x00007ffffffe5540 \n->  0x7ffffffe5540: movq   %rsp, %rdi\n    0x7ffffffe5543: callq  0x7ffffffe61d0\n    0x7ffffffe5548: movq   %rax, %r12\n    0x7ffffffe554b: movq   %rsp, %r13\nTarget 0: (sleep) stopped.\n(lldb) script import lldb,time; lldb.debugger.SetAsync(True); print(\"CONTINUE\",lldb.process.Continue()); time.sleep(0.25); print(\"STOP\",lldb.process.Stop()); time.sleep(0.1); print(\"STATE\",lldb.process.GetState())\nProcess 5507 stopped\n* thread #1, stop reason = signal SIGINT\n      frame #0: 0x00007fffff69ab78 \n->  0x7fffff69ab78: syscall \n    0x7fffff69ab7a: movq   %rax, %rbx\n    0x7fffff69ab7d: movl   %ebx, %eax\n    0x7fffff69ab7f: cmpl   $-0x16, %ebx\nTarget 0: (sleep) stopped.\nCONTINUE success\nSTOP success\nSTATE 5\n(lldb) register read rip rsp rbp\n     rip = 0x00007fffff69ab78\n     rsp = 0x00007ffffffc59d0\n     rbp = 0x00007ffffffc5a40\n(lldb) image list -o -f\n[  0] 0x0000555555554000 /usr/bin/sleep\n(lldb) thread backtrace all\n* thread #1, stop reason = signal SIGINT\n  * frame #0: 0x00007fffff69ab78 \n    frame #1: 0x00007fffff6a7b27 \n    frame #2: 0x0000555555556a7f sleep`___lldb_unnamed_symbol_25d0 + 1199\n    frame #3: 0x00007fffff5d81ca \n    frame #4: 0x00007fffff5d828b \n    frame #5: 0x0000555555556ba5 sleep`___lldb_unnamed_symbol_2b80 + 37\n(lldb) process kill\nProcess 5507 exited with status = 6 (0x00000006) unexpected response to k packet: OK\n",
+    "exitCode": 0,
+    "truncated": false,
+    "seconds": 1.18
+  },
+  "fixtureReaped": true,
+  "fixtureExitCode": -9,
+  "fixtureOutput": "",
+  "adoptedChildrenReaped": [
+    {
+      "pid": 5508,
+      "waitStatus": 0
+    }
+  ],
+  "fixtureProcessGroupGone": true,
+  "seconds": 1.191
+}

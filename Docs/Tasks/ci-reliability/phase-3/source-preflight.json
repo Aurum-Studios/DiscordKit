@@ -1,0 +1,107 @@
+{
+  "capturedAt": "2026-11-12T12:36:38.714237+00:00",
+  "owner": "Codex /root",
+  "branch": "ci/phase-3-synthetic-command",
+  "base": "07cdea35d6f9ad384bfb42a3005940ca69e76922",
+  "checkout": "/Users/carsonrau/Developer/DiscordKit-ci-phase3",
+  "sourceStatus": {
+    "argv": [
+      "git",
+      "status",
+      "--short",
+      "--branch"
+    ],
+    "exit": 0,
+    "output": "## ci/phase-3-synthetic-command\n"
+  },
+  "originalStatus": {
+    "argv": [
+      "git",
+      "status",
+      "--short",
+      "--branch"
+    ],
+    "exit": 0,
+    "output": "## main...origin/main\n M Docs/CI.md\n A Docs/Tasks/ci-reliability/EVIDENCE.md\n A Docs/Tasks/ci-reliability/PLAN.md\n A Docs/Tasks/ci-reliability/STATE.md\n"
+  },
+  "originalPlanningSHA256": {
+    "Docs/CI.md": "52d344b12487a46ec46f3ff0ad7f1c207faf876f937a172473c3f44b7aa81629",
+    "Docs/Tasks/ci-reliability/PLAN.md": "2fa145ad46499a1fbe26d272704f825d590fe1937a5f59e2f2f4099431527d83",
+    "Docs/Tasks/ci-reliability/STATE.md": "b2a181246e1c3e323a433be1c0f17d6db36039658e4dde68c19f36302098180d",
+    "Docs/Tasks/ci-reliability/EVIDENCE.md": "5e1de6b2d0f1259424dafe7e9aae4651a039edd9cceda65a15a0bf7c08f0e476"
+  },
+  "worktrees": {
+    "argv": [
+      "git",
+      "worktree",
+      "list",
+      "--porcelain"
+    ],
+    "exit": 0,
+    "output": "worktree /Users/carsonrau/Developer/DiscordKit\nHEAD 85eac6f3c1d3b17e53596c49e7438efee366c1b3\nbranch refs/heads/main\n\nworktree /Users/carsonrau/Developer/DiscordKit-ci-phase0\nHEAD a74d58a754048ff4058c64a2d75b5bb3b21d04e0\nbranch refs/heads/ci/phase-0-baseline\n\nworktree /Users/carsonrau/Developer/DiscordKit-ci-phase1\nHEAD 7632bdd3494d8ec7a52edc798ad98e09b5a8c357\nbranch refs/heads/ci/phase-1-supervision\n\nworktree /Users/carsonrau/Developer/DiscordKit-ci-phase2\nHEAD 07cdea35d6f9ad384bfb42a3005940ca69e76922\nbranch refs/heads/ci/phase-2-event-hub\n\nworktree /Users/carsonrau/Developer/DiscordKit-ci-phase3\nHEAD 07cdea35d6f9ad384bfb42a3005940ca69e76922\nbranch refs/heads/ci/phase-3-synthetic-command\n\nworktree /Users/carsonrau/Developer/DiscordKit/.build/performance-phase1/baseline-source\nHEAD 01c743e44615aa48fb81a2e193b41195cd9e86c3\ndetached\n\nworktree /Users/carsonrau/Developer/DiscordKit/.build/performance-phase10/baseline-source\nHEAD a8a7539b32851e122ca1f81e399e77be996590c6\ndetached\n\nworktree /Users/carsonrau/Developer/DiscordKit/.build/performance-phase2/baseline-source\nHEAD 1b10c663e70cae90c0f49c7bb80aba89ff90600f\ndetached\n\nworktree /Users/carsonrau/Developer/DiscordKit/.build/performance-phase3/baseline-source\nHEAD 5e06464b9dae57fcdeae63c14ea7f4c534de68ca\ndetached\n\nworktree /Users/carsonrau/Developer/DiscordKit/.build/performance-phase4/baseline-source\nHEAD 3e8066749f1ba9e043438b13a6e160cd2ab77f8f\ndetached\n\nworktree /Users/carsonrau/Developer/DiscordKit/.build/performance-phase5/baseline-source\nHEAD ca5c4cb9d45a824f2470555161158634c7714bb8\ndetached\n\nworktree /Users/carsonrau/Developer/DiscordKit/.build/performance-phase6/baseline-source\nHEAD 035cf9f02f5955552f5b0357a0e0abf90cdc6729\ndetached\n\nworktree /Users/carsonrau/Developer/DiscordKit/.build/performance-phase7/baseline-source\nHEAD d766cf83db7a9baffeb46bcadbc1153336f4ba9b\ndetached\n\nworktree /Users/carsonrau/Developer/DiscordKit/.build/performance-phase8/baseline-source\nHEAD 57328709aaafd440750623b196053e8bc1e07f61\ndetached\n\nworktree /Users/carsonrau/Developer/DiscordKit/.build/performance-phase9/baseline-source\nHEAD f150293e75bace0b1e72519346f09389b9d3925e\ndetached\n\n"
+  },
+  "remoteMain": {
+    "argv": [
+      "git",
+      "ls-remote",
+      "origin",
+      "refs/heads/main"
+    ],
+    "exit": 0,
+    "output": "85eac6f3c1d3b17e53596c49e7438efee366c1b3\trefs/heads/main\n"
+  },
+  "identity": {
+    "argv": [
+      "git",
+      "var",
+      "GIT_AUTHOR_IDENT"
+    ],
+    "exit": 0,
+    "output": "Carson R <carsonaurum1@icloud.com> 1794486999 -0600\n"
+  },
+  "host": {
+    "argv": [
+      "uname",
+      "-sm"
+    ],
+    "exit": 0,
+    "output": "Darwin arm64\n"
+  },
+  "swift": {
+    "argv": [
+      "swift",
+      "--version"
+    ],
+    "exit": 0,
+    "output": "swift-driver version: 1.168.6 Apple Swift version 6.4 (swiftlang-6.4.0.34.1 clang-2100.3.34.1)\nTarget: arm64-apple-macosx27.0.0\n"
+  },
+  "disk": {
+    "argv": [
+      "df",
+      "-h",
+      "."
+    ],
+    "exit": 0,
+    "output": "Filesystem      Size    Used   Avail Capacity iused ifree %iused  Mounted on\n/dev/disk3s5   926Gi   875Gi    24Gi    98%     14M  253M    5%   /System/Volumes/Data\n"
+  },
+  "processes": {
+    "argv": [
+      "ps",
+      "-axo",
+      "pid,ppid,etime,command"
+    ],
+    "exit": 0,
+    "output": ""
+  },
+  "docker": {
+    "argv": [
+      "docker",
+      "info",
+      "--format",
+      "{{.ServerVersion}} {{.Architecture}} {{.OperatingSystem}}"
+    ],
+    "exit": 0,
+    "output": "29.5.2 aarch64 Ubuntu 24.04.4 LTS\n"
+  },
+  "qualification": "Local only; macOS ARM64 and ARM64 Linux VM available. Native Linux x64 not established; paid execution allowance zero."
+}

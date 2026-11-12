@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "name": "peer-green",
+  "stage": "phase3-peer-green",
+  "operation": "pythonRegression",
+  "arguments": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "Tools/DiscordKitLoadTests/scripts",
+    "-p",
+    "test_local_peer.py",
+    "-v"
+  ],
+  "start": "2026-11-12T13:00:39.262026+00:00",
+  "startMonotonic": 75545.720064422,
+  "deadlineMonotonic": 75605.720064422,
+  "executionLimitSeconds": 60,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "operation",
+  "paths": {
+    "output": "/work/Docs/Tasks/ci-reliability/phase-3/peer-green.log",
+    "stdout": null,
+    "diagnostics": "/work/Docs/Tasks/ci-reliability/phase-3/peer-green.diagnostics.jsonl",
+    "receipt": "/work/Docs/Tasks/ci-reliability/phase-3/peer-green.receipt.json"
+  },
+  "identity": {
+    "executionID": "1c021fbe-4cab-4b38-9f50-d71406910dbb",
+    "supervisorPID": 5935,
+    "host": "213b31596900",
+    "system": "Linux",
+    "repository": "/work"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 5941,
+  "group": 5941,
+  "cleanup": {
+    "status": "session-signalled",
+    "signals": [],
+    "groupSignals": [],
+    "parentReaped": true,
+    "session": 5941,
+    "allowanceSeconds": 8.0,
+    "discovery": {
+      "status": "available",
+      "truncated": false
+    },
+    "groups": [
+      5941
+    ],
+    "seconds": 0.089,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "boundary": "admitted Linux session; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "/work/Docs/Tasks/ci-reliability/phase-3/peer-green.log",
+      "retainedBytes": 2525,
+      "observedBytes": 2525,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T13:00:47.741554+00:00",
+  "endMonotonic": 75554.199770288,
+  "elapsedSeconds": 8.48,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}

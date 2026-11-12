@@ -1,0 +1,40 @@
+swift test --package-path Tools/DiscordKitLoadTests --scratch-path /scratch --build-system native --jobs 6 --force-resolved-versions --disable-experimental-prebuilts --explicit-target-dependency-import-check error --skip-build --no-parallel --filter TransportTimingRunnerTests
+warning: '--build-system native' has been deprecated and will be removed in a future release; please report an issue at https://github.com/swiftlang/swift-package-manager/issues if you are unable to adopt the default build system.
+◇ Test run started.
+↳ Testing Library Version: 6.4.1 (804dc4530ef3666)
+↳ Target Platform: x86_64-unknown-linux-gnu
+◇ Suite "Corrected transport timing" started.
+◇ Test versionedChunkDimensionsPreserveLegacyFixtures() started.
+✔ Test versionedChunkDimensionsPreserveLegacyFixtures() passed after 0.005 seconds.
+◇ Test scriptedChunkControlsEmitExactPayload(scenario:) started.
+◇ Test case passing 1 argument scenario → .body64KiBChunk257V1 to scriptedChunkControlsEmitExactPayload(scenario:) started.
+◇ Test case passing 1 argument scenario → .body64KiBChunk65536V1 to scriptedChunkControlsEmitExactPayload(scenario:) started.
+✔ Test scriptedChunkControlsEmitExactPayload(scenario:) with 2 test cases passed after 0.009 seconds.
+◇ Test nativeChunkControlsCloseOwnedResources(scenario:) started.
+◇ Test case passing 1 argument scenario → .body64KiBChunk257V1 to nativeChunkControlsCloseOwnedResources(scenario:) started.
+2026-11-12T13:02:20+0000 info discordkit.nio.http: dk.event=nio.http.closed dk.module=nio dk.subsystem=nio.http [DiscordNIOTransport] NIO HTTP transport closed
+◇ Test case passing 1 argument scenario → .body64KiBChunk65536V1 to nativeChunkControlsCloseOwnedResources(scenario:) started.
+2026-11-12T13:02:20+0000 info discordkit.nio.http: dk.event=nio.http.closed dk.module=nio dk.subsystem=nio.http [DiscordNIOTransport] NIO HTTP transport closed
+✔ Test nativeChunkControlsCloseOwnedResources(scenario:) with 2 test cases passed after 0.617 seconds.
+◇ Test successfulEndpointExcludesDiagnostics() started.
+✔ Test successfulEndpointExcludesDiagnostics() passed after 0.003 seconds.
+◇ Test failedBodyIncludesAwaitedClose() started.
+✔ Test failedBodyIncludesAwaitedClose() passed after 0.001 seconds.
+◇ Test cancellationJoinsOwnedClose() started.
+✔ Test cancellationJoinsOwnedClose() passed after 0.002 seconds.
+◇ Test headerFailuresHaveDistinctPopulations() started.
+✔ Test headerFailuresHaveDistinctPopulations() passed after 0.003 seconds.
+◇ Test finitePayloadMatrixAndSerialization() started.
+✔ Test finitePayloadMatrixAndSerialization() passed after 0.220 seconds.
+◇ Test cancellationStopsReplenishmentAndJoins() started.
+✔ Test cancellationStopsReplenishmentAndJoins() passed after 0.005 seconds.
+◇ Test regressingClockIsLoss() started.
+✔ Test regressingClockIsLoss() passed after 0.001 seconds.
+◇ Test durationCapDoesNotCreateBacklog() started.
+✔ Test durationCapDoesNotCreateBacklog() passed after 0.001 seconds.
+◇ Test delayedBodyHonorsDeadlineBeforeReturningBytes() started.
+✔ Test delayedBodyHonorsDeadlineBeforeReturningBytes() passed after 0.001 seconds.
+◇ Test validationAndPreCancellation() started.
+✔ Test validationAndPreCancellation() passed after 0.003 seconds.
+✔ Suite "Corrected transport timing" passed after 0.882 seconds.
+✔ Test run with 13 tests in 1 suite passed after 0.886 seconds.

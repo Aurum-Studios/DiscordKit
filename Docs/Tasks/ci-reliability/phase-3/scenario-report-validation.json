@@ -1,0 +1,665 @@
+{
+  "inputs": [
+    {
+      "bytes": 294417,
+      "path": "scenario-directImmediate.json",
+      "sha256": "144b1bbd64a05d52619b890b3393e88dd14c6d2aba0ef5bebe3aaf4d14e9f3cf"
+    },
+    {
+      "bytes": 148233,
+      "path": "scenario-directImmediate-common.json",
+      "sha256": "afa62b8752a77e3fe7b400748d586a5818e024572180148ff56ee6ed61aab416"
+    },
+    {
+      "bytes": 294395,
+      "path": "scenario-dslImmediate.json",
+      "sha256": "1a22800a4a1235a08311d388db3a6c82d5405a2a09ae777f0afe8418b4308c6a"
+    },
+    {
+      "bytes": 148227,
+      "path": "scenario-dslImmediate-common.json",
+      "sha256": "886f79f247df10506388f9f0aff6774436c236926a45451a5d347211d87b9696"
+    },
+    {
+      "bytes": 335861,
+      "path": "scenario-directDeferred.json",
+      "sha256": "9d458c77705849d6d3ed90a3f9adc7e4a8b53bc8dd920529da950913b159a130"
+    },
+    {
+      "bytes": 168957,
+      "path": "scenario-directDeferred-common.json",
+      "sha256": "8b9ffcd058601bf48cd07f1500256fcb67ebbb87bd394de337898cdd3532f05e"
+    },
+    {
+      "bytes": 335870,
+      "path": "scenario-dslDeferred.json",
+      "sha256": "940a3d5a7875b099f7fc853cc7d03bf6f8ff5be314b31baf44c5973d9dce7f19"
+    },
+    {
+      "bytes": 168966,
+      "path": "scenario-dslDeferred-common.json",
+      "sha256": "388b9be96c82036b7723cc89999d2245cb3926603f237cec55884ad6e8edb70b"
+    },
+    {
+      "bytes": 252939,
+      "path": "scenario-directFailure.json",
+      "sha256": "42c7309cb6e0c2478a1ece21a01e68e91a19ff47ffb6a199b289ceaea8bb36b2"
+    },
+    {
+      "bytes": 127497,
+      "path": "scenario-directFailure-common.json",
+      "sha256": "850a057d6dca4f3fab9d33c776f997c9963a39c7027c622cf8793c587465bfd4"
+    },
+    {
+      "bytes": 252903,
+      "path": "scenario-dslFailure.json",
+      "sha256": "f00835429ed89589fc8e5509458f42a60d2e04c12a147e967e410aedd60717ba"
+    },
+    {
+      "bytes": 127484,
+      "path": "scenario-dslFailure-common.json",
+      "sha256": "e17aa41fe3a1ad8e5c8ef30ad1456c8236383adf76b63b3037926a55e7c3cc3a"
+    },
+    {
+      "bytes": 252953,
+      "path": "scenario-directCancelled.json",
+      "sha256": "75ebdf3422cfbcef52e72a2358b63248335da98007ccc22060e6bce1e3aea914"
+    },
+    {
+      "bytes": 127501,
+      "path": "scenario-directCancelled-common.json",
+      "sha256": "24dc2ef4ea0e325489ba70ceb8bb790cc7fb943b6704a3a9436850f22b7a3f17"
+    },
+    {
+      "bytes": 252929,
+      "path": "scenario-dslCancelled.json",
+      "sha256": "c078d0b6a7a8a9eb87677a4f0ba726b800f2bd44faabcb2f33247ae6868d55a4"
+    },
+    {
+      "bytes": 127494,
+      "path": "scenario-dslCancelled-common.json",
+      "sha256": "1ed0794ad0dd2e1c8a830208831abc29c0d7b83f8d2d66708f61246345773a56"
+    },
+    {
+      "bytes": 171476,
+      "path": "smoke-rest.json",
+      "sha256": "ca005215cf603c4660d471f87ef4367ac95daf91b768a01f3e7d14de524fbad8"
+    },
+    {
+      "bytes": 86005,
+      "path": "smoke-rest-common.json",
+      "sha256": "647a0cee09d7f2633062ed5333b09be277909f59e1652f22212cc091b1359192"
+    },
+    {
+      "bytes": 212260,
+      "path": "smoke-loopback.json",
+      "sha256": "80c4f1306c3f0f07fa1e21ab49eaae0fd1e6c0ffd33ac3bb8af6ed4194d44b69"
+    },
+    {
+      "bytes": 106739,
+      "path": "smoke-loopback-common.json",
+      "sha256": "4d19d975017bc5d81b8f942edc235c5b91c7a9192ef562bb27c98bbc32fdd71a"
+    }
+  ],
+  "scenarios": [
+    {
+      "callbacks": 7,
+      "case": "synthetic.directImmediate",
+      "cleanup": {
+        "acknowledgementBytes": 0,
+        "acknowledgements": 0,
+        "handlers": 0
+      },
+      "counts": {
+        "admitted": 7,
+        "completed": 7,
+        "deadlineMisses": 0,
+        "offered": 7,
+        "outcomes": {
+          "cancelled": 0,
+          "failure": 0,
+          "rejected": 0,
+          "success": 7,
+          "timedOut": 0,
+          "uncertain": 0
+        }
+      },
+      "edits": 0,
+      "expectedOutcome": "success",
+      "metricPopulations": [
+        {
+          "id": "command.admission",
+          "observedCount": 7,
+          "outcome": "success"
+        },
+        {
+          "id": "command.arguments",
+          "observedCount": 7,
+          "outcome": "success"
+        },
+        {
+          "id": "command.handler",
+          "observedCount": 7,
+          "outcome": "success"
+        },
+        {
+          "id": "command.route",
+          "observedCount": 7,
+          "outcome": "success"
+        },
+        {
+          "id": "interaction.initialResponse",
+          "observedCount": 7,
+          "outcome": "success"
+        },
+        {
+          "id": "synthetic.invoke",
+          "observedCount": 7,
+          "outcome": "success"
+        },
+        {
+          "id": "synthetic.providerWait",
+          "observedCount": 7,
+          "outcome": "success"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "callbacks": 7,
+      "case": "synthetic.dslImmediate",
+      "cleanup": {
+        "acknowledgementBytes": 0,
+        "acknowledgements": 0,
+        "handlers": 0
+      },
+      "counts": {
+        "admitted": 7,
+        "completed": 7,
+        "deadlineMisses": 0,
+        "offered": 7,
+        "outcomes": {
+          "cancelled": 0,
+          "failure": 0,
+          "rejected": 0,
+          "success": 7,
+          "timedOut": 0,
+          "uncertain": 0
+        }
+      },
+      "edits": 0,
+      "expectedOutcome": "success",
+      "metricPopulations": [
+        {
+          "id": "command.admission",
+          "observedCount": 7,
+          "outcome": "success"
+        },
+        {
+          "id": "command.arguments",
+          "observedCount": 7,
+          "outcome": "success"
+        },
+        {
+          "id": "command.handler",
+          "observedCount": 7,
+          "outcome": "success"
+        },
+        {
+          "id": "command.route",
+          "observedCount": 7,
+          "outcome": "success"
+        },
+        {
+          "id": "interaction.initialResponse",
+          "observedCount": 7,
+          "outcome": "success"
+        },
+        {
+          "id": "synthetic.invoke",
+          "observedCount": 7,
+          "outcome": "success"
+        },
+        {
+          "id": "synthetic.providerWait",
+          "observedCount": 7,
+          "outcome": "success"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "callbacks": 7,
+      "case": "synthetic.directDeferred",
+      "cleanup": {
+        "acknowledgementBytes": 0,
+        "acknowledgements": 0,
+        "handlers": 0
+      },
+      "counts": {
+        "admitted": 7,
+        "completed": 7,
+        "deadlineMisses": 0,
+        "offered": 7,
+        "outcomes": {
+          "cancelled": 0,
+          "failure": 0,
+          "rejected": 0,
+          "success": 7,
+          "timedOut": 0,
+          "uncertain": 0
+        }
+      },
+      "edits": 7,
+      "expectedOutcome": "success",
+      "metricPopulations": [
+        {
+          "id": "command.admission",
+          "observedCount": 7,
+          "outcome": "success"
+        },
+        {
+          "id": "command.arguments",
+          "observedCount": 7,
+          "outcome": "success"
+        },
+        {
+          "id": "command.handler",
+          "observedCount": 7,
+          "outcome": "success"
+        },
+        {
+          "id": "command.route",
+          "observedCount": 7,
+          "outcome": "success"
+        },
+        {
+          "id": "interaction.initialResponse",
+          "observedCount": 7,
+          "outcome": "success"
+        },
+        {
+          "id": "interaction.originalEdit",
+          "observedCount": 7,
+          "outcome": "success"
+        },
+        {
+          "id": "synthetic.invoke",
+          "observedCount": 7,
+          "outcome": "success"
+        },
+        {
+          "id": "synthetic.providerWait",
+          "observedCount": 7,
+          "outcome": "success"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "callbacks": 7,
+      "case": "synthetic.dslDeferred",
+      "cleanup": {
+        "acknowledgementBytes": 0,
+        "acknowledgements": 0,
+        "handlers": 0
+      },
+      "counts": {
+        "admitted": 7,
+        "completed": 7,
+        "deadlineMisses": 0,
+        "offered": 7,
+        "outcomes": {
+          "cancelled": 0,
+          "failure": 0,
+          "rejected": 0,
+          "success": 7,
+          "timedOut": 0,
+          "uncertain": 0
+        }
+      },
+      "edits": 7,
+      "expectedOutcome": "success",
+      "metricPopulations": [
+        {
+          "id": "command.admission",
+          "observedCount": 7,
+          "outcome": "success"
+        },
+        {
+          "id": "command.arguments",
+          "observedCount": 7,
+          "outcome": "success"
+        },
+        {
+          "id": "command.handler",
+          "observedCount": 7,
+          "outcome": "success"
+        },
+        {
+          "id": "command.route",
+          "observedCount": 7,
+          "outcome": "success"
+        },
+        {
+          "id": "interaction.initialResponse",
+          "observedCount": 7,
+          "outcome": "success"
+        },
+        {
+          "id": "interaction.originalEdit",
+          "observedCount": 7,
+          "outcome": "success"
+        },
+        {
+          "id": "synthetic.invoke",
+          "observedCount": 7,
+          "outcome": "success"
+        },
+        {
+          "id": "synthetic.providerWait",
+          "observedCount": 7,
+          "outcome": "success"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "callbacks": 0,
+      "case": "synthetic.directFailure",
+      "cleanup": {
+        "acknowledgementBytes": 0,
+        "acknowledgements": 0,
+        "handlers": 0
+      },
+      "counts": {
+        "admitted": 7,
+        "completed": 7,
+        "deadlineMisses": 0,
+        "offered": 7,
+        "outcomes": {
+          "cancelled": 0,
+          "failure": 7,
+          "rejected": 0,
+          "success": 0,
+          "timedOut": 0,
+          "uncertain": 0
+        }
+      },
+      "edits": 0,
+      "expectedOutcome": "failure",
+      "metricPopulations": [
+        {
+          "id": "command.admission",
+          "observedCount": 7,
+          "outcome": "success"
+        },
+        {
+          "id": "command.arguments",
+          "observedCount": 7,
+          "outcome": "success"
+        },
+        {
+          "id": "command.handler",
+          "observedCount": 7,
+          "outcome": "failure"
+        },
+        {
+          "id": "command.route",
+          "observedCount": 7,
+          "outcome": "failure"
+        },
+        {
+          "id": "synthetic.invoke",
+          "observedCount": 7,
+          "outcome": "failure"
+        },
+        {
+          "id": "synthetic.providerWait",
+          "observedCount": 7,
+          "outcome": "failure"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "callbacks": 0,
+      "case": "synthetic.dslFailure",
+      "cleanup": {
+        "acknowledgementBytes": 0,
+        "acknowledgements": 0,
+        "handlers": 0
+      },
+      "counts": {
+        "admitted": 7,
+        "completed": 7,
+        "deadlineMisses": 0,
+        "offered": 7,
+        "outcomes": {
+          "cancelled": 0,
+          "failure": 7,
+          "rejected": 0,
+          "success": 0,
+          "timedOut": 0,
+          "uncertain": 0
+        }
+      },
+      "edits": 0,
+      "expectedOutcome": "failure",
+      "metricPopulations": [
+        {
+          "id": "command.admission",
+          "observedCount": 7,
+          "outcome": "success"
+        },
+        {
+          "id": "command.arguments",
+          "observedCount": 7,
+          "outcome": "success"
+        },
+        {
+          "id": "command.handler",
+          "observedCount": 7,
+          "outcome": "failure"
+        },
+        {
+          "id": "command.route",
+          "observedCount": 7,
+          "outcome": "failure"
+        },
+        {
+          "id": "synthetic.invoke",
+          "observedCount": 7,
+          "outcome": "failure"
+        },
+        {
+          "id": "synthetic.providerWait",
+          "observedCount": 7,
+          "outcome": "failure"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "callbacks": 0,
+      "case": "synthetic.directCancelled",
+      "cleanup": {
+        "acknowledgementBytes": 0,
+        "acknowledgements": 0,
+        "handlers": 0
+      },
+      "counts": {
+        "admitted": 7,
+        "completed": 7,
+        "deadlineMisses": 0,
+        "offered": 7,
+        "outcomes": {
+          "cancelled": 7,
+          "failure": 0,
+          "rejected": 0,
+          "success": 0,
+          "timedOut": 0,
+          "uncertain": 0
+        }
+      },
+      "edits": 0,
+      "expectedOutcome": "cancelled",
+      "metricPopulations": [
+        {
+          "id": "command.admission",
+          "observedCount": 7,
+          "outcome": "success"
+        },
+        {
+          "id": "command.arguments",
+          "observedCount": 7,
+          "outcome": "success"
+        },
+        {
+          "id": "command.handler",
+          "observedCount": 7,
+          "outcome": "cancelled"
+        },
+        {
+          "id": "command.route",
+          "observedCount": 7,
+          "outcome": "cancelled"
+        },
+        {
+          "id": "synthetic.invoke",
+          "observedCount": 7,
+          "outcome": "cancelled"
+        },
+        {
+          "id": "synthetic.providerWait",
+          "observedCount": 7,
+          "outcome": "cancelled"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "callbacks": 0,
+      "case": "synthetic.dslCancelled",
+      "cleanup": {
+        "acknowledgementBytes": 0,
+        "acknowledgements": 0,
+        "handlers": 0
+      },
+      "counts": {
+        "admitted": 7,
+        "completed": 7,
+        "deadlineMisses": 0,
+        "offered": 7,
+        "outcomes": {
+          "cancelled": 7,
+          "failure": 0,
+          "rejected": 0,
+          "success": 0,
+          "timedOut": 0,
+          "uncertain": 0
+        }
+      },
+      "edits": 0,
+      "expectedOutcome": "cancelled",
+      "metricPopulations": [
+        {
+          "id": "command.admission",
+          "observedCount": 7,
+          "outcome": "success"
+        },
+        {
+          "id": "command.arguments",
+          "observedCount": 7,
+          "outcome": "success"
+        },
+        {
+          "id": "command.handler",
+          "observedCount": 7,
+          "outcome": "cancelled"
+        },
+        {
+          "id": "command.route",
+          "observedCount": 7,
+          "outcome": "cancelled"
+        },
+        {
+          "id": "synthetic.invoke",
+          "observedCount": 7,
+          "outcome": "cancelled"
+        },
+        {
+          "id": "synthetic.providerWait",
+          "observedCount": 7,
+          "outcome": "cancelled"
+        }
+      ],
+      "status": "passed"
+    }
+  ],
+  "schemaVersion": 1,
+  "scope": "Local report semantics and joined cleanup; no numerical, native-host or live-service qualification.",
+  "smokes": [
+    {
+      "case": "rest.cacheFresh",
+      "cleanup": {
+        "active": 0,
+        "cacheEntries": 0,
+        "flights": 0,
+        "ordered": 0,
+        "queued": 0,
+        "transportActive": 0,
+        "transportBodies": 0,
+        "waiters": 0
+      },
+      "counts": {
+        "admitted": 16,
+        "completed": 16,
+        "deadlineMisses": 0,
+        "offered": 16,
+        "outcomes": {
+          "cancelled": 0,
+          "failure": 0,
+          "rejected": 0,
+          "success": 16,
+          "timedOut": 0,
+          "uncertain": 0
+        }
+      },
+      "metricCount": 4,
+      "status": "passed"
+    },
+    {
+      "case": "transport.smallBody",
+      "cleanup": {
+        "note": "All owned adapters closed and joined; NIO public pool counts sampled only afterward.",
+        "ownedAdaptersClosed": true,
+        "peerConnections": {
+          "acceptedConnections": 2,
+          "activeConnections": 0,
+          "peakConnections": 2
+        },
+        "poolActiveAfterShutdown": 0,
+        "poolIdleAfterShutdown": 0
+      },
+      "counts": {
+        "admitted": 16,
+        "completed": 16,
+        "deadlineMisses": 0,
+        "offered": 16,
+        "outcomes": {
+          "cancelled": 0,
+          "failure": 0,
+          "rejected": 0,
+          "success": 16,
+          "timedOut": 0,
+          "uncertain": 0
+        }
+      },
+      "metricCount": 5,
+      "status": "passed"
+    }
+  ],
+  "status": "passed",
+  "verifierSHA256": "49aee1126506caaeaa60ef723a4f5a1140980b2e9969052bd45f0d000210c19a"
+}

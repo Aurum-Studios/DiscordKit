@@ -1,0 +1,20 @@
+/usr/bin/python3 -m unittest discover -s Tools/ci -p 'test_*.py'
+....................................................Built 4 public-module archives into /tmp/documentation test tebtc5rf/.build/site export
+.Built 4 public-module archives into /tmp/tmp7tke_7et/site
+..Built 4 public-module archives into /tmp/tmpitlmohrr/site
+...Built 4 public-module archives into /tmp/tmpfisevs94/site
+.................................................Published v1.2.37 from abcdef0123abcdef0123abcdef0123abcdef0123
+.Published v1.2.37 from abcdef0123abcdef0123abcdef0123abcdef0123
+..................................................F............................................................................
+======================================================================
+FAIL: test_focused_heartbeat_uses_stable_cadence_and_reports_last_test (test_linux_ci.SupervisorEvidenceTests.test_focused_heartbeat_uses_stable_cadence_and_reports_last_test)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/work/Tools/ci/test_linux_ci.py", line 849, in test_focused_heartbeat_uses_stable_cadence_and_reports_last_test
+    self.assertEqual(heartbeats[0][2], "FixtureTests.testStall")
+AssertionError: None != 'FixtureTests.testStall'
+
+----------------------------------------------------------------------
+Ran 235 tests in 54.468s
+
+FAILED (failures=1)

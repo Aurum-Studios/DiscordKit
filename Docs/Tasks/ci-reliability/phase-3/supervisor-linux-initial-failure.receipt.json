@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 1,
+  "status": "failed",
+  "name": "supervisor-ci-helpers-green",
+  "stage": "phase-3-supervisor-regression",
+  "operation": "localHelperCheck",
+  "arguments": [
+    "/usr/bin/python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "Tools/ci",
+    "-p",
+    "test_*.py"
+  ],
+  "start": "2026-11-12T13:01:41.399162+00:00",
+  "startMonotonic": 75607.857188127,
+  "deadlineMonotonic": 75907.857188127,
+  "executionLimitSeconds": 300,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "operation",
+  "paths": {
+    "output": "/work/Docs/Tasks/ci-reliability/phase-3/supervisor-green-linux.log",
+    "stdout": null,
+    "diagnostics": "/work/Docs/Tasks/ci-reliability/phase-3/supervisor-green-linux.diagnostics.jsonl",
+    "receipt": "/work/Docs/Tasks/ci-reliability/phase-3/supervisor-green-linux.receipt.json"
+  },
+  "identity": {
+    "executionID": "0c6f39d2-9a85-4488-a9e2-391b65d5e159",
+    "supervisorPID": 6076,
+    "host": "213b31596900",
+    "system": "Linux",
+    "repository": "/work"
+  },
+  "exitCode": 1,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 6082,
+  "group": 6082,
+  "error": "Command '('/usr/bin/python3', '-m', 'unittest', 'discover', '-s', 'Tools/ci', '-p', 'test_*.py')' returned non-zero exit status 1.",
+  "errorType": "CalledProcessError",
+  "cleanup": {
+    "status": "session-signalled",
+    "signals": [
+      "SIGTERM",
+      "SIGKILL"
+    ],
+    "groupSignals": [
+      {
+        "group": 6082,
+        "signal": "SIGTERM"
+      },
+      {
+        "group": 6082,
+        "signal": "SIGKILL"
+      }
+    ],
+    "parentReaped": true,
+    "session": 6082,
+    "allowanceSeconds": 8.0,
+    "discovery": {
+      "status": "available",
+      "truncated": false
+    },
+    "groups": [
+      6082
+    ],
+    "seconds": 0.093,
+    "groupState": "zombies-only",
+    "remainingProcesses": [
+      {
+        "pid": 6220,
+        "parent": 1,
+        "group": 6082,
+        "state": "Z",
+        "cpuPercent": 0.3,
+        "rssKiB": 0,
+        "executable": "python3",
+        "session": 6082
+      }
+    ],
+    "verification": "available",
+    "verificationTruncated": false,
+    "boundary": "admitted Linux session; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "/work/Docs/Tasks/ci-reliability/phase-3/supervisor-green-linux.log",
+      "retainedBytes": 1396,
+      "observedBytes": 1396,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T13:02:36.285717+00:00",
+  "endMonotonic": 75662.743927074,
+  "elapsedSeconds": 54.887,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}

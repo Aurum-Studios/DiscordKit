@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "capturedAtUTC": "2026-11-12T12:41:25.150913+00:00",
+  "scope": "Sacrificial Linux amd64 sleep children only; no compiler or test process attached",
+  "host": {
+    "system": "Linux",
+    "machine": "x86_64"
+  },
+  "virtualization": "aarch64 Colima VM, amd64 userspace translated through Rosetta binfmt",
+  "probeLimitSecondsEach": 5,
+  "probes": [
+    {
+      "debugger": "gdb",
+      "executable": "/usr/bin/gdb",
+      "fixture": "sleep 30",
+      "fixturePID": 2644,
+      "probe": {
+        "arguments": [
+          "gdb",
+          "--batch",
+          "--quiet",
+          "-nx",
+          "-ex",
+          "set auto-load off",
+          "-ex",
+          "set print frame-arguments none",
+          "-ex",
+          "set pagination off",
+          "-ex",
+          "attach 2644",
+          "-ex",
+          "thread apply all bt",
+          "-ex",
+          "detach"
+        ],
+        "status": "available",
+        "output": "Couldn't get registers: Input/output error.\n\nThread 1 (process 2644 \"sleep\"):\nCouldn't get registers: Input/output error.\n[Inferior 1 (process 2644) detached]\n",
+        "exitCode": 0,
+        "truncated": false,
+        "seconds": 0.387
+      },
+      "meaningfulNativeFrames": false,
+      "assessment": "Debugger exited 0 but register reads failed with Input/output error and no frames were produced; raw supervisor available status is not stack capability",
+      "fixtureReaped": true,
+      "fixtureExitCode": -9,
+      "fixtureProcessGroupGone": true
+    },
+    {
+      "debugger": "lldb",
+      "executable": "/usr/bin/lldb",
+      "fixture": "sleep 30",
+      "fixturePID": 2669,
+      "probe": {
+        "arguments": [
+          "lldb",
+          "--batch",
+          "--no-lldbinit",
+          "-o",
+          "settings set frame-format 'frame #${frame.index}: ${frame.pc} ${module.file.basename} ${function.name-without-args}\\n'",
+          "-o",
+          "process attach --pid 2669",
+          "-o",
+          "thread backtrace all",
+          "-o",
+          "process detach"
+        ],
+        "status": "available",
+        "output": "(lldb) settings set frame-format 'frame #${frame.index}: ${frame.pc} ${module.file.basename} ${function.name-without-args}\\n'\n(lldb) process attach --pid 2669\nProcess 2669 stopped\n* thread #1, name = 'sleep', stop reason = signal SIGSTOP\n    frame #0: 0xffffffffffffffff \nTarget 0: (No executable module.) stopped.\nArchitecture set to: x86_64-unknown-linux-gnu.\n(lldb) thread backtrace all\n* thread #1, name = 'sleep', stop reason = signal SIGSTOP\n  frame #0: 0xffffffffffffffff \n(lldb) process detach\nProcess 2669 detached\n",
+        "exitCode": 0,
+        "truncated": false,
+        "seconds": 0.721
+      },
+      "meaningfulNativeFrames": false,
+      "assessment": "Debugger exited 0 but reports no executable module and only invalid frame address 0xffffffffffffffff; no meaningful target stack was produced",
+      "fixtureReaped": true,
+      "fixtureExitCode": -9,
+      "fixtureProcessGroupGone": true
+    }
+  ],
+  "qualification": "Debugger capability exploration only; no native Linux x64 qualification or Swift-task stack claim",
+  "conclusion": "Neither installed debugger produced meaningful stack frames for a sacrificial translated amd64 child despite CAP_SYS_PTRACE and seccomp=unconfined. Do not claim stack-supported diagnosis from this environment. No Swift process was probed."
+}

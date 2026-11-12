@@ -1,0 +1,25 @@
+{
+  "reason": "Investigation stopped after pending blocked SIGTERM proved peer teardown stall; Phase1 supervisor cannot see SwiftPM descendants in distinct process groups.",
+  "groups": [
+    {
+      "pid": 5388,
+      "existedBefore": true,
+      "sentSIGKILL": true,
+      "stateAfter": [
+        "Name:\tpython3",
+        "State:\tZ (zombie)",
+        "PPid:\t1"
+      ]
+    },
+    {
+      "pid": 5374,
+      "existedBefore": true,
+      "sentSIGKILL": true,
+      "stateAfter": [
+        "Name:\tDiscordKitLoadT",
+        "State:\tZ (zombie)",
+        "PPid:\t1"
+      ]
+    }
+  ]
+}

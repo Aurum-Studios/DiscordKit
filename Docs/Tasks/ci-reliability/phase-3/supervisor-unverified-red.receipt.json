@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "status": "failed",
+  "name": "supervisor-unverified-red",
+  "stage": "phase-3-supervisor-regression",
+  "operation": "localHelperCheck",
+  "arguments": [
+    "/usr/bin/python3",
+    "-m",
+    "unittest",
+    "test_linux_ci.SupervisorEvidenceTests.test_unavailable_linux_session_verification_fails_closed"
+  ],
+  "start": "2026-11-12T13:08:17.135432+00:00",
+  "startMonotonic": 76003.593423033,
+  "deadlineMonotonic": 76033.593423033,
+  "executionLimitSeconds": 30,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "operation",
+  "paths": {
+    "output": "/work/Docs/Tasks/ci-reliability/phase-3/supervisor-unverified-red.log",
+    "stdout": null,
+    "diagnostics": "/work/Docs/Tasks/ci-reliability/phase-3/supervisor-unverified-red.diagnostics.jsonl",
+    "receipt": "/work/Docs/Tasks/ci-reliability/phase-3/supervisor-unverified-red.receipt.json"
+  },
+  "identity": {
+    "executionID": "61bb226e-35c4-47de-ab30-93524d66db5b",
+    "supervisorPID": 7188,
+    "host": "213b31596900",
+    "system": "Linux",
+    "repository": "/work"
+  },
+  "exitCode": 1,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 7194,
+  "group": 7194,
+  "error": "Command '('/usr/bin/python3', '-m', 'unittest', 'test_linux_ci.SupervisorEvidenceTests.test_unavailable_linux_session_verification_fails_closed')' returned non-zero exit status 1.",
+  "errorType": "CalledProcessError",
+  "cleanup": {
+    "status": "session-signalled",
+    "signals": [],
+    "groupSignals": [],
+    "parentReaped": true,
+    "session": 7194,
+    "allowanceSeconds": 8.0,
+    "discovery": {
+      "status": "available",
+      "truncated": false
+    },
+    "groups": [
+      7194
+    ],
+    "seconds": 0.083,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "boundary": "admitted Linux session; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "/work/Docs/Tasks/ci-reliability/phase-3/supervisor-unverified-red.log",
+      "retainedBytes": 862,
+      "observedBytes": 862,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T13:08:17.544894+00:00",
+  "endMonotonic": 76004.003104144,
+  "elapsedSeconds": 0.41,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}

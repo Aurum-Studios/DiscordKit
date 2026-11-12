@@ -1,0 +1,25 @@
+swift build --package-path Tools/DiscordKitLoadTests --scratch-path /scratch --build-system native --jobs 6 --force-resolved-versions --disable-experimental-prebuilts --explicit-target-dependency-import-check error --build-tests
+[0/1] Planning build
+Building for debugging...
+[0/4] Write sources
+[1/4] Write swift-version-24593BA9C3E375BF.txt
+[3/7] Emitting module DiscordKitLoadTestsTests
+[4/7] Compiling DiscordKitLoadTestsTests SyntheticCommandTimingRunnerTests.swift
+/work/Tools/DiscordKitLoadTests/Tests/DiscordKitLoadTestsTests/SyntheticCommandTimingRunnerTests.swift:50:13: warning: constant 'confirmed' inferred to have type 'Void?', which may be unexpected
+48 |         }
+49 |         var iterator = initial.stream.makeAsyncIterator()
+50 |         let confirmed = await iterator.next()
+   |             |- warning: constant 'confirmed' inferred to have type 'Void?', which may be unexpected
+   |             `- note: add an explicit type annotation to silence this warning
+51 |         task.cancel()
+52 |         let value = try await task.value
+[5/8] /scratch/x86_64-unknown-linux-gnu/debug/DiscordKitLoadTestsPackageDiscoveredTests.derived/all-discovered-tests.swift
+[6/9] Write sources
+[8/12] Compiling DiscordKitLoadTestsPackageDiscoveredTests DiscordKitLoadTestsTests.swift
+[9/12] Emitting module DiscordKitLoadTestsPackageDiscoveredTests
+[10/12] Compiling DiscordKitLoadTestsPackageDiscoveredTests all-discovered-tests.swift
+[11/13] Wrapping AST for DiscordKitLoadTestsTests for debugging
+[12/14] Write Objects.LinkFileList
+[13/14] Linking DiscordKitLoadTestsPackageTests.xctest
+Build complete! (14.90s)
+warning: '--build-system native' has been deprecated and will be removed in a future release; please report an issue at https://github.com/swiftlang/swift-package-manager/issues if you are unable to adopt the default build system.

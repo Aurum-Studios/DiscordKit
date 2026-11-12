@@ -1,0 +1,6 @@
+/Library/Frameworks/Python.framework/Versions/3.14/bin/python3 -m unittest test_linux_ci.SupervisorEvidenceTests.test_focused_heartbeat_uses_stable_cadence_and_reports_last_test
+.
+----------------------------------------------------------------------
+Ran 1 test in 0.205s
+
+OK

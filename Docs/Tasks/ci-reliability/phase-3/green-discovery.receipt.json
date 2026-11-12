@@ -1,0 +1,90 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "name": "green-discovery",
+  "stage": "phase3-green-discovery",
+  "operation": "testDiscovery",
+  "arguments": [
+    "swift",
+    "test",
+    "--package-path",
+    "Tools/DiscordKitLoadTests",
+    "--scratch-path",
+    "/scratch",
+    "--build-system",
+    "native",
+    "--jobs",
+    "6",
+    "--force-resolved-versions",
+    "--disable-experimental-prebuilts",
+    "--explicit-target-dependency-import-check",
+    "error",
+    "--skip-build",
+    "list"
+  ],
+  "start": "2026-11-12T13:01:03.364711+00:00",
+  "startMonotonic": 75569.822759137,
+  "deadlineMonotonic": 75629.822759137,
+  "executionLimitSeconds": 60,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "operation",
+  "paths": {
+    "output": "/work/Docs/Tasks/ci-reliability/phase-3/green-discovery.log",
+    "stdout": "/work/Docs/Tasks/ci-reliability/phase-3/green-discovery.stdout",
+    "diagnostics": "/work/Docs/Tasks/ci-reliability/phase-3/green-discovery.diagnostics.jsonl",
+    "receipt": "/work/Docs/Tasks/ci-reliability/phase-3/green-discovery.receipt.json"
+  },
+  "identity": {
+    "executionID": "2fcb3ced-d898-46f5-8ae0-d017f67a07ce",
+    "supervisorPID": 6024,
+    "host": "213b31596900",
+    "system": "Linux",
+    "repository": "/work"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 6030,
+  "group": 6030,
+  "cleanup": {
+    "status": "session-signalled",
+    "signals": [],
+    "groupSignals": [],
+    "parentReaped": true,
+    "session": 6030,
+    "allowanceSeconds": 8.0,
+    "discovery": {
+      "status": "available",
+      "truncated": false
+    },
+    "groups": [
+      6030
+    ],
+    "seconds": 0.082,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "boundary": "admitted Linux session; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "/work/Docs/Tasks/ci-reliability/phase-3/green-discovery.log",
+      "retainedBytes": 484,
+      "observedBytes": 484,
+      "truncated": false
+    },
+    {
+      "path": "/work/Docs/Tasks/ci-reliability/phase-3/green-discovery.stdout",
+      "retainedBytes": 13708,
+      "observedBytes": 13708,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T13:01:07.145522+00:00",
+  "endMonotonic": 75573.603731135,
+  "elapsedSeconds": 3.781,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}

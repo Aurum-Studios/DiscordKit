@@ -307,6 +307,8 @@ def stop_process_group(process):
             process.kill()
         process.wait(timeout=5)
         return {"status": "best-effort", "platform": "windows"}
+    if sys.platform.startswith("linux"):
+        return _stop_linux_session(process)
     started = time.monotonic()
     cleanup = {"status": "running", "signals": [], "parentReaped": False,
                "allowanceSeconds": CLEANUP_ALLOWANCE_SECONDS}
@@ -333,6 +335,77 @@ def stop_process_group(process):
         cleanup["status"] = "parent-reap-timeout"
     if cleanup["status"] == "running":
         cleanup["status"] = "group-signalled"
+    cleanup["seconds"] = round(time.monotonic() - started, 3)
+    return cleanup
+
+
+def _stop_linux_session(process):
+    """Clean SwiftPM/Foundation groups in the command's uniquely admitted session."""
+    started = time.monotonic()
+    # Reserve the final second of the existing allowance for execute's verification.
+    deadline = started + CLEANUP_ALLOWANCE_SECONDS - 1.0
+    groups = {process.pid}
+    cleanup = {"status": "running", "signals": [], "groupSignals": [],
+               "parentReaped": False, "session": process.pid,
+               "allowanceSeconds": CLEANUP_ALLOWANCE_SECONDS}
+
+    def discover():
+        """Select only the owned session; unrelated sibling sessions stay outside it."""
+        tree = _process_tree(process.pid, min(deadline - CLEANUP_REAP_SECONDS,
+                                              time.monotonic() + .5))
+        groups.update(row["group"] for row in tree["processes"])
+        return tree
+
+    def send(targets, signum):
+        """Signal child groups before the admitted leader, without touching our group."""
+        for group in sorted(targets, key=lambda value: (value == process.pid, value)):
+            if group <= 1 or group == os.getpgrp():
+                raise OSError("refusing to signal a group outside the admitted Linux session")
+            try:
+                os.killpg(group, signum)
+                name = signal.Signals(signum).name
+                if name not in cleanup["signals"]:
+                    cleanup["signals"].append(name)
+                cleanup["groupSignals"].append({"group": group, "signal": name})
+            except ProcessLookupError:
+                pass
+
+    tree = discover()
+    cleanup["discovery"] = {"status": tree["status"], "truncated": tree["truncated"]}
+    send(groups, signal.SIGTERM)
+    terminated_groups = set(groups)
+    grace = min(deadline - CLEANUP_REAP_SECONDS - .5, time.monotonic() + CLEANUP_GRACE_SECONDS)
+    try:
+        process.wait(timeout=max(.001, grace - time.monotonic()))
+    except subprocess.TimeoutExpired:
+        pass
+    # Parent exit does not end the grace period for independently grouped children.
+    tree = discover()
+    if (tree["status"] != "available" or tree["truncated"] or
+            any(not row["state"].startswith("Z") for row in tree["processes"])):
+        remaining = grace - time.monotonic()
+        if remaining > 0:
+            time.sleep(remaining)
+        tree = discover()
+    targets = {row["group"] for row in tree["processes"]}
+    if tree["status"] != "available" or tree["truncated"]:
+        # Revalidate leader membership before using an older observation.
+        for group in groups:
+            with suppress(ProcessLookupError):
+                if os.getsid(group) == process.pid:
+                    targets.add(group)
+    if process.poll() is None:
+        targets.add(process.pid)
+    send(targets - terminated_groups, signal.SIGTERM)
+    send(targets, signal.SIGKILL)
+    try:
+        process.wait(timeout=max(.001, min(CLEANUP_REAP_SECONDS, deadline - time.monotonic())))
+        cleanup["parentReaped"] = True
+    except subprocess.TimeoutExpired:
+        cleanup["status"] = "parent-reap-timeout"
+    cleanup["groups"] = sorted(groups | targets)
+    if cleanup["status"] == "running":
+        cleanup["status"] = "session-signalled"
     cleanup["seconds"] = round(time.monotonic() - started, 3)
     return cleanup
 
@@ -397,27 +470,44 @@ def _probe(arguments, deadline):
 
 def _process_tree(group, deadline):
     """Read numeric process/resource columns and executable names, never argv/env."""
-    probe = _probe(("ps", "-g", str(group), "-o", "pid=,ppid=,pgid=,stat=,pcpu=,rss=,comm="), deadline)
+    linux = sys.platform.startswith("linux")
+    columns = "pid=,ppid=,pgid=,sid=,stat=,pcpu=,rss=,comm=" if linux else "pid=,ppid=,pgid=,stat=,pcpu=,rss=,comm="
+    probe = _probe(("ps", "-s" if linux else "-g", str(group), "-o", columns), deadline)
     rows = []
+    malformed = 0
     # ps exits 1 for an empty selected group on both supported POSIX hosts.
     if probe.get("exitCode") == 1 and not probe["output"].strip():
         probe["status"] = "available"
     if probe["status"] == "available":
         for line in probe["output"].splitlines():
-            fields = line.split(None, 6)
-            if len(fields) != 7:
+            if not line.strip():
+                continue
+            fields = line.split(None, 7 if linux else 6)
+            if len(fields) != (8 if linux else 7):
+                malformed += int(linux)
                 continue
             try:
                 pid, parent, pgid = map(int, fields[:3])
-                if pgid == group:
+                session = int(fields.pop(3)) if linux else None
+                state, cpu, rss = fields[3], float(fields[4]), int(fields[5])
+                if linux and (pid <= 0 or parent < 0 or pgid <= 0 or session != group or
+                              not re.fullmatch(r"[RSDZTtWXxKIP][<NLsl+]*", state) or
+                              not math.isfinite(cpu) or cpu < 0 or rss < 0):
+                    raise ValueError("invalid Linux session row")
+                if (session == group if linux else pgid == group):
                     rows.append({"pid": pid, "parent": parent, "group": pgid,
-                                 "state": fields[3], "cpuPercent": float(fields[4]),
-                                 "rssKiB": int(fields[5]), "executable": fields[6][:256]})
+                                 "state": state, "cpuPercent": cpu,
+                                 "rssKiB": rss, "executable": fields[6][:256]})
+                    if linux:
+                        rows[-1]["session"] = session
             except ValueError:
+                malformed += int(linux)
                 continue
-    return {"status": probe["status"], "processes": rows[:64],
+    return {"status": "malformed" if malformed else probe["status"], "processes": rows[:64],
             "truncated": probe.get("truncated", False) or len(rows) > 64,
-            "reason": probe.get("reason"), "probeSeconds": probe.get("seconds", 0)}
+            "malformedRows": malformed,
+            "reason": "process listing contained malformed session rows" if malformed else probe.get("reason"),
+            "probeSeconds": probe.get("seconds", 0)}
 
 
 def _stacks(pid, deadline):
@@ -718,14 +808,19 @@ def execute(command, repository, log, *, stdout_log=None, deadline=None):
                     cleanup_deadline = cleanup_started + CLEANUP_ALLOWANCE_SECONDS
                     tree = _process_tree(process.pid, min(cleanup_deadline, time.monotonic() + 1.0))
                     alive = [row for row in tree["processes"] if not row["state"].startswith("Z")]
-                    verified = tree["status"] == "available" and not tree["truncated"]
+                    verified = tree["status"] == "available" and not tree["truncated"] and not tree.get("malformedRows", 0)
                     receipt["cleanup"].update(groupState=("unknown" if not verified else
                                                           "alive" if alive else "zombies-only" if tree["processes"] else "gone"),
                                               remainingProcesses=tree["processes"],
                                               verification=tree["status"], verificationTruncated=tree["truncated"],
-                                              boundary="admitted POSIX process group; escaped sessions cannot be guaranteed")
+                                              verificationMalformedRows=tree.get("malformedRows", 0),
+                                              boundary=("admitted Linux session; escaped sessions cannot be guaranteed"
+                                                        if sys.platform.startswith("linux") else
+                                                        "admitted POSIX process group; escaped sessions cannot be guaranteed"))
                     if alive:
-                        finalization_errors.append("process group still contains live descendants")
+                        finalization_errors.append("command cleanup still contains live descendants")
+                    if sys.platform.startswith("linux") and not verified:
+                        finalization_errors.append("could not verify admitted Linux session")
                 except BaseException as cleanup_error:
                     finalization_errors.append(f"cleanup verification failed: {cleanup_error}")
                     receipt["cleanup"].update(groupState="unknown", verificationError=str(cleanup_error))

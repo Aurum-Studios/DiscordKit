@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "name": "supervisor-macos-compatibility-green",
+  "stage": "phase-3-supervisor-regression",
+  "operation": "localHelperCheck",
+  "arguments": [
+    "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+    "-m",
+    "unittest",
+    "test_linux_ci.LinuxExecutionTests",
+    "test_linux_ci.SupervisorEvidenceTests"
+  ],
+  "start": "2026-11-12T13:01:50.462413+00:00",
+  "startMonotonic": 346517.876890416,
+  "deadlineMonotonic": 346637.876890416,
+  "executionLimitSeconds": 120,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "operation",
+  "paths": {
+    "output": "Docs/Tasks/ci-reliability/phase-3/supervisor-green-macos.log",
+    "stdout": null,
+    "diagnostics": "Docs/Tasks/ci-reliability/phase-3/supervisor-green-macos.diagnostics.jsonl",
+    "receipt": "Docs/Tasks/ci-reliability/phase-3/supervisor-green-macos.receipt.json"
+  },
+  "identity": {
+    "executionID": "345a2ad1-d16d-4b20-a799-5e7387e816b5",
+    "supervisorPID": 25981,
+    "host": "Pokemon-GO-Plus",
+    "system": "Darwin",
+    "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase3"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 25995,
+  "group": 25995,
+  "cleanup": {
+    "status": "group-signalled",
+    "signals": [],
+    "parentReaped": true,
+    "allowanceSeconds": 8.0,
+    "seconds": 0.005,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "Docs/Tasks/ci-reliability/phase-3/supervisor-green-macos.log",
+      "retainedBytes": 274,
+      "observedBytes": 274,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T13:01:58.522997+00:00",
+  "endMonotonic": 346525.937498666,
+  "elapsedSeconds": 8.061,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}

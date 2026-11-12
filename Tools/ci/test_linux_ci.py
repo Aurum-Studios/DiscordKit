@@ -496,6 +496,120 @@ class LinuxExecutionTests(unittest.TestCase):
         return True
 
 
+@unittest.skipUnless(sys.platform.startswith("linux"), "Linux session ownership covers distinct child groups")
+class LinuxSessionTests(unittest.TestCase):
+    """SwiftPM and Foundation child groups stay owned by the admitted Linux session."""
+
+    def test_malformed_session_rows_cannot_claim_an_empty_session(self):
+        """Invalid columns, session identity and resource/state values invalidate enumeration."""
+        for row in ("bad row", "1 0 nope 123 S 0 0 peer", "1 0 1 999 S 0 0 peer",
+                    "1 0 1 123 Z? 0 0 peer", "1 0 1 123 S nan 0 peer", "1 0 1 123 S 0 -1 peer"):
+            with self.subTest(row=row), patch.object(linux_ci, "_probe", return_value={"status": "available", "output": row + "\n"}):
+                tree = linux_ci._process_tree(123, time.monotonic() + 1)
+            self.assertEqual(tree["status"], "malformed")
+            self.assertEqual(tree["malformedRows"], 1)
+            self.assertEqual(tree["processes"], [])
+
+    def test_timeout_cleans_separate_child_and_grandchild_groups(self):
+        """TERM resistance in two child groups cannot escape an execution deadline."""
+        self.assert_session_cleanup(parent_waits=True)
+
+    def test_exited_parent_cannot_leave_separate_groups_holding_output(self):
+        """Session identity survives orphaning when an exited parent leaves inherited pipes."""
+        self.assert_session_cleanup(parent_waits=False)
+
+    def test_success_cleans_separate_groups_without_inherited_output(self):
+        """Successful parents must also clean hidden descendants in their own process groups."""
+        self.assert_session_cleanup(parent_waits=False, hidden_output=True)
+
+    def test_sigterm_cleans_separate_child_and_grandchild_groups(self):
+        """An interrupted supervisor retains the same session ownership and cleanup receipt."""
+        self.assert_session_cleanup(parent_waits=True, interrupted=True)
+
+    def assert_session_cleanup(self, *, parent_waits, hidden_output=False, interrupted=False):
+        """Exercise real harmless process groups and always reap fixture survivors on failure."""
+        with tempfile.TemporaryDirectory() as temporary, redirect_stdout(io.StringIO()):
+            repository = Path(temporary)
+            child_file, grandchild_file = repository / "child.json", repository / "grandchild.json"
+
+            def sleeper(path):
+                return ("import json,os,pathlib,signal,time\n"
+                        "os.setpgrp()\n"
+                        "signal.signal(signal.SIGTERM,signal.SIG_IGN)\n"
+                        f"pathlib.Path({str(path)!r}).write_text(json.dumps(dict(pid=os.getpid(),group=os.getpgrp(),session=os.getsid(0))))\n")
+
+            grandchild = sleeper(grandchild_file) + "time.sleep(60)\n"
+            child = (sleeper(child_file) + "import subprocess,sys\n"
+                     f"subprocess.Popen([sys.executable,'-c',{grandchild!r}])\n"
+                     "time.sleep(60)\n")
+            redirection = ",stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL" if hidden_output else ""
+            parent = ("import pathlib,subprocess,sys,time\n"
+                      f"subprocess.Popen([sys.executable,'-c',{child!r}]{redirection})\n"
+                      f"while not pathlib.Path({str(grandchild_file)!r}).exists(): time.sleep(.01)\n"
+                      "print('session tree ready',flush=True)\n" + ("time.sleep(60)\n" if parent_waits else ""))
+            unrelated = subprocess.Popen([sys.executable, "-c", "import time;time.sleep(60)"],
+                                         start_new_session=True, stdout=subprocess.DEVNULL,
+                                         stderr=subprocess.DEVNULL)
+            log = repository / "session.log"
+            command = linux_ci.Command("session", (sys.executable, "-c", parent), 60 if interrupted else 1)
+            supervisor = None
+            try:
+                if interrupted:
+                    worker = ("import sys;from pathlib import Path;"
+                              f"sys.path.insert(0,{str(Path(linux_ci.__file__).parent)!r});import linux_ci;"
+                              "linux_ci.CLEANUP_GRACE_SECONDS=.15;"
+                              f"linux_ci.execute(linux_ci.Command('session',{command.arguments!r},60),"
+                              f"Path({str(repository)!r}),Path({str(log)!r}))")
+                    supervisor = subprocess.Popen([sys.executable, "-c", worker], stdout=subprocess.DEVNULL,
+                                                  stderr=subprocess.DEVNULL, start_new_session=True)
+                    cutoff = time.monotonic() + 3
+                    while not grandchild_file.exists() and time.monotonic() < cutoff:
+                        time.sleep(.01)
+                    self.assertTrue(grandchild_file.exists())
+                    supervisor.send_signal(signal.SIGTERM)
+                    self.assertNotEqual(supervisor.wait(timeout=3), 0)
+                else:
+                    with patch.object(linux_ci, "CLEANUP_GRACE_SECONDS", .15), \
+                            patch.object(linux_ci, "_stacks", return_value={"status": "unavailable"}):
+                        if hidden_output:
+                            linux_ci.execute(command, repository, log)
+                        else:
+                            with self.assertRaises(subprocess.TimeoutExpired):
+                                linux_ci.execute(command, repository, log)
+                identities = [json.loads(path.read_text()) for path in (child_file, grandchild_file)]
+                receipt = json.loads(log.with_suffix(".receipt.json").read_text())
+                self.assertEqual(receipt["status"], "interrupted" if interrupted else "passed" if hidden_output else "failed")
+                self.assertIsNone(unrelated.poll(), "cleanup reached an unrelated session")
+                for identity in identities:
+                    self.assertFalse(LinuxExecutionTests.process_is_running(identity["pid"]),
+                                     "a separate-group descendant survived cleanup")
+                self.assertEqual(receipt["cleanup"]["session"], receipt["pid"])
+                self.assertLessEqual(receipt["elapsedSeconds"], command.timeout + receipt["cleanupAllowanceSeconds"])
+                self.assertIn(receipt["cleanup"]["groupState"], ("gone", "zombies-only"))
+                if not hidden_output and not interrupted:
+                    snapshots = [json.loads(line) for line in log.with_suffix(".diagnostics.jsonl").read_text().splitlines()]
+                    observed = {row["pid"] for row in snapshots[-1]["children"]["processes"]}
+                    self.assertTrue({identity["pid"] for identity in identities}.issubset(observed))
+                for identity in identities:
+                    self.assertEqual(identity["session"], receipt["pid"])
+                    self.assertNotEqual(identity["group"], receipt["group"])
+                    self.assertIn(identity["group"], receipt["cleanup"]["groups"])
+                    self.assertIn({"group": identity["group"], "signal": "SIGTERM"},
+                                  receipt["cleanup"]["groupSignals"])
+                    self.assertIn({"group": identity["group"], "signal": "SIGKILL"},
+                                  receipt["cleanup"]["groupSignals"])
+            finally:
+                if supervisor is not None and supervisor.poll() is None:
+                    supervisor.kill()
+                    supervisor.wait(timeout=1)
+                for path in (grandchild_file, child_file):
+                    if path.exists():
+                        with suppress(ProcessLookupError):
+                            os.kill(json.loads(path.read_text())["pid"], signal.SIGKILL)
+                unrelated.kill()
+                unrelated.wait(timeout=1)
+
+
 @unittest.skipUnless(os.name == "posix", "process deadline evidence is a POSIX contract")
 class SupervisorEvidenceTests(unittest.TestCase):
     """Real, harmless fault injections protect finite evidence and ownership."""
@@ -679,11 +793,34 @@ class SupervisorEvidenceTests(unittest.TestCase):
     def test_truncated_process_listing_never_claims_verified_group_gone(self):
         with tempfile.TemporaryDirectory() as temporary, redirect_stdout(io.StringIO()):
             repository = Path(temporary)
-            with patch.object(linux_ci, "_process_tree", return_value={"status": "available", "processes": [], "truncated": True}):
-                receipt = linux_ci.execute(linux_ci.Command("empty", (sys.executable, "-c", "pass"), 2),
-                                           repository, repository / "empty.log")
+            with ExitStack() as stack:
+                stack.enter_context(patch.object(linux_ci, "CLEANUP_GRACE_SECONDS", .01))
+                stack.enter_context(patch.object(linux_ci, "_process_tree", return_value={"status": "available", "processes": [], "truncated": True}))
+                if sys.platform.startswith("linux"):
+                    stack.enter_context(self.assertRaisesRegex(OSError, "could not verify admitted Linux session"))
+                linux_ci.execute(linux_ci.Command("empty", (sys.executable, "-c", "pass"), 2),
+                                 repository, repository / "empty.log")
+            receipt = json.loads((repository / "empty.receipt.json").read_text())
             self.assertEqual(receipt["cleanup"]["groupState"], "unknown")
             self.assertTrue(receipt["cleanup"]["verificationTruncated"])
+            self.assertEqual(receipt["status"], "failed" if sys.platform.startswith("linux") else "passed")
+
+    @unittest.skipUnless(sys.platform.startswith("linux"), "Linux cleanup requires verified session enumeration")
+    def test_unavailable_linux_session_verification_fails_closed(self):
+        """A successful child cannot qualify when unseen process groups may remain."""
+        with tempfile.TemporaryDirectory() as temporary, redirect_stdout(io.StringIO()):
+            repository = Path(temporary)
+            log = repository / "unavailable.log"
+            for status in ("unavailable", "malformed"):
+                with self.subTest(status=status), patch.object(linux_ci, "CLEANUP_GRACE_SECONDS", .01), \
+                        patch.object(linux_ci, "_process_tree", return_value={"status": status, "processes": [], "truncated": False}), \
+                        self.assertRaisesRegex(OSError, "could not verify admitted Linux session"):
+                    linux_ci.execute(linux_ci.Command("empty", (sys.executable, "-c", "pass"), 2), repository, log)
+                receipt = json.loads(log.with_suffix(".receipt.json").read_text())
+                self.assertEqual(receipt["status"], "failed")
+                self.assertEqual(receipt["cleanup"]["groupState"], "unknown")
+                self.assertEqual(receipt["cleanup"]["verification"], status)
+                self.assertTrue(receipt["finalizationErrors"])
 
     def test_cleanup_failure_still_closes_outputs_restores_signals_and_saves_receipt(self):
         with tempfile.TemporaryDirectory() as temporary, redirect_stdout(io.StringIO()):
@@ -735,10 +872,30 @@ class SupervisorEvidenceTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary, redirect_stdout(io.StringIO()):
             repository = Path(temporary)
             child = "import time;print(\"Test Case 'FixtureTests.testStall' started.\",flush=True);time.sleep(60)"
-            with patch.object(linux_ci, "HEARTBEAT_SECONDS", .05), patch.object(linux_ci, "_snapshot", side_effect=snapshot), \
-                    self.assertRaises(subprocess.TimeoutExpired):
-                linux_ci.execute(linux_ci.Command("focused", (sys.executable, "-c", child), .18, "focusedTest"),
-                                 repository, repository / "focused.log")
+            arguments = (sys.executable, "-c", child)
+            spawn = subprocess.Popen
+            process = spawn(arguments, start_new_session=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            try:
+                # Interpreter startup is outside this cadence/parser fixture. Its marker
+                # must be available before the first 50ms observation, including on Rosetta.
+                with linux_ci.selectors.DefaultSelector() as ready:
+                    ready.register(process.stdout, linux_ci.selectors.EVENT_READ)
+                    self.assertTrue(ready.select(3), "heartbeat fixture did not produce its marker")
+
+                def admit(command, **keywords):
+                    return process if command == arguments else spawn(command, **keywords)
+
+                with patch.object(linux_ci.subprocess, "Popen", side_effect=admit), \
+                        patch.object(linux_ci, "HEARTBEAT_SECONDS", .05), \
+                        patch.object(linux_ci, "_snapshot", side_effect=snapshot), \
+                        self.assertRaises(subprocess.TimeoutExpired):
+                    linux_ci.execute(linux_ci.Command("focused", arguments, .18, "focusedTest"),
+                                     repository, repository / "focused.log")
+            finally:
+                if process.poll() is None:
+                    process.kill()
+                process.wait(timeout=1)
+                process.stdout.close()
             heartbeats = [row for row in observed if row[1] == "heartbeat"]
             self.assertGreaterEqual(len(heartbeats), 2)
             self.assertLess(heartbeats[1][0] - heartbeats[0][0], .065)

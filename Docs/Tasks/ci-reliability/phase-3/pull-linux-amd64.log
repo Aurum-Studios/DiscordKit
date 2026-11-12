@@ -1,0 +1,17 @@
+docker pull --platform linux/amd64 swift@sha256:1a784fc9de712a985020336bbc447c21050777cbe3b76f915eb352fd21b50f3d
+docker.io/library/swift@sha256:1a784fc9de712a985020336bbc447c21050777cbe3b76f915eb352fd21b50f3d: Pulling from library/swift
+bec0e898d00e: Pulling fs layer
+f5f09386b896: Pulling fs layer
+7a48b8f0e5c7: Pulling fs layer
+04c2cdae010c: Pulling fs layer
+bec0e898d00e: Download complete
+7a48b8f0e5c7: Download complete
+7a48b8f0e5c7: Pull complete
+f5f09386b896: Download complete
+f5f09386b896: Pull complete
+04c2cdae010c: Download complete
+bec0e898d00e: Pull complete
+04c2cdae010c: Pull complete
+Digest: sha256:1a784fc9de712a985020336bbc447c21050777cbe3b76f915eb352fd21b50f3d
+Status: Downloaded newer image for swift@sha256:1a784fc9de712a985020336bbc447c21050777cbe3b76f915eb352fd21b50f3d
+docker.io/library/swift@sha256:1a784fc9de712a985020336bbc447c21050777cbe3b76f915eb352fd21b50f3d

@@ -1,0 +1,49 @@
+swift test --package-path Tools/DiscordKitLoadTests --scratch-path /scratch --build-system native --jobs 6 --force-resolved-versions --disable-experimental-prebuilts --explicit-target-dependency-import-check error --skip-build --no-parallel --filter SyntheticCommandTimingRunnerTests
+◇ Test run started.
+↳ Testing Library Version: 6.4.1 (804dc4530ef3666)
+↳ Target Platform: x86_64-unknown-linux-gnu
+◇ Suite "Synthetic command timing" started.
+◇ Test completeEquivalentPopulations(scenario:) started.
+◇ Test case passing 1 argument scenario → .directImmediate to completeEquivalentPopulations(scenario:) started.
+◇ Test case passing 1 argument scenario → .dslImmediate to completeEquivalentPopulations(scenario:) started.
+◇ Test case passing 1 argument scenario → .directDeferred to completeEquivalentPopulations(scenario:) started.
+◇ Test case passing 1 argument scenario → .dslDeferred to completeEquivalentPopulations(scenario:) started.
+◇ Test case passing 1 argument scenario → .directFailure to completeEquivalentPopulations(scenario:) started.
+2026-11-12T13:02:06+0000 error discordkit.commands.router: dk.event=commands.route.failed dk.module=commands dk.subsystem=commands.router [DiscordCommands] Command handler failed
+2026-11-12T13:02:06+0000 error discordkit.commands.router: dk.event=commands.route.failed dk.module=commands dk.subsystem=commands.router [DiscordCommands] Command handler failed
+2026-11-12T13:02:06+0000 error discordkit.commands.router: dk.event=commands.route.failed dk.module=commands dk.subsystem=commands.router [DiscordCommands] Command handler failed
+2026-11-12T13:02:06+0000 error discordkit.commands.router: dk.event=commands.route.failed dk.module=commands dk.subsystem=commands.router [DiscordCommands] Command handler failed
+2026-11-12T13:02:06+0000 error discordkit.commands.router: dk.event=commands.route.failed dk.module=commands dk.subsystem=commands.router [DiscordCommands] Command handler failed
+2026-11-12T13:02:06+0000 error discordkit.commands.router: dk.event=commands.route.failed dk.module=commands dk.subsystem=commands.router [DiscordCommands] Command handler failed
+2026-11-12T13:02:06+0000 error discordkit.commands.router: dk.event=commands.route.failed dk.module=commands dk.subsystem=commands.router [DiscordCommands] Command handler failed
+◇ Test case passing 1 argument scenario → .dslFailure to completeEquivalentPopulations(scenario:) started.
+2026-11-12T13:02:06+0000 error discordkit.commands.router: dk.event=commands.route.failed dk.module=commands dk.subsystem=commands.router [DiscordCommands] Command handler failed
+2026-11-12T13:02:06+0000 error discordkit.commands.router: dk.event=commands.route.failed dk.module=commands dk.subsystem=commands.router [DiscordCommands] Command handler failed
+2026-11-12T13:02:06+0000 error discordkit.commands.router: dk.event=commands.route.failed dk.module=commands dk.subsystem=commands.router [DiscordCommands] Command handler failed
+2026-11-12T13:02:06+0000 error discordkit.commands.router: dk.event=commands.route.failed dk.module=commands dk.subsystem=commands.router [DiscordCommands] Command handler failed
+2026-11-12T13:02:06+0000 error discordkit.commands.router: dk.event=commands.route.failed dk.module=commands dk.subsystem=commands.router [DiscordCommands] Command handler failed
+2026-11-12T13:02:06+0000 error discordkit.commands.router: dk.event=commands.route.failed dk.module=commands dk.subsystem=commands.router [DiscordCommands] Command handler failed
+2026-11-12T13:02:06+0000 error discordkit.commands.router: dk.event=commands.route.failed dk.module=commands dk.subsystem=commands.router [DiscordCommands] Command handler failed
+◇ Test case passing 1 argument scenario → .directCancelled to completeEquivalentPopulations(scenario:) started.
+◇ Test case passing 1 argument scenario → .dslCancelled to completeEquivalentPopulations(scenario:) started.
+✔ Test completeEquivalentPopulations(scenario:) with 8 test cases passed after 0.153 seconds.
+◇ Test deferredParentCancellationRetainsConfirmation(scenario:) started.
+◇ Test case passing 1 argument scenario → .directDeferred to deferredParentCancellationRetainsConfirmation(scenario:) started.
+◇ Test case passing 1 argument scenario → .dslDeferred to deferredParentCancellationRetainsConfirmation(scenario:) started.
+2026-11-12T13:02:06+0000warning: '--build-system native' has been deprecated and will be removed in a future release; please report an issue at https://github.com/swiftlang/swift-package-manager/issues if you are unable to adopt the default build system.
+ warning discordkit.interactions.response: dk.event=interactions.response.indeterminate dk.module=interactions dk.subsystem=interactions.response [DiscordInteractions] Initial response delivery outcome is uncertain
+✔ Test deferredParentCancellationRetainsConfirmation(scenario:) with 2 test cases passed after 0.007 seconds.
+◇ Test preCancelledDriverStartsNoWork(scenario:) started.
+◇ Test case passing 1 argument scenario → .directImmediate to preCancelledDriverStartsNoWork(scenario:) started.
+◇ Test case passing 1 argument scenario → .dslImmediate to preCancelledDriverStartsNoWork(scenario:) started.
+◇ Test case passing 1 argument scenario → .directDeferred to preCancelledDriverStartsNoWork(scenario:) started.
+◇ Test case passing 1 argument scenario → .dslDeferred to preCancelledDriverStartsNoWork(scenario:) started.
+◇ Test case passing 1 argument scenario → .directFailure to preCancelledDriverStartsNoWork(scenario:) started.
+◇ Test case passing 1 argument scenario → .dslFailure to preCancelledDriverStartsNoWork(scenario:) started.
+◇ Test case passing 1 argument scenario → .directCancelled to preCancelledDriverStartsNoWork(scenario:) started.
+◇ Test case passing 1 argument scenario → .dslCancelled to preCancelledDriverStartsNoWork(scenario:) started.
+✔ Test preCancelledDriverStartsNoWork(scenario:) with 8 test cases passed after 0.010 seconds.
+◇ Test rejectsInvalidBounds() started.
+✔ Test rejectsInvalidBounds() passed after 0.002 seconds.
+✔ Suite "Synthetic command timing" passed after 0.178 seconds.
+✔ Test run with 4 tests in 1 suite passed after 0.182 seconds.

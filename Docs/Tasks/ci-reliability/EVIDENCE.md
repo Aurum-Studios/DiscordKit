@@ -277,3 +277,40 @@ remain incomplete.
   the actual commit before this documentation-only completion receipt; executable
   inputs and the 61-file evidence manifest remain unchanged. Phase 2 local exit
   criteria are complete; [STATE.md](STATE.md) advances only Phase 2.
+
+## Phase 3 — Stack-supported Linux shutdown repair
+
+- Owner Codex `/root`, branch `ci/phase-3-synthetic-command`, isolated sibling
+  `DiscordKit-ci-phase3`, base `07cdea35d6f9ad384bfb42a3005940ca69e76922`.
+  [Preflight](phase-3/source-preflight.json) and [execution sheet](phase-3/IMPLEMENTATION.md)
+  retain the zero-paid allowance, pinned image/toolchain and original-file hashes.
+- The unchanged synthetic suite passed, including `.dslCancelled`. Whole-package
+  execution then blocked in the following transport test. A [focused Swift stack](phase-3/diagnostic-assessment.json)
+  shows `LocalPeer.stop()` waiting in Foundation while its Python peer has SIGTERM
+  blocked and pending. This establishes the local owner/cause; the exact historical
+  hosted interleaving remains unproven because that log has no stacks.
+- [Peer red](phase-3/peer-red.log) deterministically leaves only the inherited-mask
+  peer alive after SIGTERM. [Peer green](phase-3/peer-green.log) passes all ten tests,
+  including graceful shutdown, exact metrics, reaping and listener closure for both
+  launch variants. The four-line repair unblocks only SIGTERM after handler setup.
+- Actual SwiftPM/Foundation descendants had separate PGIDs in one admitted SID.
+  [Supervisor red](phase-3/supervisor-red.log) reproduces the old cleanup escape.
+  Linux diagnostics/cleanup now cover that session; unknown, malformed or truncated
+  final enumeration fails closed. Escaped sessions remain outside the stated boundary.
+  [Final Linux helpers](phase-3/supervisor-final-linux.log) pass **237 tests**; macOS
+  supervisor compatibility and controlled fault receipts are retained separately.
+- [Final validation](phase-3/validation.json) binds nonempty discovery, **161 tests /
+  28 suites** in one whole-package process, focused synthetic/transport suites,
+  eight fresh direct/DSL scenario processes and both existing REST/loopback smokes.
+  [Report checks](phase-3/scenario-report-validation.json) verify exact outcomes,
+  response parity, distribution conservation and zero active owners. Deferred parent
+  cancellation covers both routes; all eight pre-cancelled callers start no work.
+- [Review](phase-3/review.json) and the evidence manifest retain input hashes,
+  findings/resolutions and qualification limits. The [owned container cleanup](phase-3/container-cleanup.json)
+  disposes fault-fixture zombies without removing unrelated resources.
+- Compiler/container: Swift **6.4.1**, Ubuntu **24.04.5**, x64 **under Rosetta** on
+  an ARM64 Ubuntu VM. Smokes use the **debug** executable. This is local emulated
+  acceptance, not native x64, workflow release, hosted CI or final rollout proof.
+  Paid jobs/minutes/attempts/spend remain **0 / 0 / 0 / USD 0.00**. No push or dispatch.
+  [Native acceptance](phase-3/NATIVE-ACCEPTANCE.md) remains required; Phase 3 is not
+  marked complete in [STATE.md](STATE.md).

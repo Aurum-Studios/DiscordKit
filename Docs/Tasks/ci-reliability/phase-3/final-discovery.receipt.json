@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "name": "final-discovery",
+  "stage": "phase3-final-discovery",
+  "operation": "testDiscovery",
+  "arguments": [
+    "swift",
+    "test",
+    "--package-path",
+    "Tools/DiscordKitLoadTests",
+    "--scratch-path",
+    "/scratch",
+    "--build-system",
+    "native",
+    "--jobs",
+    "6",
+    "--force-resolved-versions",
+    "--disable-experimental-prebuilts",
+    "--explicit-target-dependency-import-check",
+    "error",
+    "--skip-build",
+    "list"
+  ],
+  "start": "2026-11-12T13:11:24.848771+00:00",
+  "startMonotonic": 76191.306810712,
+  "deadlineMonotonic": 76251.306810712,
+  "executionLimitSeconds": 60,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "operation",
+  "paths": {
+    "output": "/work/Docs/Tasks/ci-reliability/phase-3/final-discovery.log",
+    "stdout": "/work/Docs/Tasks/ci-reliability/phase-3/final-discovery.stdout",
+    "diagnostics": "/work/Docs/Tasks/ci-reliability/phase-3/final-discovery.diagnostics.jsonl",
+    "receipt": "/work/Docs/Tasks/ci-reliability/phase-3/final-discovery.receipt.json"
+  },
+  "identity": {
+    "executionID": "ead1ee6c-12e8-4e6c-8ac3-7ebb069038e5",
+    "supervisorPID": 7659,
+    "host": "213b31596900",
+    "system": "Linux",
+    "repository": "/work"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 7665,
+  "group": 7665,
+  "cleanup": {
+    "status": "session-signalled",
+    "signals": [],
+    "groupSignals": [],
+    "parentReaped": true,
+    "session": 7665,
+    "allowanceSeconds": 8.0,
+    "discovery": {
+      "status": "available",
+      "truncated": false
+    },
+    "groups": [
+      7665
+    ],
+    "seconds": 0.086,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "verificationMalformedRows": 0,
+    "boundary": "admitted Linux session; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "/work/Docs/Tasks/ci-reliability/phase-3/final-discovery.log",
+      "retainedBytes": 463,
+      "observedBytes": 463,
+      "truncated": false
+    },
+    {
+      "path": "/work/Docs/Tasks/ci-reliability/phase-3/final-discovery.stdout",
+      "retainedBytes": 13708,
+      "observedBytes": 13708,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T13:11:26.688536+00:00",
+  "endMonotonic": 76193.146747545,
+  "elapsedSeconds": 1.84,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}

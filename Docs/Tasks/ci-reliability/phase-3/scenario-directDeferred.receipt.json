@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "name": "scenario-directDeferred",
+  "stage": "phase3-scenario-directDeferred",
+  "operation": "focusedScenario",
+  "arguments": [
+    "/scratch/x86_64-unknown-linux-gnu/debug/DiscordKitLoadTests",
+    "command-timing",
+    "--case",
+    "synthetic.directDeferred",
+    "--requests",
+    "7",
+    "--concurrency",
+    "3",
+    "--warmup-requests",
+    "0",
+    "--delay-microseconds",
+    "0",
+    "--duration-seconds",
+    "3",
+    "--warmup-seconds",
+    "0",
+    "--profile",
+    "smoke",
+    "--seed",
+    "1",
+    "--output",
+    "/work/Docs/Tasks/ci-reliability/phase-3/scenario-directDeferred.json",
+    "--common-report",
+    "/work/Docs/Tasks/ci-reliability/phase-3/scenario-directDeferred-common.json"
+  ],
+  "start": "2026-11-12T13:03:36.636231+00:00",
+  "startMonotonic": 75723.094391519,
+  "deadlineMonotonic": 75813.094391519,
+  "executionLimitSeconds": 90,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "operation",
+  "paths": {
+    "output": "/work/Docs/Tasks/ci-reliability/phase-3/scenario-directDeferred.log",
+    "stdout": null,
+    "diagnostics": "/work/Docs/Tasks/ci-reliability/phase-3/scenario-directDeferred.diagnostics.jsonl",
+    "receipt": "/work/Docs/Tasks/ci-reliability/phase-3/scenario-directDeferred.receipt.json"
+  },
+  "identity": {
+    "executionID": "d56d7126-98d2-49e2-aa90-876c100a36ff",
+    "supervisorPID": 6656,
+    "host": "213b31596900",
+    "system": "Linux",
+    "repository": "/work"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 6686,
+  "group": 6686,
+  "cleanup": {
+    "status": "session-signalled",
+    "signals": [],
+    "groupSignals": [],
+    "parentReaped": true,
+    "session": 6686,
+    "allowanceSeconds": 8.0,
+    "discovery": {
+      "status": "available",
+      "truncated": false
+    },
+    "groups": [
+      6686
+    ],
+    "seconds": 0.078,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "boundary": "admitted Linux session; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "/work/Docs/Tasks/ci-reliability/phase-3/scenario-directDeferred.log",
+      "retainedBytes": 414,
+      "observedBytes": 414,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T13:03:36.948545+00:00",
+  "endMonotonic": 75723.40675398,
+  "elapsedSeconds": 0.312,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}

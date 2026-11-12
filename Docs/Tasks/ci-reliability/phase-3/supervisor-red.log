@@ -1,0 +1,17 @@
+/usr/bin/python3 -m unittest test_linux_ci.LinuxSessionTests.test_timeout_cleans_separate_child_and_grandchild_groups
+F
+======================================================================
+FAIL: test_timeout_cleans_separate_child_and_grandchild_groups (test_linux_ci.LinuxSessionTests.test_timeout_cleans_separate_child_and_grandchild_groups)
+TERM resistance in two child groups cannot escape an execution deadline.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/work/Tools/ci/test_linux_ci.py", line 505, in test_timeout_cleans_separate_child_and_grandchild_groups
+    self.assert_session_cleanup(parent_waits=True)
+  File "/work/Tools/ci/test_linux_ci.py", line 554, in assert_session_cleanup
+    self.assertFalse(LinuxExecutionTests.process_is_running(identity["pid"]),
+AssertionError: True is not false : a separate-group descendant survived cleanup
+
+----------------------------------------------------------------------
+Ran 1 test in 1.045s
+
+FAILED (failures=1)

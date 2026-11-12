@@ -1,0 +1,6 @@
+/usr/bin/python3 -m unittest test_linux_ci.LinuxSessionTests test_linux_ci.SupervisorEvidenceTests.test_truncated_process_listing_never_claims_verified_group_gone test_linux_ci.SupervisorEvidenceTests.test_unavailable_linux_session_verification_fails_closed
+.......
+----------------------------------------------------------------------
+Ran 7 tests in 4.156s
+
+OK

@@ -1,0 +1,130 @@
+{
+  "schemaVersion": 1,
+  "capturedAtUTC": "2026-11-12T12:46:01.673911+00:00",
+  "scope": "Sacrificial Linux amd64 sleep child and Rosetta GDB remote protocol only; no compiler, test or Swift process attached",
+  "host": {
+    "system": "Linux",
+    "machine": "x86_64"
+  },
+  "virtualization": "aarch64 Colima VM, amd64 userspace translated through Rosetta-385 binfmt",
+  "overallLimitSeconds": 15,
+  "debuggerLimitSeconds": 5,
+  "priorAttempts": [
+    {
+      "schemaVersion": 1,
+      "capturedAtUTC": "2026-11-12T12:44:44.507098+00:00",
+      "scope": "Sacrificial Linux amd64 sleep child and Rosetta GDB remote protocol only; no compiler, test or Swift process attached",
+      "host": {
+        "system": "Linux",
+        "machine": "x86_64"
+      },
+      "virtualization": "aarch64 Colima VM, amd64 userspace translated through Rosetta-385 binfmt",
+      "overallLimitSeconds": 15,
+      "debuggerLimitSeconds": 5,
+      "qualification": "Remote transport capability exploration only; no Swift-stack or native Linux x64 qualification",
+      "fixture": "sleep 30",
+      "fixturePID": 5282,
+      "remotePort": 45507,
+      "variableAppliedOnlyToFixture": true,
+      "listenerObserved": true,
+      "probe": {
+        "arguments": [
+          "lldb",
+          "--batch",
+          "--no-lldbinit",
+          "-o",
+          "settings set frame-format 'frame #${frame.index}: ${frame.pc} ${module.file.basename} ${function.name-without-args}\n'",
+          "-o",
+          "target create --arch x86_64 /usr/bin/sleep",
+          "-o",
+          "gdb-remote 127.0.0.1:45507",
+          "-o",
+          "register read rip rsp rbp",
+          "-o",
+          "image list -o -f",
+          "-o",
+          "thread backtrace all",
+          "-o",
+          "process detach"
+        ],
+        "status": "failed",
+        "output": "(lldb) settings set frame-format 'frame #${frame.index}: ${frame.pc} ${module.file.basename} ${function.name-without-args}\nerror: mismatched quotes\n",
+        "exitCode": 1,
+        "truncated": false,
+        "seconds": 0.426
+      },
+      "fixtureReaped": true,
+      "fixtureExitCode": -9,
+      "fixtureOutput": "",
+      "fixtureProcessGroupGone": false,
+      "seconds": 0.436,
+      "assessment": "LLDB frame-format quoting setup failed before remote connection; own parent reaped, Rosetta fork killed but left zombie under container PID1"
+    }
+  ],
+  "qualification": "Remote transport capability exploration only; no Swift-stack or native Linux x64 qualification",
+  "childSubreaperEnabled": true,
+  "fixture": "sleep 30",
+  "fixturePID": 5405,
+  "remotePort": 50135,
+  "variableAppliedOnlyToFixture": true,
+  "listenerObserved": true,
+  "probe": {
+    "arguments": [
+      "lldb",
+      "--batch",
+      "--no-lldbinit",
+      "-o",
+      "settings set frame-format 'frame #${frame.index}: ${frame.pc} ${module.file.basename} ${function.name-without-args}'",
+      "-o",
+      "target create --arch x86_64 /usr/bin/sleep",
+      "-o",
+      "gdb-remote 127.0.0.1:50135",
+      "-o",
+      "register read rip rsp rbp",
+      "-o",
+      "image list -o -f",
+      "-o",
+      "thread backtrace all",
+      "-o",
+      "process detach"
+    ],
+    "status": "failed",
+    "output": "(lldb) settings set frame-format 'frame #${frame.index}: ${frame.pc} ${module.file.basename} ${function.name-without-args}'\n(lldb) target create --arch x86_64 /usr/bin/sleep\nCurrent executable set to '/usr/bin/sleep' (x86_64).\n(lldb) gdb-remote 127.0.0.1:50135\nProcess 5405 stopped\n* thread #1, stop reason = signal SIGTRAP\n    frame #0: 0x00007ffffffe5540 0x00007ffffffe5540\n->  0x7ffffffe5540: movq   %rsp, %rdi\n    0x7ffffffe5543: callq  0x7ffffffe61d0\n    0x7ffffffe5548: movq   %rax, %r12\n    0x7ffffffe554b: movq   %rsp, %r13\nTarget 0: (sleep) stopped.\n(lldb) register read rip rsp rbp\n     rip = 0x00007ffffffe5540\n     rsp = 0x00007ffffffc5bc0\n     rbp = 0x0000000000000000\n(lldb) image list -o -f\n[  0] 0x0000555555554000 /usr/bin/sleep\n(lldb) thread backtrace all\n* thread #1, stop reason = signal SIGTRAP\n  frame #0: 0x00007ffffffe5540 0x00007ffffffe5540\n(lldb) process detach\nerror: Detach failed: Sending disconnect packet failed.\n",
+    "exitCode": 1,
+    "truncated": false,
+    "seconds": 0.668
+  },
+  "fixtureReaped": true,
+  "fixtureExitCode": -9,
+  "fixtureOutput": "",
+  "adoptedFixtureChildrenReaped": [
+    {
+      "pid": 5406,
+      "waitStatus": 0
+    }
+  ],
+  "fixtureProcessGroupGone": true,
+  "seconds": 0.681,
+  "combinedProbeSeconds": 1.117,
+  "remoteConnectionEstablished": true,
+  "validX86RegisterReads": true,
+  "meaningfulSymbolicatedFrames": false,
+  "swiftThreadBacktracesVerified": false,
+  "cleanDetachVerified": false,
+  "conclusion": "Rosetta remote transport works for a sacrificial translated amd64 executable and exposes valid x86 instruction/stack registers. It does not establish useful symbolicated multi-thread or Swift task stacks: only an unnamed initial loader frame was seen, and detach failed. Ordinary ptrace attachment remains unusable.",
+  "priorAttemptCleanup": {
+    "remainingPID": 5283,
+    "processGroup": 5282,
+    "state": "Z",
+    "parentPID": 1,
+    "assessment": "Killed Rosetta server child from the initial LLDB quoting failure remains a zombie owned by container PID1; no live fixture remains. Remove with eventual owned-container stop/removal."
+  },
+  "nextProcedureUntested": [
+    "Retain discovered literal arguments for the compiled test executable; do not start SwiftPM under ROSETTA_DEBUGSERVER_PORT.",
+    "Start that executable with a unique remote debug port set only on its own environment, under the existing finite test supervisor and a process owner able to reap Rosetta forks.",
+    "Use the matching Linux LLDB in the same container, target create --arch x86_64 EXECUTABLE, then gdb-remote 127.0.0.1:PORT.",
+    "Prove shared-library/module symbol resolution and bounded resume/interrupt/backtrace behavior on a sacrificial fixture before attributing a hanging Swift task from this route.",
+    "Treat detach failure as diagnostic failure and explicitly kill/reap the complete fixture group; do not leave the test waiting for an unreachable debugger.",
+    "If useful Swift stacks cannot be established, use pinned native ARM64 Ubuntu Swift6.4.1 for Linux reproduction while retaining separate native x64 acceptance."
+  ]
+}

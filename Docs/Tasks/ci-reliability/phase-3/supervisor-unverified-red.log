@@ -1,0 +1,15 @@
+/usr/bin/python3 -m unittest test_linux_ci.SupervisorEvidenceTests.test_unavailable_linux_session_verification_fails_closed
+F
+======================================================================
+FAIL: test_unavailable_linux_session_verification_fails_closed (test_linux_ci.SupervisorEvidenceTests.test_unavailable_linux_session_verification_fails_closed)
+A successful child cannot qualify when unseen process groups may remain.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/work/Tools/ci/test_linux_ci.py", line 798, in test_unavailable_linux_session_verification_fails_closed
+    with patch.object(linux_ci, "CLEANUP_GRACE_SECONDS", .01), \
+AssertionError: OSError not raised
+
+----------------------------------------------------------------------
+Ran 1 test in 0.105s
+
+FAILED (failures=1)

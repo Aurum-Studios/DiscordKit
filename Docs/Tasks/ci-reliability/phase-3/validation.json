@@ -1,0 +1,1261 @@
+{
+  "schemaVersion": 1,
+  "capturedAtUTC": "2026-11-12T13:25:16.337326+00:00",
+  "status": "passed-local-emulated-acceptance-native-pending",
+  "owner": "Codex /root",
+  "branch": "ci/phase-3-synthetic-command",
+  "base": "07cdea35d6f9ad384bfb42a3005940ca69e76922",
+  "paidExecution": {
+    "jobs": 0,
+    "minutes": 0,
+    "attempts": 0,
+    "spendUSD": "0.00"
+  },
+  "qualification": {
+    "os": "Ubuntu 24.04.5",
+    "compiler": "Swift 6.4.1 RELEASE",
+    "target": "x86_64-unknown-linux-gnu",
+    "execution": "Rosetta on ARM64 Ubuntu 24.04.4 VM",
+    "configuration": "debug",
+    "nativeX64Accepted": false,
+    "releaseSmokesAccepted": false,
+    "hostedAccepted": false
+  },
+  "testedInputSHA256": {
+    "Docs/Tasks/ci-reliability/phase-3/validate.py": "6d22b86cdc495697a0b8514389e20872f87d63ea89b2f9db42cad9f87cdce37e",
+    "Docs/Tasks/ci-reliability/phase-3/verify_reports.py": "49aee1126506caaeaa60ef723a4f5a1140980b2e9969052bd45f0d000210c19a",
+    "Package.resolved": "dd6c86faf979e3b991553d84ae0b378105629a3a010d71f842ed84dda9bf263c",
+    "Package.swift": "d6822bdd8a38ecf262d0f22625f8c57699c4f720f77c8aa4f531d9d895f6e23e",
+    "Sources/DiscordCommands/CommandRouter.swift": "fd7d9b7bff67a8896b1e1e73c679041570c4eb3d950d44d23c602def2d832dc5",
+    "Sources/DiscordInteractions/InteractionContext.swift": "4b8e329f3ea327180618af1d4d98c6f6a92843ac752bbdc35b9f4093acebc18a",
+    "Sources/DiscordInteractions/InteractionOperationFailure.swift": "986802ddcd622b4fb40568afbe2f8e1fe32f8a6ccf759f853e7cdf2a63570541",
+    "Sources/DiscordInteractions/InteractionResponder.swift": "496945dfe5f45b39e7252d3fb1797e700859b106b0cb27ae9ce76780ca60e788",
+    "Tools/DiscordBenchmarkSupport/Sources/DiscordBenchmarkSupport/RunStatistics.swift": "029865fc555d654c18a4f44bda87e32c96fbc532edf74bbcffdedcf9e8a9315b",
+    "Tools/DiscordKitLoadTests/Package.resolved": "447bf3ccefdc65c7cbe44f1c8b610f5616e971394c8e971956a3f1e9159cdb52",
+    "Tools/DiscordKitLoadTests/Package.swift": "85413795644edcb637bc48955a800cb240264887970622d4e7aec19068089c7c",
+    "Tools/DiscordKitLoadTests/Sources/DiscordKitLoadTests/SyntheticCommandTimingRunner.swift": "8716b76baece4f5843c16c11e1e5bf444a526d3a6d761e1de2454e419dfe6bb5",
+    "Tools/DiscordKitLoadTests/Sources/DiscordKitLoadTests/main.swift": "5453a9cacc05803440079abe23e813302e67f9a08933522264480cddd81ec3df",
+    "Tools/DiscordKitLoadTests/Tests/DiscordKitLoadTestsTests/SyntheticCommandTimingRunnerTests.swift": "1340ab172f818f2aac15b8f86d490cb1c33158b6e94e57eaf9ed62d84dd917ba",
+    "Tools/DiscordKitLoadTests/scripts/local_peer.py": "455490eaa14245035b0f72cf9398a4d650e78430e156e07c5467651d9cecdefa",
+    "Tools/DiscordKitLoadTests/scripts/test_local_peer.py": "f8dfc002c7aff18e37adf41be4932862d9ec849f986ae604d98f327d93039766",
+    "Tools/ci/linux_ci.py": "af1d42dcda3f60127346fb571343bf2060be06d21818d61e6b81084985a6b33a",
+    "Tools/ci/native_jobs.py": "389d00c4d4906a60113c065df83fe0da677ebc1a9e5cc8319b778347f54457c2",
+    "Tools/ci/test_linux_ci.py": "a58485660f4e514075a5177673bb7908bdf39dab01f7fd5e62864d6588462354"
+  },
+  "acceptance": {
+    "swiftFunctions": 161,
+    "swiftSuites": 28,
+    "swiftLibrarySeconds": 20.522,
+    "swiftSupervisedSeconds": 22.403,
+    "ciHelpers": 237,
+    "ciHelperSeconds": 50.022,
+    "peerPythonTestsPerPlatform": 10,
+    "freshScenarioProcesses": 8,
+    "smokeProcesses": 2,
+    "reportPairs": 10,
+    "sourceReview": "review.json",
+    "containerCleanup": "container-cleanup.json",
+    "compiledBinaryIdentity": "compiled-binary-identity.stdout",
+    "nextAction": "NATIVE-ACCEPTANCE.md"
+  },
+  "commandReceipts": [
+    {
+      "name": "baseline-build",
+      "status": "passed",
+      "exitCode": 0,
+      "elapsedSeconds": 283.143,
+      "executionLimitSeconds": 1200,
+      "operation": "coldCompileCommand",
+      "path": "baseline-build.receipt.json",
+      "groupState": "gone",
+      "verification": "available",
+      "verificationTruncated": false,
+      "parentReaped": true
+    },
+    {
+      "name": "baseline-discovery",
+      "status": "passed",
+      "exitCode": 0,
+      "elapsedSeconds": 3.651,
+      "executionLimitSeconds": 60,
+      "operation": "testDiscovery",
+      "path": "baseline-discovery.receipt.json",
+      "groupState": "gone",
+      "verification": "available",
+      "verificationTruncated": false,
+      "parentReaped": true
+    },
+    {
+      "name": "baseline-load",
+      "status": "interrupted",
+      "exitCode": -15,
+      "elapsedSeconds": 198.297,
+      "executionLimitSeconds": 600,
+      "operation": "wholeLoadPackage",
+      "path": "baseline-load.receipt.json",
+      "groupState": "gone",
+      "verification": "available",
+      "verificationTruncated": false,
+      "parentReaped": true,
+      "assessment": "Observed whole-package stall; deliberately interrupted. Legacy PGID receipt missed child groups; manual cleanup retained."
+    },
+    {
+      "name": "baseline-synthetic",
+      "status": "passed",
+      "exitCode": 0,
+      "elapsedSeconds": 1.998,
+      "executionLimitSeconds": 90,
+      "operation": "focusedTest",
+      "path": "baseline-synthetic.receipt.json",
+      "groupState": "gone",
+      "verification": "available",
+      "verificationTruncated": false,
+      "parentReaped": true
+    },
+    {
+      "name": "compiled-binary-identity",
+      "status": "passed",
+      "exitCode": 0,
+      "elapsedSeconds": 0.741,
+      "executionLimitSeconds": 30,
+      "operation": "artifactIdentity",
+      "path": "compiled-binary-identity.receipt.json",
+      "groupState": "gone",
+      "verification": "available",
+      "verificationTruncated": false,
+      "parentReaped": true
+    },
+    {
+      "name": "final-discovery",
+      "status": "passed",
+      "exitCode": 0,
+      "elapsedSeconds": 1.84,
+      "executionLimitSeconds": 60,
+      "operation": "testDiscovery",
+      "path": "final-discovery.receipt.json",
+      "groupState": "gone",
+      "verification": "available",
+      "verificationTruncated": false,
+      "parentReaped": true
+    },
+    {
+      "name": "final-load",
+      "status": "passed",
+      "exitCode": 0,
+      "elapsedSeconds": 22.403,
+      "executionLimitSeconds": 600,
+      "operation": "wholeLoadPackage",
+      "path": "final-load.receipt.json",
+      "groupState": "gone",
+      "verification": "available",
+      "verificationTruncated": false,
+      "parentReaped": true
+    },
+    {
+      "name": "green-build",
+      "status": "passed",
+      "exitCode": 0,
+      "elapsedSeconds": 16.309,
+      "executionLimitSeconds": 1200,
+      "operation": "coldCompileCommand",
+      "path": "green-build.receipt.json",
+      "groupState": "gone",
+      "verification": "available",
+      "verificationTruncated": false,
+      "parentReaped": true
+    },
+    {
+      "name": "green-discovery",
+      "status": "passed",
+      "exitCode": 0,
+      "elapsedSeconds": 3.781,
+      "executionLimitSeconds": 60,
+      "operation": "testDiscovery",
+      "path": "green-discovery.receipt.json",
+      "groupState": "gone",
+      "verification": "available",
+      "verificationTruncated": false,
+      "parentReaped": true
+    },
+    {
+      "name": "green-final-build",
+      "status": "passed",
+      "exitCode": 0,
+      "elapsedSeconds": 12.139,
+      "executionLimitSeconds": 1200,
+      "operation": "coldCompileCommand",
+      "path": "green-final-build.receipt.json",
+      "groupState": "gone",
+      "verification": "available",
+      "verificationTruncated": false,
+      "parentReaped": true
+    },
+    {
+      "name": "green-load",
+      "status": "passed",
+      "exitCode": 0,
+      "elapsedSeconds": 22.546,
+      "executionLimitSeconds": 600,
+      "operation": "wholeLoadPackage",
+      "path": "green-load.receipt.json",
+      "groupState": "gone",
+      "verification": "available",
+      "verificationTruncated": false,
+      "parentReaped": true
+    },
+    {
+      "name": "green-synthetic",
+      "status": "passed",
+      "exitCode": 0,
+      "elapsedSeconds": 1.994,
+      "executionLimitSeconds": 90,
+      "operation": "focusedTest",
+      "path": "green-synthetic.receipt.json",
+      "groupState": "gone",
+      "verification": "available",
+      "verificationTruncated": false,
+      "parentReaped": true
+    },
+    {
+      "name": "green-transport",
+      "status": "passed",
+      "exitCode": 0,
+      "elapsedSeconds": 2.675,
+      "executionLimitSeconds": 90,
+      "operation": "focusedTest",
+      "path": "green-transport.receipt.json",
+      "groupState": "gone",
+      "verification": "available",
+      "verificationTruncated": false,
+      "parentReaped": true
+    },
+    {
+      "name": "peer-green-macos",
+      "status": "passed",
+      "exitCode": 0,
+      "elapsedSeconds": 7.843,
+      "executionLimitSeconds": 60,
+      "operation": "pythonRegression",
+      "path": "peer-green-macos.receipt.json",
+      "groupState": "gone",
+      "verification": "available",
+      "verificationTruncated": false,
+      "parentReaped": true
+    },
+    {
+      "name": "peer-green",
+      "status": "passed",
+      "exitCode": 0,
+      "elapsedSeconds": 8.48,
+      "executionLimitSeconds": 60,
+      "operation": "pythonRegression",
+      "path": "peer-green.receipt.json",
+      "groupState": "gone",
+      "verification": "available",
+      "verificationTruncated": false,
+      "parentReaped": true
+    },
+    {
+      "name": "peer-red",
+      "status": "failed",
+      "exitCode": 1,
+      "elapsedSeconds": 3.851,
+      "executionLimitSeconds": 30,
+      "operation": "pythonRegression",
+      "path": "peer-red.receipt.json",
+      "groupState": "gone",
+      "verification": "available",
+      "verificationTruncated": false,
+      "parentReaped": true,
+      "assessment": "Expected blocked-SIGTERM regression."
+    },
+    {
+      "name": "pull-linux-amd64",
+      "status": "passed",
+      "exitCode": 0,
+      "elapsedSeconds": 32.302,
+      "executionLimitSeconds": 120,
+      "operation": "transportAttempt",
+      "path": "pull-linux-amd64.receipt.json",
+      "groupState": "gone",
+      "verification": "available",
+      "verificationTruncated": false,
+      "parentReaped": true
+    },
+    {
+      "name": "red-transport-remote",
+      "status": "passed",
+      "exitCode": 0,
+      "elapsedSeconds": 12.409,
+      "executionLimitSeconds": 60,
+      "operation": "focusedTest",
+      "path": "red-transport-debugger.receipt.json",
+      "groupState": "gone",
+      "verification": "available",
+      "verificationTruncated": false,
+      "parentReaped": true,
+      "assessment": "Debugger command passed; target test deliberately killed/reaped with -9, not a passing test."
+    },
+    {
+      "name": "scenario-directCancelled",
+      "status": "passed",
+      "exitCode": 0,
+      "elapsedSeconds": 0.277,
+      "executionLimitSeconds": 90,
+      "operation": "focusedScenario",
+      "path": "scenario-directCancelled.receipt.json",
+      "groupState": "gone",
+      "verification": "available",
+      "verificationTruncated": false,
+      "parentReaped": true
+    },
+    {
+      "name": "scenario-directDeferred",
+      "status": "passed",
+      "exitCode": 0,
+      "elapsedSeconds": 0.312,
+      "executionLimitSeconds": 90,
+      "operation": "focusedScenario",
+      "path": "scenario-directDeferred.receipt.json",
+      "groupState": "gone",
+      "verification": "available",
+      "verificationTruncated": false,
+      "parentReaped": true
+    },
+    {
+      "name": "scenario-directFailure",
+      "status": "passed",
+      "exitCode": 0,
+      "elapsedSeconds": 0.288,
+      "executionLimitSeconds": 90,
+      "operation": "focusedScenario",
+      "path": "scenario-directFailure.receipt.json",
+      "groupState": "gone",
+      "verification": "available",
+      "verificationTruncated": false,
+      "parentReaped": true
+    },
+    {
+      "name": "scenario-directImmediate",
+      "status": "passed",
+      "exitCode": 0,
+      "elapsedSeconds": 0.309,
+      "executionLimitSeconds": 90,
+      "operation": "focusedScenario",
+      "path": "scenario-directImmediate.receipt.json",
+      "groupState": "gone",
+      "verification": "available",
+      "verificationTruncated": false,
+      "parentReaped": true
+    },
+    {
+      "name": "scenario-dslCancelled",
+      "status": "passed",
+      "exitCode": 0,
+      "elapsedSeconds": 0.283,
+      "executionLimitSeconds": 90,
+      "operation": "focusedScenario",
+      "path": "scenario-dslCancelled.receipt.json",
+      "groupState": "gone",
+      "verification": "available",
+      "verificationTruncated": false,
+      "parentReaped": true
+    },
+    {
+      "name": "scenario-dslDeferred",
+      "status": "passed",
+      "exitCode": 0,
+      "elapsedSeconds": 0.348,
+      "executionLimitSeconds": 90,
+      "operation": "focusedScenario",
+      "path": "scenario-dslDeferred.receipt.json",
+      "groupState": "gone",
+      "verification": "available",
+      "verificationTruncated": false,
+      "parentReaped": true
+    },
+    {
+      "name": "scenario-dslFailure",
+      "status": "passed",
+      "exitCode": 0,
+      "elapsedSeconds": 0.284,
+      "executionLimitSeconds": 90,
+      "operation": "focusedScenario",
+      "path": "scenario-dslFailure.receipt.json",
+      "groupState": "gone",
+      "verification": "available",
+      "verificationTruncated": false,
+      "parentReaped": true
+    },
+    {
+      "name": "scenario-dslImmediate",
+      "status": "passed",
+      "exitCode": 0,
+      "elapsedSeconds": 0.307,
+      "executionLimitSeconds": 90,
+      "operation": "focusedScenario",
+      "path": "scenario-dslImmediate.receipt.json",
+      "groupState": "gone",
+      "verification": "available",
+      "verificationTruncated": false,
+      "parentReaped": true
+    },
+    {
+      "name": "smoke-loopback",
+      "status": "passed",
+      "exitCode": 0,
+      "elapsedSeconds": 0.914,
+      "executionLimitSeconds": 120,
+      "operation": "timingSmoke",
+      "path": "smoke-loopback.receipt.json",
+      "groupState": "gone",
+      "verification": "available",
+      "verificationTruncated": false,
+      "parentReaped": true
+    },
+    {
+      "name": "smoke-rest",
+      "status": "passed",
+      "exitCode": 0,
+      "elapsedSeconds": 0.32,
+      "executionLimitSeconds": 120,
+      "operation": "timingSmoke",
+      "path": "smoke-rest.receipt.json",
+      "groupState": "gone",
+      "verification": "available",
+      "verificationTruncated": false,
+      "parentReaped": true
+    },
+    {
+      "name": "supervisor-final-focused",
+      "status": "passed",
+      "exitCode": 0,
+      "elapsedSeconds": 4.467,
+      "executionLimitSeconds": 30,
+      "operation": "localHelperCheck",
+      "path": "supervisor-final-focused.receipt.json",
+      "groupState": "gone",
+      "verification": "available",
+      "verificationTruncated": false,
+      "parentReaped": true
+    },
+    {
+      "name": "supervisor-final-ci-helpers",
+      "status": "passed",
+      "exitCode": 0,
+      "elapsedSeconds": 50.365,
+      "executionLimitSeconds": 300,
+      "operation": "localHelperCheck",
+      "path": "supervisor-final-linux.receipt.json",
+      "groupState": "zombies-only",
+      "verification": "available",
+      "verificationTruncated": false,
+      "parentReaped": true
+    },
+    {
+      "name": "supervisor-final-macos-compatibility",
+      "status": "passed",
+      "exitCode": 0,
+      "elapsedSeconds": 8.252,
+      "executionLimitSeconds": 120,
+      "operation": "localHelperCheck",
+      "path": "supervisor-final-macos.receipt.json",
+      "groupState": "gone",
+      "verification": "available",
+      "verificationTruncated": false,
+      "parentReaped": true
+    },
+    {
+      "name": "supervisor-separate-pgid-green",
+      "status": "passed",
+      "exitCode": 0,
+      "elapsedSeconds": 4.159,
+      "executionLimitSeconds": 30,
+      "operation": "localHelperCheck",
+      "path": "supervisor-green-focused.receipt.json",
+      "groupState": "gone",
+      "verification": "available",
+      "verificationTruncated": false,
+      "parentReaped": true
+    },
+    {
+      "name": "supervisor-ci-helpers-green",
+      "status": "passed",
+      "exitCode": 0,
+      "elapsedSeconds": 54.573,
+      "executionLimitSeconds": 300,
+      "operation": "localHelperCheck",
+      "path": "supervisor-green-linux.receipt.json",
+      "groupState": "zombies-only",
+      "verification": "available",
+      "verificationTruncated": false,
+      "parentReaped": true
+    },
+    {
+      "name": "supervisor-macos-heartbeat-green",
+      "status": "passed",
+      "exitCode": 0,
+      "elapsedSeconds": 0.307,
+      "executionLimitSeconds": 30,
+      "operation": "localHelperCheck",
+      "path": "supervisor-green-macos-heartbeat.receipt.json",
+      "groupState": "gone",
+      "verification": "available",
+      "verificationTruncated": false,
+      "parentReaped": true
+    },
+    {
+      "name": "supervisor-macos-compatibility-green",
+      "status": "passed",
+      "exitCode": 0,
+      "elapsedSeconds": 8.061,
+      "executionLimitSeconds": 120,
+      "operation": "localHelperCheck",
+      "path": "supervisor-green-macos.receipt.json",
+      "groupState": "gone",
+      "verification": "available",
+      "verificationTruncated": false,
+      "parentReaped": true
+    },
+    {
+      "name": "supervisor-ci-helpers-green",
+      "status": "failed",
+      "exitCode": 1,
+      "elapsedSeconds": 54.887,
+      "executionLimitSeconds": 300,
+      "operation": "localHelperCheck",
+      "path": "supervisor-linux-initial-failure.receipt.json",
+      "groupState": "zombies-only",
+      "verification": "available",
+      "verificationTruncated": false,
+      "parentReaped": true,
+      "assessment": "Broad helper run exposed interpreter-startup timing assumption; fixture revised and failure retained."
+    },
+    {
+      "name": "supervisor-separate-pgid-red",
+      "status": "failed",
+      "exitCode": 1,
+      "elapsedSeconds": 1.283,
+      "executionLimitSeconds": 30,
+      "operation": "localHelperCheck",
+      "path": "supervisor-red.receipt.json",
+      "groupState": "gone",
+      "verification": "available",
+      "verificationTruncated": false,
+      "parentReaped": true,
+      "assessment": "Expected separate-group cleanup leak."
+    },
+    {
+      "name": "supervisor-unverified-red",
+      "status": "failed",
+      "exitCode": 1,
+      "elapsedSeconds": 0.41,
+      "executionLimitSeconds": 30,
+      "operation": "localHelperCheck",
+      "path": "supervisor-unverified-red.receipt.json",
+      "groupState": "gone",
+      "verification": "available",
+      "verificationTruncated": false,
+      "parentReaped": true,
+      "assessment": "Expected missing fail-closed verification."
+    }
+  ],
+  "checks": {
+    "reviewHashes": "passed",
+    "originalPlanningAndPriorWorktrees": "passed",
+    "jsonParsing": {
+      "status": "passed",
+      "jsonDocuments": 82
+    },
+    "pythonSyntax": "passed",
+    "markdownLocalLinks": {
+      "status": "passed",
+      "links": 90
+    },
+    "diffWhitespace": {
+      "status": "passed",
+      "command": [
+        "git",
+        "diff",
+        "--cached",
+        "--check"
+      ]
+    },
+    "losslessArtifactStorage": "passed"
+  },
+  "manifestScope": "All retained phase3 implementation artifacts except this self-referential index; later commit receipt is separate.",
+  "artifactManifest": {
+    "IMPLEMENTATION.md": {
+      "bytes": 12262,
+      "sha256": "05b77917e4b04e9f2e78c0abccfd58eb03a90101f1d18cacb487ca2a65a56159"
+    },
+    "NATIVE-ACCEPTANCE.md": {
+      "bytes": 3141,
+      "sha256": "48fb992b54b6547d55536db3978316d520f512bb65dd984e2aff33db6dde4294"
+    },
+    "artifact-transport.json": {
+      "bytes": 1000,
+      "sha256": "b3cdeb5467fb36e516c3c04e8cae2ac091c23df3c786718f0ea753ebc8290c29"
+    },
+    "baseline-build.diagnostics.jsonl": {
+      "bytes": 5974,
+      "sha256": "eeec9d6b78cdf28910bf8c01b957c5b7b3a847aa8e21291d269a49a515e08371"
+    },
+    "baseline-build.log": {
+      "bytes": 99550,
+      "sha256": "af36a5f561726f88bfe78e00c07ff0d5c3bc807b7c9d1829068fd853c4fecf29"
+    },
+    "baseline-build.receipt.json": {
+      "bytes": 2041,
+      "sha256": "8e10bb747bc14212b27d432f10743f254b610e637146b1decf6d6cfc7c360e6f"
+    },
+    "baseline-discovered-tests.json": {
+      "bytes": 15564,
+      "sha256": "8e35db5b137c47dd73eb7214cb3157927b6f65d27b09a28bcce412ecd83c9ca1"
+    },
+    "baseline-discovery.diagnostics.jsonl": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "baseline-discovery.log": {
+      "bytes": 484,
+      "sha256": "1b4d583568dd66dcb0be20e5e43b08ec9e49462d52c7a949a83defb2e157dc60"
+    },
+    "baseline-discovery.receipt.json": {
+      "bytes": 2309,
+      "sha256": "6726094f48bf955e82fd1f7cf38eb77af33d7ff0aede938f5dfbbcc472301725"
+    },
+    "baseline-discovery.stdout": {
+      "bytes": 13598,
+      "sha256": "aac1e66f30fa89242a7d731e3e9afc01d832d2539229659b8b9562b045168957"
+    },
+    "baseline-inputs.json": {
+      "bytes": 1560,
+      "sha256": "cec1a67ccc45d42423683dd8cb981e2d5b8d936ca0396c768988882c4dd67c02"
+    },
+    "baseline-load.diagnostics.jsonl": {
+      "bytes": 7325,
+      "sha256": "67bf63d58b64419992661eee57992647d356656f67c9ce8f3f06f3c5725762b9"
+    },
+    "baseline-load.log": {
+      "bytes": 520433,
+      "sha256": "0551bdadcfcde1c62e6d773bd1a415bff98bf55f18962b074441009fc3a9f242"
+    },
+    "baseline-load.receipt.json": {
+      "bytes": 2213,
+      "sha256": "e74003d8ed0cfdc293b646f5f97e5f96264d0dc71c603f8be5475bab1c137487"
+    },
+    "baseline-manual-cleanup.json": {
+      "bytes": 587,
+      "sha256": "84e279052080358adbd699f87a2b226bdd3206a11e13f1dd0668d8fe6d512ce7"
+    },
+    "baseline-synthetic.diagnostics.jsonl": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "baseline-synthetic.log": {
+      "bytes": 4635,
+      "sha256": "6e0fb67b6458f45000f49804b95a391aca81e556989b9fc21397669852c82dcb"
+    },
+    "baseline-synthetic.receipt.json": {
+      "bytes": 2132,
+      "sha256": "d026af9497f72319837d663fb4f70b4e32ae934ce06be6f49828dd221aeb47fe"
+    },
+    "compiled-binary-container-cleanup.json": {
+      "bytes": 183,
+      "sha256": "b3d1933fe29f52bcc20cce3d6214bd0d0e23c3d7e78bb4a1035154593af41a1b"
+    },
+    "compiled-binary-identity.diagnostics.jsonl": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "compiled-binary-identity.log": {
+      "bytes": 437,
+      "sha256": "e15a478951b1dacc53e39ecfa0575b92e99539cf4e1b261d9a94c725d4e591d2"
+    },
+    "compiled-binary-identity.receipt.json": {
+      "bytes": 2615,
+      "sha256": "b4465dcbfb09bbbfcff3370f2a560576d3f7a07eeb163fa9b6ceb2eacc7dbb42"
+    },
+    "compiled-binary-identity.stdout": {
+      "bytes": 271,
+      "sha256": "18c67bcbb72ec29fc56a712f73660fa6247458fcc7211a600f0195219e2954cb"
+    },
+    "container-cleanup.json": {
+      "bytes": 5139,
+      "sha256": "739c227ec48c532e7879ad34c953bb08d7866f3a8261c715170b8bd9fa8f9fa7"
+    },
+    "diagnostic-assessment.json": {
+      "bytes": 9769,
+      "sha256": "7a7807fa974b30ff53cddcd6e02f0ad1160dbae5200ab0802f2046cbbe556506"
+    },
+    "diagnostic-capability.json": {
+      "bytes": 3435,
+      "sha256": "7202f82f5eac9439b59826ddb126a849dec689924ede670364679b837e3e9db2"
+    },
+    "final-discovered-tests.json": {
+      "bytes": 15280,
+      "sha256": "40303a67e5a6befe5abad5f56fa8d73cd55da034bd8639ea483f80cae02c854e"
+    },
+    "final-discovery.diagnostics.jsonl": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "final-discovery.log": {
+      "bytes": 463,
+      "sha256": "1ed127428a9b4516cd3ae6598d5a2c5e89eb514b9127b0a2adb486b03a97f92b"
+    },
+    "final-discovery.receipt.json": {
+      "bytes": 2475,
+      "sha256": "458a58e9926da38f7bf4a8e4bde6f7c96650b0569f0a8737a68fe55b34029b13"
+    },
+    "final-discovery.stdout": {
+      "bytes": 13708,
+      "sha256": "8be50afc83287c28963e8fb9597d75c8cf031fa58d6de206322fd09c713a95a2"
+    },
+    "final-load.diagnostics.jsonl": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "final-load.log": {
+      "bytes": 594716,
+      "sha256": "347a45056b8a6cb06613b72f720d78fd0b3e63308e96ddaa71de306daf41f37b"
+    },
+    "final-load.receipt.json": {
+      "bytes": 2229,
+      "sha256": "3926a4e36797a0484c88bf80c92208bc840d6486d2ad6e5a62f041bba7fa7267"
+    },
+    "green-build.diagnostics.jsonl": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "green-build.log": {
+      "bytes": 1850,
+      "sha256": "d2c476b59cfab70c2f82c8fcf9109cec45873e6fb12662ea3ba424979fef6006"
+    },
+    "green-build.receipt.json": {
+      "bytes": 2023,
+      "sha256": "a3514ed7b29843983807858b16fb8be72e743ef4bbbb161cd30b9009137b1e4b"
+    },
+    "green-discovered-tests.json": {
+      "bytes": 17133,
+      "sha256": "e594229dcf355c8ea3e49af2656ef3c213c1816dc8eccf7e47704298d1a0954d"
+    },
+    "green-discovery.diagnostics.jsonl": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "green-discovery.log": {
+      "bytes": 484,
+      "sha256": "1b4d583568dd66dcb0be20e5e43b08ec9e49462d52c7a949a83defb2e157dc60"
+    },
+    "green-discovery.receipt.json": {
+      "bytes": 2440,
+      "sha256": "1c386fcc38b8dc88ad578ea385df7a5ec5ed7999c3671f947cfdbdcaa0810835"
+    },
+    "green-discovery.stdout": {
+      "bytes": 13708,
+      "sha256": "8be50afc83287c28963e8fb9597d75c8cf031fa58d6de206322fd09c713a95a2"
+    },
+    "green-final-build.diagnostics.jsonl": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "green-final-build.log": {
+      "bytes": 1181,
+      "sha256": "f685048fd97132d1dd05cdcba5be70d9722c7cb1e5a0f19b0ac077058ac1ee0b"
+    },
+    "green-final-build.receipt.json": {
+      "bytes": 2214,
+      "sha256": "b3dafe77fe2d9bb03d61ead81fae7f5d16a1d787a7f7ebfc948feec940beb759"
+    },
+    "green-load.diagnostics.jsonl": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "green-load.log": {
+      "bytes": 588536,
+      "sha256": "084e35cf85722b9fee15f288810a40543479519ad60224ca49f14823b3aa107f"
+    },
+    "green-load.receipt.json": {
+      "bytes": 2193,
+      "sha256": "32376b9b2528bfbba9e3b40a8fe3648a0f3636b8a0f825f178fa009288c3c698"
+    },
+    "green-synthetic.diagnostics.jsonl": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "green-synthetic.log": {
+      "bytes": 6244,
+      "sha256": "aa3c3dad4dd616c93c1e7d4d85f85503abe934281866262a6b80f4a9f844e531"
+    },
+    "green-synthetic.receipt.json": {
+      "bytes": 2269,
+      "sha256": "1a17d78e5d0a169580eef1c027a1199111f825fc3854f1b26baa7900dfd6baf3"
+    },
+    "green-transport.diagnostics.jsonl": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "green-transport.log": {
+      "bytes": 3413,
+      "sha256": "a240a23014391ddc27b4e9b9b832fccba0555d8b7f554033b944a20386b9ebcb"
+    },
+    "green-transport.receipt.json": {
+      "bytes": 2262,
+      "sha256": "7b8c6822571504bf0ce832d216991fc61493aa1f3d3ebe0e17dde3615c3c2599"
+    },
+    "linux-environment.json": {
+      "bytes": 2317,
+      "sha256": "8b43a0f0826c600792775f27d81a0025f04e54a7dd7bf6c0ad0cbf1d5ae83082"
+    },
+    "peer-green-macos.diagnostics.jsonl": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "peer-green-macos.log": {
+      "bytes": 2525,
+      "sha256": "0273efd979f8b8fce2db36199683e75873222fb9a6f9e482136a5a38244ef8fe"
+    },
+    "peer-green-macos.receipt.json": {
+      "bytes": 2124,
+      "sha256": "0a85a0d405c8b6cf216b8caec518a927155113cd41d40aa3160533ccff8f001a"
+    },
+    "peer-green.diagnostics.jsonl": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "peer-green.log": {
+      "bytes": 2525,
+      "sha256": "4538c3bd54aa8cc5f12cd30bf9891b5811683786381a2af190815fd494fe48d5"
+    },
+    "peer-green.receipt.json": {
+      "bytes": 1986,
+      "sha256": "ded50ef3fb2a0845c018591a8718f0e62026f942c97ca068e2d9a3c1ea785c96"
+    },
+    "peer-red.diagnostics.jsonl": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "peer-red.log": {
+      "bytes": 2990,
+      "sha256": "0cc7b260d0c2beff866de3ee9dc083414de5991d1ed9ff019284a00a646cde1d"
+    },
+    "peer-red.receipt.json": {
+      "bytes": 2104,
+      "sha256": "7c682de6836b7e30bd86fe9396637ef2bd98989fe6dee659a211f92c9464efd1"
+    },
+    "preservation.json": {
+      "bytes": 2844,
+      "sha256": "f62f7205e9d59a0fef84fa9a778bbfb241b392eb7769ac1cc868b11f34da645e"
+    },
+    "pull-linux-amd64.diagnostics.jsonl": {
+      "bytes": 700,
+      "sha256": "5c5b0e1dba66537557712ec7fbe38d742e2c5ccd4d410d3592f79a616c5984c9"
+    },
+    "pull-linux-amd64.log": {
+      "bytes": 890,
+      "sha256": "559e77de05ef429dfd8ce978acf03967efc857df1811b9cace36ff0be219715d"
+    },
+    "pull-linux-amd64.receipt.json": {
+      "bytes": 1882,
+      "sha256": "f864733c4658d3badcbca898aa58177efdbc627e39f17f343c610662a7e13a05"
+    },
+    "red-regressions.patch.gz": {
+      "bytes": 5145,
+      "sha256": "ffaa9082e5034d8bccf96e69da2a28994784f99bcb8990faa53728497e6d12ff"
+    },
+    "red-transport-debugger.diagnostics.jsonl": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "red-transport-debugger.log.gz": {
+      "bytes": 5608,
+      "sha256": "ac9f3f2c549ac515fe71c00c96415acae8b27a53f0a1d8766847b9490cdbb40b"
+    },
+    "red-transport-debugger.receipt.json": {
+      "bytes": 5582,
+      "sha256": "5f55d27125ab95234d41663a16c2a3adac355e82729b8db77a2549fc58f481b0"
+    },
+    "red-transport-remote.json": {
+      "bytes": 52201,
+      "sha256": "0681960836a622ba6fd2793c7cde59550e99071947cd84ca2914aa1ac61e4ed2"
+    },
+    "red-transport-test.log": {
+      "bytes": 526,
+      "sha256": "20c59c40d27db877321ad1cd900432647e558ecccfb487b1fe61f8644e184885"
+    },
+    "remote_transport_diagnosis.py": {
+      "bytes": 10392,
+      "sha256": "d9b76a06256059b776cb9596b496b56d2c62d85969faa865d2e2c7063f0276ac"
+    },
+    "review.json": {
+      "bytes": 54275,
+      "sha256": "d75ca18698e96871031ef2125757c00f859f61952be6855089291115ea064300"
+    },
+    "rosetta-remote-async-capability.json": {
+      "bytes": 2858,
+      "sha256": "26e22993e966d392158ba0bfc79c8618ab619969baa05c9daae3bbd06e9ee760"
+    },
+    "rosetta-remote-capability.json": {
+      "bytes": 6360,
+      "sha256": "890279ef5498e3e54bdc8c8f39662b5fab091c2f2457a657842c86222c647d5a"
+    },
+    "rosetta-remote-environment-capability.json": {
+      "bytes": 1894,
+      "sha256": "95f3f038b6a0caf860f13a523845888357610e520877f0aeef380364eff75d0e"
+    },
+    "rosetta-remote-envp-capability.json": {
+      "bytes": 12616,
+      "sha256": "124ca29935bf38f3e9a0cc4ee1c3006b449235d15875fcb259ab0704e962d6a7"
+    },
+    "rosetta-remote-modules-capability.json": {
+      "bytes": 6829,
+      "sha256": "f12b0f125a75b096b4b036bb4617e119004344b3f445d503d94681a78fb4389d"
+    },
+    "rosetta-remote-unsetenv-capability.json": {
+      "bytes": 5554,
+      "sha256": "1bbe19e48ab8e4a0431c0e38d8ef058a34fc0f17f725c97fa8d78e7a2cc82ce9"
+    },
+    "scenario-directCancelled-common.json": {
+      "bytes": 127501,
+      "sha256": "24dc2ef4ea0e325489ba70ceb8bb790cc7fb943b6704a3a9436850f22b7a3f17"
+    },
+    "scenario-directCancelled.diagnostics.jsonl": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "scenario-directCancelled.json": {
+      "bytes": 252953,
+      "sha256": "75ebdf3422cfbcef52e72a2358b63248335da98007ccc22060e6bce1e3aea914"
+    },
+    "scenario-directCancelled.log": {
+      "bytes": 417,
+      "sha256": "e169856a9aa9b7ba66078bd83a573517406edc74835bcaa49c0edc708d80370f"
+    },
+    "scenario-directCancelled.receipt.json": {
+      "bytes": 2499,
+      "sha256": "5a7156431b38a26ce52202b0d294fc6919ee60d3b86e3502c2bfe628793bc173"
+    },
+    "scenario-directDeferred-common.json": {
+      "bytes": 168957,
+      "sha256": "8b9ffcd058601bf48cd07f1500256fcb67ebbb87bd394de337898cdd3532f05e"
+    },
+    "scenario-directDeferred.diagnostics.jsonl": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "scenario-directDeferred.json": {
+      "bytes": 335861,
+      "sha256": "9d458c77705849d6d3ed90a3f9adc7e4a8b53bc8dd920529da950913b159a130"
+    },
+    "scenario-directDeferred.log": {
+      "bytes": 414,
+      "sha256": "7bfdc53f2d8e86e57f408de6ed550be02b02c40deba3a5e25d225b983257b3d0"
+    },
+    "scenario-directDeferred.receipt.json": {
+      "bytes": 2489,
+      "sha256": "a3e5c8f51a9c79b45a8e9465dc32276a605b6e6b7a4794b65db352e77c93bc6b"
+    },
+    "scenario-directFailure-common.json": {
+      "bytes": 127497,
+      "sha256": "850a057d6dca4f3fab9d33c776f997c9963a39c7027c622cf8793c587465bfd4"
+    },
+    "scenario-directFailure.diagnostics.jsonl": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "scenario-directFailure.json": {
+      "bytes": 252939,
+      "sha256": "42c7309cb6e0c2478a1ece21a01e68e91a19ff47ffb6a199b289ceaea8bb36b2"
+    },
+    "scenario-directFailure.log": {
+      "bytes": 1664,
+      "sha256": "34d27e3a646fb41eb2f9923464aff02cc6eced6d871410eba358d7492c3eb5bf"
+    },
+    "scenario-directFailure.receipt.json": {
+      "bytes": 2478,
+      "sha256": "12afb860842fc4a6a8e82e9f5dc9aeb31f467542fcec9ceb84baf7930bf82828"
+    },
+    "scenario-directImmediate-common.json": {
+      "bytes": 148233,
+      "sha256": "afa62b8752a77e3fe7b400748d586a5818e024572180148ff56ee6ed61aab416"
+    },
+    "scenario-directImmediate.diagnostics.jsonl": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "scenario-directImmediate.json": {
+      "bytes": 294417,
+      "sha256": "144b1bbd64a05d52619b890b3393e88dd14c6d2aba0ef5bebe3aaf4d14e9f3cf"
+    },
+    "scenario-directImmediate.log": {
+      "bytes": 417,
+      "sha256": "25708e597eab71fa3536fd40e5c57b2e43700d4822f0290ff8c0dacc73a8a478"
+    },
+    "scenario-directImmediate.receipt.json": {
+      "bytes": 2497,
+      "sha256": "f0042a77319ea046d7bf4e86297b579d3d78a2ca4caa28e6b69b018caa00539d"
+    },
+    "scenario-dslCancelled-common.json": {
+      "bytes": 127494,
+      "sha256": "1ed0794ad0dd2e1c8a830208831abc29c0d7b83f8d2d66708f61246345773a56"
+    },
+    "scenario-dslCancelled.diagnostics.jsonl": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "scenario-dslCancelled.json": {
+      "bytes": 252929,
+      "sha256": "c078d0b6a7a8a9eb87677a4f0ba726b800f2bd44faabcb2f33247ae6868d55a4"
+    },
+    "scenario-dslCancelled.log": {
+      "bytes": 408,
+      "sha256": "7f8ef055da0e707e800dd0b1c53ce2f9bd4a00e0dff78b28d921ef3860edcd13"
+    },
+    "scenario-dslCancelled.receipt.json": {
+      "bytes": 2472,
+      "sha256": "4c373fe6ffbc2b54a0252682b6338b5fcfecab868b6a0b1c6d4e142e03c555f0"
+    },
+    "scenario-dslDeferred-common.json": {
+      "bytes": 168966,
+      "sha256": "388b9be96c82036b7723cc89999d2245cb3926603f237cec55884ad6e8edb70b"
+    },
+    "scenario-dslDeferred.diagnostics.jsonl": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "scenario-dslDeferred.json": {
+      "bytes": 335870,
+      "sha256": "940a3d5a7875b099f7fc853cc7d03bf6f8ff5be314b31baf44c5973d9dce7f19"
+    },
+    "scenario-dslDeferred.log": {
+      "bytes": 405,
+      "sha256": "a50f9bb84ae8c2ce75063abd3480f509869efe4b3e96dfd1a796184df8e63e6f"
+    },
+    "scenario-dslDeferred.receipt.json": {
+      "bytes": 2463,
+      "sha256": "ac4e988367f02f844a38f78985ad3e9bf065a857809216586efe72df93609cfd"
+    },
+    "scenario-dslFailure-common.json": {
+      "bytes": 127484,
+      "sha256": "e17aa41fe3a1ad8e5c8ef30ad1456c8236383adf76b63b3037926a55e7c3cc3a"
+    },
+    "scenario-dslFailure.diagnostics.jsonl": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "scenario-dslFailure.json": {
+      "bytes": 252903,
+      "sha256": "f00835429ed89589fc8e5509458f42a60d2e04c12a147e967e410aedd60717ba"
+    },
+    "scenario-dslFailure.log": {
+      "bytes": 1655,
+      "sha256": "fb454ac2119dcc6115b587a0fcc0b16b15c24da1baa7e4daaca48d82172ee87a"
+    },
+    "scenario-dslFailure.receipt.json": {
+      "bytes": 2456,
+      "sha256": "147c531e47d0705cd5ac233396543048f5451878182e52c676511936065e0abd"
+    },
+    "scenario-dslImmediate-common.json": {
+      "bytes": 148227,
+      "sha256": "886f79f247df10506388f9f0aff6774436c236926a45451a5d347211d87b9696"
+    },
+    "scenario-dslImmediate.diagnostics.jsonl": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "scenario-dslImmediate.json": {
+      "bytes": 294395,
+      "sha256": "1a22800a4a1235a08311d388db3a6c82d5405a2a09ae777f0afe8418b4308c6a"
+    },
+    "scenario-dslImmediate.log": {
+      "bytes": 408,
+      "sha256": "672cb8c4d77d5256a0add96fb3708eb89015baad3a6245ac2af76d72f6a69c75"
+    },
+    "scenario-dslImmediate.receipt.json": {
+      "bytes": 2469,
+      "sha256": "41c95789c1d5b8ca1435fb818f9a008a289b8c3a088b62770cd17d87bd39f8c7"
+    },
+    "scenario-report-validation.json": {
+      "bytes": 16424,
+      "sha256": "7f6b9390b5370ca37b6c24428829d18a71ed33f5eee30cf20a32c0abd07137c1"
+    },
+    "smoke-loopback-common.json": {
+      "bytes": 106739,
+      "sha256": "4d19d975017bc5d81b8f942edc235c5b91c7a9192ef562bb27c98bbc32fdd71a"
+    },
+    "smoke-loopback.diagnostics.jsonl": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "smoke-loopback.json": {
+      "bytes": 212260,
+      "sha256": "80c4f1306c3f0f07fa1e21ab49eaae0fd1e6c0ffd33ac3bb8af6ed4194d44b69"
+    },
+    "smoke-loopback.log": {
+      "bytes": 535,
+      "sha256": "ed3c08b155acfc1d6abc7de24c4837a6680e6f3a4f67e9dd6a61fbd0c0020867"
+    },
+    "smoke-loopback.receipt.json": {
+      "bytes": 2394,
+      "sha256": "37da2bc9de2839075489f395a5a063827c69b6d352daaae67eb7197298158067"
+    },
+    "smoke-rest-common.json": {
+      "bytes": 86005,
+      "sha256": "647a0cee09d7f2633062ed5333b09be277909f59e1652f22212cc091b1359192"
+    },
+    "smoke-rest.diagnostics.jsonl": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "smoke-rest.json": {
+      "bytes": 171476,
+      "sha256": "ca005215cf603c4660d471f87ef4367ac95daf91b768a01f3e7d14de524fbad8"
+    },
+    "smoke-rest.log": {
+      "bytes": 6062,
+      "sha256": "2d4cc93a35a66cda069461f915c4dc6d4137064123b9a7cb1c19606cfa294f90"
+    },
+    "smoke-rest.receipt.json": {
+      "bytes": 2364,
+      "sha256": "915616a59a1cea533288897fbd8d479223db53fa34d86f720a41ee79c94d21bb"
+    },
+    "source-preflight.json": {
+      "bytes": 5013,
+      "sha256": "07b6695e16573c339e6b5fc7b4ecc3c84a20dae9cffde95c26f5972c70dfe965"
+    },
+    "stalled-processes.json": {
+      "bytes": 4085,
+      "sha256": "e77b3e52d000919cb3bf69bfeeab9a68a4b08a3cf76ddc933b358bd9021651bb"
+    },
+    "supervisor-final-focused.diagnostics.jsonl": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "supervisor-final-focused.log": {
+      "bytes": 363,
+      "sha256": "123074a4b0e97cce2ee41fef58949220e15cef67116b0d0dd374c31ce5378c94"
+    },
+    "supervisor-final-focused.receipt.json": {
+      "bytes": 2249,
+      "sha256": "c4004a945af2ede5191cebdc733a80805263a759c8943292f9f0f741ef4335dd"
+    },
+    "supervisor-final-linux.diagnostics.jsonl": {
+      "bytes": 835,
+      "sha256": "daec016ad17ce925c6f819eb351a3a89eac5c8a8c432477375880302513af88c"
+    },
+    "supervisor-final-linux.log": {
+      "bytes": 793,
+      "sha256": "5ac07b149bb32ff6330f9802e0f18fe247c197c42399d5134e53d0f1a0f0cd90"
+    },
+    "supervisor-final-linux.receipt.json": {
+      "bytes": 2464,
+      "sha256": "bdba78449355867319ff9f2ae1977d53566b712bff2fb17d5b37e19d796de37e"
+    },
+    "supervisor-final-macos.diagnostics.jsonl": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "supervisor-final-macos.log": {
+      "bytes": 287,
+      "sha256": "99a3c910b3fee29766c69eb28bbefe54d39e521854e1bffaf8acbac2ace2811e"
+    },
+    "supervisor-final-macos.receipt.json": {
+      "bytes": 2009,
+      "sha256": "3a829375ddf19bdd4d8cef2c1c9c9e508db0c61cdc97365b430e3f3e3bd232cf"
+    },
+    "supervisor-green-focused.diagnostics.jsonl": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "supervisor-green-focused.log": {
+      "bytes": 163,
+      "sha256": "4284c5c80989c717db521f457fa8e4766690d5ea2389be5325b2c41d1d8e048c"
+    },
+    "supervisor-green-focused.receipt.json": {
+      "bytes": 2008,
+      "sha256": "e20eca101cc769a9dcf0150cd71308be0b1000d96ed6a150c9d476be2694bc11"
+    },
+    "supervisor-green-linux.diagnostics.jsonl": {
+      "bytes": 824,
+      "sha256": "992c84335ed52ce999c80ac60fd3c97ba460274b65bb384b7b4aa76dcb647ec3"
+    },
+    "supervisor-green-linux.log": {
+      "bytes": 791,
+      "sha256": "4a4a9e25b55e64a3e349bd0b26af0da6386323892c15b91c4dd66ae9f744d229"
+    },
+    "supervisor-green-linux.receipt.json": {
+      "bytes": 2425,
+      "sha256": "0594082aba4eb0c72c5cc0bdd3da27df3f4024964dd37638897d3d3894cd1f50"
+    },
+    "supervisor-green-macos-heartbeat.diagnostics.jsonl": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "supervisor-green-macos-heartbeat.log": {
+      "bytes": 276,
+      "sha256": "3e0b710c892f71b12806186e14b3f10dbbe14b44aadddb55cc1e01d173d50579"
+    },
+    "supervisor-green-macos-heartbeat.receipt.json": {
+      "bytes": 2030,
+      "sha256": "f351d980f370092ff03b946a28a79d4a28cfea0744fc5b76704a67a30f8616ce"
+    },
+    "supervisor-green-macos.diagnostics.jsonl": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "supervisor-green-macos.log": {
+      "bytes": 274,
+      "sha256": "ee2e94cdb2d6630342f829ed323b57da03556bab5055812f3fc677ba8aa4be87"
+    },
+    "supervisor-green-macos.receipt.json": {
+      "bytes": 1973,
+      "sha256": "a0c2b2033e77b234922287647dd17acaaf4e49fb8cae4d73497fbc57cb956e2f"
+    },
+    "supervisor-linux-initial-failure.diagnostics.jsonl": {
+      "bytes": 811,
+      "sha256": "c7a4e4e5f3338912dac2a7b5e74ac24c675452a3fdf35fdac3213abd5e59a195"
+    },
+    "supervisor-linux-initial-failure.log": {
+      "bytes": 1396,
+      "sha256": "2dbe381b4b11b285b3b120bc4ce7bba4156924bf21386396a8f0f46dba30a538"
+    },
+    "supervisor-linux-initial-failure.receipt.json": {
+      "bytes": 2612,
+      "sha256": "399c6703372ee8a1513cb865e306eb795d0a55054058798a6db18c3bf3d75de7"
+    },
+    "supervisor-red.diagnostics.jsonl": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "supervisor-red.log": {
+      "bytes": 1038,
+      "sha256": "ec5991e762f1a2c5ea7b4a2b7a6d0d911b64db2b1ee13a711ce608a84701af97"
+    },
+    "supervisor-red.receipt.json": {
+      "bytes": 2095,
+      "sha256": "9a81f0fac27cf1ef3a9019764f1043e391379d2b2b8be24fd14925b77d5560dc"
+    },
+    "supervisor-unverified-red.diagnostics.jsonl": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "supervisor-unverified-red.log": {
+      "bytes": 862,
+      "sha256": "d69e7bc6834b6318530429a995aabe21f71fbde83ac95d7d3c913e2da3f021c9"
+    },
+    "supervisor-unverified-red.receipt.json": {
+      "bytes": 2300,
+      "sha256": "3bbdac42dfbbcee183b58b74f2cd852b173ac405a83735aee22b8ed2acb5e0f7"
+    },
+    "validate.py": {
+      "bytes": 4040,
+      "sha256": "6d22b86cdc495697a0b8514389e20872f87d63ea89b2f9db42cad9f87cdce37e"
+    },
+    "verify_reports.py": {
+      "bytes": 12388,
+      "sha256": "49aee1126506caaeaa60ef723a4f5a1140980b2e9969052bd45f0d000210c19a"
+    }
+  }
+}

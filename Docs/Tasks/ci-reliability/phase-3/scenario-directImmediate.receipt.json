@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "name": "scenario-directImmediate",
+  "stage": "phase3-scenario-directImmediate",
+  "operation": "focusedScenario",
+  "arguments": [
+    "/scratch/x86_64-unknown-linux-gnu/debug/DiscordKitLoadTests",
+    "command-timing",
+    "--case",
+    "synthetic.directImmediate",
+    "--requests",
+    "7",
+    "--concurrency",
+    "3",
+    "--warmup-requests",
+    "0",
+    "--delay-microseconds",
+    "0",
+    "--duration-seconds",
+    "3",
+    "--warmup-seconds",
+    "0",
+    "--profile",
+    "smoke",
+    "--seed",
+    "1",
+    "--output",
+    "/work/Docs/Tasks/ci-reliability/phase-3/scenario-directImmediate.json",
+    "--common-report",
+    "/work/Docs/Tasks/ci-reliability/phase-3/scenario-directImmediate-common.json"
+  ],
+  "start": "2026-11-12T13:03:36.013379+00:00",
+  "startMonotonic": 75722.47143181,
+  "deadlineMonotonic": 75812.47143181,
+  "executionLimitSeconds": 90,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "operation",
+  "paths": {
+    "output": "/work/Docs/Tasks/ci-reliability/phase-3/scenario-directImmediate.log",
+    "stdout": null,
+    "diagnostics": "/work/Docs/Tasks/ci-reliability/phase-3/scenario-directImmediate.diagnostics.jsonl",
+    "receipt": "/work/Docs/Tasks/ci-reliability/phase-3/scenario-directImmediate.receipt.json"
+  },
+  "identity": {
+    "executionID": "952d244e-5e8f-49df-8f91-5ada9cce4128",
+    "supervisorPID": 6656,
+    "host": "213b31596900",
+    "system": "Linux",
+    "repository": "/work"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 6662,
+  "group": 6662,
+  "cleanup": {
+    "status": "session-signalled",
+    "signals": [],
+    "groupSignals": [],
+    "parentReaped": true,
+    "session": 6662,
+    "allowanceSeconds": 8.0,
+    "discovery": {
+      "status": "available",
+      "truncated": false
+    },
+    "groups": [
+      6662
+    ],
+    "seconds": 0.079,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "boundary": "admitted Linux session; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "/work/Docs/Tasks/ci-reliability/phase-3/scenario-directImmediate.log",
+      "retainedBytes": 417,
+      "observedBytes": 417,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T13:03:36.322454+00:00",
+  "endMonotonic": 75722.780664012,
+  "elapsedSeconds": 0.309,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}

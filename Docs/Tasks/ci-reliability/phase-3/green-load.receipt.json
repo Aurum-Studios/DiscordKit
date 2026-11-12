@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "name": "green-load",
+  "stage": "phase3-green-load",
+  "operation": "wholeLoadPackage",
+  "arguments": [
+    "swift",
+    "test",
+    "--package-path",
+    "Tools/DiscordKitLoadTests",
+    "--scratch-path",
+    "/scratch",
+    "--build-system",
+    "native",
+    "--jobs",
+    "6",
+    "--force-resolved-versions",
+    "--disable-experimental-prebuilts",
+    "--explicit-target-dependency-import-check",
+    "error",
+    "--skip-build",
+    "--no-parallel"
+  ],
+  "start": "2026-11-12T13:02:33.316128+00:00",
+  "startMonotonic": 75659.774155096,
+  "deadlineMonotonic": 76259.774155096,
+  "executionLimitSeconds": 600,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "operation",
+  "paths": {
+    "output": "/work/Docs/Tasks/ci-reliability/phase-3/green-load.log",
+    "stdout": null,
+    "diagnostics": "/work/Docs/Tasks/ci-reliability/phase-3/green-load.diagnostics.jsonl",
+    "receipt": "/work/Docs/Tasks/ci-reliability/phase-3/green-load.receipt.json"
+  },
+  "identity": {
+    "executionID": "0109f6e4-123d-4ae8-abf8-0e3a89ba0cc1",
+    "supervisorPID": 6521,
+    "host": "213b31596900",
+    "system": "Linux",
+    "repository": "/work"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 6531,
+  "group": 6531,
+  "cleanup": {
+    "status": "session-signalled",
+    "signals": [],
+    "groupSignals": [],
+    "parentReaped": true,
+    "session": 6531,
+    "allowanceSeconds": 8.0,
+    "discovery": {
+      "status": "available",
+      "truncated": false
+    },
+    "groups": [
+      6531
+    ],
+    "seconds": 0.082,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "boundary": "admitted Linux session; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "/work/Docs/Tasks/ci-reliability/phase-3/green-load.log",
+      "retainedBytes": 588536,
+      "observedBytes": 588536,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T13:02:55.861829+00:00",
+  "endMonotonic": 75682.320040976,
+  "elapsedSeconds": 22.546,
+  "lastObservedTest": "run",
+  "readerThreads": 0
+}

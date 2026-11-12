@@ -1,0 +1,15 @@
+swift build --package-path Tools/DiscordKitLoadTests --scratch-path /scratch --build-system native --jobs 6 --force-resolved-versions --disable-experimental-prebuilts --explicit-target-dependency-import-check error --build-tests
+Building for debugging...
+[0/4] Write sources
+[1/4] Write swift-version-24593BA9C3E375BF.txt
+[3/7] Compiling DiscordKitLoadTestsTests SyntheticCommandTimingRunnerTests.swift
+[4/7] Emitting module DiscordKitLoadTestsTests
+[5/8] /scratch/x86_64-unknown-linux-gnu/debug/DiscordKitLoadTestsPackageDiscoveredTests.derived/all-discovered-tests.swift
+[6/9] Write sources
+[8/12] Emitting module DiscordKitLoadTestsPackageDiscoveredTests
+[9/12] Compiling DiscordKitLoadTestsPackageDiscoveredTests all-discovered-tests.swift
+[10/12] Compiling DiscordKitLoadTestsPackageDiscoveredTests DiscordKitLoadTestsTests.swift
+[11/13] Write Objects.LinkFileList
+[12/13] Linking DiscordKitLoadTestsPackageTests.xctest
+Build complete! (10.72s)
+warning: '--build-system native' has been deprecated and will be removed in a future release; please report an issue at https://github.com/swiftlang/swift-package-manager/issues if you are unable to adopt the default build system.

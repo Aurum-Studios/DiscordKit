@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "name": "supervisor-ci-helpers-green",
+  "stage": "phase-3-supervisor-regression",
+  "operation": "localHelperCheck",
+  "arguments": [
+    "/usr/bin/python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "Tools/ci",
+    "-p",
+    "test_*.py"
+  ],
+  "start": "2026-11-12T13:04:08.343907+00:00",
+  "startMonotonic": 75754.80193492,
+  "deadlineMonotonic": 76054.80193492,
+  "executionLimitSeconds": 300,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "operation",
+  "paths": {
+    "output": "/work/Docs/Tasks/ci-reliability/phase-3/supervisor-green-linux.log",
+    "stdout": null,
+    "diagnostics": "/work/Docs/Tasks/ci-reliability/phase-3/supervisor-green-linux.diagnostics.jsonl",
+    "receipt": "/work/Docs/Tasks/ci-reliability/phase-3/supervisor-green-linux.receipt.json"
+  },
+  "identity": {
+    "executionID": "2ebe78e6-83a0-442c-9f9a-b01e2180d38c",
+    "supervisorPID": 6778,
+    "host": "213b31596900",
+    "system": "Linux",
+    "repository": "/work"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 6784,
+  "group": 6784,
+  "cleanup": {
+    "status": "session-signalled",
+    "signals": [
+      "SIGTERM",
+      "SIGKILL"
+    ],
+    "groupSignals": [
+      {
+        "group": 6784,
+        "signal": "SIGTERM"
+      },
+      {
+        "group": 6784,
+        "signal": "SIGKILL"
+      }
+    ],
+    "parentReaped": true,
+    "session": 6784,
+    "allowanceSeconds": 8.0,
+    "discovery": {
+      "status": "available",
+      "truncated": false
+    },
+    "groups": [
+      6784
+    ],
+    "seconds": 0.09,
+    "groupState": "zombies-only",
+    "remainingProcesses": [
+      {
+        "pid": 6873,
+        "parent": 1,
+        "group": 6784,
+        "state": "Z",
+        "cpuPercent": 0.3,
+        "rssKiB": 0,
+        "executable": "python3",
+        "session": 6784
+      }
+    ],
+    "verification": "available",
+    "verificationTruncated": false,
+    "boundary": "admitted Linux session; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "/work/Docs/Tasks/ci-reliability/phase-3/supervisor-green-linux.log",
+      "retainedBytes": 791,
+      "observedBytes": 791,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T13:05:02.917217+00:00",
+  "endMonotonic": 75809.375425164,
+  "elapsedSeconds": 54.573,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}
