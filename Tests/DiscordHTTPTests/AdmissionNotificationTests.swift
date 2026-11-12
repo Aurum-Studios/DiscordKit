@@ -4,6 +4,7 @@
 // https://aurum-studios.com
 
 import DiscordTestSupport
+import DiscordTransport
 import Foundation
 import Synchronization
 import Testing
@@ -271,6 +272,38 @@ import Testing
         #expect(clock.pendingSleepCount == 0)
     }
 
+    /// A timer task may first run after the authority's retry instant has elapsed.
+    /// It must recheck admission immediately instead of parking until the queue deadline.
+    /// - Throws: Unexpected authority, clock or cancellation cleanup failure.
+    @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
+    @Test(.timeLimit(.minutes(1))) func elapsedRetryBeforeTimerStartupWakesImmediately() async throws {
+        let clock = AdmissionTimerStartupClock()
+        let store = AdmissionTimerStartupStore(clock: clock)
+        let coordinator = RateLimitCoordinator(clock: clock, store: store)
+        let request = RateLimitRequest(identity: .init(), route: "GET /late-timer", usesGlobalLimit: false)
+        let owner = try await coordinator.acquire(request)
+        try await coordinator.complete(owner, status: 429, headers: [], retryAfter: .milliseconds(125))
+        let pending = Task { try await coordinator.acquire(request) }
+        defer { pending.cancel() }
+        try await clock.sleepEntered.wait()
+        let firstDeadline = try #require(clock.sleepDeadlines.first)
+        #expect(firstDeadline.offset == .milliseconds(125))
+        if firstDeadline.offset != .milliseconds(125) {
+            // Keep the regression finite even when the broken timer chooses thirty seconds.
+            pending.cancel()
+            await #expect(throws: CancellationError.self) { _ = try await pending.value }
+        } else {
+            let token = try await pending.value
+            #expect(await store.attempts == 3)
+            try await coordinator.release(token, outcome: .notSent)
+        }
+        await coordinator.close()
+        #expect(clock.now.offset == .milliseconds(125))
+        #expect(clock.pendingSleepCount == 0)
+        let snapshot = await coordinator.snapshot()
+        #expect(snapshot.queuedCount == 0 && snapshot.activeCount == 0)
+    }
+
     /// A completion in another coordinator still requires and receives a finite
     /// authority retry wake; process-local notifications cannot represent that event.
     @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
@@ -398,4 +431,92 @@ private final class AdmissionFailingClock: Clock, Sendable {
 
     /// Makes the parked timer throw without advancing the clock or signaling admission.
     func failSleep() { failure.open() }
+}
+
+/// Advances only when the new timer task first observes time after an authority retry.
+/// The acquiring task retains the old instant, reproducing a delayed task start without wall-clock sleeps or polling.
+@available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
+private final class AdmissionTimerStartupClock: Clock, Sendable {
+    typealias Instant = ManualClock.Instant
+    private struct State {
+        var acquiringTask: Int?
+        var retry: Instant?
+        var advanced = false
+        var deadlines: [Instant] = []
+    }
+    private let state = Mutex(State())
+    private let clock = ManualClock()
+    let sleepEntered = TestBarrier()
+
+    /// Samples transient task identity without retaining an unsafe task handle.
+    private var currentTask: Int? { withUnsafeCurrentTask { $0?.hashValue } }
+    /// Gives the delayed timer its already elapsed retry instant on first observation.
+    var now: Instant {
+        state.withLock { state in
+            if let owner = state.acquiringTask, owner != currentTask, !state.advanced, let retry = state.retry {
+                state.advanced = true
+                try? clock.advance(by: clock.now.duration(to: retry))
+            }
+            return clock.now
+        }
+    }
+    /// Preserves the backing manual clock's resolution and sleeper ownership.
+    var minimumResolution: Duration { clock.minimumResolution }
+    /// Copies requested timer targets, including targets that are already due.
+    var sleepDeadlines: [Instant] { state.withLock { $0.deadlines } }
+    /// Reports retained manual-clock registrations after cleanup joins.
+    var pendingSleepCount: Int { clock.pendingSleepCount }
+
+    /// Arms one task boundary after the real authority refuses admission.
+    /// - Parameter retry: Actual retry instant returned by the in-process authority.
+    func arm(at retry: Instant) {
+        state.withLock { state in
+            guard state.acquiringTask == nil else { return }
+            state.acquiringTask = currentTask
+            state.retry = retry
+        }
+    }
+
+    /// Records the driver's selected target before honoring ordinary clock semantics.
+    /// - Parameters:
+    ///   - deadline: Selected retry or queue-expiry target.
+    ///   - tolerance: Optional clock tolerance passed through unchanged.
+    /// - Throws: Cancellation or the backing clock's bounded registration failure.
+    func sleep(until deadline: Instant, tolerance: Duration? = nil) async throws {
+        state.withLock { $0.deadlines.append(deadline) }
+        sleepEntered.open()
+        try await clock.sleep(until: deadline, tolerance: tolerance)
+    }
+}
+
+/// Forwards the real authority contract and arms only its first deferred reservation.
+@available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
+private actor AdmissionTimerStartupStore: RateLimitStore {
+    typealias Instant = ManualClock.Instant
+    private let store = InProcessRateLimitStore<Instant>()
+    private let clock: AdmissionTimerStartupClock
+    private(set) var attempts = 0
+
+    /// Shares the regression clock without altering production rate policy.
+    /// - Parameter clock: Task-boundary clock used by the coordinator.
+    init(clock: AdmissionTimerStartupClock) { self.clock = clock }
+    /// Preserves each real admission result and exposes the first retry's task boundary.
+    func reserve(_ request: RateLimitRequest, now: Instant) async throws -> RateLimitAdmission<Instant> {
+        attempts += 1
+        let result = try await store.reserve(request, now: now)
+        if case .retry(let retry) = result { clock.arm(at: retry) }
+        return result
+    }
+    /// Forwards response learning with unchanged scopes, metadata and observation time.
+    func complete(_ reservation: RateLimitReservation<Instant>, status: Int, headers: [HTTPHeader],
+                  retryAfter: Duration?, global: Bool, now: Instant) async throws {
+        try await store.complete(reservation, status: status, headers: headers,
+                                 retryAfter: retryAfter, global: global, now: now)
+    }
+    /// Forwards terminal ownership cleanup without refunding rate quota.
+    func release(_ reservation: RateLimitReservation<Instant>, outcome: RateLimitReleaseOutcome, now: Instant) async throws {
+        try await store.release(reservation, outcome: outcome, now: now)
+    }
+    /// Forwards aggregate ownership evidence for final cleanup assertions.
+    func snapshot() async -> SchedulingSnapshot { await store.snapshot() }
 }

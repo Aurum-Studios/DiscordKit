@@ -20,6 +20,15 @@ import re
 from release_check import local_file, read_json, require
 
 
+class APICompatibilityError(ValueError):
+    """Retain a complete comparison when semantic-version admission rejects it."""
+
+    def __init__(self, message, report):
+        """Attach the already validated source diff without weakening admission."""
+        super().__init__(message)
+        self.report = report
+
+
 def semantic_version(value):
     """Parse stable major.minor.patch versions; prerelease/build metadata is deliberately unsupported."""
     require(isinstance(value, str) and re.fullmatch(r"(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)", value), "Expected stable semantic version")
@@ -178,11 +187,20 @@ def compare(baseline, candidate, proposed):
     breaking = bool(changes["removed"] or changes["changed"] or changes["removedRelationships"] or changes["removedModules"] or required_additions)
     additive = any(changes.values())
     required = "major" if breaking else "minor" if additive else "none"
+    report = {"baselineVersion": baseline["version"], "candidateVersion": proposed, "requiredIncrement": required, "changes": changes}
     if breaking:
-        require(next_version[0] > previous[0] or (previous[0] == 0 and next_version[1] > previous[1]), "Breaking source API requires major version (minor before 1.0)")
+        if not (next_version[0] > previous[0] or (previous[0] == 0 and next_version[1] > previous[1])):
+            raise APICompatibilityError("Breaking source API requires major version (minor before 1.0)", report)
     elif additive:
-        require(next_version[:2] > previous[:2], "Additive source API requires minor version")
-    return {"baselineVersion": baseline["version"], "candidateVersion": proposed, "requiredIncrement": required, "changes": changes}
+        if next_version[:2] <= previous[:2]:
+            raise APICompatibilityError("Additive source API requires minor version", report)
+    return report
+
+
+def write_comparison(path, report):
+    """Retain one comparison report even when its generated output directory is new."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n")
 
 
 def main():
@@ -193,7 +211,7 @@ def main():
     parser.add_argument("--symbolgraphs", type=Path)
     parser.add_argument("--authoring-package", help="Snapshot one separate package from the root release policy")
     parser.add_argument("--version", required=True)
-    parser.add_argument("--output", type=Path)
+    parser.add_argument("--output", type=Path, help="Snapshot destination or optional comparison report, including rejected changes")
     parser.add_argument("--baseline", type=Path)
     parser.add_argument("--candidate", type=Path)
     args = parser.parse_args()
@@ -206,8 +224,17 @@ def main():
             print(json.dumps({"modules": len(result["modules"]), "symbols": sum(len(module["symbols"]) for module in result["modules"].values()), "version": args.version}, sort_keys=True))
         else:
             require(args.baseline and args.candidate, "check requires --baseline and --candidate")
-            print(json.dumps(compare(read_json(args.baseline), read_json(args.candidate), args.version), sort_keys=True))
+            result = compare(read_json(args.baseline), read_json(args.candidate), args.version)
+            if args.output:
+                write_comparison(args.output, {"status": "passed", **result})
+            print(json.dumps(result, sort_keys=True))
     except (ValueError, KeyError, TypeError, OSError) as error:
+        if args.command == "check" and args.output:
+            report = {"status": "failed", **getattr(error, "report", {}), "error": str(error)}
+            try:
+                write_comparison(args.output, report)
+            except OSError as report_error:
+                parser.exit(1, f"API audit failed: {error}\nUnable to write comparison report: {report_error}\n")
         parser.exit(1, f"API audit failed: {error}\n")
 
 

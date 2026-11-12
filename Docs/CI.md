@@ -276,12 +276,25 @@ The `MacOS-26-5` group selects an arm64 host; the initial baseline is scoped to
 arm64 macOS 13 module availability. If a runner architecture or platform scope
 changes, the comparison must fail and receive review rather than resetting the
 baseline silently. Compiler/SDK changes can also produce conservative differences.
-The committed baselines were emitted locally with Apple Swift 6.4;
-hosted CI requests Swift 6.4.1. A workflow definition does not demonstrate that
-these toolchains emit identical signatures. Review actual same-version comparison
-results before accepting hosted compatibility; do not regenerate a baseline to
-hide compiler-driven differences.
-The separate macOS public API job emits public symbol graphs, compares the named platform API baseline,
+The runtime and macro baselines were emitted locally with Apple Swift 6.4;
+hosted CI requests Swift 6.4.1. The extensions 0.15.0 baseline has six reviewed
+fingerprints updated from the run-bound Swift 6.4.1 graphs in
+[CI run 43140630559](https://github.com/Aurum-Studios/DiscordKit/actions/runs/43140630559).
+That compiler prints inferred `nonisolated(nonsending)` on three closure properties
+and two initializers. It omits redundant `@escaping` in two initializer parameter
+signatures and resolves
+`Self` to `ExtensionArguments` in a static property's return type. All 86 symbols
+and all relationships are retained. This is a reviewed compiler representation
+update, not an API version increment or a compatibility qualification for other
+toolchains. Isolation, parameter, availability and relationship changes remain
+strictly fingerprinted; do not normalize them away or regenerate baselines to
+hide unreviewed differences.
+
+Every API comparison writes a JSON report containing its diff and admission
+result, including semantic-version rejections. The job uploads available candidate
+snapshots and reports as `api-diagnostics-<sha>-<run>-<attempt>` even after failure,
+so a rejected comparison remains inspectable without rebuilding the compiler graph.
+The separate macOS public API job uses restored public symbol graphs, compares the named platform API baseline,
 and converts every owned public library's DocC archive with warnings as errors,
 diagnostic analysis and experimental coverage. Each module receives its own primary
 and extension graphs. Every product has authored guides and curated individual

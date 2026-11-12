@@ -6,10 +6,14 @@
 """Regression tests for scoped symbol-graph extraction and conservative source semver."""
 
 import copy
+from contextlib import redirect_stderr, redirect_stdout
+import io
 import json
 from pathlib import Path
+import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 import api_baseline as api
 
@@ -69,6 +73,22 @@ class APIBaselineTests(unittest.TestCase):
         self.assertEqual(api.fingerprint(self.symbol), before)
         self.symbol["accessLevel"] = "open"
         self.assertNotEqual(api.fingerprint(self.symbol), before)
+
+    def test_async_isolation_remains_source_significant(self):
+        """A real isolation change retains distinct hashes and fails same-version admission."""
+        self.symbol["declarationFragments"] = [
+            {"kind": "keyword", "spelling": "nonisolated(nonsending)"},
+            {"kind": "text", "spelling": " () async -> Void"},
+        ]
+        self.write_graph()
+        baseline = api.snapshot(self.directory, {"Owned"}, "0.15.0")
+        self.symbol["declarationFragments"][0]["spelling"] = "nonisolated"
+        self.write_graph()
+        candidate = api.snapshot(self.directory, {"Owned"}, "0.15.0")
+        with self.assertRaises(api.APICompatibilityError) as rejected:
+            api.compare(baseline, candidate, "0.15.0")
+        self.assertEqual(rejected.exception.report["requiredIncrement"], "major")
+        self.assertEqual(rejected.exception.report["changes"]["changed"], ["Owned:s:Owned.type"])
 
     def test_compact_snapshot_roundtrip_is_deterministic(self):
         """Line-oriented normalized JSON roundtrips losslessly and writes identical bytes twice."""
@@ -144,6 +164,47 @@ class APIBaselineTests(unittest.TestCase):
             api.compare(self.baseline, candidate, "0.14.1")
         candidate["version"] = "0.15.0"
         self.assertEqual(api.compare(self.baseline, candidate, "0.15.0")["requiredIncrement"], "major")
+
+    def test_cli_comparison_report_preserves_rejected_diff_and_failure_exit(self):
+        """CI can retain exact incompatibilities while semver admission still fails closed."""
+        baseline = self.directory / "baseline.json"
+        candidate_path = self.directory / "candidate.json"
+        api.write_snapshot(baseline, self.baseline)
+        for mutation in ("unchanged", "changed", "added", "scope"):
+            with self.subTest(mutation=mutation):
+                output = self.directory / mutation / "reports" / "comparison.json"
+                candidate = self.candidate("1.2.0")
+                symbols = candidate["modules"]["Owned"]["symbols"]
+                if mutation == "changed":
+                    symbols["s:Owned.type"]["signatureSHA256"] = "0" * 64
+                elif mutation == "added":
+                    symbols["s:Owned.new"] = copy.deepcopy(symbols["s:Owned.type"])
+                elif mutation == "scope":
+                    candidate["platform"]["architecture"] = "x86_64"
+                api.write_snapshot(candidate_path, candidate)
+                arguments = ["api_baseline.py", "check", "--baseline", str(baseline),
+                             "--candidate", str(candidate_path), "--version", "1.2.0", "--output", str(output)]
+                with patch.object(sys, "argv", arguments), redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
+                    if mutation == "unchanged":
+                        api.main()
+                    else:
+                        with self.assertRaises(SystemExit) as rejected:
+                            api.main()
+                        self.assertEqual(rejected.exception.code, 1)
+                report = json.loads(output.read_text())
+                self.assertEqual(report["status"], "passed" if mutation == "unchanged" else "failed")
+                if mutation == "scope":
+                    self.assertIn("platform scopes", report["error"])
+                    self.assertNotIn("changes", report)
+                else:
+                    self.assertEqual(report["baselineVersion"], "1.2.0")
+                    self.assertEqual(report["candidateVersion"], "1.2.0")
+                    required = {"unchanged": "none", "changed": "major", "added": "minor"}[mutation]
+                    self.assertEqual(report["requiredIncrement"], required)
+                    if mutation != "unchanged":
+                        expected = "Owned:s:Owned.type" if mutation == "changed" else "Owned:s:Owned.new"
+                        self.assertEqual(report["changes"][mutation], [expected])
+                        self.assertIn("requires", report["error"])
 
     def test_scope_mismatch_decreasing_version_and_malformed_snapshot_fail(self):
         """Platform scope, malformed hashes and version drift reject the check before compatibility claims."""

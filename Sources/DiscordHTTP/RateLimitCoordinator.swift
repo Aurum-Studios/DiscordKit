@@ -411,10 +411,13 @@ public actor RateLimitCoordinator<C: Clock> where C.Duration == Duration {
     /// Finds the next useful clock wake among parked queue and authority deadlines.
     /// Locally held slots need only completion notifications. An external store's
     /// retry instant remains authoritative even after an unrelated local release.
+    /// A retry can become eligible before the timer task first runs. Such a parked
+    /// head needs an immediate wake. Locally held capacity still waits for completion.
     /// - Returns: Nearest necessary wake, or nil when no parked caller needs a timer.
     private func nextTimerDeadline() -> C.Instant? {
         guard !closed && !unavailable else { return nil }
         let now = clock.now
+        if let head = eligibleHead(at: now), waiters[head]?.continuation != nil { return now }
         var deadline: C.Instant?
         for waiter in waiters.values where waiter.continuation != nil {
             let wake = waiter.blockedUntil > now ? min(waiter.deadline, waiter.blockedUntil) : waiter.deadline
