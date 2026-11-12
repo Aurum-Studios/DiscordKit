@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "capturedAtUTC": "2026-11-12T13:26:22.730179+00:00",
+  "implementationCommit": "69a21b325c4eaa6181eb31dcc7e78ab083ac6411",
+  "base": "07cdea35d6f9ad384bfb42a3005940ca69e76922",
+  "branch": "ci/phase-3-synthetic-command",
+  "status": "committed-local-acceptance-native-pending",
+  "testedInputCount": 19,
+  "manifestArtifactCount": 168,
+  "testedInputSHA256": {
+    "Docs/Tasks/ci-reliability/phase-3/validate.py": "6d22b86cdc495697a0b8514389e20872f87d63ea89b2f9db42cad9f87cdce37e",
+    "Docs/Tasks/ci-reliability/phase-3/verify_reports.py": "49aee1126506caaeaa60ef723a4f5a1140980b2e9969052bd45f0d000210c19a",
+    "Package.resolved": "dd6c86faf979e3b991553d84ae0b378105629a3a010d71f842ed84dda9bf263c",
+    "Package.swift": "d6822bdd8a38ecf262d0f22625f8c57699c4f720f77c8aa4f531d9d895f6e23e",
+    "Sources/DiscordCommands/CommandRouter.swift": "fd7d9b7bff67a8896b1e1e73c679041570c4eb3d950d44d23c602def2d832dc5",
+    "Sources/DiscordInteractions/InteractionContext.swift": "4b8e329f3ea327180618af1d4d98c6f6a92843ac752bbdc35b9f4093acebc18a",
+    "Sources/DiscordInteractions/InteractionOperationFailure.swift": "986802ddcd622b4fb40568afbe2f8e1fe32f8a6ccf759f853e7cdf2a63570541",
+    "Sources/DiscordInteractions/InteractionResponder.swift": "496945dfe5f45b39e7252d3fb1797e700859b106b0cb27ae9ce76780ca60e788",
+    "Tools/DiscordBenchmarkSupport/Sources/DiscordBenchmarkSupport/RunStatistics.swift": "029865fc555d654c18a4f44bda87e32c96fbc532edf74bbcffdedcf9e8a9315b",
+    "Tools/DiscordKitLoadTests/Package.resolved": "447bf3ccefdc65c7cbe44f1c8b610f5616e971394c8e971956a3f1e9159cdb52",
+    "Tools/DiscordKitLoadTests/Package.swift": "85413795644edcb637bc48955a800cb240264887970622d4e7aec19068089c7c",
+    "Tools/DiscordKitLoadTests/Sources/DiscordKitLoadTests/SyntheticCommandTimingRunner.swift": "8716b76baece4f5843c16c11e1e5bf444a526d3a6d761e1de2454e419dfe6bb5",
+    "Tools/DiscordKitLoadTests/Sources/DiscordKitLoadTests/main.swift": "5453a9cacc05803440079abe23e813302e67f9a08933522264480cddd81ec3df",
+    "Tools/DiscordKitLoadTests/Tests/DiscordKitLoadTestsTests/SyntheticCommandTimingRunnerTests.swift": "1340ab172f818f2aac15b8f86d490cb1c33158b6e94e57eaf9ed62d84dd917ba",
+    "Tools/DiscordKitLoadTests/scripts/local_peer.py": "455490eaa14245035b0f72cf9398a4d650e78430e156e07c5467651d9cecdefa",
+    "Tools/DiscordKitLoadTests/scripts/test_local_peer.py": "f8dfc002c7aff18e37adf41be4932862d9ec849f986ae604d98f327d93039766",
+    "Tools/ci/linux_ci.py": "af1d42dcda3f60127346fb571343bf2060be06d21818d61e6b81084985a6b33a",
+    "Tools/ci/native_jobs.py": "389d00c4d4906a60113c065df83fe0da677ebc1a9e5cc8319b778347f54457c2",
+    "Tools/ci/test_linux_ci.py": "a58485660f4e514075a5177673bb7908bdf39dab01f7fd5e62864d6588462354"
+  },
+  "verification": {
+    "testedInputsAgainstCommit": "passed",
+    "artifactBytesAndHashesAgainstCommit": "passed",
+    "worktreeInputsUnchanged": "passed",
+    "validationIndexSHA256": "b9cc4a23a820deed77ee84f079e3ce9782814c929ee901548f29058d2dd52fd7"
+  },
+  "qualification": {
+    "os": "Ubuntu 24.04.5",
+    "compiler": "Swift 6.4.1 RELEASE",
+    "target": "x86_64-unknown-linux-gnu",
+    "execution": "Rosetta on ARM64 Ubuntu 24.04.4 VM",
+    "configuration": "debug",
+    "nativeX64Accepted": false,
+    "releaseSmokesAccepted": false,
+    "hostedAccepted": false
+  },
+  "paidExecution": {
+    "jobs": 0,
+    "minutes": 0,
+    "attempts": 0,
+    "spendUSD": "0.00"
+  },
+  "remainingGate": "NATIVE-ACCEPTANCE.md",
+  "followupScope": "Documentation-only ledger and actual commit receipt; no executable/test or implementation artifact changes."
+}

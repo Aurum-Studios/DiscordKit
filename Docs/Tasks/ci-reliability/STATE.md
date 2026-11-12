@@ -24,7 +24,7 @@ is claimed. See [BOOTSTRAP.md](BOOTSTRAP.md) for the zero-paid execution sheet.
 | 0 — Baseline and initial limits | Complete; local preparation only | `5808ce32d867622ff6952d0f2057768a8a257f14` | [212 helper tests](baseline/validation.json), [retained capture](baseline/CAPTURE.md), [usage baseline](baseline/COST.md), [zero-paid sheet](BOOTSTRAP.md); hash/link/diff checks passed |
 | 1 — Process supervision | Complete; local helper acceptance only | `1bc5de45a6dbeef1ab31bd7f6fbbe85b69771600` | [231 helper tests](phase-1/validation.json), [nine retained fault specimens](phase-1/faults/results.json), [independent review](phase-1/review/results.json), [implementation and limits](phase-1/IMPLEMENTATION.md) |
 | 2 — Event-hub accounting | Complete; local macOS Swift acceptance | `4dbb085521f1977dc40ea5b8818edb9d61cd2f9f` | [Red/green, 23 load + 21 runtime tests, four CLI checks](phase-2/validation.json), [independent review](phase-2/review.json), [implementation and limits](phase-2/IMPLEMENTATION.md) |
-| 3 — Linux hang repair | Implemented and locally tested; native x64 acceptance pending | Pending commit receipt | [Stack-supported peer repair, red/green and whole-package checks](phase-3/IMPLEMENTATION.md); [native gate](phase-3/NATIVE-ACCEPTANCE.md) remains open |
+| 3 — Linux hang repair | Implemented and locally tested; native x64 acceptance pending | `69a21b325c4eaa6181eb31dcc7e78ab083ac6411` | [Stack-supported peer repair, red/green and whole-package checks](phase-3/IMPLEMENTATION.md); [native gate](phase-3/NATIVE-ACCEPTANCE.md) remains open |
 | 4 — Compatibility receipts | Not started | Pending | Pending |
 | 5 — Transfer and partial reruns | Not started | Pending | Pending local and hosted proof |
 | 6 — Preflight and canaries | Not started | Pending | Pending |
@@ -87,7 +87,10 @@ admitted session and fails closed on incomplete cleanup verification.
 237 passing CI helpers, 161 whole-package Swift tests, direct/DSL parity and both
 existing debug smokes. [Review](phase-3/review.json), final input/artifact hashes
 and owned container cleanup accompany the result. The original planning edits and
-all completed phase worktrees are preserved.
+all completed phase worktrees are preserved. Implementation commit
+`69a21b325c4eaa6181eb31dcc7e78ab083ac6411` contains the 19 verified tested inputs
+and 168 retained manifest artifacts. The [commit receipt](phase-3/commit-receipt.json)
+records checks against actual Git blobs; this follow-up changes documentation only.
 
 The Ubuntu 24.04 x64 Swift 6.4.1 execution used Rosetta on an ARM64 VM. It is
 **emulated exploratory/local acceptance**, not native x64 or hosted qualification.

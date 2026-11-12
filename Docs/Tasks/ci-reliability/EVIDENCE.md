@@ -90,8 +90,8 @@ Required final evidence inventory:
 
 No implementation, native verification, push, dispatch, billing change or
 publication was performed while authoring the original plan. Phase 0 preparation
-and Phase 1 local helper acceptance are recorded below; Phases 2 through 11
-remain incomplete.
+and Phase 1 local helper acceptance are recorded below. At that checkpoint,
+Phases 2 through 11 remained incomplete; later entries record subsequent work.
 
 ## Phase 0 preparation — November 12, 2026 UTC
 
@@ -314,3 +314,9 @@ remain incomplete.
   Paid jobs/minutes/attempts/spend remain **0 / 0 / 0 / USD 0.00**. No push or dispatch.
   [Native acceptance](phase-3/NATIVE-ACCEPTANCE.md) remains required; Phase 3 is not
   marked complete in [STATE.md](STATE.md).
+
+- Implementation commit `69a21b325c4eaa6181eb31dcc7e78ab083ac6411` contains all 19 verified
+  tested inputs and 168 retained manifest artifacts. Each hash and artifact size was
+  checked against the actual Git blob before this documentation-only follow-up.
+  The [commit receipt](phase-3/commit-receipt.json) records that verification; the
+  native acceptance gate remains open.
