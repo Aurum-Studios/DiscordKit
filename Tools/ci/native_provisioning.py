@@ -185,6 +185,7 @@ def image_facts(target, query):
         for name, value in facts["xcode"].items():
             if not isinstance(value, str) or not value.strip():
                 raise ValueError(f"required provisioning SDK fact is unavailable: {name}")
+            facts["xcode"][name] = value.strip()
         facts["xcode"]["sdkRootOverride"] = (required(os.environ["SDKROOT"], "SDKROOT")
                                               if "SDKROOT" in os.environ else None)
         facts["xcode"]["developerDirectoryOverride"] = (required(os.environ["DEVELOPER_DIR"], "DEVELOPER_DIR")

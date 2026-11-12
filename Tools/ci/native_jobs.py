@@ -11,10 +11,11 @@ Producer and consumer execution records are separate. Earlier same-run producers
 require a verified immutable index. Tests use --skip-build and exact inventories.
 """
 
-from contextlib import contextmanager, suppress
+from contextlib import contextmanager, redirect_stdout, suppress
 import argparse
 import base64
 import hashlib
+import io
 import json
 import math
 import os
@@ -142,7 +143,7 @@ def dump_targets(repository, package=".", *, output=None, report=None, deadline=
 
 
 def metadata_output(arguments, repository, *, output=None, report=None, deadline=None, binary=False):
-    """Supervise metadata children too, preserving binary Git filenames through text forwarding."""
+    """Supervise exact metadata; retain encoded filename bytes outside the console."""
     if output is None:
         with tempfile.TemporaryDirectory(prefix="discordkit-identity-") as directory:
             return metadata_output(arguments, repository, output=Path(directory), deadline=deadline, binary=binary)
@@ -157,8 +158,28 @@ def metadata_output(arguments, repository, *, output=None, report=None, deadline
                   "raise SystemExit(result.returncode)")
         argv = (sys.executable, "-c", script, *argv)
     command = linux_ci.Command("identity-query", argv, 30, operation="metadata")
-    log = execute_commands([command], repository, output, report, capture_stdout=True, deadline=deadline)[0]
-    return base64.b64decode(log.read_bytes(), validate=True) if binary else log.read_text()
+    if not binary:
+        log = execute_commands([command], repository, output, report, capture_stdout=True, deadline=deadline)[0]
+        return log.read_text()
+    try:
+        # Large newline-free base64 records delayed hosted log processing. The
+        # supervisor still saves complete stdout, stderr, deadlines and receipts;
+        # only its console copy of this binary transport is suppressed.
+        with redirect_stdout(io.StringIO()):
+            log = execute_commands([command], repository, output, report, capture_stdout=True, deadline=deadline)[0]
+        return base64.b64decode(log.read_bytes(), validate=True)
+    except BaseException:
+        diagnostic = output / report["commands"][-1]["log"] if report.get("commands") else None
+        detail = ""
+        if diagnostic is not None:
+            with suppress(OSError):
+                with diagnostic.open("rb") as stream:
+                    stream.seek(0, os.SEEK_END)
+                    stream.seek(max(0, stream.tell() - 4096))
+                    detail = stream.read(4096).decode("utf8", errors="replace")
+        with suppress(OSError, ValueError):
+            print(f"Binary metadata query failed; complete diagnostics retained in {output}.\n{detail}", file=sys.stderr)
+        raise
 
 
 def active_targets(targets, native_platform):

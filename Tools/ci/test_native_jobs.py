@@ -5,7 +5,7 @@
 
 """Protect independent native scheduling and the compiled-artifact trust boundary."""
 
-from contextlib import redirect_stdout
+from contextlib import redirect_stderr, redirect_stdout
 import copy
 import hashlib
 import io
@@ -1014,6 +1014,56 @@ class NativeArtifactTests(unittest.TestCase):
 
 class NativeSourceTests(unittest.TestCase):
     """Use real Git metadata to distinguish HEAD identity from dirty compiled source bytes."""
+
+    def test_binary_metadata_preserves_complete_bytes_and_receipts_without_console_inventory(self):
+        payload = b"filename-\xff\n\0" * 20000
+        script = "import sys; sys.stdout.buffer.write(b'filename-\\xff\\n\\0' * 20000)"
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory)
+            output = repository / "metadata"
+            report = {"status": "running", "commands": []}
+            with redirect_stdout(io.StringIO()) as console:
+                actual = jobs.metadata_output([sys.executable, "-c", script], repository,
+                                              output=output, report=report, binary=True)
+            self.assertEqual(actual, payload)
+            self.assertEqual(console.getvalue(), "")
+            record = report["commands"][0]
+            self.assertEqual((output / record["stdoutLog"]).read_bytes(), jobs.base64.b64encode(payload))
+            self.assertTrue((output / record["log"]).is_file())
+            receipt = json.loads((output / record["executionReceipt"]).read_text())
+            self.assertEqual(receipt["status"], "passed")
+            self.assertEqual(receipt["exitCode"], 0)
+            self.assertFalse(any(item["truncated"] for item in receipt["outputs"]))
+
+    def test_binary_metadata_failure_keeps_full_logs_and_bounded_actionable_console_diagnostics(self):
+        script = ("import sys; sys.stdout.buffer.write(b'partial\\0inventory'); "
+                  "sys.stderr.write('x' * 10000 + '\\nfatal: metadata fixture could not read source\\n'); "
+                  "raise SystemExit(7)")
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory)
+            output = repository / "metadata"
+            report = {"status": "running", "commands": []}
+            with redirect_stdout(io.StringIO()) as console, redirect_stderr(io.StringIO()) as errors, \
+                    self.assertRaises(subprocess.CalledProcessError) as raised:
+                jobs.metadata_output([sys.executable, "-c", script], repository,
+                                     output=output, report=report, binary=True)
+            self.assertEqual(raised.exception.returncode, 7)
+            self.assertEqual(console.getvalue(), "")
+            self.assertIn("fatal: metadata fixture could not read source", errors.getvalue())
+            self.assertLess(len(errors.getvalue()), 4600)
+            record = report["commands"][0]
+            self.assertEqual(record["status"], "failed")
+            self.assertEqual((output / record["stdoutLog"]).read_bytes(), jobs.base64.b64encode(b"partial\0inventory"))
+            retained = (output / record["log"]).read_text()
+            self.assertGreater(len(retained), 10000)
+            self.assertIn("fatal: metadata fixture could not read source", retained)
+            self.assertEqual(json.loads((output / record["executionReceipt"]).read_text())["exitCode"], 7)
+
+    def test_text_metadata_still_forwards_human_readable_output(self):
+        with tempfile.TemporaryDirectory() as directory, redirect_stdout(io.StringIO()) as console:
+            result = jobs.metadata_output([sys.executable, "-c", "print('visible metadata')"], Path(directory))
+        self.assertEqual(result, "visible metadata\n")
+        self.assertIn("visible metadata\n", console.getvalue())
 
     def test_dirty_tracked_source_changes_identity_even_when_commit_stays_equal(self):
         """Artifact reuse cannot trust only the unchanged commit name of a dirty checkout."""

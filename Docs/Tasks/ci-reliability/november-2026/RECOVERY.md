@@ -71,3 +71,32 @@ tooling and benchmark helper checks. Full run `43269359753` and push preflight
 The next repaired push retains automatic preflight, followed by an explicitly
 dispatched full publishing run under the same recovery request and unchanged
 budget bounds. These preceding attempts started no paid native jobs.
+
+## macOS provisioning receipt normalization
+
+At source `3a462d7c7a3cebf5138e589274d3d83500cb5d71`, push preflight
+`43270058777` completed successfully and full run `43270087675` passed every
+shared helper gate. The Linux platform/compiler/runtime probe and its artifact
+retention passed. The macOS toolchain installation passed, but the subsequent
+platform check rejected its provisioning receipt as belonging to another image
+or SDK. The failed full run was cancelled before native compilation.
+
+Both observations described the same SDK. Provisioning's command wrapper strips
+stdout, while the probe's wrapper returns newline-terminated stdout. The common
+SDK collector validated but retained those trailing newlines in five Xcode/SDK
+fields, producing a different exact receipt and cache key. The collector now
+strips the command-output boundaries consistently. It preserves multiline Xcode
+text and all meaningful image, SDK, compiler, policy, signer and path checks.
+New macOS receipt integration regressions reproduce the old failure using LF
+and CRLF output; changes to each of the five SDK/Xcode facts still reject.
+
+The encoded Git filename inventory is now quiet in native metadata collection
+as well as admission. Exact captured bytes, logs, receipts and source hashes
+remain available to their owners; failed metadata queries retain bounded console
+diagnostics. Ordinary text metadata is still visible. This avoids repeating the
+large console record in native planning and consumers.
+
+The next push runs normal preflight and a new explicit full publishing dispatch
+under the same recovery request. The signed compiler download and all native
+compatibility checks remain enforced. Successful preflight and a Linux probe
+still do not certify the entire native toolchain or publish documentation.

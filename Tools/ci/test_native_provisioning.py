@@ -428,6 +428,28 @@ class ProvisioningTests(unittest.TestCase):
         self.assertEqual(facts["xcode"]["sdkRootOverride"], "/SDKs/custom.sdk")
         self.assertEqual(facts["xcode"]["developerDirectoryOverride"], "/Xcode/custom")
 
+    def test_macos_sdk_identity_normalizes_command_terminators_before_keying(self):
+        outputs = {("xcode-select", "-p"): "/Applications/Xcode.app/Contents/Developer",
+                   ("xcodebuild", "-version"): "Xcode 26.6\nBuild version 17F113",
+                   ("xcrun", "--sdk", "macosx", "--show-sdk-path"): "/SDKs/MacOSX26.5.sdk",
+                   ("xcrun", "--sdk", "macosx", "--show-sdk-version"): "26.5",
+                   ("xcrun", "--sdk", "macosx", "--show-sdk-build-version"): "25F70"}
+        with patch.dict(os.environ, {"ImageOS": "macos26", "ImageVersion": "20261102.0473.1"}, clear=True):
+            clean = provisioning.image_facts("macos-arm64", lambda command: outputs[tuple(command)])
+            for ending in ("\n", "\r\n"):
+                raw = provisioning.image_facts("macos-arm64", lambda command: outputs[tuple(command)] + ending)
+                with self.subTest(ending=ending):
+                    self.assertEqual(raw, clean)
+                    self.assertEqual(provisioning.compatibility_key(self.policy, "macos-arm64", raw),
+                                     provisioning.compatibility_key(self.policy, "macos-arm64", clean))
+        self.assertEqual(clean["xcode"]["version"], "Xcode 26.6\nBuild version 17F113")
+
+    def test_macos_sdk_identity_rejects_blank_and_nontext_observations(self):
+        with patch.dict(os.environ, {"ImageOS": "macos26", "ImageVersion": "20261102.0473.1"}, clear=True):
+            for value in ("", " \n", None, 26.5):
+                with self.subTest(value=value), self.assertRaisesRegex(ValueError, "SDK fact"):
+                    provisioning.image_facts("macos-arm64", lambda command: value)
+
 
 if __name__ == "__main__":
     unittest.main()

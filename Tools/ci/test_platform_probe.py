@@ -336,6 +336,59 @@ class VerifiedProvisioningFactsTests(unittest.TestCase):
         self.assertFalse(cold['informational']['provisioning']['cacheHit'])
         self.assertTrue(hit['informational']['provisioning']['cacheHit'])
 
+    def macos_facts(self, path, *, ending="", changed=None):
+        """Compare a stripped installer receipt against the raw metadata collector."""
+        import native_provisioning as provisioning
+        policy = provisioning.load_policy()
+        distribution = policy['platforms']['macos-arm64']
+        environment = {'ImageOS': 'macos26', 'ImageVersion': '20261112.1'}
+        baseline = BuildCompatibilityFactsTests().facts('macos-arm64', environment=environment)['exact']
+        image = {'system': 'Darwin', 'architecture': 'arm64', 'release': baseline['release'],
+                 'version': baseline['version'], 'imageOS': environment['ImageOS'],
+                 'imageVersion': environment['ImageVersion'], 'xcode': baseline['xcode']}
+        record = self.fixture(path)
+        record.update(platform='macos-arm64', image=image,
+                      distribution={'url': distribution['distributionURL'], 'sha256': distribution['distributionSHA256']},
+                      verification={'method': distribution['signature'], 'signatureVerified': True,
+                                    'sha256': distribution['distributionSHA256'], 'signer': distribution['signer']},
+                      cache={'hit': False, 'key': provisioning.compatibility_key(policy, 'macos-arm64', image)},
+                      binPath=str(Path.home() / 'Library/Developer/Toolchains' /
+                                  distribution['toolchainDirectory'] / 'usr/bin'),
+                      swiftVersion=baseline['swiftVersion'], targetInfo=baseline['swiftTargetInfo'])
+        path.write_text(json.dumps(record))
+        environment['DISCORDKIT_PROVISIONING_RECEIPT'] = str(path)
+        queries = {('xcode-select', '-p'): 'developerDirectory',
+                   ('xcodebuild', '-version'): 'version',
+                   ('xcrun', '--sdk', 'macosx', '--show-sdk-path'): 'sdkPath',
+                   ('xcrun', '--sdk', 'macosx', '--show-sdk-version'): 'sdkVersion',
+                   ('xcrun', '--sdk', 'macosx', '--show-sdk-build-version'): 'sdkBuildVersion'}
+        outputs = {query: baseline['xcode'][field] + ending for query, field in queries.items()}
+        outputs.update(changed or {})
+        with patch.object(platform_probe.shutil, 'which', side_effect=lambda name: record['binPath'] + '/' + name):
+            return BuildCompatibilityFactsTests().facts('macos-arm64', environment=environment, overrides=outputs)
+
+    def test_macos_verified_receipt_accepts_raw_stdout_terminators(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / 'provisioning.json'
+            clean = self.macos_facts(path)
+            for ending in ('\n', '\r\n'):
+                with self.subTest(ending=ending):
+                    raw = self.macos_facts(path, ending=ending)
+                    self.assertEqual(raw, clean)
+            self.assertIn('provisioning', clean['informational'])
+
+    def test_macos_verified_receipt_rejects_changed_sdk_or_xcode(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / 'provisioning.json'
+            changes = {('xcrun', '--sdk', 'macosx', '--show-sdk-path'): '/SDKs/different.sdk\n',
+                       ('xcrun', '--sdk', 'macosx', '--show-sdk-version'): '27.0\n',
+                       ('xcrun', '--sdk', 'macosx', '--show-sdk-build-version'): 'different-build\n',
+                       ('xcode-select', '-p'): '/Applications/DifferentXcode.app/Contents/Developer\n',
+                       ('xcodebuild', '-version'): 'Xcode 27.0\nBuild version 18A1\n'}
+            for query, value in changes.items():
+                with self.subTest(query=query), self.assertRaisesRegex(ValueError, 'another image or SDK'):
+                    self.macos_facts(path, ending='\n', changed={query: value})
+
     def test_failed_unsigned_stale_wrong_image_and_shadowed_receipts_fail(self):
         mutations = (lambda r: r.update(status='failed'),
                      lambda r: r.update(platform='macos-arm64'),

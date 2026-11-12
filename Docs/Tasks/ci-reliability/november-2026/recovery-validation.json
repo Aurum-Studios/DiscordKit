@@ -81,7 +81,12 @@
     "Tools/ci/admission.v1.json": "546ac0a9dad914db246b0ec8b211a5176e08deb511d20e2f5141a54355357fd6",
     ".github/workflows/ci.yml": "825270015a01637eb85cb45ed6bfdc66a43bf5b5174389edc4bf1350dde08257",
     ".github/workflows/release.yml": "56722eee82576d4d439602938e40a9c531a6f8649b749e25531df1ba963be207",
-    "Tools/ci/test_usage_report.py": "0c4e1d5bea5cca33663df55cb8024d5a40738ac2d46e6bfe9ef0950543731fe5"
+    "Tools/ci/test_usage_report.py": "0c4e1d5bea5cca33663df55cb8024d5a40738ac2d46e6bfe9ef0950543731fe5",
+    "Tools/ci/native_jobs.py": "8a98f176bd4505f6dae056c7ad94fec39c64d7d8ba54ddd1a0d17ad62882d96a",
+    "Tools/ci/test_native_jobs.py": "1c7ead1fbd74e2cf54cb92c28b671d612ad5c8d1cc917faebe73792518e13f7c",
+    "Tools/ci/native_provisioning.py": "8b91dc237347c49d6b901494a23bccfcd2b0e6efc76a09b7759f91222481e9ab",
+    "Tools/ci/test_native_provisioning.py": "9dac05cb7cdcc1e094f035f50ec2001597888d81dc7f17a756038e3fbec53613",
+    "Tools/ci/test_platform_probe.py": "eb6fc8ebd50118247e8e604c190eb66f1633ecf18ad1a9d7421419bda1d84c0b"
   },
   "nextRun": {
     "mode": "full",
@@ -146,6 +151,45 @@
     "limitations": [
       "The hosted environment is simulated on macOS; six Linux-specific tests remain skipped locally.",
       "Hosted native execution and publication still await the new exact-revision run."
+    ]
+  },
+  "nativeFollowup": {
+    "observedAt": "2026-11-12T17:38:07.949843+00:00",
+    "source": "3a462d7c7a3cebf5138e589274d3d83500cb5d71",
+    "preflightRun": {
+      "id": 43270058777,
+      "conclusion": "success"
+    },
+    "fullRun": {
+      "id": 43270087675,
+      "conclusion": "cancelled",
+      "reason": "macOS probe rejected semantically identical newline-terminated Xcode/SDK metadata"
+    },
+    "linuxProbe": "passed",
+    "macosProvisioning": "passed",
+    "macosProbe": "failed before normalization fix",
+    "validation": {
+      "ciPython": {
+        "exitCode": 0,
+        "elapsedSeconds": 18.681,
+        "context": "Simulated full GitHub Actions identity/admission on macOS; source/metadata/SDK normalization fixes",
+        "log": ".build/ci-recovery-2026-11-12/ci-python-native-fixes.log"
+      },
+      "discovered": 628,
+      "passed": 622,
+      "skipped": 6,
+      "nativeJobsFocused": 49,
+      "provisioningFocused": 24,
+      "platformProbeFocused": 21,
+      "normalizationRedGreen": "LF/CRLF real receipt integration failed before the one-line normalization; all five semantic SDK/Xcode changes still reject."
+    },
+    "independentReview": {
+      "blockingFindings": 0,
+      "scope": "Canonical SDK normalization retains exact image/SDK/policy/signer/compiler invariants; Linux path unchanged."
+    },
+    "limitations": [
+      "Local full suite simulates GitHub context on macOS; six Linux-specific cases still skip locally.",
+      "Next exact-source hosted native certification and publication remain pending."
     ]
   }
 }
