@@ -20,8 +20,11 @@ tracks cancellation repairs, bounded diagnostics, artifact recovery and staged
 validation. Phase 0 retains a baseline and local planning policy with a
 [zero-paid-execution sheet](Tasks/ci-reliability/BOOTSTRAP.md). The
 [Phase 1 implementation and acceptance](Tasks/ci-reliability/phase-1/IMPLEMENTATION.md)
-records local process-supervisor work. Later scheduling, runtime repairs and
-hosted qualification remain tracked in the plan.
+records local process-supervisor work. The
+[Phase 2 repair and acceptance](Tasks/ci-reliability/phase-2/IMPLEMENTATION.md)
+records event-hub benchmark accounting, deterministic cancellation regressions and
+local Swift checks. Linux diagnosis, later scheduling changes and hosted
+qualification remain tracked in the plan.
 
 ## Offline validation
 

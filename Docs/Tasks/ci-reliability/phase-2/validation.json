@@ -1,0 +1,800 @@
+{
+  "format": "DiscordKit.ci.phase2.local-validation",
+  "schemaVersion": 1,
+  "capturedAt": "2026-11-12T05:19:37.578292+00:00",
+  "base": "7632bdd3494d8ec7a52edc798ad98e09b5a8c357",
+  "branch": "ci/phase-2-event-hub",
+  "platform": "local macOS ARM64",
+  "toolchain": "Apple Swift version 6.4 (swiftlang-6.4.0.34.1 clang-2100.3.34.1)\nTarget: arm64-apple-macosx27.0.0\n",
+  "qualificationLimit": "Local Apple Swift 6.4 only; no hosted Swift 6.4.1, Linux or whole-package load qualification.",
+  "testResults": {
+    "red": {
+      "tests": 2,
+      "issues": 4,
+      "exit": 1
+    },
+    "green": {
+      "tests": 23,
+      "suites": 2,
+      "seconds": 2.212,
+      "exit": 0
+    },
+    "runtime": {
+      "tests": 21,
+      "suites": 1,
+      "seconds": 0.008,
+      "exit": 0
+    }
+  },
+  "paid": {
+    "jobs": 0,
+    "minutes": 0,
+    "attempts": 0,
+    "USD": 0
+  },
+  "checks": {
+    "diffCheck": true,
+    "noPublicRuntimeChange": true,
+    "noWorkflowPlannerManifestPinChanges": true,
+    "redPatchReplaysExactInputs": true,
+    "green-build-initialExpectedExit": true,
+    "green-build-initialCleanup": true,
+    "green-buildExpectedExit": true,
+    "green-buildCleanup": true,
+    "green-discovery-initialExpectedExit": true,
+    "green-discovery-initialCleanup": true,
+    "green-discoveryExpectedExit": true,
+    "green-discoveryCleanup": true,
+    "green-tests-initialExpectedExit": true,
+    "green-tests-initialCleanup": true,
+    "green-testsExpectedExit": true,
+    "green-testsCleanup": true,
+    "red-buildExpectedExit": true,
+    "red-buildCleanup": true,
+    "red-testsExpectedExit": true,
+    "red-testsCleanup": true,
+    "runtime-buildExpectedExit": true,
+    "runtime-buildCleanup": true,
+    "runtime-discoveryExpectedExit": true,
+    "runtime-discoveryCleanup": true,
+    "runtime-testsExpectedExit": true,
+    "runtime-testsCleanup": true,
+    "smoke-cancelledExpectedExit": true,
+    "smoke-cancelledCleanup": true,
+    "smoke-overflowExpectedExit": true,
+    "smoke-overflowCleanup": true,
+    "smoke-queuedExpectedExit": true,
+    "smoke-queuedCleanup": true,
+    "smoke-waitingExpectedExit": true,
+    "smoke-waitingCleanup": true,
+    "nonemptyUniqueDiscovery": true,
+    "queuedPartition": true,
+    "queuedSchemaAndIdentity": true,
+    "queuedCleanup": true,
+    "waitingPartition": true,
+    "waitingSchemaAndIdentity": true,
+    "waitingCleanup": true,
+    "overflowPartition": true,
+    "overflowSchemaAndIdentity": true,
+    "overflowCleanup": true,
+    "cancelledPartition": true,
+    "cancelledSchemaAndIdentity": true,
+    "cancelledCleanup": true
+  },
+  "commands": {
+    "green-build-initial": {
+      "argv": [
+        "swift",
+        "build",
+        "--package-path",
+        "Tools/DiscordKitLoadTests",
+        "--scratch-path",
+        ".build/ci-phase2-load",
+        "--build-system",
+        "native",
+        "--jobs",
+        "6",
+        "--force-resolved-versions",
+        "--disable-experimental-prebuilts",
+        "--build-tests"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 12.027,
+      "executionLimitSeconds": 1200,
+      "cleanup": {
+        "status": "group-signalled",
+        "signals": [],
+        "parentReaped": true,
+        "allowanceSeconds": 8.0,
+        "seconds": 0.004,
+        "groupState": "gone",
+        "remainingProcesses": [],
+        "verification": "available",
+        "verificationTruncated": false,
+        "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+      },
+      "receipt": "green-build-initial.receipt.json"
+    },
+    "green-build": {
+      "argv": [
+        "swift",
+        "build",
+        "--package-path",
+        "Tools/DiscordKitLoadTests",
+        "--scratch-path",
+        ".build/ci-phase2-load",
+        "--build-system",
+        "native",
+        "--jobs",
+        "6",
+        "--force-resolved-versions",
+        "--disable-experimental-prebuilts",
+        "--build-tests"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 8.914,
+      "executionLimitSeconds": 1200,
+      "cleanup": {
+        "status": "group-signalled",
+        "signals": [],
+        "parentReaped": true,
+        "allowanceSeconds": 8.0,
+        "seconds": 0.004,
+        "groupState": "gone",
+        "remainingProcesses": [],
+        "verification": "available",
+        "verificationTruncated": false,
+        "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+      },
+      "receipt": "green-build.receipt.json"
+    },
+    "green-discovery-initial": {
+      "argv": [
+        "swift",
+        "test",
+        "--package-path",
+        "Tools/DiscordKitLoadTests",
+        "--scratch-path",
+        ".build/ci-phase2-load",
+        "--build-system",
+        "native",
+        "--jobs",
+        "6",
+        "--force-resolved-versions",
+        "--disable-experimental-prebuilts",
+        "--skip-build",
+        "list"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 2.34,
+      "executionLimitSeconds": 60,
+      "cleanup": {
+        "status": "group-signalled",
+        "signals": [],
+        "parentReaped": true,
+        "allowanceSeconds": 8.0,
+        "seconds": 0.005,
+        "groupState": "gone",
+        "remainingProcesses": [],
+        "verification": "available",
+        "verificationTruncated": false,
+        "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+      },
+      "receipt": "green-discovery-initial.receipt.json"
+    },
+    "green-discovery": {
+      "argv": [
+        "swift",
+        "test",
+        "--package-path",
+        "Tools/DiscordKitLoadTests",
+        "--scratch-path",
+        ".build/ci-phase2-load",
+        "--build-system",
+        "native",
+        "--jobs",
+        "6",
+        "--force-resolved-versions",
+        "--disable-experimental-prebuilts",
+        "--skip-build",
+        "list"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 3.085,
+      "executionLimitSeconds": 60,
+      "cleanup": {
+        "status": "group-signalled",
+        "signals": [],
+        "parentReaped": true,
+        "allowanceSeconds": 8.0,
+        "seconds": 0.006,
+        "groupState": "gone",
+        "remainingProcesses": [],
+        "verification": "available",
+        "verificationTruncated": false,
+        "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+      },
+      "receipt": "green-discovery.receipt.json"
+    },
+    "green-tests-initial": {
+      "argv": [
+        "swift",
+        "test",
+        "--package-path",
+        "Tools/DiscordKitLoadTests",
+        "--scratch-path",
+        ".build/ci-phase2-load",
+        "--build-system",
+        "native",
+        "--jobs",
+        "6",
+        "--force-resolved-versions",
+        "--disable-experimental-prebuilts",
+        "--skip-build",
+        "--no-parallel",
+        "--filter",
+        "EventHubTiming"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 2.844,
+      "executionLimitSeconds": 90,
+      "cleanup": {
+        "status": "group-signalled",
+        "signals": [],
+        "parentReaped": true,
+        "allowanceSeconds": 8.0,
+        "seconds": 0.009,
+        "groupState": "gone",
+        "remainingProcesses": [],
+        "verification": "available",
+        "verificationTruncated": false,
+        "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+      },
+      "receipt": "green-tests-initial.receipt.json"
+    },
+    "green-tests": {
+      "argv": [
+        "swift",
+        "test",
+        "--package-path",
+        "Tools/DiscordKitLoadTests",
+        "--scratch-path",
+        ".build/ci-phase2-load",
+        "--build-system",
+        "native",
+        "--jobs",
+        "6",
+        "--force-resolved-versions",
+        "--disable-experimental-prebuilts",
+        "--skip-build",
+        "--no-parallel",
+        "--filter",
+        "EventHubTiming"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 4.56,
+      "executionLimitSeconds": 90,
+      "cleanup": {
+        "status": "group-signalled",
+        "signals": [],
+        "parentReaped": true,
+        "allowanceSeconds": 8.0,
+        "seconds": 0.007,
+        "groupState": "gone",
+        "remainingProcesses": [],
+        "verification": "available",
+        "verificationTruncated": false,
+        "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+      },
+      "receipt": "green-tests.receipt.json"
+    },
+    "red-build": {
+      "argv": [
+        "swift",
+        "build",
+        "--package-path",
+        "Tools/DiscordKitLoadTests",
+        "--scratch-path",
+        ".build/ci-phase2-load",
+        "--build-system",
+        "native",
+        "--jobs",
+        "6",
+        "--force-resolved-versions",
+        "--disable-experimental-prebuilts",
+        "--build-tests"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 64.021,
+      "executionLimitSeconds": 1200,
+      "cleanup": {
+        "status": "group-signalled",
+        "signals": [],
+        "parentReaped": true,
+        "allowanceSeconds": 8.0,
+        "seconds": 0.003,
+        "groupState": "gone",
+        "remainingProcesses": [],
+        "verification": "available",
+        "verificationTruncated": false,
+        "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+      },
+      "receipt": "red-build.receipt.json"
+    },
+    "red-tests": {
+      "argv": [
+        "swift",
+        "test",
+        "--package-path",
+        "Tools/DiscordKitLoadTests",
+        "--scratch-path",
+        ".build/ci-phase2-load",
+        "--build-system",
+        "native",
+        "--jobs",
+        "6",
+        "--force-resolved-versions",
+        "--disable-experimental-prebuilts",
+        "--skip-build",
+        "--no-parallel",
+        "--filter",
+        "EventHubTimingTests/(dequeueCancellationDoesNotInventDiscard|completedWaitingResultsSurviveInterruptedAggregation)"
+      ],
+      "exitCode": 1,
+      "elapsedSeconds": 2.709,
+      "executionLimitSeconds": 90,
+      "cleanup": {
+        "status": "group-signalled",
+        "signals": [],
+        "parentReaped": true,
+        "allowanceSeconds": 8.0,
+        "seconds": 0.004,
+        "groupState": "gone",
+        "remainingProcesses": [],
+        "verification": "available",
+        "verificationTruncated": false,
+        "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+      },
+      "receipt": "red-tests.receipt.json"
+    },
+    "runtime-build": {
+      "argv": [
+        "swift",
+        "build",
+        "--scratch-path",
+        ".build/ci-phase2-runtime",
+        "--build-system",
+        "native",
+        "--jobs",
+        "6",
+        "--force-resolved-versions",
+        "--disable-experimental-prebuilts",
+        "--build-tests"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 94.681,
+      "executionLimitSeconds": 1200,
+      "cleanup": {
+        "status": "group-signalled",
+        "signals": [],
+        "parentReaped": true,
+        "allowanceSeconds": 8.0,
+        "seconds": 0.004,
+        "groupState": "gone",
+        "remainingProcesses": [],
+        "verification": "available",
+        "verificationTruncated": false,
+        "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+      },
+      "receipt": "runtime-build.receipt.json"
+    },
+    "runtime-discovery": {
+      "argv": [
+        "swift",
+        "test",
+        "--scratch-path",
+        ".build/ci-phase2-runtime",
+        "--build-system",
+        "native",
+        "--jobs",
+        "6",
+        "--force-resolved-versions",
+        "--disable-experimental-prebuilts",
+        "--skip-build",
+        "list"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 3.438,
+      "executionLimitSeconds": 60,
+      "cleanup": {
+        "status": "group-signalled",
+        "signals": [],
+        "parentReaped": true,
+        "allowanceSeconds": 8.0,
+        "seconds": 0.003,
+        "groupState": "gone",
+        "remainingProcesses": [],
+        "verification": "available",
+        "verificationTruncated": false,
+        "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+      },
+      "receipt": "runtime-discovery.receipt.json"
+    },
+    "runtime-tests": {
+      "argv": [
+        "swift",
+        "test",
+        "--scratch-path",
+        ".build/ci-phase2-runtime",
+        "--build-system",
+        "native",
+        "--jobs",
+        "6",
+        "--force-resolved-versions",
+        "--disable-experimental-prebuilts",
+        "--skip-build",
+        "--no-parallel",
+        "--filter",
+        "EventHubTests"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.664,
+      "executionLimitSeconds": 90,
+      "cleanup": {
+        "status": "group-signalled",
+        "signals": [],
+        "parentReaped": true,
+        "allowanceSeconds": 8.0,
+        "seconds": 0.003,
+        "groupState": "gone",
+        "remainingProcesses": [],
+        "verification": "available",
+        "verificationTruncated": false,
+        "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+      },
+      "receipt": "runtime-tests.receipt.json"
+    },
+    "smoke-cancelled": {
+      "argv": [
+        "/Users/carsonrau/Developer/DiscordKit-ci-phase2/.build/ci-phase2-load/debug/DiscordKitLoadTests",
+        "gateway-hub-timing",
+        "--case",
+        "gateway.hubCancelledV1",
+        "--requests",
+        "8",
+        "--subscriptions",
+        "2",
+        "--hubs",
+        "2",
+        "--queued-depth",
+        "2",
+        "--payload-bytes",
+        "0",
+        "--policy",
+        "dropOldest",
+        "--warmup-requests",
+        "0",
+        "--warmup-seconds",
+        "0",
+        "--duration-seconds",
+        "3",
+        "--output",
+        "/Users/carsonrau/Developer/DiscordKit-ci-phase2/Docs/Tasks/ci-reliability/phase-2/smoke-cancelled.json",
+        "--common-report",
+        "/Users/carsonrau/Developer/DiscordKit-ci-phase2/Docs/Tasks/ci-reliability/phase-2/smoke-cancelled-common.json"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.085,
+      "executionLimitSeconds": 120,
+      "cleanup": {
+        "status": "group-signalled",
+        "signals": [],
+        "parentReaped": true,
+        "allowanceSeconds": 8.0,
+        "seconds": 0.004,
+        "groupState": "gone",
+        "remainingProcesses": [],
+        "verification": "available",
+        "verificationTruncated": false,
+        "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+      },
+      "receipt": "smoke-cancelled.receipt.json"
+    },
+    "smoke-overflow": {
+      "argv": [
+        "/Users/carsonrau/Developer/DiscordKit-ci-phase2/.build/ci-phase2-load/debug/DiscordKitLoadTests",
+        "gateway-hub-timing",
+        "--case",
+        "gateway.hubOverflowV1",
+        "--requests",
+        "8",
+        "--subscriptions",
+        "2",
+        "--hubs",
+        "2",
+        "--queued-depth",
+        "2",
+        "--payload-bytes",
+        "0",
+        "--policy",
+        "resynchronize",
+        "--warmup-requests",
+        "0",
+        "--warmup-seconds",
+        "0",
+        "--duration-seconds",
+        "3",
+        "--output",
+        "/Users/carsonrau/Developer/DiscordKit-ci-phase2/Docs/Tasks/ci-reliability/phase-2/smoke-overflow.json",
+        "--common-report",
+        "/Users/carsonrau/Developer/DiscordKit-ci-phase2/Docs/Tasks/ci-reliability/phase-2/smoke-overflow-common.json"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.086,
+      "executionLimitSeconds": 120,
+      "cleanup": {
+        "status": "group-signalled",
+        "signals": [],
+        "parentReaped": true,
+        "allowanceSeconds": 8.0,
+        "seconds": 0.004,
+        "groupState": "gone",
+        "remainingProcesses": [],
+        "verification": "available",
+        "verificationTruncated": false,
+        "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+      },
+      "receipt": "smoke-overflow.receipt.json"
+    },
+    "smoke-queued": {
+      "argv": [
+        "/Users/carsonrau/Developer/DiscordKit-ci-phase2/.build/ci-phase2-load/debug/DiscordKitLoadTests",
+        "gateway-hub-timing",
+        "--case",
+        "gateway.hubQueuedV1",
+        "--requests",
+        "8",
+        "--subscriptions",
+        "2",
+        "--hubs",
+        "2",
+        "--queued-depth",
+        "2",
+        "--payload-bytes",
+        "0",
+        "--policy",
+        "dropNewest",
+        "--warmup-requests",
+        "0",
+        "--warmup-seconds",
+        "0",
+        "--duration-seconds",
+        "3",
+        "--output",
+        "/Users/carsonrau/Developer/DiscordKit-ci-phase2/Docs/Tasks/ci-reliability/phase-2/smoke-queued.json",
+        "--common-report",
+        "/Users/carsonrau/Developer/DiscordKit-ci-phase2/Docs/Tasks/ci-reliability/phase-2/smoke-queued-common.json"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.536,
+      "executionLimitSeconds": 120,
+      "cleanup": {
+        "status": "group-signalled",
+        "signals": [],
+        "parentReaped": true,
+        "allowanceSeconds": 8.0,
+        "seconds": 0.003,
+        "groupState": "gone",
+        "remainingProcesses": [],
+        "verification": "available",
+        "verificationTruncated": false,
+        "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+      },
+      "receipt": "smoke-queued.receipt.json"
+    },
+    "smoke-waiting": {
+      "argv": [
+        "/Users/carsonrau/Developer/DiscordKit-ci-phase2/.build/ci-phase2-load/debug/DiscordKitLoadTests",
+        "gateway-hub-timing",
+        "--case",
+        "gateway.hubWaitingV1",
+        "--requests",
+        "8",
+        "--subscriptions",
+        "2",
+        "--hubs",
+        "2",
+        "--queued-depth",
+        "2",
+        "--payload-bytes",
+        "0",
+        "--policy",
+        "dropNewest",
+        "--warmup-requests",
+        "0",
+        "--warmup-seconds",
+        "0",
+        "--duration-seconds",
+        "3",
+        "--output",
+        "/Users/carsonrau/Developer/DiscordKit-ci-phase2/Docs/Tasks/ci-reliability/phase-2/smoke-waiting.json",
+        "--common-report",
+        "/Users/carsonrau/Developer/DiscordKit-ci-phase2/Docs/Tasks/ci-reliability/phase-2/smoke-waiting-common.json"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.048,
+      "executionLimitSeconds": 120,
+      "cleanup": {
+        "status": "group-signalled",
+        "signals": [],
+        "parentReaped": true,
+        "allowanceSeconds": 8.0,
+        "seconds": 0.003,
+        "groupState": "gone",
+        "remainingProcesses": [],
+        "verification": "available",
+        "verificationTruncated": false,
+        "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+      },
+      "receipt": "smoke-waiting.receipt.json"
+    }
+  },
+  "smokes": {
+    "queued": {
+      "counts": {
+        "admitted": 32,
+        "completed": 32,
+        "deadlineMisses": 0,
+        "offered": 32,
+        "outcomes": {
+          "cancelled": 0,
+          "failure": 0,
+          "rejected": 0,
+          "success": 32,
+          "timedOut": 0,
+          "uncertain": 0
+        }
+      },
+      "measuredCopies": {
+        "cancelledHandoff": 0,
+        "cancelledRetained": 0,
+        "consumed": 32,
+        "discarded": 0
+      },
+      "setupOutcomes": {
+        "cancelledHandoff": 0,
+        "cancelledRetained": 0,
+        "consumed": 8,
+        "discarded": 0
+      }
+    },
+    "waiting": {
+      "counts": {
+        "admitted": 32,
+        "completed": 32,
+        "deadlineMisses": 0,
+        "offered": 32,
+        "outcomes": {
+          "cancelled": 0,
+          "failure": 0,
+          "rejected": 0,
+          "success": 32,
+          "timedOut": 0,
+          "uncertain": 0
+        }
+      },
+      "measuredCopies": {
+        "cancelledHandoff": 0,
+        "cancelledRetained": 0,
+        "consumed": 32,
+        "discarded": 0
+      },
+      "setupOutcomes": {
+        "cancelledHandoff": 0,
+        "cancelledRetained": 0,
+        "consumed": 0,
+        "discarded": 0
+      }
+    },
+    "overflow": {
+      "counts": {
+        "admitted": 8,
+        "completed": 32,
+        "deadlineMisses": 0,
+        "offered": 32,
+        "outcomes": {
+          "cancelled": 0,
+          "failure": 0,
+          "rejected": 32,
+          "success": 0,
+          "timedOut": 0,
+          "uncertain": 0
+        }
+      },
+      "measuredCopies": {
+        "cancelledHandoff": 0,
+        "cancelledRetained": 0,
+        "consumed": 0,
+        "discarded": 8
+      },
+      "setupOutcomes": {
+        "cancelledHandoff": 0,
+        "cancelledRetained": 0,
+        "consumed": 0,
+        "discarded": 0
+      }
+    },
+    "cancelled": {
+      "counts": {
+        "admitted": 32,
+        "completed": 32,
+        "deadlineMisses": 0,
+        "offered": 32,
+        "outcomes": {
+          "cancelled": 8,
+          "failure": 0,
+          "rejected": 24,
+          "success": 0,
+          "timedOut": 0,
+          "uncertain": 0
+        }
+      },
+      "measuredCopies": {
+        "cancelledHandoff": 0,
+        "cancelledRetained": 8,
+        "consumed": 0,
+        "discarded": 24
+      },
+      "setupOutcomes": {
+        "cancelledHandoff": 0,
+        "cancelledRetained": 0,
+        "consumed": 0,
+        "discarded": 0
+      }
+    }
+  },
+  "inputSHA256": {
+    "Tools/DiscordKitLoadTests/Sources/DiscordKitLoadTests/EventHubTimingRunner.swift": "7d8a8b9496c31bb3de604872c608ad97c3feb24935ca7f1875d1437305aaf3c1",
+    "Tools/DiscordKitLoadTests/Sources/DiscordKitLoadTests/EventHubTimingAccounting.swift": "26d708497cdce9534d5bccdcfe7a6c1d319924bb7bfc48dc816a75321f771496",
+    "Tools/DiscordKitLoadTests/Sources/DiscordKitLoadTests/EventHubTimingCommand.swift": "e2ee700d26b176521c95118b9c470a2dfaa287ab49095dc92baafe830493e4c5",
+    "Tools/DiscordKitLoadTests/Tests/DiscordKitLoadTestsTests/EventHubTimingTests.swift": "d591ca493ca657e61dde30ef82838aee2cc99ef026452d49e5ced413151bb6aa",
+    "Tools/DiscordKitLoadTests/Tests/DiscordKitLoadTestsTests/EventHubTimingAccountingTests.swift": "332dc2e9b2d18eeb30698232f548eba5d08bd29082df48dc3faafa8ee38b241e",
+    "Tests/DiscordGatewayTests/EventHubTests.swift": "39667afdc4d79a7b49b0b0fa22f8210105e7718f42e9cb2b300ebce23066f29f",
+    "Tools/ci/linux_ci.py": "90b85a9f862b1e91d2a6f08686bc5780328d544940d6012b47e5fcd4973bbd1e",
+    "Docs/Tasks/ci-reliability/phase-2/validate.py": "7c1f1281e32bc5620f536c512668e918b875a96e043b76dcf610b1234c4c38ee"
+  },
+  "archivedReports": {
+    "smoke-cancelled-common.json.gz": {
+      "sha256": "88d38a87a930f3c57e49bb33d7762a2565ca7433f3cd0e47e991f68ff2917a71",
+      "originalSHA256": "a2153a46527885d99085b403828ccd283016c32975e06e96ed83d52bff989ab9"
+    },
+    "smoke-overflow.json.gz": {
+      "sha256": "d984c23589d8336babd77122e40aaeff6126cba48a27cd8eb670b97fdd699b9c",
+      "originalSHA256": "6da783cf96cc7f745d1d2682f94ca42e9907b252ddda0d3e3034f82f2b398d6c"
+    },
+    "smoke-overflow-common.json.gz": {
+      "sha256": "49c261b98021657a1dda6914d3be354658a3ab690cce292c28ce17a092a6add1",
+      "originalSHA256": "74245fa8df9fea9632c089ba579afaa39f4c9b4749e8ffccc1516cdf9da88322"
+    },
+    "smoke-cancelled.json.gz": {
+      "sha256": "55f9cdc9e8200afb58a4f34c01c598d593751b9f86d310b06a7f373b6a55b155",
+      "originalSHA256": "4a8bc7b300e43fddfded80daadd983b41ae1bcfe88efa115f21e0a169460d57e"
+    },
+    "smoke-waiting.json.gz": {
+      "sha256": "516f22af79c4ddbebbb2fe9e0c80305e7acf4854b8a3d2c9c0f0e542616170c3",
+      "originalSHA256": "00ed85b8369b00bd85661cd7a9eb0127c50a6dc9c27b61c4865871228a871e75"
+    },
+    "smoke-queued.json.gz": {
+      "sha256": "faaaa691eb00449eeb29f1c8e4df3d2fd0b06489d3d8d122365ae8c5526704fb",
+      "originalSHA256": "eb41f3feb5cd5751c2fbd6062df2fe6deded45bc3ea03df78dc164970c9d4c87"
+    },
+    "smoke-queued-common.json.gz": {
+      "sha256": "ff5d119a1e7f1c5a5ee977b9de70714531eb212b27e8b68c08a73fc858afdfc7",
+      "originalSHA256": "43a78b878eeede942d7f48ce95e7b81d4a2ce225aef3e304064f51f07e8110e3"
+    },
+    "smoke-waiting-common.json.gz": {
+      "sha256": "135695723e3a529546f33ddc2a2c351e1a8e787b0ab61bf80c4d230fd1970eba",
+      "originalSHA256": "74772fa39d48dec44452ea6d41de61b4a1c5922b9393b2f0f075ed21053383e8"
+    }
+  }
+}

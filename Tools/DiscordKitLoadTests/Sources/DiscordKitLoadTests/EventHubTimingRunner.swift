@@ -57,6 +57,8 @@ struct EventHubTimingMeasurement: Codable, Sendable {
     let discardedAdmittedCopies: Int
     let cancelledRetainedCopies: Int
     let setupCopies: Int
+    let measuredCopies: EventHubTimingPopulationCounts
+    let setupOutcomes: EventHubTimingPopulationCounts
     let retainedBeforeDrain: EventHubTimingSnapshot
     let cleanup: EventHubTimingSnapshot
     let consumers: [EventHubTimingConsumer]
@@ -64,8 +66,22 @@ struct EventHubTimingMeasurement: Codable, Sendable {
     let notes: [String]
 }
 
+/// Default-disabled fault boundaries owned by the benchmark, never awaited inside the hub authority.
+enum EventHubTimingCheckpoint: Equatable, Sendable {
+    case setupComplete
+    case beforeQueuedPull(Int)
+    case afterAcceptance(Int)
+    case waitingReady
+    case waitingReturned(Int)
+    case beforeWaitingAggregation
+}
+
 /// A public-API fixed-backlog experiment, separated from socket, decoder, handler and provider work.
 struct EventHubTimingRunner: Sendable {
+    /// Synchronous fault observation; test callbacks never await or reenter the authority.
+    var onResidence: (@Sendable (DiscordIntervalEvent) -> Void)? = nil
+    /// Bounded driver fault barriers; nil in command execution.
+    var onCheckpoint: (@Sendable (EventHubTimingCheckpoint) async throws -> Void)? = nil
     /// Every task and subscription is joined or cancelled before returning, including interrupted runs.
     /// - Parameters:
     ///   - configuration: Validated independent subscriber, hub, backlog, payload and consumer-policy
@@ -84,11 +100,14 @@ struct EventHubTimingRunner: Sendable {
             throw EventHubTimingError.invalidConfiguration
         }
         let statistics = try EventHubTimingStatistics()
+        let accounting = EventHubTimingAccounting()
         let clock = ContinuousClock(), origin = clock.now
         let intervals = DiscordIntervalTiming(clockDomain: 603, sink: { event in
+            accounting.observe(event)
             guard event.kind == .ended, event.operation == .gatewayPublication,
                   event.stage == .hubResidence, let outcome = event.outcome else { return }
             statistics.residence(event.elapsedNanoseconds, valid: event.validity == .valid, outcome: outcome)
+            onResidence?(event)
         }, now: { origin.duration(to: clock.now) })
         let queueCapacity = scenario == .queued ? configuration.queuedDepth + 1 : max(1, configuration.queuedDepth)
         let perHubCopies = queueCapacity * configuration.subscriptions
@@ -119,13 +138,15 @@ struct EventHubTimingRunner: Sendable {
         let payload = JSONValue.string(String(repeating: "x", count: configuration.payloadBytes))
         let measuredStart = Int64(scenario == .queued ? configuration.queuedDepth : 0)
         var publicationCalls = 0, admitted = 0, drops = 0, terminated = 0, resynchronizations = 0
-        var setupCopies = 0
+        var setupCopies = 0, unadmitted = 0
+        var pendingAggregated = 0, pendingAdmitted: [Bool] = []
         var pending: [Task<GatewayEvent?, any Error>] = []
         var failure: (any Error)?
         var interrupted = false
         var beforeDrain = EventHubTimingSnapshot(await authority.snapshot())
         let started = clock.now
         do {
+            accounting.setPopulation(.setup)
             if scenario == .queued {
                 for ordinal in 0..<configuration.queuedDepth {
                     try Task.checkCancellation()
@@ -139,16 +160,21 @@ struct EventHubTimingRunner: Sendable {
                     }
                 }
             }
+            try await onCheckpoint?(.setupComplete)
+            accounting.setPopulation(.measured)
             for ordinal in 0..<requests {
                 try Task.checkCancellation()
                 let event = try GatewayEvent(shard: shard, name: "HUB_TIMING", sequence: measuredStart + Int64(ordinal), data: payload)
                 if scenario == .waiting {
-                    pending = subscriptions.map { subscription in
+                    pendingAggregated = 0
+                    pendingAdmitted = subscriptions.map { _ in false }
+                    pending = subscriptions.enumerated().map { index, subscription in
                         Task {
                             var iterator = subscription.makeAsyncIterator()
                             let start = clock.now
                             let event = try await iterator.next()
                             statistics.pull(start.duration(to: clock.now))
+                            try await onCheckpoint?(.waitingReturned(index))
                             return event
                         }
                     }
@@ -156,25 +182,42 @@ struct EventHubTimingRunner: Sendable {
                         try Task.checkCancellation(); await Task.yield()
                     }
                 }
-                for hub in hubs {
+                if scenario == .waiting { try await onCheckpoint?(.waitingReady) }
+                for (hubIndex, hub) in hubs.enumerated() {
                     let start = clock.now
                     let result = await hub.publish(event)
                     let elapsed = start.duration(to: clock.now)
                     statistics.publication(elapsed, rejected: result.dropped > 0 || result.terminated > 0)
+                    guard (0...configuration.subscriptions).contains(result.delivered) else {
+                        throw EventHubTimingError.integrityFailure("Invalid publication admission")
+                    }
                     publicationCalls += 1; admitted += result.delivered; drops += result.dropped; terminated += result.terminated
+                    unadmitted += configuration.subscriptions - result.delivered
+                    if scenario == .waiting {
+                        guard result.delivered == configuration.subscriptions else {
+                            throw EventHubTimingError.integrityFailure("Confirmed waiting cohort was not handed off")
+                        }
+                        for index in (hubIndex * configuration.subscriptions)..<((hubIndex + 1) * configuration.subscriptions) {
+                            pendingAdmitted[index] = true
+                        }
+                    }
                 }
                 if scenario == .queued {
                     if configuration.delayMicroseconds > 0 { try await clock.sleep(for: .microseconds(configuration.delayMicroseconds)) }
                     for index in iterators.indices {
-                        let start = clock.now
-                        guard let value = try await iterators[index].next() else { throw EventHubTimingError.integrityFailure("Queued consumer ended") }
-                        statistics.pull(start.duration(to: clock.now))
-                        try consumers[index].receive(value, measuredStart: measuredStart)
+                        try await onCheckpoint?(.beforeQueuedPull(index))
+                        try await Self.pull(&iterators[index], consumer: &consumers[index], measuredStart: measuredStart,
+                            statistics: statistics, accounting: accounting)
+                        try await onCheckpoint?(.afterAcceptance(index))
                     }
                 } else if scenario == .waiting {
+                    try await onCheckpoint?(.beforeWaitingAggregation)
                     for index in pending.indices {
-                        guard let value = try await pending[index].value else { throw EventHubTimingError.integrityFailure("Waiting consumer ended") }
-                        try consumers[index].receive(value, measuredStart: measuredStart)
+                        let result = await pending[index].result
+                        pendingAggregated = index + 1
+                        try Self.acceptWaiting(result, admitted: pendingAdmitted[index], consumer: &consumers[index],
+                            measuredStart: measuredStart, accounting: accounting)
+                        try await onCheckpoint?(.afterAcceptance(index))
                     }
                     pending.removeAll(keepingCapacity: true)
                 }
@@ -199,36 +242,51 @@ struct EventHubTimingRunner: Sendable {
                     } else {
                         for _ in 0..<retainedPerSubscription {
                             try Task.checkCancellation()
-                            let start = clock.now
-                            guard let value = try await iterators[index].next() else { throw EventHubTimingError.integrityFailure("Drain ended early") }
-                            statistics.pull(start.duration(to: clock.now))
-                            try consumers[index].receive(value, measuredStart: measuredStart)
+                            try await Self.pull(&iterators[index], consumer: &consumers[index], measuredStart: measuredStart,
+                                statistics: statistics, accounting: accounting)
+                            try await onCheckpoint?(.afterAcceptance(index))
                         }
                     }
                 }
             }
         } catch {
             interrupted = error is CancellationError || Task.isCancelled
-            if !interrupted { failure = error }
+            if !(error is CancellationError) { failure = error }
             beforeDrain = EventHubTimingSnapshot(await authority.snapshot())
         }
         for task in pending { task.cancel() }
         for hub in hubs { await hub.finish() }
-        for task in pending { _ = await task.result }
+        for index in pending.indices where index >= pendingAggregated {
+            let result = await pending[index].result
+            do {
+                try Self.acceptWaiting(result, admitted: pendingAdmitted[index], consumer: &consumers[index],
+                    measuredStart: measuredStart, accounting: accounting)
+            } catch is CancellationError {
+                interrupted = true
+            } catch {
+                failure = failure ?? error
+            }
+        }
         let terminal = clock.now
         let cleanup = EventHubTimingSnapshot(await authority.snapshot())
         guard cleanup.isEmpty else { throw EventHubTimingError.integrityFailure("Hub ownership remains") }
         if let failure { throw failure }
-        let cancelledCopies = statistics.cancelledResidenceCount()
+        let partition = try accounting.snapshot()
+        let measured = partition.measured, setup = partition.setup
         let offered = publicationCalls * configuration.subscriptions
         let consumed = consumers.reduce(0) { $0 + $1.measuredEvents }
         let setupConsumed = consumers.reduce(0) { $0 + $1.setupEvents }
-        let discarded = max(0, admitted + setupCopies - consumed - setupConsumed - cancelledCopies)
-        let cancelled = interrupted && (scenario == .queued || scenario == .waiting)
-            ? max(0, admitted - consumed) : cancelledCopies
+        guard measured.total == admitted, setup.total == setupCopies,
+              measured.consumed == consumed, setup.consumed == setupConsumed,
+              admitted + unadmitted == offered else {
+            throw EventHubTimingError.integrityFailure("Unexplained or duplicate admitted copies")
+        }
+        let discarded = measured.discarded + setup.discarded
+        let cancelledCopies = measured.cancelledRetained + setup.cancelledRetained
+        let cancelled = measured.cancelledRetained + measured.cancelledHandoff
         var outcomes = Dictionary(uniqueKeysWithValues: BenchmarkOutcome.allCases.map { ($0, UInt64(0)) })
         outcomes[.success] = UInt64(consumed); outcomes[.cancelled] = UInt64(cancelled)
-        outcomes[.rejected] = UInt64(max(0, offered - consumed - cancelled))
+        outcomes[.rejected] = UInt64(unadmitted + measured.discarded)
         let counts = BenchmarkCounts(offered: UInt64(offered), admitted: UInt64(admitted), completed: UInt64(offered), outcomes: outcomes, deadlineMisses: 0)
         try counts.validate()
         if !interrupted, scenario == .queued || scenario == .waiting {
@@ -239,6 +297,7 @@ struct EventHubTimingRunner: Sendable {
             publicationCalls: publicationCalls, admittedCopies: admitted, publicationDrops: drops,
             terminatedSubscriptions: terminated, resynchronizationErrors: resynchronizations,
             discardedAdmittedCopies: discarded, cancelledRetainedCopies: cancelledCopies, setupCopies: setupCopies,
+            measuredCopies: measured, setupOutcomes: setup,
             retainedBeforeDrain: beforeDrain, cleanup: cleanup, consumers: consumers, pullCall: statistics.pullSnapshot(), notes: [
                 "Public replay events and in-process hubs only; no socket, lease validation, cache, dispatcher, provider or trusted interaction receipt is represented.",
                 "gateway.publication measures caller immediately before publish through its actual return, excluding event construction, setup, consumer work and final FIFO drain. Precision is 1 microsecond over 0...100 milliseconds; censor and loss remain explicit.",
@@ -247,10 +306,50 @@ struct EventHubTimingRunner: Sendable {
                 "pullCall measures actual next invocations, including setup-copy returns and final FIFO drain; waiting mode includes suspension and the driver barrier. It is not hub residence or a handler endpoint.",
                 "Waiting mode creates and confirms one finite parked consumer task per subscription before each publication; task creation and barriers remain in gross duration, outside publication timing.",
                 "Overflow mode holds all consumers until publication completes. Every policy retains separate publication drops, failed subscriptions, rejected copies and admitted copies discarded before consumption. dropOldest eviction is not reported as publication.dropped by the public API.",
+                "Schema 2 classifies setup and measured copies separately from actual residence ends and joined pull results; cancellation after queue removal is a handoff outcome, never a discard. Unexplained copies are integrity failures.",
                 "Counts partition measured subscriber copies, not publication calls; successful throughput counts eventual measured consumption. Queue byte receipts count retained envelope charges, not metadata, unique payload allocations or process memory.",
                 "Gross duration includes prefill, optional injected consumer hold, driver barriers, final drain and joined shutdown. Independent hubs share one authority; per-subscription order is verified without retaining payloads."
             ])
     }
+
+    /// Binds one queued removal to its actual iterator return or cancellation boundary.
+    private static func pull(_ iterator: inout GatewayEventSubscription.AsyncIterator,
+                             consumer: inout EventHubTimingConsumer, measuredStart: Int64,
+                             statistics: EventHubTimingStatistics, accounting: EventHubTimingAccounting) async throws {
+        accounting.beginPull()
+        let clock = ContinuousClock(), start = clock.now
+        let value: GatewayEvent?
+        do { value = try await iterator.next() }
+        catch {
+            try accounting.finishPull(accepted: false, cancelled: error is CancellationError)
+            throw error
+        }
+        guard let value else {
+            try accounting.finishPull(accepted: false, cancelled: false)
+            throw EventHubTimingError.integrityFailure("Queued consumer ended")
+        }
+        statistics.pull(start.duration(to: clock.now))
+        try consumer.receive(value, measuredStart: measuredStart)
+        try accounting.finishPull(accepted: true, cancelled: false)
+    }
+
+    /// Every waiting task is joined; successful values survive an interrupted driver aggregation.
+    private static func acceptWaiting(_ result: Result<GatewayEvent?, any Error>, admitted: Bool,
+                                      consumer: inout EventHubTimingConsumer, measuredStart: Int64,
+                                      accounting: EventHubTimingAccounting) throws {
+        switch result {
+        case .success(let event):
+            if let event {
+                guard admitted else { throw EventHubTimingError.integrityFailure("Unadmitted waiting value") }
+                try consumer.receive(event, measuredStart: measuredStart)
+                accounting.record(.consumed, population: .measured)
+            } else if admitted { throw EventHubTimingError.integrityFailure("Admitted waiting consumer ended") }
+        case .failure(let error):
+            if error is CancellationError, admitted { accounting.record(.cancelledHandoff, population: .measured) }
+            throw error
+        }
+    }
+
 }
 
 /// Bounded independent precisions for fast publication/pull and intentionally held residence.
@@ -260,9 +359,8 @@ private final class EventHubTimingStatistics: @unchecked Sendable {
     private var publications: [BenchmarkOutcome: BoundedHistogram]
     private var residences: [BenchmarkOutcome: BoundedHistogram]
     private var pulls: BoundedHistogram
-    private var cancelledResidences = 0
 
-    /// Allocates independent bounded histograms and validates their combined fixed statistics budget.
+    /// Bounds histogram storage; copy-owner evidence has its separate finite queue-slot limit.
     init() throws {
         let fast = try HistogramConfiguration(lowerBoundNanoseconds: 0, upperBoundNanoseconds: 100_000_000, bucketWidthNanoseconds: 1_000)
         let held = try HistogramConfiguration(lowerBoundNanoseconds: 0, upperBoundNanoseconds: 10_000_000_000, bucketWidthNanoseconds: 100_000)
@@ -282,7 +380,6 @@ private final class EventHubTimingStatistics: @unchecked Sendable {
     /// Preserves production interval outcomes and records invalid clock evidence as explicit loss.
     func residence(_ elapsed: Int64?, valid: Bool, outcome: DiscordIntervalOutcome) {
         lock.lock(); defer { lock.unlock() }
-        if outcome == .cancelled { cancelledResidences += 1 }
         let result: BenchmarkOutcome
         switch outcome { case .succeeded: result = .success; case .cancelled: result = .cancelled; case .failed: result = .failure; case .uncertain: result = .uncertain }
         if valid, let elapsed, let value = UInt64(exactly: elapsed) { residences[result]!.record(value) }
@@ -295,9 +392,6 @@ private final class EventHubTimingStatistics: @unchecked Sendable {
     }
     /// Returns an atomic bounded pull distribution after the finite consumers have joined.
     func pullSnapshot() -> HistogramSnapshot { lock.lock(); defer { lock.unlock() }; return pulls.snapshot() }
-
-    /// Counts actual cancelled retained intervals, including queues released by an iterator's cancellation handler.
-    func cancelledResidenceCount() -> Int { lock.lock(); defer { lock.unlock() }; return cancelledResidences }
 
     /// Exports nonempty outcome populations with one report clock identity and their original precision.
     func metrics() -> [BenchmarkMetric] {

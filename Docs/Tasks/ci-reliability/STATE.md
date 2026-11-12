@@ -13,14 +13,15 @@ Phase 0 is complete at implementation commit
 `5808ce32d867622ff6952d0f2057768a8a257f14` on `ci/phase-0-baseline`.
 Phase 1 is complete at implementation commit
 `1bc5de45a6dbeef1ab31bd7f6fbbe85b69771600` on `ci/phase-1-supervision`.
-No native check, paid execution, external configuration change or publication
+Phase 2 has passed local macOS ARM64 Swift acceptance; its commit receipt is pending.
+No hosted qualification, paid execution, external configuration change or publication
 is claimed. See [BOOTSTRAP.md](BOOTSTRAP.md) for the zero-paid execution sheet.
 
 | Phase | Status | Implementation commit | Acceptance evidence |
 | --- | --- | --- | --- |
 | 0 — Baseline and initial limits | Complete; local preparation only | `5808ce32d867622ff6952d0f2057768a8a257f14` | [212 helper tests](baseline/validation.json), [retained capture](baseline/CAPTURE.md), [usage baseline](baseline/COST.md), [zero-paid sheet](BOOTSTRAP.md); hash/link/diff checks passed |
 | 1 — Process supervision | Complete; local helper acceptance only | `1bc5de45a6dbeef1ab31bd7f6fbbe85b69771600` | [231 helper tests](phase-1/validation.json), [nine retained fault specimens](phase-1/faults/results.json), [independent review](phase-1/review/results.json), [implementation and limits](phase-1/IMPLEMENTATION.md) |
-| 2 — Event-hub accounting | Not started | Pending | Pending red/green regression |
+| 2 — Event-hub accounting | Local acceptance passed; commit receipt pending | Pending | [Red/green, 23 load + 21 runtime tests, four CLI checks](phase-2/validation.json), [independent review](phase-2/review.json), [implementation and limits](phase-2/IMPLEMENTATION.md) |
 | 3 — Linux hang repair | Not started | Pending | Cause unresolved |
 | 4 — Compatibility receipts | Not started | Pending | Pending |
 | 5 — Transfer and partial reruns | Not started | Pending | Pending local and hosted proof |
@@ -51,6 +52,22 @@ match the implementation commit and remain unchanged.
    before the next implementation. Native experiments still require a concrete
    allowed scope and execution allowance; helper acceptance supplies neither.
 
+## Phase 2 handoff
+
+Owner Codex `/root` prepared Phase 2 on `ci/phase-2-event-hub`, sibling
+`DiscordKit-ci-phase2`, based on `7632bdd3494d8ec7a52edc798ad98e09b5a8c357`.
+The [execution sheet and implementation](phase-2/IMPLEMENTATION.md) separate local
+Apple Swift 6.4 evidence from hosted Swift 6.4.1 and Linux qualification.
+[Validation](phase-2/validation.json) binds the tested inputs and retained process
+receipts. [Independent review](phase-2/review.json) found no blocking findings.
+The original checkout's planning changes and completed phase checkouts remain
+preserved. The actual implementation SHA will be recorded after committing.
+
+The next authorized implementation phase is Phase 3: diagnose the Linux synthetic
+command hang using Phase 1 supervision. Its blocked owner remains unresolved.
+Whole-package native load confirmation and final hosted certification remain
+later-phase work. No remote operation or later-phase implementation occurred here.
+
 ## Outstanding execution decisions
 
 - Paid execution remains unauthorized: experiment/workflow allowances are USD 0,
@@ -60,8 +77,8 @@ match the implementation commit and remain unchanged.
 - Operator-selected repository budget amount/scope and authorization to configure it.
 - Phase 0 uses `ci/phase-0-baseline` in sibling `DiscordKit-ci-phase0`, owner
   Codex `/root`, base `85eac6f3c1d3b17e53596c49e7438efee366c1b3`.
-  Phase 1 ownership and its local-only sheet are recorded above. Phases 2 through
-  11 owners and paid experiment sheets are not assigned/authorized.
+  Phase 1 and Phase 2 ownership and local-only sheets are recorded above. Phases 3
+  through 11 owners and paid experiment sheets are not assigned/authorized.
 
 These do not prevent beginning local preparation/helper implementation. Missing
 allowances or execution authorization prevent paid scheduling, not source work.

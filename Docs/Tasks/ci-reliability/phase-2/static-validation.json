@@ -1,0 +1,17 @@
+{
+  "capturedAt": "2026-11-12T05:22:09.000631+00:00",
+  "checks": {
+    "testedInputsUnchanged": true,
+    "independentReviewInputsMatch": true,
+    "independentReviewPassed": true,
+    "localMarkdownLinks": true,
+    "JSONAndJSONLParse": true,
+    "originalCheckoutPreserved": true,
+    "phase0CheckoutClean": true,
+    "phase1CheckoutClean": true,
+    "diffCheck": true,
+    "stagedDiffCheck": true
+  },
+  "localMarkdownLinksChecked": 180,
+  "missingLinks": []
+}

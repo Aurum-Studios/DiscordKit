@@ -230,3 +230,47 @@ remain incomplete.
   receipts. This documentation-only follow-up records that actual SHA after
   verifying all seven tested input hashes against it. Phase 1's local exit criteria
   are satisfied; [STATE.md](STATE.md) marks only Phases 0 and 1 complete.
+
+## Phase 2 — Event-hub accounting repair
+
+- Base `7632bdd3494d8ec7a52edc798ad98e09b5a8c357`, owner Codex `/root`, isolated
+  `ci/phase-2-event-hub` branch in sibling `DiscordKit-ci-phase2`.
+  [Source/host preflight](phase-2/source-preflight.json) and the
+  [local execution sheet](phase-2/IMPLEMENTATION.md#ownership-and-local-execution-sheet)
+  retain ownership and zero-paid bounds.
+- [Controlled red evidence](phase-2/red-tests.log): two test functions, four
+  expected issues, exit 1. Queued removal followed by iterator cancellation
+  mislabeled one measured/setup copy as discarded. A driver fault injected only
+  after four waiting child values returned lost all four in cleanup. This proves
+  the unsafe cleanup path, not the exact hosted waiting interleaving. The
+  [replay patch](phase-2/red-regression.patch.gz) preserves baseline accounting and
+  adds only fault seams/tests; [input hashes](phase-2/red-inputs.json) identify it.
+- Copy classifications now use production residence endpoints and specific pull
+  results. Setup and measured partitions must independently equal admissions.
+  Queue removal, iterator return, consumer acceptance and residence end remain
+  distinct; public runtime sources are unchanged. Waiting results are joined
+  and aggregated once, including successful values completed before interruption.
+  Contradictions fail rather than becoming arithmetic residuals or clamped counts.
+- Final [load tests](phase-2/green-tests.log): **23 tests / 2 suites**, exit 0,
+  2.212 seconds. Final [runtime tests](phase-2/runtime-tests.log): **21 tests /
+  1 suite**, exit 0, 0.008 seconds. Nonempty exact discovery, four CLI round trips,
+  red/green/build/smoke receipts and source/report hashes are retained in
+  [validation.json](phase-2/validation.json). Every process was reaped with its
+  admitted process group gone. No timeout or automatic retry occurred.
+- Native schema 2 exports measured/setup dispositions; schema-1 native decoding
+  is rejected. Common envelope schema 1/catalog 6 remains, with version-2 scheduler
+  and owner-accounting instrumentation identity. Existing historical evidence is
+  untouched. Additional bounded instrumentation overhead precludes cross-version
+  timing comparisons; no speedup is claimed.
+- [Independent review](phase-2/review.json) verifies all six final Swift input
+  hashes, passed discovery/test receipts, unchanged public runtime and exact-once
+  pending-result aggregation. No blocking findings remain. Local Markdown,
+  identity/hash/JSON/replay/diff and original-checkout preservation checks accompany
+  the retained evidence manifest.
+- Installed compiler is Apple Swift **6.4**, ARM64 macOS. Hosted **6.4.1** pins and
+  all workflows/manifests/dependency pins remain unchanged. Whole-package load,
+  Linux, pinned hosted-toolchain and final certification are not qualified here.
+  Paid jobs/minutes/attempts and spend are **0 / 0 / 0 / USD 0.00**. No push,
+  dispatch, billing/runner change, publication, deployment or live Discord action.
+- Source acceptance is complete; the actual implementation commit will be added
+  in the documentation-only completion receipt.

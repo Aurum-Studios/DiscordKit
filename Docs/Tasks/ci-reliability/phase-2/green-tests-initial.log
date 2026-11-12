@@ -1,0 +1,126 @@
+swift test --package-path Tools/DiscordKitLoadTests --scratch-path .build/ci-phase2-load --build-system native --jobs 6 --force-resolved-versions --disable-experimental-prebuilts --skip-build --no-parallel --filter EventHubTiming
+warning: '--build-system native' has been deprecated and will be removed in a future release; please report an issue at https://github.com/swiftlang/swift-package-manager/issues if you are unable to adopt the default build system.
+◇ Test run started.
+↳ Testing Library Version: 2084
+↳ Target Platform: arm64e-apple-macos14.0
+◇ Suite "Event hub timing accounting" started.
+◇ Test setupAndMeasuredRemainSeparate() started.
+✔ Test setupAndMeasuredRemainSeparate() passed after 0.001 seconds.
+◇ Test cancellationAfterRemovalKeepsItsOriginalPopulation() started.
+✔ Test cancellationAfterRemovalKeepsItsOriginalPopulation() passed after 0.001 seconds.
+◇ Test cancellationBeforeRemovalLeavesResidenceAuthoritative() started.
+✔ Test cancellationBeforeRemovalLeavesResidenceAuthoritative() passed after 0.001 seconds.
+◇ Test acceptedRemovalAndDirectHandoffHaveDistinctEvidence() started.
+✔ Test acceptedRemovalAndDirectHandoffHaveDistinctEvidence() passed after 0.001 seconds.
+◇ Test duplicateResidenceEndpointFails(begin:) started.
+◇ Test case passing 1 argument begin → true to duplicateResidenceEndpointFails(begin:) started.
+◇ Test case passing 1 argument begin → false to duplicateResidenceEndpointFails(begin:) started.
+✔ Test duplicateResidenceEndpointFails(begin:) with 2 test cases passed after 0.001 seconds.
+◇ Test unownedOrMultipleRemovalFails(activePull:) started.
+◇ Test case passing 1 argument activePull → false to unownedOrMultipleRemovalFails(activePull:) started.
+◇ Test case passing 1 argument activePull → true to unownedOrMultipleRemovalFails(activePull:) started.
+✔ Test unownedOrMultipleRemovalFails(activePull:) with 2 test cases passed after 0.001 seconds.
+◇ Test acceptanceWithoutRemovalOrDuringCancellationFails(cancelled:) started.
+◇ Test case passing 1 argument cancelled → false to acceptanceWithoutRemovalOrDuringCancellationFails(cancelled:) started.
+◇ Test case passing 1 argument cancelled → true to acceptanceWithoutRemovalOrDuringCancellationFails(cancelled:) started.
+✔ Test acceptanceWithoutRemovalOrDuringCancellationFails(cancelled:) with 2 test cases passed after 0.001 seconds.
+◇ Test outstandingOwnerFailsSnapshot(pull:) started.
+◇ Test case passing 1 argument pull → false to outstandingOwnerFailsSnapshot(pull:) started.
+◇ Test case passing 1 argument pull → true to outstandingOwnerFailsSnapshot(pull:) started.
+✔ Test outstandingOwnerFailsSnapshot(pull:) with 2 test cases passed after 0.001 seconds.
+◇ Test unrelatedIntervalsAreIgnored() started.
+✔ Test unrelatedIntervalsAreIgnored() passed after 0.001 seconds.
+✔ Suite "Event hub timing accounting" passed after 0.002 seconds.
+◇ Suite "Event hub timing" started.
+◇ Test dequeueCancellationDoesNotInventDiscard(backlog:) started.
+◇ Test case passing 1 argument backlog → 0 to dequeueCancellationDoesNotInventDiscard(backlog:) started.
+◇ Test case passing 1 argument backlog → 1 to dequeueCancellationDoesNotInventDiscard(backlog:) started.
+✔ Test dequeueCancellationDoesNotInventDiscard(backlog:) with 2 test cases passed after 0.004 seconds.
+◇ Test completedWaitingResultsSurviveInterruptedAggregation() started.
+✔ Test completedWaitingResultsSurviveInterruptedAggregation() passed after 0.001 seconds.
+◇ Test parsesIndependentDimensions() started.
+✔ Test parsesIndependentDimensions() passed after 0.001 seconds.
+◇ Test rejectsInvalidDimensions(arguments:) started.
+◇ Test case passing 1 argument arguments → ["--requests"] to rejectsInvalidDimensions(arguments:) started.
+◇ Test case passing 1 argument arguments → ["--requests", "2", "--requests", "3"] to rejectsInvalidDimensions(arguments:) started.
+◇ Test case passing 1 argument arguments → ["--unknown", "1"] to rejectsInvalidDimensions(arguments:) started.
+◇ Test case passing 1 argument arguments → ["--case", "gateway.burst"] to rejectsInvalidDimensions(arguments:) started.
+◇ Test case passing 1 argument arguments → ["--policy", "unknown"] to rejectsInvalidDimensions(arguments:) started.
+◇ Test case passing 1 argument arguments → ["--profile", "unknown"] to rejectsInvalidDimensions(arguments:) started.
+◇ Test case passing 1 argument arguments → ["--seed", "-1"] to rejectsInvalidDimensions(arguments:) started.
+◇ Test case passing 1 argument arguments → ["--requests", "0"] to rejectsInvalidDimensions(arguments:) started.
+◇ Test case passing 1 argument arguments → ["--requests", "100001"] to rejectsInvalidDimensions(arguments:) started.
+◇ Test case passing 1 argument arguments → ["--requests", "x"] to rejectsInvalidDimensions(arguments:) started.
+◇ Test case passing 1 argument arguments → ["--warmup-requests", "-1"] to rejectsInvalidDimensions(arguments:) started.
+◇ Test case passing 1 argument arguments → ["--warmup-requests", "10001"] to rejectsInvalidDimensions(arguments:) started.
+◇ Test case passing 1 argument arguments → ["--subscriptions", "0"] to rejectsInvalidDimensions(arguments:) started.
+◇ Test case passing 1 argument arguments → ["--subscriptions", "257"] to rejectsInvalidDimensions(arguments:) started.
+◇ Test case passing 1 argument arguments → ["--hubs", "0"] to rejectsInvalidDimensions(arguments:) started.
+◇ Test case passing 1 argument arguments → ["--hubs", "9"] to rejectsInvalidDimensions(arguments:) started.
+◇ Test case passing 1 argument arguments → ["--subscriptions", "256", "--hubs", "3"] to rejectsInvalidDimensions(arguments:) started.
+◇ Test case passing 1 argument arguments → ["--queued-depth", "-1"] to rejectsInvalidDimensions(arguments:) started.
+◇ Test case passing 1 argument arguments → ["--queued-depth", "4097"] to rejectsInvalidDimensions(arguments:) started.
+◇ Test case passing 1 argument arguments → ["--payload-bytes", "-1"] to rejectsInvalidDimensions(arguments:) started.
+◇ Test case passing 1 argument arguments → ["--payload-bytes", "65537"] to rejectsInvalidDimensions(arguments:) started.
+◇ Test case passing 1 argument arguments → ["--delay-microseconds", "-1"] to rejectsInvalidDimensions(arguments:) started.
+◇ Test case passing 1 argument arguments → ["--delay-microseconds", "1000001"] to rejectsInvalidDimensions(arguments:) started.
+◇ Test case passing 1 argument arguments → ["--duration-seconds", "0"] to rejectsInvalidDimensions(arguments:) started.
+◇ Test case passing 1 argument arguments → ["--duration-seconds", "301"] to rejectsInvalidDimensions(arguments:) started.
+◇ Test case passing 1 argument arguments → ["--warmup-seconds", "61"] to rejectsInvalidDimensions(arguments:) started.
+◇ Test case passing 1 argument arguments → ["--subscriptions", "256", "--hubs", "2", "--queued-depth", "4096"] to rejectsInvalidDimensions(arguments:) started.
+◇ Test case passing 1 argument arguments → ["--subscriptions", "256", "--queued-depth", "4", "--payload-bytes", "65536"] to rejectsInvalidDimensions(arguments:) started.
+◇ Test case passing 1 argument arguments → ["--requests", "100000", "--subscriptions", "101"] to rejectsInvalidDimensions(arguments:) started.
+◇ Test case passing 1 argument arguments → ["--output", ""] to rejectsInvalidDimensions(arguments:) started.
+◇ Test case passing 1 argument arguments → ["--common-report", ""] to rejectsInvalidDimensions(arguments:) started.
+◇ Test case passing 1 argument arguments → ["--output", "same.json", "--common-report", "./same.json"] to rejectsInvalidDimensions(arguments:) started.
+✔ Test rejectsInvalidDimensions(arguments:) with 32 test cases passed after 0.002 seconds.
+◇ Test finiteCaseInventory() started.
+✔ Test finiteCaseInventory() passed after 0.001 seconds.
+◇ Test finiteScenarios(scenario:policy:) started.
+◇ Test case passing 2 arguments scenario → .queued, policy → .resynchronize to finiteScenarios(scenario:policy:) started.
+◇ Test case passing 2 arguments scenario → .queued, policy → .dropNewest to finiteScenarios(scenario:policy:) started.
+◇ Test case passing 2 arguments scenario → .queued, policy → .dropOldest to finiteScenarios(scenario:policy:) started.
+◇ Test case passing 2 arguments scenario → .waiting, policy → .resynchronize to finiteScenarios(scenario:policy:) started.
+◇ Test case passing 2 arguments scenario → .waiting, policy → .dropNewest to finiteScenarios(scenario:policy:) started.
+◇ Test case passing 2 arguments scenario → .waiting, policy → .dropOldest to finiteScenarios(scenario:policy:) started.
+◇ Test case passing 2 arguments scenario → .overflow, policy → .resynchronize to finiteScenarios(scenario:policy:) started.
+2026-11-11T23:15:26-0600 warning discordkit.gateway.events: dk.dropped=0 dk.event=gateway.subscription.overflow dk.module=gateway dk.subsystem=gateway.events dk.terminated=3 [DiscordGateway] Gateway subscriber capacity exhausted
+2026-11-11T23:15:26-0600 warning discordkit.gateway.events: dk.dropped=0 dk.event=gateway.subscription.overflow dk.module=gateway dk.subsystem=gateway.events dk.terminated=3 [DiscordGateway] Gateway subscriber capacity exhausted
+◇ Test case passing 2 arguments scenario → .overflow, policy → .dropNewest to finiteScenarios(scenario:policy:) started.
+2026-11-11T23:15:26-0600 warning discordkit.gateway.events: dk.dropped=3 dk.event=gateway.subscription.overflow dk.module=gateway dk.subsystem=gateway.events dk.terminated=0 [DiscordGateway] Gateway subscriber capacity exhausted
+2026-11-11T23:15:26-0600 warning discordkit.gateway.events: dk.dropped=3 dk.event=gateway.subscription.overflow dk.module=gateway dk.subsystem=gateway.events dk.terminated=0 [DiscordGateway] Gateway subscriber capacity exhausted
+2026-11-11T23:15:26-0600 warning discordkit.gateway.events: dk.dropped=3 dk.event=gateway.subscription.overflow dk.module=gateway dk.subsystem=gateway.events dk.terminated=0 [DiscordGateway] Gateway subscriber capacity exhausted
+2026-11-11T23:15:26-0600 warning discordkit.gateway.events: dk.dropped=3 dk.event=gateway.subscription.overflow dk.module=gateway dk.subsystem=gateway.events dk.terminated=0 [DiscordGateway] Gateway subscriber capacity exhausted
+2026-11-11T23:15:26-0600 warning discordkit.gateway.events: dk.dropped=3 dk.event=gateway.subscription.overflow dk.module=gateway dk.subsystem=gateway.events dk.terminated=0 [DiscordGateway] Gateway subscriber capacity exhausted
+2026-11-11T23:15:26-0600 warning discordkit.gateway.events: dk.dropped=3 dk.event=gateway.subscription.overflow dk.module=gateway dk.subsystem=gateway.events dk.terminated=0 [DiscordGateway] Gateway subscriber capacity exhausted
+2026-11-11T23:15:26-0600 warning discordkit.gateway.events: dk.dropped=3 dk.event=gateway.subscription.overflow dk.module=gateway dk.subsystem=gateway.events dk.terminated=0 [DiscordGateway] Gateway subscriber capacity exhausted
+2026-11-11T23:15:26-0600 warning discordkit.gateway.events: dk.dropped=3 dk.event=gateway.subscription.overflow dk.module=gateway dk.subsystem=gateway.events dk.terminated=0 [DiscordGateway] Gateway subscriber capacity exhausted
+◇ Test case passing 2 arguments scenario → .overflow, policy → .dropOldest to finiteScenarios(scenario:policy:) started.
+◇ Test case passing 2 arguments scenario → .cancelled, policy → .resynchronize to finiteScenarios(scenario:policy:) started.
+2026-11-11T23:15:26-0600 warning discordkit.gateway.events: dk.dropped=0 dk.event=gateway.subscription.overflow dk.module=gateway dk.subsystem=gateway.events dk.terminated=3 [DiscordGateway] Gateway subscriber capacity exhausted
+2026-11-11T23:15:26-0600 warning discordkit.gateway.events: dk.dropped=0 dk.event=gateway.subscription.overflow dk.module=gateway dk.subsystem=gateway.events dk.terminated=3 [DiscordGateway] Gateway subscriber capacity exhausted
+◇ Test case passing 2 arguments scenario → .cancelled, policy → .dropNewest to finiteScenarios(scenario:policy:) started.
+2026-11-11T23:15:26-0600 warning discordkit.gateway.events: dk.dropped=3 dk.event=gateway.subscription.overflow dk.module=gateway dk.subsystem=gateway.events dk.terminated=0 [DiscordGateway] Gateway subscriber capacity exhausted
+2026-11-11T23:15:26-0600 warning discordkit.gateway.events: dk.dropped=3 dk.event=gateway.subscription.overflow dk.module=gateway dk.subsystem=gateway.events dk.terminated=0 [DiscordGateway] Gateway subscriber capacity exhausted
+2026-11-11T23:15:26-0600 warning discordkit.gateway.events: dk.dropped=3 dk.event=gateway.subscription.overflow dk.module=gateway dk.subsystem=gateway.events dk.terminated=0 [DiscordGateway] Gateway subscriber capacity exhausted
+2026-11-11T23:15:26-0600 warning discordkit.gateway.events: dk.dropped=3 dk.event=gateway.subscription.overflow dk.module=gateway dk.subsystem=gateway.events dk.terminated=0 [DiscordGateway] Gateway subscriber capacity exhausted
+2026-11-11T23:15:26-0600 warning discordkit.gateway.events: dk.dropped=3 dk.event=gateway.subscription.overflow dk.module=gateway dk.subsystem=gateway.events dk.terminated=0 [DiscordGateway] Gateway subscriber capacity exhausted
+2026-11-11T23:15:26-0600 warning discordkit.gateway.events: dk.dropped=3 dk.event=gateway.subscription.overflow dk.module=gateway dk.subsystem=gateway.events dk.terminated=0 [DiscordGateway] Gateway subscriber capacity exhausted
+2026-11-11T23:15:26-0600 warning discordkit.gateway.events: dk.dropped=3 dk.event=gateway.subscription.overflow dk.module=gateway dk.subsystem=gateway.events dk.terminated=0 [DiscordGateway] Gateway subscriber capacity exhausted
+2026-11-11T23:15:26-0600 warning discordkit.gateway.events: dk.dropped=3 dk.event=gateway.subscription.overflow dk.module=gateway dk.subsystem=gateway.events dk.terminated=0 [DiscordGateway] Gateway subscriber capacity exhausted
+◇ Test case passing 2 arguments scenario → .cancelled, policy → .dropOldest to finiteScenarios(scenario:policy:) started.
+✔ Test finiteScenarios(scenario:policy:) with 12 test cases passed after 0.881 seconds.
+◇ Test zeroBacklogAndEmptyPayload() started.
+✔ Test zeroBacklogAndEmptyPayload() passed after 0.001 seconds.
+◇ Test commonReportIdentityAndWarmup() started.
+✔ Test commonReportIdentityAndWarmup() passed after 0.207 seconds.
+◇ Test externalCancellationJoinsOwners(scenario:) started.
+◇ Test case passing 1 argument scenario → .queued to externalCancellationJoinsOwners(scenario:) started.
+◇ Test case passing 1 argument scenario → .waiting to externalCancellationJoinsOwners(scenario:) started.
+✔ Test externalCancellationJoinsOwners(scenario:) with 2 test cases passed after 0.002 seconds.
+◇ Test wallCapHasJoinedPartialPopulation() started.
+✔ Test wallCapHasJoinedPartialPopulation() passed after 1.074 seconds.
+◇ Test overrideCannotBypassWorkBudget() started.
+✔ Test overrideCannotBypassWorkBudget() passed after 0.001 seconds.
+✔ Suite "Event hub timing" passed after 2.176 seconds.
+✔ Test run with 20 tests in 2 suites passed after 2.178 seconds.

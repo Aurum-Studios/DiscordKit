@@ -10,7 +10,8 @@ https://aurum-studios.com
 Status: phased implementation plan. Phase 0 is complete as local preparation at
 `5808ce32d867622ff6952d0f2057768a8a257f14`. Phase 1 is complete as
 local helper implementation at `1bc5de45a6dbeef1ab31bd7f6fbbe85b69771600`.
-Phases 2 through 11 remain proposed.
+Phase 2 has passed local Swift acceptance; its commit receipt is pending.
+Phases 3 through 11 remain proposed.
 See [STATE.md](STATE.md) for the
 commit-backed completion record and [BOOTSTRAP.md](BOOTSTRAP.md) for execution limits.
 Source inspected: `85eac6f3c1d3b17e53596c49e7438efee366c1b3`.

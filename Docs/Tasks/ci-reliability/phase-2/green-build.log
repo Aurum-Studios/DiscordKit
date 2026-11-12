@@ -1,0 +1,14 @@
+swift build --package-path Tools/DiscordKitLoadTests --scratch-path .build/ci-phase2-load --build-system native --jobs 6 --force-resolved-versions --disable-experimental-prebuilts --build-tests
+[0/1] Planning build
+Building for debugging...
+[0/5] Write sources
+[1/5] Write swift-version--58304C5D6DBC2206.txt
+[3/7] Emitting module DiscordKitLoadTests
+[4/7] Compiling DiscordKitLoadTests EventHubTimingRunner.swift
+[4/9] Write Objects.LinkFileList
+[5/9] Linking DiscordKitLoadTests
+[6/9] Applying DiscordKitLoadTests
+[7/9] Write Objects.LinkFileList
+[8/9] Linking DiscordKitLoadTestsPackageTests
+Build complete! (8.33s)
+warning: '--build-system native' has been deprecated and will be removed in a future release; please report an issue at https://github.com/swiftlang/swift-package-manager/issues if you are unable to adopt the default build system.

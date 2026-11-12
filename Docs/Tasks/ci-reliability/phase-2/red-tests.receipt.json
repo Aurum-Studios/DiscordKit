@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "status": "failed",
+  "name": "red-tests",
+  "stage": "red-tests",
+  "operation": "phase2-local",
+  "arguments": [
+    "swift",
+    "test",
+    "--package-path",
+    "Tools/DiscordKitLoadTests",
+    "--scratch-path",
+    ".build/ci-phase2-load",
+    "--build-system",
+    "native",
+    "--jobs",
+    "6",
+    "--force-resolved-versions",
+    "--disable-experimental-prebuilts",
+    "--skip-build",
+    "--no-parallel",
+    "--filter",
+    "EventHubTimingTests/(dequeueCancellationDoesNotInventDiscard|completedWaitingResultsSurviveInterruptedAggregation)"
+  ],
+  "start": "2026-11-12T05:13:08.763016+00:00",
+  "startMonotonic": 318396.269692583,
+  "deadlineMonotonic": 318486.269692583,
+  "executionLimitSeconds": 90,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "operation",
+  "paths": {
+    "output": "/Users/carsonrau/Developer/DiscordKit-ci-phase2/Docs/Tasks/ci-reliability/phase-2/red-tests.log",
+    "stdout": null,
+    "diagnostics": "/Users/carsonrau/Developer/DiscordKit-ci-phase2/Docs/Tasks/ci-reliability/phase-2/red-tests.diagnostics.jsonl",
+    "receipt": "/Users/carsonrau/Developer/DiscordKit-ci-phase2/Docs/Tasks/ci-reliability/phase-2/red-tests.receipt.json"
+  },
+  "identity": {
+    "executionID": "1158f2d1-d995-4bad-9206-0e82862728a5",
+    "supervisorPID": 72515,
+    "host": "Pokemon-GO-Plus",
+    "system": "Darwin",
+    "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase2"
+  },
+  "exitCode": 1,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 72525,
+  "group": 72525,
+  "error": "Command '('swift', 'test', '--package-path', 'Tools/DiscordKitLoadTests', '--scratch-path', '.build/ci-phase2-load', '--build-system', 'native', '--jobs', '6', '--force-resolved-versions', '--disable-experimental-prebuilts', '--skip-build', '--no-parallel', '--filter', 'EventHubTimingTests/(dequeueCancellationDoesNotInventDiscard|completedWaitingResultsSurviveInterruptedAggregation)')' returned non-zero exit status 1.",
+  "errorType": "CalledProcessError",
+  "cleanup": {
+    "status": "group-signalled",
+    "signals": [],
+    "parentReaped": true,
+    "allowanceSeconds": 8.0,
+    "seconds": 0.004,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "/Users/carsonrau/Developer/DiscordKit-ci-phase2/Docs/Tasks/ci-reliability/phase-2/red-tests.log",
+      "retainedBytes": 2996,
+      "observedBytes": 2996,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T05:13:11.471645+00:00",
+  "endMonotonic": 318398.97833625,
+  "elapsedSeconds": 2.709,
+  "lastObservedTest": "run",
+  "readerThreads": 0
+}

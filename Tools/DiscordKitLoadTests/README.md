@@ -923,14 +923,14 @@ before pulling, while overflow/cancelled modes hold the completed retained cohor
 before final drain/cancellation. Waiting mode has no injected hold.
 
 There is one sequential publisher, recorded as concurrency **1** and scheduler
-`sequential-publication-fixed-backlog-v1`; subscriber fan-out and hub count do not
+`sequential-publication-fixed-backlog-v2`; subscriber fan-out and hub count do not
 claim additional publisher concurrency. Warmup uses separate owners and its own
 finite cap. The measured cap is 1...300 seconds, warmup 0...60 seconds; cooperative
 interruption joins every waiting task and releases all retained ownership before
 returning partial counts. Driver profile, seed, duration, warmup and common-report
 environment variables are accepted, with explicit options taking precedence.
 
-Native schema 1 (`DiscordKitLoadTests.gateway-hub-timing`) embeds common
+Native schema 2 (`DiscordKitLoadTests.gateway-hub-timing`) embeds common
 schema-1/catalog-6 evidence. `gateway.publication` measures immediately before
 each public `publish` call through its return, excluding event construction,
 prefill, consumer work and final drain. Its histogram uses 1 µs buckets over
@@ -942,14 +942,38 @@ setup returns and final drain; waiting pulls include suspension and driver barri
 These boundaries overlap and their percentiles must not be added or subtracted.
 
 Common counts partition measured **subscriber copies**; publication distributions
-count actual calls. Success requires measured-copy consumption, while explicit
-retained cancellation and other unconsumed work retain separate terminal outcomes.
-Native counters distinguish publication drops, terminated subscriptions,
-resynchronization errors, admitted copies discarded before consumption, cancelled
-retained copies, setup copies and final cleanup. `dropOldest` evictions are admitted
-copies discarded before consumption; the public API does not count them as
-publication drops. Setup copies never become logical offered work, including on
-interruption. Retained cancellation receipts can include setup copies.
+count actual calls. Success requires consumer acceptance. `measuredCopies` and
+`setupOutcomes` each partition admitted copies into `consumed`, `discarded`,
+`cancelledRetained`, and `cancelledHandoff`. Each partition must equal its admission
+receipt exactly. Setup copies never enter logical offered/outcome counts, even
+on interruption. Unadmitted publication copies and actual evictions become
+rejected outcomes; unexplained copies or contradictory evidence fail integrity.
+
+Queue removal, iterator return, and consumer acceptance are separate boundaries.
+A successful production residence end proves queue removal. If cancellation then
+prevents the public iterator from returning, that copy is `cancelledHandoff` and
+its residence stays successful. Waiting direct deliveries have no residence;
+the confirmed parked cohort and publication admission bind their child results.
+All successful child results are accepted once, including values that completed
+before interrupted driver aggregation. A cancelled child with a proven direct
+handoff has a handoff cancellation; cleanup joins all pending owners.
+
+Native aggregate `discardedAdmittedCopies` counts actual `.failed` residence
+endpoints (including `dropOldest` evictions), and `cancelledRetainedCopies` counts
+actual `.cancelled` residence endpoints, both including setup. No arithmetic
+residual manufactures either category. Public publication drops, terminated
+subscriptions, resynchronization errors, setup counts and cleanup remain separate.
+The public iterator's cancellation check and production residence boundaries are
+unchanged.
+
+Schema 2 readers reject native schema 1. Historical reports remain unchanged;
+common envelope schema 1/catalog 6 is retained, with scheduler
+`sequential-publication-fixed-backlog-v2` and instrumentation
+`owner-accounting-v2-1us-publication-100us-residence`. Compare matching identities
+only: the new ledger adds lock/dictionary bookkeeping at observed endpoints. It
+retains at most 262144 active interval identities and population tags, separately
+from the fixed histograms. Envelope byte charges exclude that bookkeeping. No
+performance improvement or cross-version timing comparability is claimed.
 
 Gross duration includes prefill, injected holds, task barriers, final FIFO drain
 and joined shutdown. CPU includes setup and separate warmup; peak RSS covers the
