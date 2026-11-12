@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "name": "verify-distribution-signature",
+  "stage": "setup-native",
+  "operation": "provisioning",
+  "arguments": [
+    "pkgutil",
+    "--check-signature",
+    "/private/var/folders/3j/5mxmxjxn1z98m1c1y32z64zh0000gn/T/discordkit-phase8-authenticated-payload-5c1523ev/state/distribution/swift-6.4.1-RELEASE-osx.pkg"
+  ],
+  "start": "2026-11-12T15:36:17.728249+00:00",
+  "startMonotonic": 355785.072353166,
+  "deadlineMonotonic": 355845.072353166,
+  "executionLimitSeconds": 60,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "operation",
+  "paths": {
+    "output": "/private/var/folders/3j/5mxmxjxn1z98m1c1y32z64zh0000gn/T/discordkit-phase8-authenticated-payload-5c1523ev/state/evidence/verify-distribution-signature.log",
+    "stdout": "/private/var/folders/3j/5mxmxjxn1z98m1c1y32z64zh0000gn/T/discordkit-phase8-authenticated-payload-5c1523ev/state/evidence/verify-distribution-signature.stdout",
+    "diagnostics": "/private/var/folders/3j/5mxmxjxn1z98m1c1y32z64zh0000gn/T/discordkit-phase8-authenticated-payload-5c1523ev/state/evidence/verify-distribution-signature.diagnostics.jsonl",
+    "receipt": "/private/var/folders/3j/5mxmxjxn1z98m1c1y32z64zh0000gn/T/discordkit-phase8-authenticated-payload-5c1523ev/state/evidence/verify-distribution-signature.receipt.json"
+  },
+  "identity": {
+    "executionID": "5a32ffa7-0ce8-4135-8b25-d87cbd02dd21",
+    "supervisorPID": 42771,
+    "host": "Pokemon-GO-Plus",
+    "system": "Darwin",
+    "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase8"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 42791,
+  "group": 42791,
+  "cleanup": {
+    "status": "group-signalled",
+    "signals": [],
+    "parentReaped": true,
+    "allowanceSeconds": 8.0,
+    "seconds": 0.003,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "verificationMalformedRows": 0,
+    "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "/private/var/folders/3j/5mxmxjxn1z98m1c1y32z64zh0000gn/T/discordkit-phase8-authenticated-payload-5c1523ev/state/evidence/verify-distribution-signature.log",
+      "retainedBytes": 179,
+      "observedBytes": 179,
+      "truncated": false
+    },
+    {
+      "path": "/private/var/folders/3j/5mxmxjxn1z98m1c1y32z64zh0000gn/T/discordkit-phase8-authenticated-payload-5c1523ev/state/evidence/verify-distribution-signature.stdout",
+      "retainedBytes": 1109,
+      "observedBytes": 1109,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T15:36:18.418839+00:00",
+  "endMonotonic": 355785.762966,
+  "elapsedSeconds": 0.691,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}

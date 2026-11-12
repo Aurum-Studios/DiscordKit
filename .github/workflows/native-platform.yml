@@ -77,6 +77,9 @@ jobs:
           python3 Tools/ci/workflow_scope.py authorize --mode "$NATIVE_MODE"
           --platform "$NATIVE_PLATFORM" --component "$NATIVE_COMPONENT" --suite "$NATIVE_SUITE"
       - uses: ./.github/actions/setup-native
+        timeout-minutes: 10
+        with:
+          profile: build
       - name: Check native host, compiler, linker and runtime
         run: >-
           python Tools/ci/platform_probe.py --platform ${{ inputs.platform }}
@@ -121,6 +124,9 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup-native
+        timeout-minutes: 10
+        with:
+          profile: build
       - name: Discover owned test targets and assign runner sizes
         id: plan
         shell: python
@@ -177,6 +183,9 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup-native
+        timeout-minutes: 10
+        with:
+          profile: build
       - name: Compile selected products and tests without running suites
         run: >-
           python Tools/ci/native_jobs.py compile --component ${{ matrix.component }}
@@ -217,6 +226,9 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup-native
+        timeout-minutes: 10
+        with:
+          profile: runtime
       - uses: ./.github/actions/consume-native
         with:
           platform: ${{ inputs.platform }}
@@ -273,6 +285,9 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup-native
+        timeout-minutes: 10
+        with:
+          profile: build
       - name: Compile selected products and tests without running suites
         run: >-
           python Tools/ci/native_jobs.py compile --component ${{ matrix.component }}
@@ -322,6 +337,9 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup-native
+        timeout-minutes: 10
+        with:
+          profile: build
       - name: Compile selected products and tests without running suites
         run: >-
           python Tools/ci/native_jobs.py compile --component ${{ matrix.component }}
@@ -398,6 +416,9 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup-native
+        timeout-minutes: 10
+        with:
+          profile: runtime
       - uses: ./.github/actions/consume-native
         with:
           platform: ${{ matrix.platform }}
@@ -458,6 +479,9 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup-native
+        timeout-minutes: 10
+        with:
+          profile: runtime
       - uses: ./.github/actions/consume-native
         with:
           platform: ${{ matrix.platform }}
@@ -514,6 +538,9 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup-native
+        timeout-minutes: 10
+        with:
+          profile: runtime
       - uses: ./.github/actions/consume-native
         with:
           platform: ${{ inputs.platform }}
@@ -561,6 +588,9 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup-native
+        timeout-minutes: 10
+        with:
+          profile: build
       - name: Require positive builds and exact negative compiler diagnostics
         shell: python
         env:
@@ -596,6 +626,9 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup-native
+        timeout-minutes: 10
+        with:
+          profile: build
       - uses: ./.github/actions/consume-native
         with:
           platform: macos-arm64
@@ -669,12 +702,10 @@ jobs:
       - uses: actions/checkout@v6
         with:
           persist-credentials: false
-      - uses: actions/setup-python@v6
+      - uses: ./.github/actions/setup-native
+        timeout-minutes: 10
         with:
-          python-version: '3.12'
-      - uses: swift-actions/setup-swift@v3
-        with:
-          swift-version: '6.4.1'
+          profile: build
       - name: Record compiler and Xcode
         run: |
           swift --version
@@ -739,6 +770,9 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup-native
+        timeout-minutes: 10
+        with:
+          profile: runtime
       - name: Require full scope before source export
         env:
           CERTIFICATION_MODE: ${{ inputs.mode }}

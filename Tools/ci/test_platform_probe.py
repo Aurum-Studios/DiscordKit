@@ -290,5 +290,73 @@ class BuildCompatibilityFactsTests(unittest.TestCase):
             self.assertEqual(query.call_args.args[3], "build-fact-1")
 
 
+class VerifiedProvisioningFactsTests(unittest.TestCase):
+    """Cold/hit provenance cannot change compatibility or permit a shadow compiler."""
+
+    def fixture(self, path, hit=False):
+        import hashlib
+        import native_provisioning as provisioning
+        policy = provisioning.load_policy()
+        distribution = policy['platforms']['linux-x64']
+        triple = 'x86_64-unknown-linux-gnu'
+        info = {'compilerVersion': 'Swift version 6.4.1 (fixture)',
+                'target': {'triple': triple, 'unversionedTriple': triple, 'moduleTriple': triple},
+                'paths': {'runtimeLibraryPaths': ['/toolchain/lib/swift'],
+                          'runtimeLibraryImportPaths': ['/toolchain/lib/swift'],
+                          'runtimeResourcePath': '/toolchain/lib/swift'}}
+        image = {'system': 'Linux', 'architecture': 'x86_64', 'release': 'fixture-kernel',
+                 'version': 'fixture-build', 'imageOS': 'ubuntu24', 'imageVersion': '20261112.1',
+                 'distribution': {'id': 'ubuntu', 'version': '24.04'}}
+        return {'schemaVersion': 1, 'status': 'passed', 'platform': 'linux-x64',
+                'policySHA256': hashlib.sha256(provisioning.canonical(policy)).hexdigest(),
+                'distribution': {'url': distribution['distributionURL'], 'sha256': distribution['distributionSHA256']},
+                'verification': {'method': distribution['signature'], 'signatureVerified': True,
+                                 'sha256': distribution['distributionSHA256'],
+                                 'signer': distribution['signerFingerprints'][0]},
+                'image': image,
+                'cache': {'hit': hit, 'key': provisioning.compatibility_key(policy, 'linux-x64', image)},
+                'binPath': distribution['installationPath'] + '/usr/bin',
+                'swiftVersion': 'Swift version 6.4.1 (fixture)\nTarget: ' + triple, 'targetInfo': info}
+
+    def facts(self, path, record, *, shadow=False):
+        path.write_text(json.dumps(record))
+        environment = {'DISCORDKIT_PROVISIONING_RECEIPT': str(path), 'ImageOS': 'ubuntu24',
+                       'ImageVersion': '20261112.1'}
+        def which(name):
+            return ('/shadow/bin/' if shadow else record['binPath'] + '/') + name
+        with patch.object(platform_probe.shutil, 'which', side_effect=which):
+            return BuildCompatibilityFactsTests().facts(environment=environment)
+
+    def test_cold_and_cache_hit_have_identical_exact_phase4_compatibility(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / 'provisioning.json'
+            cold = self.facts(path, self.fixture(path))
+            hit = self.facts(path, self.fixture(path, hit=True))
+        self.assertEqual(cold['exact'], hit['exact'])
+        self.assertFalse(cold['informational']['provisioning']['cacheHit'])
+        self.assertTrue(hit['informational']['provisioning']['cacheHit'])
+
+    def test_failed_unsigned_stale_wrong_image_and_shadowed_receipts_fail(self):
+        mutations = (lambda r: r.update(status='failed'),
+                     lambda r: r.update(platform='macos-arm64'),
+                     lambda r: r['distribution'].update(sha256='0'*64),
+                     lambda r: r['verification'].update(signatureVerified=False),
+                     lambda r: r['verification'].update(signer='untrusted'),
+                     lambda r: r['image'].update(imageVersion='stale'),
+                     lambda r: r.update(swiftVersion='Swift version 6.4.0'))
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / 'provisioning.json'
+            for mutate in mutations:
+                record = self.fixture(path)
+                mutate(record)
+                with self.subTest(record=record), self.assertRaises(ValueError):
+                    self.facts(path, record)
+            with self.assertRaisesRegex(ValueError, 'active compiler'):
+                self.facts(path, self.fixture(path), shadow=True)
+            for record in ([], {}, {'verification': []}):
+                with self.subTest(record=record), self.assertRaises(ValueError):
+                    self.facts(path, record)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -1,0 +1,3 @@
+# Preserve pkgutil's original certificate formatting, including trailing spaces.
+checks/real-macos-payload/command-logs/verify-distribution-signature.stdout -whitespace
+upstream/macos-signature.txt -whitespace

@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "observedAtUTC": "2026-11-12T15:29:56.226008+00:00",
+  "swiftVersion": "6.4.1",
+  "policy": "Pins correspond to complete official HTTPS payloads authenticated in the retained signature evidence. No compiler payload or installed tree is committed.",
+  "distributions": [
+    {
+      "platform": "linux-x64",
+      "listingURL": "https://www.swift.org/install/linux/ubuntu/24_04/",
+      "url": "https://download.swift.org/swift-6.4.1-release/ubuntu2404/swift-6.4.1-RELEASE/swift-6.4.1-RELEASE-ubuntu24.04.tar.gz",
+      "signatureURL": "https://download.swift.org/swift-6.4.1-release/ubuntu2404/swift-6.4.1-RELEASE/swift-6.4.1-RELEASE-ubuntu24.04.tar.gz.sig",
+      "sha256": "7d246c7114077ad01dba4ad897628446ada4c489d6c7dbcf39ae3f25cbe17e8b",
+      "bytes": 1124788555,
+      "httpStatus": 200,
+      "authentication": {
+        "method": "GnuPG detached signature verification in an existing network-disabled local Docker image returned exit code 0; the primary fingerprint matched official Swift documentation.",
+        "primaryFingerprint": "52BB7E3DE28A71BE22EC05FFEF80A866B47A981F",
+        "signatureIssuer": "EF80A866B47A981F",
+        "keyURL": "https://www.swift.org/keys/release-key-swift-6.x.asc",
+        "fingerprintURL": "https://www.swift.org/keys/active/",
+        "evidence": "linux-signature-verification.json",
+        "gpgEvidence": "linux-gpg-verification.log"
+      }
+    },
+    {
+      "platform": "macos-arm64",
+      "listingURL": "https://www.swift.org/install/macos/",
+      "url": "https://download.swift.org/swift-6.4.1-release/xcode/swift-6.4.1-RELEASE/swift-6.4.1-RELEASE-osx.pkg",
+      "sha256": "c34e7e5fb0be4bcd61decfd40db1766434d8952d68e37aed90bcff4e8547951c",
+      "bytes": 1590804750,
+      "httpStatus": 200,
+      "authentication": {
+        "method": "pkgutil --check-signature of the complete official package returned exit code 0.",
+        "status": "signed by a developer certificate issued by Apple for distribution",
+        "notarization": "trusted by the Apple notary service",
+        "signer": "Developer ID Installer: Swift Open Source (V9AUD2URP3)",
+        "leafCertificateSHA256": "AC12310FADC4904F89203418BE5801B6EE79DE3A0DF223A1F1F4127BAB97B1A5",
+        "signerDocumentationURL": "https://www.swift.org/install/macos/package_installer/",
+        "evidence": "macos-signature.txt"
+      }
+    }
+  ],
+  "sources": [
+    {
+      "url": "https://www.swift.org/install/linux/tarball/",
+      "purpose": "Official Ubuntu prerequisites and detached signature verification."
+    },
+    {
+      "url": "https://www.swift.org/keys/active/",
+      "purpose": "Official Swift 6 release signing fingerprint and public key URL."
+    },
+    {
+      "url": "https://www.swift.org/install/macos/package_installer/",
+      "purpose": "Official user-home installer destination, command activation, and exact Swift developer signer."
+    },
+    {
+      "url": "https://github.com/swiftlang/swiftly/blob/1.1.0/Sources/MacOSPlatform/MacOS.swift",
+      "purpose": "Prior Swiftly macOS installation semantics and custom-directory signature verification."
+    },
+    {
+      "url": "https://github.com/swift-actions/setup-swift/tree/d8e84bc3a450686a95474d7d6fa4a3301498debc",
+      "purpose": "Inspected v3 source; temporary Swiftly homes and mutable macOS Swiftly package make an installed-home cache unsuitable."
+    },
+    {
+      "url": "https://docs.github.com/en/actions/reference/workflows-and-actions/dependency-caching",
+      "purpose": "Default-branch cache access and PR merge-ref cache scope."
+    },
+    {
+      "url": "https://github.com/actions/runner/blob/main/src/Runner.Worker/action_yaml.json",
+      "purpose": "Composite inner steps have no timeout-minutes key; workflows must bound the outer setup-native uses step."
+    },
+    {
+      "url": "https://github.com/actions/cache/blob/main/restore/action.yml",
+      "purpose": "Restore action exposes no total transfer timeout; an enclosing workflow step provides the aggregate bound."
+    }
+  ],
+  "qualificationLimits": [
+    "The local macOS signature/hash checks do not establish hosted provisioning or cache performance.",
+    "The Linux bytes and signature were verified on macOS; no native Linux compiler execution occurred during this upstream provenance check.",
+    "Pinned digests are observed values derived from authenticated payloads; Swift does not publish checksum sidecars for these distributions."
+  ]
+}

@@ -4,39 +4,94 @@
 # https://aurum-studios.com
 
 name: Set up native Swift validation
-description: Install the pinned Swift toolchain and native validation prerequisites.
+description: Verify and reuse pinned Swift distributions with scoped native prerequisites.
+inputs:
+  profile:
+    description: Build/compiler or runtime/test-consumer prerequisites; both install verified Swift.
+    default: build
 
 runs:
   using: composite
   steps:
+    # Every caller caps this entire action at ten minutes, including cache I/O.
+    - name: Plan exact compiler cache and start the provisioning deadline
+      id: provisioning
+      if: runner.os != 'Windows'
+      shell: bash
+      env:
+        DISCORDKIT_DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        NATIVE_PROFILE: ${{ inputs.profile }}
+      run: |
+        case "$NATIVE_PROFILE" in
+          build|runtime) ;;
+          *) echo 'Unknown native prerequisite profile' >&2; exit 1 ;;
+        esac
+        python3 Tools/ci/native_provisioning.py prepare --platform auto \
+          --root "$RUNNER_TEMP/native-provisioning" \
+          --output "$RUNNER_TEMP/native-provisioning-plan.json" \
+          --github-output "$GITHUB_OUTPUT"
     - uses: actions/setup-python@v6
       with:
         python-version: '3.12'
-    - name: Install Ubuntu build and validation dependencies
+    - name: Install scoped Ubuntu prerequisites within the provisioning deadline
       if: runner.os == 'Linux'
       shell: bash
+      env:
+        NATIVE_PROFILE: ${{ inputs.profile }}
       run: |
-        sudo apt-get update
-        sudo apt-get install --yes --no-install-recommends \
-          binutils ca-certificates clang curl git gnupg2 libc6-dev \
-          libcurl4-openssl-dev libedit2 libgcc-13-dev libncurses-dev \
-          libpython3-dev libsqlite3-0 libstdc++-13-dev libxml2-dev \
-          libz3-dev pkg-config python3 tzdata unzip zlib1g-dev
-    - name: Import Swift signing keys before verifying the Swiftly installer
-      if: runner.os == 'Linux'
-      shell: bash
-      run: |
-        # setup-swift v3 verifies Swiftly before it imports any signing keys.
-        # Decode compressed responses as in Swift's official signing guide.
-        curl --compressed --fail --show-error --silent --location --retry 3 \
-          --output "$RUNNER_TEMP/swift-signing-keys.asc" https://www.swift.org/keys/all-keys.asc
-        gpg --batch --import "$RUNNER_TEMP/swift-signing-keys.asc"
-        gpg --batch --list-keys E813C892820A6FA13755B268F167DF1ACF9CE069
-    - uses: swift-actions/setup-swift@v3
+        case "$NATIVE_PROFILE" in
+          build|runtime) ;;
+          *) echo 'Unknown native prerequisite profile' >&2; exit 1 ;;
+        esac
+        # SwiftPM can compile manifests even with --skip-build. Retain its
+        # compiler/linker headers and CRT dependencies in the runtime profile.
+        packages=(binutils ca-certificates curl git gnupg2 libc6-dev libcurl4t64
+          libedit2 libgcc-13-dev libpython3.12t64 libsqlite3-0 libstdc++-13-dev
+          libxml2 libz3-4 python3 tzdata unzip zlib1g)
+        if [[ "$NATIVE_PROFILE" == build ]]; then
+          packages+=(clang libcurl4-openssl-dev
+            libncurses-dev libpython3-dev libxml2-dev
+            libz3-dev pkg-config zlib1g-dev)
+        fi
+        python Tools/ci/native_provisioning.py run \
+          --plan "$RUNNER_TEMP/native-provisioning-plan.json" --name apt-update \
+          -- sudo apt-get update
+        python Tools/ci/native_provisioning.py run \
+          --plan "$RUNNER_TEMP/native-provisioning-plan.json" --name apt-install \
+          -- sudo apt-get install --yes --no-install-recommends "${packages[@]}"
+    - name: Restore only the exact signed compiler distribution
+      id: swift-cache
       if: runner.os != 'Windows'
+      uses: actions/cache/restore@v4
       with:
-        swift-version: '6.4.1'
-        skip-verify-signature: false
+        path: ${{ steps.provisioning.outputs.cache-path }}
+        key: ${{ steps.provisioning.outputs.cache-key }}
+      env:
+        SEGMENT_DOWNLOAD_TIMEOUT_MINS: '2'
+    - name: Authenticate compiler bytes before installation and execution
+      if: runner.os != 'Windows'
+      shell: bash
+      env:
+        SWIFT_CACHE_HIT: ${{ steps.swift-cache.outputs.cache-hit }}
+      run: >-
+        python Tools/ci/native_provisioning.py provision
+        --plan "$RUNNER_TEMP/native-provisioning-plan.json"
+        --cache-hit "$SWIFT_CACHE_HIT" --github-path "$GITHUB_PATH"
+        --github-env "$GITHUB_ENV"
+    - name: Save verified payload only from the trusted default branch
+      if: runner.os != 'Windows' && steps.provisioning.outputs.cache-save == 'true' && steps.swift-cache.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v4
+      with:
+        path: ${{ steps.provisioning.outputs.cache-path }}
+        key: ${{ steps.provisioning.outputs.cache-key }}
+    - name: Retain provisioning identity and bounded diagnostics
+      if: always() && runner.os != 'Windows'
+      uses: actions/upload-artifact@v7
+      with:
+        name: provisioning-${{ runner.os }}-${{ runner.arch }}-${{ github.job }}-${{ strategy.job-index }}-${{ github.run_id }}-${{ github.run_attempt }}
+        path: ${{ runner.temp }}/native-provisioning/evidence
+        if-no-files-found: warn
+        retention-days: 14
     - name: Enable Windows developer mode and require native build prerequisites
       if: runner.os == 'Windows'
       shell: pwsh
@@ -56,6 +111,3 @@ runs:
         swift-version: swift-6.4.1-release
         swift-build: 6.4.1-RELEASE
         build_arch: amd64
-    - uses: actions/setup-node@v6
-      with:
-        node-version: '24'

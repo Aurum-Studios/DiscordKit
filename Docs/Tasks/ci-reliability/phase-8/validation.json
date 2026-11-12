@@ -1,0 +1,429 @@
+{
+  "actionlintBinarySHA256": "8db11704dc296f096216db4db65d86cd7f0ebfdf4c38453a1da276b137b88388",
+  "architecture": "arm64",
+  "artifactsSHA256": {
+    "Docs/Tasks/ci-reliability/phase-8/.gitattributes": "2939809e6dba016664cc0406e4e53a6c12f739c2e2c3664a754627de10b44b39",
+    "Docs/Tasks/ci-reliability/phase-8/IMPLEMENTATION.md": "0734a28c2b41daa600ba050c1e95cfb326f31e5ebff3294a76aef1b65ffc3a9b",
+    "Docs/Tasks/ci-reliability/phase-8/checks/benchmark-python/00-benchmarks-python.diagnostics.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "Docs/Tasks/ci-reliability/phase-8/checks/benchmark-python/00-benchmarks-python.log": "55280916e86b47703b49c0ccd1eb2fd1ca6b4b6221d50acb038b4284fbe33a26",
+    "Docs/Tasks/ci-reliability/phase-8/checks/benchmark-python/00-benchmarks-python.receipt.json": "6548a37c18a81c231cf1e1319bebe38f67079fd3158e68f8853c8462ef856858",
+    "Docs/Tasks/ci-reliability/phase-8/checks/benchmark-python/01-timing-support-python.diagnostics.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "Docs/Tasks/ci-reliability/phase-8/checks/benchmark-python/01-timing-support-python.log": "492d85ebb039b34e089a6fe43859a1cac5118eb28221c74b15df71344129fe1a",
+    "Docs/Tasks/ci-reliability/phase-8/checks/benchmark-python/01-timing-support-python.receipt.json": "8b72d564f976f4ef9f698a20e5eef13887cab1af06796fda9b34cdd755c48ebd",
+    "Docs/Tasks/ci-reliability/phase-8/checks/benchmark-python/02-foundation-timing-python.diagnostics.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "Docs/Tasks/ci-reliability/phase-8/checks/benchmark-python/02-foundation-timing-python.log": "b75253d4ff95d3a61e82be1e9d8c466620d64d8def4fd4d7968687e643cd2d34",
+    "Docs/Tasks/ci-reliability/phase-8/checks/benchmark-python/02-foundation-timing-python.receipt.json": "31c128f01290f62199e2c02a62703baa51378f5b45b92664767e1cc484986f08",
+    "Docs/Tasks/ci-reliability/phase-8/checks/benchmark-python/commands.json": "e769f548e9f65f56aa45bf8f5cdee53a2d620358c653c33ea143aeaf80d93f65",
+    "Docs/Tasks/ci-reliability/phase-8/checks/browser/00-browser.diagnostics.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "Docs/Tasks/ci-reliability/phase-8/checks/browser/00-browser.log": "79930a50a2d40bd9a2f6777f074d58017c609691c676611eb2d97f4b9ecdcde5",
+    "Docs/Tasks/ci-reliability/phase-8/checks/browser/00-browser.receipt.json": "bfe75f69a0ec4eac7bbd4975918bf2279055a7e413a09fce706ac1f06d2d9a6e",
+    "Docs/Tasks/ci-reliability/phase-8/checks/browser/commands.json": "886bc8553a13b104d98631eacea88a4dd13466a900ea82105a41f90bc81c822d",
+    "Docs/Tasks/ci-reliability/phase-8/checks/ci-python-final/00-ci-python.diagnostics.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "Docs/Tasks/ci-reliability/phase-8/checks/ci-python-final/00-ci-python.log": "3f1a21c5fa0c8bb99688603b736845fbf2b87b462dcbac294114fd8bb83ccefa",
+    "Docs/Tasks/ci-reliability/phase-8/checks/ci-python-final/00-ci-python.receipt.json": "18d4651d9ef11b402c6fc38fa4433779d5efead54bab87a3b6357372bbd69d82",
+    "Docs/Tasks/ci-reliability/phase-8/checks/ci-python-final/commands.json": "e28d377bd734c27b1fb5c9dc64f4e59dd9abf242071465e5b072d97f79533220",
+    "Docs/Tasks/ci-reliability/phase-8/checks/ci-python/00-ci-python.diagnostics.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "Docs/Tasks/ci-reliability/phase-8/checks/ci-python/00-ci-python.log": "0670d947f672ff49f1828396cf89ad06c63e574b88f92d0280372152f848e7b5",
+    "Docs/Tasks/ci-reliability/phase-8/checks/ci-python/00-ci-python.receipt.json": "fc4c4f87545442927b0be461927c04319fc9ecb239cf0eee60a2d8980701420e",
+    "Docs/Tasks/ci-reliability/phase-8/checks/ci-python/commands.json": "0f534941daab2dda8bd17ca77754bc100a098b6c54f7edbc6cfff2ed0bee215c",
+    "Docs/Tasks/ci-reliability/phase-8/checks/maintenance/maintenance.diagnostics.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "Docs/Tasks/ci-reliability/phase-8/checks/maintenance/maintenance.log": "1ca3381f73ca0041e12f360dd10a4f3616bd768897a7c952081489b34acf0582",
+    "Docs/Tasks/ci-reliability/phase-8/checks/maintenance/maintenance.receipt.json": "318be13f61ef50805d1bf56a8b37515ffd01c888c716f99d6a5d325b4cada766",
+    "Docs/Tasks/ci-reliability/phase-8/checks/real-macos-payload/check.json": "f2f645947e92942937a4f1318865605f9bf1a41b545c7a37bf894f7f591b5d3a",
+    "Docs/Tasks/ci-reliability/phase-8/checks/real-macos-payload/command-logs/prepare-sdk-1.diagnostics.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "Docs/Tasks/ci-reliability/phase-8/checks/real-macos-payload/command-logs/prepare-sdk-1.log": "6fba5b06adc950f33d22ad96270f4145b4617b81f29c75b72d768dddaa175e89",
+    "Docs/Tasks/ci-reliability/phase-8/checks/real-macos-payload/command-logs/prepare-sdk-1.receipt.json": "4bf93e1005ed25d3a0106e2fcd9462e9897c54e16a9de4f2b477ad75dde275cd",
+    "Docs/Tasks/ci-reliability/phase-8/checks/real-macos-payload/command-logs/prepare-sdk-1.stdout": "024e83842db917ed79a567b48b5f70bf468a2a914d5dc6df59f9d19c25ad3a0e",
+    "Docs/Tasks/ci-reliability/phase-8/checks/real-macos-payload/command-logs/prepare-sdk-2.diagnostics.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "Docs/Tasks/ci-reliability/phase-8/checks/real-macos-payload/command-logs/prepare-sdk-2.log": "e5abf345a1b6053a03e00b7cdcc6f57b2913de44ca19579f6284f914e4438035",
+    "Docs/Tasks/ci-reliability/phase-8/checks/real-macos-payload/command-logs/prepare-sdk-2.receipt.json": "5e99dd61bcc1ec36aa3998dcce366730172642e93fcc2fb379b398c308349d57",
+    "Docs/Tasks/ci-reliability/phase-8/checks/real-macos-payload/command-logs/prepare-sdk-2.stdout": "ee3fe26035862d2b9653c1a570be3eca4ee5be2815f0ce99ff2d8ffa3399e4c8",
+    "Docs/Tasks/ci-reliability/phase-8/checks/real-macos-payload/command-logs/prepare-sdk-3.diagnostics.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "Docs/Tasks/ci-reliability/phase-8/checks/real-macos-payload/command-logs/prepare-sdk-3.log": "bc2dc7c9c499c8016dc2f1f5e6ced9da5a8a7bda504b71d230f477f4facc9f0d",
+    "Docs/Tasks/ci-reliability/phase-8/checks/real-macos-payload/command-logs/prepare-sdk-3.receipt.json": "3af4893acbe75fc7708e7f5d5478d8c92675b4e64c118445367849462df61c56",
+    "Docs/Tasks/ci-reliability/phase-8/checks/real-macos-payload/command-logs/prepare-sdk-3.stdout": "7da0fd6d11521838939c36a6c45bfaeb893ecd0f8db281f9093f2c93af465ed1",
+    "Docs/Tasks/ci-reliability/phase-8/checks/real-macos-payload/command-logs/prepare-sdk-4.diagnostics.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "Docs/Tasks/ci-reliability/phase-8/checks/real-macos-payload/command-logs/prepare-sdk-4.log": "f54d7e6e6244067e9abe71621ad17d2216ce4eb703638a9595658f7f07c86153",
+    "Docs/Tasks/ci-reliability/phase-8/checks/real-macos-payload/command-logs/prepare-sdk-4.receipt.json": "58dd9ce79464d921928508579259fc3b1249a7a395ab6d478fdede98921a74a9",
+    "Docs/Tasks/ci-reliability/phase-8/checks/real-macos-payload/command-logs/prepare-sdk-4.stdout": "7b01c549928398a045692f24bcac7803b348524cdd76f21265b02984b2ba556a",
+    "Docs/Tasks/ci-reliability/phase-8/checks/real-macos-payload/command-logs/prepare-sdk-5.diagnostics.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "Docs/Tasks/ci-reliability/phase-8/checks/real-macos-payload/command-logs/prepare-sdk-5.log": "9110bcd1abf80a31ad3ca3c5a811a1b3e82d6b5d884e3b4adf707426333c85f0",
+    "Docs/Tasks/ci-reliability/phase-8/checks/real-macos-payload/command-logs/prepare-sdk-5.receipt.json": "5cc6e09f32030547d9a9152e3205d123f52bb313aa34717e61a570d45deca95e",
+    "Docs/Tasks/ci-reliability/phase-8/checks/real-macos-payload/command-logs/prepare-sdk-5.stdout": "8e78a5c0c20fa1f07a154dbd8319d52d2bc1c38974a5b30047e300e8d0ec8a23",
+    "Docs/Tasks/ci-reliability/phase-8/checks/real-macos-payload/command-logs/provisioning.json": "44e71b567c763418cf1f7b65ad7b1a434b2581fa43fef8801574fe418b9f1618",
+    "Docs/Tasks/ci-reliability/phase-8/checks/real-macos-payload/command-logs/verify-distribution-signature.diagnostics.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "Docs/Tasks/ci-reliability/phase-8/checks/real-macos-payload/command-logs/verify-distribution-signature.log": "c409fb8dd8dbed6661dfe80aebaf43804f3e62da10d52ce91112d64236470151",
+    "Docs/Tasks/ci-reliability/phase-8/checks/real-macos-payload/command-logs/verify-distribution-signature.receipt.json": "f89661526daf9125a30d98198b90d817dffc4c9c3031647b19c214de3181621d",
+    "Docs/Tasks/ci-reliability/phase-8/checks/real-macos-payload/command-logs/verify-distribution-signature.stdout": "089b85cdf2653cace555ca724fca8a80734c4e0456393a6639d273244dd77dd4",
+    "Docs/Tasks/ci-reliability/phase-8/checks/real-macos-payload/plan.json": "9aa65e42af8bfb09af2700883bc0b53ebc861443b7e266cf42f4113ba6ff3750",
+    "Docs/Tasks/ci-reliability/phase-8/checks/source/00-policy-source-inventory.diagnostics.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "Docs/Tasks/ci-reliability/phase-8/checks/source/00-policy-source-inventory.log": "40863d06002e30ae8738e31bc0bcdf25406bbee915da711405f8080127619fbd",
+    "Docs/Tasks/ci-reliability/phase-8/checks/source/00-policy-source-inventory.receipt.json": "0b05b7dacb62d3fb61783af7727a17b20177360b8a7e42568cd597e4bd4d4472",
+    "Docs/Tasks/ci-reliability/phase-8/checks/source/01-documentation-example-snapshots.diagnostics.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "Docs/Tasks/ci-reliability/phase-8/checks/source/01-documentation-example-snapshots.log": "4cd25250fde632c5e31f45f6b9b594c1dcde2dd10cfcc503d8aed5a493395ff1",
+    "Docs/Tasks/ci-reliability/phase-8/checks/source/01-documentation-example-snapshots.receipt.json": "4b5baeb6473c672695436107d286b78687f98c335c7550a84f59139f4a5d33f6",
+    "Docs/Tasks/ci-reliability/phase-8/checks/source/commands.json": "979116b205db4572b5b42902bdbaf82ab11ee9f14a946173b2d0a6f2fd5760d2",
+    "Docs/Tasks/ci-reliability/phase-8/checks/static-initial/static.diagnostics.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "Docs/Tasks/ci-reliability/phase-8/checks/static-initial/static.log": "7cdc7bfae04d75901c423703692b93bb0e7f624e544496c485f4a78c3b1c89d2",
+    "Docs/Tasks/ci-reliability/phase-8/checks/static-initial/static.receipt.json": "b3c63066754dd38e1fa6bbedbfa71774460385103639712e452a8273c7f52f26",
+    "Docs/Tasks/ci-reliability/phase-8/checks/static/results.json": "7424a5e8a709d1498659cdd2e285774299648e7464128778bcdd3f443644772d",
+    "Docs/Tasks/ci-reliability/phase-8/checks/static/static.diagnostics.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "Docs/Tasks/ci-reliability/phase-8/checks/static/static.log": "f28c6a0258e82958eb11e02415babbaf4f5794e62158f26890f9e7ccdbd043e0",
+    "Docs/Tasks/ci-reliability/phase-8/checks/static/static.receipt.json": "e3ca47c5c5f5dd3821979f194b45cfab2e1bbd4a207c3e57407a03d91acaece8",
+    "Docs/Tasks/ci-reliability/phase-8/checks/tooling-python/00-tooling-python.diagnostics.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "Docs/Tasks/ci-reliability/phase-8/checks/tooling-python/00-tooling-python.log": "7365e7d4aaf4208f702be6f1c4c7d11cba96d61d9daab01c93b44b762471f406",
+    "Docs/Tasks/ci-reliability/phase-8/checks/tooling-python/00-tooling-python.receipt.json": "8d189eb78b1ed5feeddf8e6be5a2dc6b0d7b7fdd1fa2ec4b2fdd7db55a7ee7f0",
+    "Docs/Tasks/ci-reliability/phase-8/checks/tooling-python/01-load-python.diagnostics.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "Docs/Tasks/ci-reliability/phase-8/checks/tooling-python/01-load-python.log": "b246306284beb5188b8c96831358493f946d6bfe181e3b1514b76102ece694d9",
+    "Docs/Tasks/ci-reliability/phase-8/checks/tooling-python/01-load-python.receipt.json": "6cd588c25220bac01d1c0b6c979d261de3fe9fd9d57139dee4d7bebe891a1395",
+    "Docs/Tasks/ci-reliability/phase-8/checks/tooling-python/commands.json": "bd3bfe53124354205478dd70f3b7adff8db8239c391a317280b48e771d6b6047",
+    "Docs/Tasks/ci-reliability/phase-8/checks/verify_local.py": "01ae8389fa57b2787853169f6aee5d118f0b4966a045fc87040cbbb17e7d42ff",
+    "Docs/Tasks/ci-reliability/phase-8/checks/workflow-final/00-actionlint.diagnostics.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "Docs/Tasks/ci-reliability/phase-8/checks/workflow-final/00-actionlint.log": "978927452b46c021c9ab9730835458b9dfe00045b9d00e9d937150997cf47c89",
+    "Docs/Tasks/ci-reliability/phase-8/checks/workflow-final/00-actionlint.receipt.json": "8d4bb6feac0d9cea5d99c19fbd7f20e1cf2662d98d7f01592b1721320567a51f",
+    "Docs/Tasks/ci-reliability/phase-8/checks/workflow-final/commands.json": "4e17d6910408048a0973282cb31c8f651ef07291e0840934999d3d94e4656718",
+    "Docs/Tasks/ci-reliability/phase-8/checks/workflow/00-actionlint.diagnostics.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "Docs/Tasks/ci-reliability/phase-8/checks/workflow/00-actionlint.log": "978927452b46c021c9ab9730835458b9dfe00045b9d00e9d937150997cf47c89",
+    "Docs/Tasks/ci-reliability/phase-8/checks/workflow/00-actionlint.receipt.json": "d140842e91d1447c1e5a14984055ccf035d75709f3bd3add11fb8310566d4c87",
+    "Docs/Tasks/ci-reliability/phase-8/checks/workflow/commands.json": "4f3d04d878de8971c10a51d6983cb2f6d131233d321fffb462efa91cd00ddf88",
+    "Docs/Tasks/ci-reliability/phase-8/review.json": "c976c4eacf169e63129cb03e677c2261abc942507c0f3c9eb57d724121c9c2ea",
+    "Docs/Tasks/ci-reliability/phase-8/source-preflight.json": "bf19980faae92532954fcec4c5c69ecdb8bbe7eeb1cb7a2301662ef9e1cb3145",
+    "Docs/Tasks/ci-reliability/phase-8/upstream/SHA256.txt": "52a52dbc181060b0eb334cb9b8ebf98344bb83dc4c1c1129595c23ab17798659",
+    "Docs/Tasks/ci-reliability/phase-8/upstream/SOURCES.json": "66ca2670794c38f417c6ad51d92775f5adeb1726e0767eb60971354b58ba8515",
+    "Docs/Tasks/ci-reliability/phase-8/upstream/installer-pkginfo.json": "146c6a0bec322eb73279203745bb5bf98897bc70cbb032cbfe99d5a7b26711cc",
+    "Docs/Tasks/ci-reliability/phase-8/upstream/linux-gpg-environment.txt": "d552c9841fd9eb36c1270b7114cc139279411d6f33e2afeaf644a514b1e16bbb",
+    "Docs/Tasks/ci-reliability/phase-8/upstream/linux-gpg-verification.log": "1f999c719cefb785b428b3604faf4d327ef86e2c87a4181c29cf34224a1fed7e",
+    "Docs/Tasks/ci-reliability/phase-8/upstream/linux-signature-verification.json": "6f565418b7e298f8ebd84089730e513966986d5cc307dec135a39a4847d8366a",
+    "Docs/Tasks/ci-reliability/phase-8/upstream/macos-signature.txt": "33b830ed93f6bf4d93e414b61151f58cbe2b4d58b9bc6871239d0a59e611ec7b",
+    "Docs/Tasks/ci-reliability/phase-8/upstream/swift-linux.tar.gz.sig": "35968fc208eed518fe5964024d99c8ded95f8dacd58a670b9f51038ba4abe692"
+  },
+  "base": "06b2efb14332de764492292eae6380c26224112a",
+  "branch": "ci/phase-8-provisioning",
+  "commands": [
+    {
+      "argv": [
+        "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+        "Tools/ci/scheduling_policy.py",
+        "validate",
+        "--policy",
+        "/Users/carsonrau/Developer/DiscordKit-ci-phase8/Tools/ci/scheduling-policy.v1.json",
+        "--repository",
+        "/Users/carsonrau/Developer/DiscordKit-ci-phase8"
+      ],
+      "exitCode": 0,
+      "group": "source",
+      "name": "policy-source-inventory",
+      "receipt": "checks/source/00-policy-source-inventory.receipt.json",
+      "seconds": 0.064,
+      "status": "passed"
+    },
+    {
+      "argv": [
+        "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+        "Tools/ci/documentation_examples.py",
+        "--repository",
+        "/Users/carsonrau/Developer/DiscordKit-ci-phase8"
+      ],
+      "exitCode": 0,
+      "group": "source",
+      "name": "documentation-example-snapshots",
+      "receipt": "checks/source/01-documentation-example-snapshots.receipt.json",
+      "seconds": 0.109,
+      "status": "passed"
+    },
+    {
+      "argv": [
+        "actionlint",
+        ".github/workflows/ci.yml",
+        ".github/workflows/documentation.yml",
+        ".github/workflows/native-platform.yml",
+        ".github/workflows/release.yml",
+        ".github/workflows/timing-comparison.yml",
+        ".github/workflows/timing-periodic.yml",
+        ".github/workflows/upstream-review.yml"
+      ],
+      "exitCode": 0,
+      "group": "workflow-final",
+      "name": "actionlint",
+      "receipt": "checks/workflow-final/00-actionlint.receipt.json",
+      "seconds": 0.014,
+      "status": "passed"
+    },
+    {
+      "argv": [
+        "node",
+        "--test",
+        "Browser/DiscordActivityBridge/ActivityBridge.test.mjs",
+        "Browser/DiscordActivityBridge/ActivityHostExample.test.mjs",
+        "Browser/DiscordActivityBridge/ActivityNetwork.test.mjs"
+      ],
+      "exitCode": 0,
+      "group": "browser",
+      "name": "browser",
+      "receipt": "checks/browser/00-browser.receipt.json",
+      "seconds": 0.138,
+      "status": "passed"
+    },
+    {
+      "argv": [
+        "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "Tools/DiscordKitTools/scripts",
+        "-p",
+        "test_*.py"
+      ],
+      "exitCode": 0,
+      "group": "tooling-python",
+      "name": "tooling-python",
+      "receipt": "checks/tooling-python/00-tooling-python.receipt.json",
+      "seconds": 5.544,
+      "status": "passed"
+    },
+    {
+      "argv": [
+        "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "Tools/DiscordKitLoadTests/scripts",
+        "-p",
+        "test_*.py"
+      ],
+      "exitCode": 0,
+      "group": "tooling-python",
+      "name": "load-python",
+      "receipt": "checks/tooling-python/01-load-python.receipt.json",
+      "seconds": 7.665,
+      "status": "passed"
+    },
+    {
+      "argv": [
+        "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "Tools/DiscordDSLBenchmarks/scripts",
+        "-p",
+        "test_*.py"
+      ],
+      "exitCode": 0,
+      "group": "benchmark-python",
+      "name": "benchmarks-python",
+      "receipt": "checks/benchmark-python/00-benchmarks-python.receipt.json",
+      "seconds": 0.633,
+      "status": "passed"
+    },
+    {
+      "argv": [
+        "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "Tools/DiscordBenchmarkSupport/scripts",
+        "-p",
+        "test_*.py"
+      ],
+      "exitCode": 0,
+      "group": "benchmark-python",
+      "name": "timing-support-python",
+      "receipt": "checks/benchmark-python/01-timing-support-python.receipt.json",
+      "seconds": 29.467,
+      "status": "passed"
+    },
+    {
+      "argv": [
+        "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "Tools/DiscordFoundationBenchmarks/scripts",
+        "-p",
+        "test_*.py"
+      ],
+      "exitCode": 0,
+      "group": "benchmark-python",
+      "name": "foundation-timing-python",
+      "receipt": "checks/benchmark-python/02-foundation-timing-python.receipt.json",
+      "seconds": 0.82,
+      "status": "passed"
+    },
+    {
+      "argv": [
+        "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "Tools/ci",
+        "-p",
+        "test_*.py"
+      ],
+      "exitCode": 0,
+      "group": "ci-python-final",
+      "name": "ci-python",
+      "receipt": "checks/ci-python-final/00-ci-python.receipt.json",
+      "seconds": 17.197,
+      "status": "passed"
+    },
+    {
+      "argv": [
+        "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+        ".build/phase8-static-check.py"
+      ],
+      "exitCode": 0,
+      "group": "static",
+      "name": "phase8-static",
+      "receipt": "checks/static/static.receipt.json",
+      "seconds": 0.11,
+      "status": "passed"
+    },
+    {
+      "argv": [
+        "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+        "Tools/DiscordKitTools/scripts/release_check.py",
+        "maintenance",
+        "--repository",
+        ".",
+        "--record",
+        "Docs/Release/maintenance.json"
+      ],
+      "exitCode": 0,
+      "group": "maintenance",
+      "name": "phase8-maintenance",
+      "receipt": "checks/maintenance/maintenance.receipt.json",
+      "seconds": 0.056,
+      "status": "passed"
+    }
+  ],
+  "inputsSHA256": {
+    ".github/actions/setup-artifact-sdk/action.yml": "27effdbe43483ca334f4ce278332eac4b2f4c1bbe193fe7a04a81bf5975ac8e4",
+    ".github/actions/setup-native/action.yml": "7b7eb2c79aa0a334d6960b753a62393912af779a9aeb5aa1d4c0ab39f9255b9b",
+    ".github/workflows/documentation.yml": "42a3c9506ff768823dc2d7e46dc4a7f3701911826697891ea1f0e53bc9b886b4",
+    ".github/workflows/native-platform.yml": "0b17742be72a4a995ddb0a605231ad6a19e44e9c5553cf3526ddac024ac91766",
+    ".github/workflows/timing-comparison.yml": "f7ad1b9b9beb2f8f8a2e9d032be9d3bab85dd420cb6c16a292c322b7c534c0e2",
+    ".github/workflows/timing-periodic.yml": "d1806a1ae9463b2ac19e52282a719e0ed568149b0282f513c51b44a54e340aef",
+    "Tools/ci/artifact-sdk/package-lock.json": "68e8bdedfd42d320964c488a117851c5fc9ed01efdd1313cab0d0dcabcc27b2a",
+    "Tools/ci/linux_ci.py": "b7fa3276af21b2083629c612bedc07b75a2b06e722cfcd9fb6bce474de1a6fe1",
+    "Tools/ci/native_jobs.py": "b1cb5c3ea75348fb2089d25f65cef2a4ced77887706b16882d15cb1b4a5f6e96",
+    "Tools/ci/native_provisioning.py": "69fa1f7c7da8b753bcb9d61f494a5b1140bfa7801bd1aad3ad04001bf06c1e89",
+    "Tools/ci/native_receipts.py": "4444c21bb7b8a6b3dac4bf6b943c97c2d50b18fdd04fa845832606de0413f9c0",
+    "Tools/ci/platform_probe.py": "ba3a1e2604fec4af7d5c9e825f78e682316884ae09f751d2a16317862985c543",
+    "Tools/ci/preflight.py": "e072db87724cba7342edd7751df4a342bba5176916f588e203c34e612b98c738",
+    "Tools/ci/provisioning-policy.v1.json": "8406fdf84def5a1bd8c3cb225dba2d5c1321eff676acf81956fa546126c6ffff",
+    "Tools/ci/scheduling-policy.v1.json": "fb2ed8c5a03f2d8c05bd1be09a8cdfe2fa5c320f89e533a448b4c1ee44e1c994",
+    "Tools/ci/scheduling_policy.py": "12edc3601b9430fb3bcd3ebbf57f61c54d2d5f35b53e3fc23d3f5d611bf40879",
+    "Tools/ci/test_linux_ci.py": "a339e1b8b9a0ad4a1cabc56fd30889d1659dc708c2e92682819f80dd08286afa",
+    "Tools/ci/test_native_provisioning.py": "a7b84f7fe55738fe8a6cdc25acb7832b4a9aecfcd338d2081982491ce1dc344a",
+    "Tools/ci/test_platform_probe.py": "538905f5e261e3dcdc6d591463595c76275a027f66e2aab37a30d66d018298d1",
+    "Tools/ci/test_provisioning_workflow.py": "297819bed8e9435745effdd01774f5d34308d4aa860c109da7feacf938f88bcf"
+  },
+  "limits": {
+    "compilerInstallations": 0,
+    "hostedCacheRoundTrip": false,
+    "hostedColdHitMeasurement": null,
+    "linuxSignatureContainer": "Existing Ubuntu24.04 amd64 image under emulation; GPG only; no compiler/runtime qualification",
+    "nativeCompilations": 0,
+    "nativeRollout": "contained",
+    "nativeTestAttempts": 0,
+    "paidAttempts": 0,
+    "paidJobs": 0,
+    "paidMinutes": 0,
+    "phase11HostedQualification": "open",
+    "phase3NativeX64Acceptance": "open",
+    "remoteWrites": false,
+    "savings": null,
+    "spendUSD": "0.00"
+  },
+  "localRealPackageVerification": "checks/real-macos-payload/check.json; production prepare/verify only, no installation",
+  "owner": "Codex /root",
+  "platform": "Darwin",
+  "python": "3.14.0",
+  "rawEvidenceWhitespace": "Two exact pkgutil text captures retain original whitespace under narrowly scoped phase-8 .gitattributes.",
+  "review": "review.json; two independent reviewers, all blocking findings resolved",
+  "schemaVersion": 1,
+  "status": "passed-local-helper-and-signature-acceptance",
+  "supersededChecks": [
+    {
+      "discovered": 483,
+      "path": "checks/ci-python",
+      "reason": "New platform artifact-name regression added after initial full pass; final complete suite484passed.",
+      "status": "passed"
+    },
+    {
+      "path": "checks/workflow",
+      "reason": "Final lint repeated after artifact-name repair.",
+      "status": "passed"
+    },
+    {
+      "path": "checks/static-initial",
+      "reason": "Documentation link check ran before validation.json was created; final retained record creation and link check passed.",
+      "status": "failed"
+    }
+  ],
+  "syntaxAndLinks": {
+    "embeddedPythonBlocks": 11,
+    "jsonFiles": 37,
+    "localMarkdownLinks": 235,
+    "originalPlanningHashesUnchanged": true,
+    "provisioningMatchesSchedulingSetupSeconds": 600,
+    "pythonFiles": [
+      "Tools/ci/linux_ci.py",
+      "Tools/ci/native_provisioning.py",
+      "Tools/ci/platform_probe.py",
+      "Tools/ci/test_linux_ci.py",
+      "Tools/ci/test_native_provisioning.py",
+      "Tools/ci/test_platform_probe.py",
+      "Tools/ci/test_provisioning_workflow.py"
+    ],
+    "realPayloadCheckSourceHashesMatch": true,
+    "status": "passed"
+  },
+  "testSuites": {
+    "benchmarks-python": {
+      "discovered": 33,
+      "passed": 33,
+      "skipped": 0
+    },
+    "browser": {
+      "discovered": 38,
+      "passed": 38,
+      "skipped": 0
+    },
+    "ci-python": {
+      "discovered": 484,
+      "passed": 478,
+      "skipped": 6
+    },
+    "foundation-timing-python": {
+      "discovered": 3,
+      "passed": 3,
+      "skipped": 0
+    },
+    "load-python": {
+      "discovered": 56,
+      "passed": 56,
+      "skipped": 0
+    },
+    "timing-support-python": {
+      "discovered": 47,
+      "passed": 47,
+      "skipped": 0
+    },
+    "tooling-python": {
+      "discovered": 236,
+      "passed": 236,
+      "skipped": 0
+    }
+  },
+  "totalPassed": 891,
+  "totalSkipped": 6,
+  "upstream": "upstream/SOURCES.json; authenticated complete official payloads, no payload bytes committed",
+  "workflowLint": "actionlint1.7.12; all7workflow definitions passed"
+}

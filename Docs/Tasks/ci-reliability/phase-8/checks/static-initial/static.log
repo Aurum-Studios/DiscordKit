@@ -1,0 +1,6 @@
+/Library/Frameworks/Python.framework/Versions/3.14/bin/python3 .build/phase8-static-check.py
+Traceback (most recent call last):
+  File "/Users/carsonrau/Developer/DiscordKit-ci-phase8/.build/phase8-static-check.py", line 38, in <module>
+    assert (path.parent/dest).exists(), (path,target)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+AssertionError: (PosixPath('/Users/carsonrau/Developer/DiscordKit-ci-phase8/Docs/Tasks/ci-reliability/EVIDENCE.md'), 'phase-8/validation.json')

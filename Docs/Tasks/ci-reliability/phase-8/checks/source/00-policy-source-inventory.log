@@ -1,0 +1,9 @@
+/Library/Frameworks/Python.framework/Versions/3.14/bin/python3 Tools/ci/scheduling_policy.py validate --policy /Users/carsonrau/Developer/DiscordKit-ci-phase8/Tools/ci/scheduling-policy.v1.json --repository /Users/carsonrau/Developer/DiscordKit-ci-phase8
+{
+  "components": 12,
+  "discoveredTestLeaves": false,
+  "evaluatedSwiftPM": false,
+  "inventoryLevel": "declared-targets-and-existing-planner-suites; not discovered test leaves",
+  "rootTargets": 34,
+  "status": "valid"
+}

@@ -1,0 +1,22 @@
+WARNING: The requested image's platform (linux/amd64) does not match the detected host platform (linux/arm64/v8) and no specific platform was requested
+/usr/bin/gpg
+/usr/bin/tar: Ignoring unknown extended header keyword 'LIBARCHIVE.xattr.com.apple.provenance'
+/usr/bin/tar: Ignoring unknown extended header keyword 'LIBARCHIVE.xattr.com.apple.provenance'
+/usr/bin/tar: Ignoring unknown extended header keyword 'LIBARCHIVE.xattr.com.apple.provenance'
+gpg: keybox '/tmp/gnupg/pubring.kbx' created
+gpg: /tmp/gnupg/trustdb.gpg: trustdb created
+gpg: key EF80A866B47A981F: public key "Swift 6.x Release Signing Key <swift-infrastructure@forums.swift.org>" imported
+gpg: Total number processed: 1
+gpg:               imported: 1
+[GNUPG:] NEWSIG
+gpg: Signature made Mon Oct 12 18:20:32 2026 UTC
+gpg:                using RSA key EF80A866B47A981F
+[GNUPG:] KEY_CONSIDERED 52BB7E3DE28A71BE22EC05FFEF80A866B47A981F 0
+[GNUPG:] SIG_ID csta4SCFZbp5cQ2IdsJz40EzAKI 2026-10-12 1791829232
+[GNUPG:] GOODSIG EF80A866B47A981F Swift 6.x Release Signing Key <swift-infrastructure@forums.swift.org>
+gpg: Good signature from "Swift 6.x Release Signing Key <swift-infrastructure@forums.swift.org>" [unknown]
+[GNUPG:] VALIDSIG 52BB7E3DE28A71BE22EC05FFEF80A866B47A981F 2026-10-12 1791829232 0 4 0 1 10 00 52BB7E3DE28A71BE22EC05FFEF80A866B47A981F
+[GNUPG:] TRUST_UNDEFINED 0 pgp
+gpg: WARNING: This key is not certified with a trusted signature!
+gpg:          There is no indication that the signature belongs to the owner.
+Primary key fingerprint: 52BB 7E3D E28A 71BE 22EC  05FF EF80 A866 B47A 981F

@@ -1,0 +1,2 @@
+/Library/Frameworks/Python.framework/Versions/3.14/bin/python3 Tools/DiscordKitTools/scripts/release_check.py maintenance --repository . --record Docs/Release/maintenance.json
+{"asOf": "2026-11-12", "nextReviewDue": "2026-11-12", "reviewedOn": "2026-11-05", "sources": 22, "transitions": 1}

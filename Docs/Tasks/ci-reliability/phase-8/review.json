@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "status": "accepted-local-implementation",
+  "remainingBlockingFindings": [],
+  "reviews": [
+    {
+      "reviewer": "Codex /root/provisioning_research",
+      "scope": [
+        "native_provisioning.py",
+        "setup-native action",
+        "platform_probe.py",
+        "official distribution provenance"
+      ],
+      "findingsResolved": [
+        "Preserve .pkg suffix required by the actual macOS installer",
+        "Restore isolated official GPG key import and exact fingerprints",
+        "Keep prepare argv in one shell invocation",
+        "Reject symbolic-link provisioning roots before resolving",
+        "Include SDKROOT and DEVELOPER_DIR in cache identity"
+      ],
+      "verification": [
+        "22 provisioning helper tests passed",
+        "Production prepare/verify authenticated complete macOS payload without installation",
+        "Official Linux archive passed isolated GPG2.4.4 signature verification",
+        "Actionlint passed"
+      ]
+    },
+    {
+      "reviewer": "Codex /root/phase8_docs",
+      "scope": [
+        "profile callers and prerequisites",
+        "optional provisioning provenance",
+        "Phase4 exact compatibility preservation",
+        "enclosing cache transport deadlines",
+        "cross-platform artifact names"
+      ],
+      "findingsResolved": [
+        "Provisioning evidence names now include runner OS/architecture to prevent collisions between reusable platform calls; cross-platform static/matrix population regression passes"
+      ],
+      "verification": [
+        "19 platform probe tests passed",
+        "6 workflow boundary tests passed after collision repair",
+        "Final complete CI helper suite passed"
+      ]
+    }
+  ],
+  "qualificationLimits": [
+    "Local helper and signature validation only",
+    "No actual compiler installation or native compilation/test execution",
+    "No hosted cache restore/save, cold/hit compatibility or measured savings",
+    "Phase3 native x64 and Phase11 hosted qualification remain open"
+  ]
+}

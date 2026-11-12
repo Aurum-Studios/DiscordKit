@@ -159,7 +159,7 @@ def preflight(repository, output):
     (output / "host.json").write_text(json.dumps(host, indent=2) + "\n")
     if host["osRelease"].get("ID") != "ubuntu" or host["osRelease"].get("VERSION_ID") != "24.04":
         raise ValueError("Ubuntu validation requires Ubuntu 24.04")
-    for executable in ("swift", "swiftc", "clang", "git", "node", "python3"):
+    for executable in ("swift", "swiftc", "clang", "git", "python3"):
         if not shutil.which(executable):
             raise ValueError(f"required executable is missing: {executable}")
     version = metadata_query(["swift", "--version"], repository, output, "swift-version")

@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "status": "failed",
+  "name": "phase8-static",
+  "stage": "phase8-static",
+  "operation": "localHelperCheck",
+  "arguments": [
+    "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+    ".build/phase8-static-check.py"
+  ],
+  "start": "2026-11-12T15:39:50.500100+00:00",
+  "startMonotonic": 355997.842620541,
+  "deadlineMonotonic": 356297.842620541,
+  "executionLimitSeconds": 300,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "operation",
+  "paths": {
+    "output": "Docs/Tasks/ci-reliability/phase-8/checks/static/static.log",
+    "stdout": null,
+    "diagnostics": "Docs/Tasks/ci-reliability/phase-8/checks/static/static.diagnostics.jsonl",
+    "receipt": "Docs/Tasks/ci-reliability/phase-8/checks/static/static.receipt.json"
+  },
+  "identity": {
+    "executionID": "81407f69-45f8-413b-a3c4-55884ce77420",
+    "supervisorPID": 44178,
+    "host": "Pokemon-GO-Plus",
+    "system": "Darwin",
+    "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase8"
+  },
+  "exitCode": 1,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 44190,
+  "group": 44190,
+  "error": "Command '('/Library/Frameworks/Python.framework/Versions/3.14/bin/python3', '.build/phase8-static-check.py')' returned non-zero exit status 1.",
+  "errorType": "CalledProcessError",
+  "cleanup": {
+    "status": "group-signalled",
+    "signals": [],
+    "parentReaped": true,
+    "allowanceSeconds": 8.0,
+    "seconds": 0.004,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "verificationMalformedRows": 0,
+    "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "Docs/Tasks/ci-reliability/phase-8/checks/static/static.log",
+      "retainedBytes": 474,
+      "observedBytes": 474,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T15:39:50.611907+00:00",
+  "endMonotonic": 355997.954469541,
+  "elapsedSeconds": 0.112,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}

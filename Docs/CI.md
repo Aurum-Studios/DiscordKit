@@ -118,11 +118,25 @@ Real GitHub context, branch-protection and fresh-runner/rerun acceptance remain
 Phase 11 work before rollout.
 
 [The shared setup action](../.github/actions/setup-native/action.yml) installs
-Swift 6.4.1, Python 3.12 and Node 24. Linux setup installs the Ubuntu prerequisites
-and imports the official [Swift signing-key bundle](https://www.swift.org/keys/all-keys.asc)
-with `curl --compressed` before invoking `setup-swift@v3`. It verifies the Swiftly
-fingerprint `E813C892820A6FA13755B268F167DF1ACF9CE069`; installer and toolchain
-signature verification remain enabled.
+Swift 6.4.1 and Python 3.12 with explicit `build` or `runtime` prerequisites.
+Both profiles retain the full compiler and SwiftPM manifest linker dependencies;
+only compiler/build jobs add the remaining development headers. Artifact and browser
+helpers provision Node 24 where needed. Every caller caps the whole setup step at
+ten minutes, including cache restore/save, with supervised prerequisite and installer
+commands sharing the same allowance.
+
+[Phase 8](Tasks/ci-reliability/phase-8/IMPLEMENTATION.md) caches only pinned official
+Swift distributions, keyed by their hash, platform, exact image/SDK and versioned
+installer policy. Every cold or hit path verifies SHA256 and the upstream signature
+before fresh installation at the same path. Linux imports the official
+[Swift signing-key bundle](https://www.swift.org/keys/all-keys.asc) with
+`curl --compressed`, checking the required fingerprints in an isolated keyring;
+macOS requires the exact Swift installer signer and trusted notarization.
+Only default-branch pushes/manual runs may save entries. Corrupt, stale or
+incompatible hits fail explicitly. Installed trees, credentials and build outputs
+are excluded. Cache provenance stays informational; active compiler, image and SDK
+must still satisfy the exact Phase 4 compatibility contract. Hosted cold/hit
+timings and savings remain unmeasured.
 Every consumer job installs its matching compiler/runtime prerequisites too.
 
 [The native job helper](../Tools/ci/native_jobs.py) transports each compilation in

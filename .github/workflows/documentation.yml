@@ -55,6 +55,9 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup-native
+        timeout-minutes: 10
+        with:
+          profile: build
       - name: Check native host, compiler, linker and runtime
         run: >-
           python Tools/ci/platform_probe.py --platform macos-arm64
@@ -84,6 +87,9 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup-native
+        timeout-minutes: 10
+        with:
+          profile: build
       - name: Compile package and emit normalized public symbol graphs
         run: >-
           python Tools/ci/native_jobs.py compile --component ${{ matrix.component }}
@@ -151,6 +157,9 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup-native
+        timeout-minutes: 10
+        with:
+          profile: build
       - name: Download this attempt's documentation compilations
         uses: actions/download-artifact@v8
         with:

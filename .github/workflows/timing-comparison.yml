@@ -59,6 +59,9 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup-native
+        timeout-minutes: 10
+        with:
+          profile: build
       - name: Verify selected native platform and pinned compiler
         env:
           NATIVE_PLATFORM: ${{ inputs.platform }}

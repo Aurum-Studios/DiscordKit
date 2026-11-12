@@ -12,6 +12,7 @@ import os
 from pathlib import Path
 import platform
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -25,6 +26,59 @@ let decoded = try JSONSerialization.jsonObject(with: payload) as! [String: Bool]
 precondition(decoded["native"] == true)
 print("DiscordKit native probe passed")
 '''
+
+
+def verified_provisioning_facts(native_platform, swift_version, target_info, query):
+    """Bind optional provisioning evidence to the active compiler, never cache-hit state.
+
+    Local unmanaged callers retain their existing compatibility contract. A job
+    supplied with a provisioning receipt must prove its successful authenticated
+    install still owns Swift on PATH and matches the current image and policy.
+    These transport/provenance facts remain informational: cold and cache-hit
+    installations produce the same exact Phase 4 build compatibility identity.
+    """
+    receipt_path = os.environ.get("DISCORDKIT_PROVISIONING_RECEIPT")
+    if receipt_path is None:
+        return None
+    import hashlib
+    import native_provisioning
+
+    path = Path(receipt_path)
+    if path.is_symlink() or not path.is_file() or path.stat().st_size > 128 * 1024:
+        raise ValueError("provisioning receipt is unavailable or invalid")
+    record = json.loads(path.read_text())
+    if (not isinstance(record, dict) or not isinstance(record.get("verification"), dict)
+            or not isinstance(record.get("cache"), dict)):
+        raise ValueError("provisioning receipt is malformed")
+    policy = native_provisioning.load_policy()
+    distribution = policy["platforms"][native_platform]
+    verification = record.get("verification", {})
+    if (record.get("schemaVersion") != 1 or record.get("status") != "passed"
+            or record.get("platform") != native_platform
+            or record.get("policySHA256") != hashlib.sha256(native_provisioning.canonical(policy)).hexdigest()
+            or record.get("distribution") != {"url": distribution.get("distributionURL"),
+                                                "sha256": distribution.get("distributionSHA256")}
+            or verification.get("signatureVerified") is not True
+            or verification.get("method") != distribution.get("signature")
+            or verification.get("sha256") != distribution.get("distributionSHA256")):
+        raise ValueError("provisioning receipt does not prove an authenticated current installation")
+    signers = distribution.get("signerFingerprints", [distribution.get("signer")])
+    if verification.get("signer") not in signers:
+        raise ValueError("provisioning receipt has an untrusted Swift signer")
+    facts = native_provisioning.image_facts(native_platform, query)
+    key = native_provisioning.compatibility_key(policy, native_platform, facts)
+    if record.get("image") != facts or record.get("cache", {}).get("key") != key:
+        raise ValueError("provisioning receipt belongs to another image or SDK")
+    binary = (Path(distribution["installationPath"]) / "usr/bin" if native_platform == "linux-x64"
+              else Path.home() / "Library/Developer/Toolchains" / distribution["toolchainDirectory"] / "usr/bin")
+    if (record.get("binPath") != str(binary) or record.get("swiftVersion") != swift_version
+            or record.get("targetInfo") != target_info
+            or any(not shutil.which(name) or Path(shutil.which(name)).resolve() != (binary / name).resolve()
+                   for name in ("swift", "swiftc"))):
+        raise ValueError("active compiler differs from the verified provisioning receipt")
+    return {"distributionSHA256": distribution["distributionSHA256"],
+            "signer": verification["signer"], "cacheKey": key,
+            "cacheHit": record["cache"].get("hit"), "receipt": str(path)}
 
 
 def required_text(value, name):
@@ -143,6 +197,9 @@ def build_compatibility_facts(repository, native_platform, *, query=None):
                      "runnerName": os.environ.get("RUNNER_NAME"),
                      "runnerEnvironment": os.environ.get("RUNNER_ENVIRONMENT"),
                      "pythonVersion": platform.python_version()}
+    provisioning = verified_provisioning_facts(native_platform, swift_version, target_info, query)
+    if provisioning is not None:
+        informational["provisioning"] = provisioning
     return {"exact": exact, "informational": informational}
 
 

@@ -1,0 +1,7 @@
+/Library/Frameworks/Python.framework/Versions/3.14/bin/python3 -m unittest discover -s Tools/DiscordBenchmarkSupport/scripts -p 'test_*.py'
+........................benchmark driver: source or dependency pins changed since release build
+.......................
+----------------------------------------------------------------------
+Ran 47 tests in 29.374s
+
+OK

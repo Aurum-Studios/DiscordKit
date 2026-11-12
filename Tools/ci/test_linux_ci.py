@@ -951,7 +951,8 @@ class LinuxPreflightTests(unittest.TestCase):
             repository = Path(temporary)
             version = "Swift version 6.4.1 (swift-6.4.1-RELEASE)\nTarget: x86_64-unknown-linux-gnu\n"
             target = {"target": {"triple": "x86_64-unknown-linux-gnu"}}
-            with self.host_mocks(), patch.object(linux_ci.shutil, "which", return_value="/fixture/tool"), \
+            with self.host_mocks(), patch.object(linux_ci.shutil, "which",
+                    side_effect=lambda name: None if name == "node" else "/fixture/" + name), \
                     patch.object(linux_ci, "metadata_query", side_effect=["fixture-revision\n", version, json.dumps(target)]) as compiler:
                 linux_ci.preflight(repository, repository / "reports")
             self.assertEqual([call.args[0] for call in compiler.call_args_list],

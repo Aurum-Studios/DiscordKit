@@ -428,3 +428,31 @@ six existing Linux-only CI tests skipped on macOS. Workflow lint, source policy,
 displayed examples, 215 local documentation links and maintenance freshness passed.
 The [actual-blob commit receipt](phase-7/commit-receipt.json) verifies the committed
 inputs/artifacts. This completion follow-up changes documentation only.
+
+## Phase 8 local verified-provisioning acceptance
+
+Prepared from Phase 7 handoff `06b2efb1` on isolated `ci/phase-8-provisioning`.
+[Execution contracts](phase-8/IMPLEMENTATION.md), [validation](phase-8/validation.json)
+and [review](phase-8/review.json) retain source/check hashes and accepted findings.
+The cache contains only original SHA-pinned authenticated distributions, identity
+and Linux detached signature; every cold/hit path verifies before a fresh install.
+Explicit build/runtime profiles retain SwiftPM's compiler/linker prerequisites;
+Node belongs to actual browser/artifact helpers. Exact cache keys include platform,
+image/SDK, distribution hash, installer policy and schema. Only the trusted default
+branch can save. Poisoned/stale/wrong-platform hits fail within the same allowance.
+
+All seven Python/browser groups passed: **891 passed, six existing Linux-only
+skips**. The final CI group discovered 484 tests and passed 478; the 22 provisioning
+cases, six actual shell/workflow boundaries and 19 platform-probe cases are part
+of that count. Actionlint, source policy, 32 displayed DocC snapshots and local
+syntax/JSON/link/diff checks passed. Two independent reviews closed installer
+suffix, isolated keys, shell/root/SDK handling and duplicate platform artifact
+names. Complete upstream payloads authenticated both pins; production helper
+verification checked the full macOS package without installation. The real Linux
+GPG check used an emulated offline container and establishes signature proof only.
+
+Native installation/compilation/tests, real hosted cache round trip, cold/hit
+compatibility, timing/savings and paid/native qualification remain open. No remote
+write, hosted/paid execution, runtime, publication or pool/billing change occurred.
+The local implementation commit and actual-blob receipt are recorded after final
+staging; Phase 9 remains future work.
