@@ -15,6 +15,10 @@ on:
         type: choice
         options: [preflight, diagnostic, full]
         default: preflight
+      publish-documentation:
+        description: Publish Pages after trusted default-branch full certification
+        type: boolean
+        default: false
       platform:
         description: Diagnostic platform (leave empty for full/preflight)
         type: string
@@ -159,11 +163,57 @@ jobs:
       build-jobs: 2
       shell: bash
 
+  documentation-site:
+    name: Documentation site from validated archives
+    needs: [scope, native-macos]
+    if: needs.scope.outputs.mode == 'full'
+    runs-on:
+      group: MacOS-26-5
+    timeout-minutes: 65
+    outputs:
+      artifact: ${{ steps.site.outputs.artifact }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-native
+        timeout-minutes: 10
+        with:
+          profile: runtime
+      - name: Prepare documentation site from sealed conversions
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DOCUMENTATION_INPUTS: ${{ needs.native-macos.outputs.documentation-inputs }}
+          DOCUMENTATION_BASE_PATH: /${{ github.event.repository.name }}
+        run: >-
+          python3 Tools/ci/documentation_workflow.py prepare-site
+          --hosting-base-path "$DOCUMENTATION_BASE_PATH"
+      - name: Require unchanged source and dependency pins
+        run: git diff --exit-code
+      - name: Share the prepared site with a separate publication consumer
+        uses: ./.github/actions/upload-evidence
+        with:
+          name: documentation-site-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          paths: .build/documentation-site.tar.gz
+          retention-days: 7
+          receipt: ${{ runner.temp }}/documentation-site-transfer.json
+      - name: Expose this nonmatrix immutable site identity
+        id: site
+        run: python3 Tools/ci/documentation_workflow.py artifact-output --receipt "$RUNNER_TEMP/documentation-site-transfer.json"
+      - name: Retain site preparation diagnostics even on failure
+        if: always()
+        uses: ./.github/actions/upload-evidence
+        with:
+          name: documentation-site-diagnostics-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          paths: .build/documentation-ci/site
+          retention-days: 14
+          receipt: ${{ runner.temp }}/documentation-site-diagnostics-transfer.json
+
   complete:
     # Only a validated full request ever creates the required check context.
     name: ${{ needs.scope.outputs.mode == 'full' && 'Offline certification passed' || needs.scope.outputs.mode == 'diagnostic' && 'Diagnostic scope passed' || 'Preflight scope passed' }}
     if: always()
-    needs: [scope, source, helpers, maintenance, native-linux, native-macos]
+    needs: [scope, source, helpers, maintenance, native-linux, native-macos, documentation-site]
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     steps:
@@ -203,3 +253,63 @@ jobs:
           paths: .build/full-*.json
           retention-days: 14
           receipt: ${{ runner.temp }}/full-coverage-transfer.json
+
+  publish-documentation:
+    name: Publish GitHub Pages
+    needs: [scope, complete, documentation-site]
+    if: >-
+      inputs.publish-documentation && needs.scope.outputs.mode == 'full' &&
+      needs.complete.result == 'success' &&
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
+      github.repository == 'Aurum-Studios/DiscordKit' &&
+      github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    permissions:
+      contents: read
+      actions: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    concurrency:
+      group: github-pages
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Download and authorize the exact immutable site
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DOCUMENTATION_SITE: ${{ needs.documentation-site.outputs.artifact }}
+        run: |
+          python3 - <<'PY'
+          import json, os, subprocess, sys
+          site = json.loads(os.environ['DOCUMENTATION_SITE'])
+          subprocess.run([sys.executable, 'Tools/ci/artifact_transfer.py', 'download',
+                          '--artifact-id', site['id'], '--expected-digest', site['digest'],
+                          '--destination', '.build/documentation-download',
+                          '--receipt', '.build/documentation-download.json'], check=True)
+          subprocess.run([sys.executable, 'Tools/ci/documentation_publication.py',
+                          '--artifact-id', site['id'], '--artifact-digest', site['digest'],
+                          '--artifact-name', site['name'], '--producer-attempt', site['producerAttempt'],
+                          '--mode', 'full', '--output', '.build/documentation-publication.json',
+                          '--site-archive', '.build/documentation-download/documentation-site.tar.gz',
+                          '--site-output', '.build/documentation-publish'], check=True)
+          PY
+      - name: Upload GitHub Pages site after full certification and authorization
+        uses: actions/upload-pages-artifact@v5
+        with:
+          name: documentation-pages-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .build/documentation-publish
+          retention-days: 7
+          include-hidden-files: true
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v6
+      - name: Deploy documentation
+        id: deployment
+        uses: actions/deploy-pages@v5
+        with:
+          artifact_name: documentation-pages-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}

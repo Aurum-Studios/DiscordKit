@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "name": "phase9-focused",
+  "stage": "phase9",
+  "operation": "localHelperCheck",
+  "arguments": [
+    "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "Tools/ci",
+    "-p",
+    "test_documentation*.py"
+  ],
+  "start": "2026-11-12T15:51:57.861435+00:00",
+  "startMonotonic": 356725.197482166,
+  "deadlineMonotonic": 357025.197482166,
+  "executionLimitSeconds": 300,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "operation",
+  "paths": {
+    "output": "Docs/Tasks/ci-reliability/phase-9/checks/focused.log",
+    "stdout": null,
+    "diagnostics": "Docs/Tasks/ci-reliability/phase-9/checks/focused.diagnostics.jsonl",
+    "receipt": "Docs/Tasks/ci-reliability/phase-9/checks/focused.receipt.json"
+  },
+  "identity": {
+    "executionID": "43b3462f-a190-4a92-88f7-41201d4dc565",
+    "supervisorPID": 50159,
+    "host": "Pokemon-GO-Plus",
+    "system": "Darwin",
+    "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase9"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 50169,
+  "group": 50169,
+  "cleanup": {
+    "status": "group-signalled",
+    "signals": [],
+    "parentReaped": true,
+    "allowanceSeconds": 8.0,
+    "seconds": 0.003,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "verificationMalformedRows": 0,
+    "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "Docs/Tasks/ci-reliability/phase-9/checks/focused.log",
+      "retainedBytes": 1447,
+      "observedBytes": 1447,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T15:51:58.133333+00:00",
+  "endMonotonic": 356725.469411083,
+  "elapsedSeconds": 0.272,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}

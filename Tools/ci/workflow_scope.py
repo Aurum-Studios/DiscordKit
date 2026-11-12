@@ -120,6 +120,8 @@ def shared_manifest(*, commit, run_id, run_attempt):
          'stepName': 'Validate source-only policy and documentation snapshots'},
         {'id': 'workflow', 'jobName': 'Source policy and workflow syntax',
          'stepName': 'Validate workflow syntax and action expressions'},
+        {'id': 'documentation-site', 'jobName': 'Documentation site from validated archives',
+         'stepName': 'Prepare documentation site from sealed conversions'},
         {'id': 'maintenance', 'jobName': 'Upstream maintenance review freshness',
          'stepName': 'Require a current upstream review for certification'},
     ]
@@ -133,7 +135,7 @@ def verify_full(repository, results, summaries):
     """Require source-bound complete coverage from both independent platform barriers."""
     from workflow_coverage import validate_summary
     import artifact_index
-    expected_jobs = {'scope', 'source', 'helpers', 'maintenance', 'native-linux', 'native-macos'}
+    expected_jobs = {'scope', 'source', 'helpers', 'maintenance', 'native-linux', 'native-macos', 'documentation-site'}
     if set(results) != expected_jobs or any(row.get('result') != 'success' for row in results.values()):
         raise ValueError('full certification requires every exact shared and native dependency')
     if results['scope'].get('outputs', {}).get('mode') != 'full':

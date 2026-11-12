@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "owner": "Codex /root",
+  "branch": "ci/phase-9-documentation",
+  "checkout": "/Users/carsonrau/Developer/DiscordKit-ci-phase9",
+  "base": "e37ad2bc1271a9f063afe02f49943af1373427ee",
+  "originalPlanningSHA256": {
+    "Docs/CI.md": "52d344b12487a46ec46f3ff0ad7f1c207faf876f937a172473c3f44b7aa81629",
+    "Docs/Tasks/ci-reliability/PLAN.md": "2fa145ad46499a1fbe26d272704f825d590fe1937a5f59e2f2f4099431527d83",
+    "Docs/Tasks/ci-reliability/STATE.md": "b2a181246e1c3e323a433be1c0f17d6db36039658e4dde68c19f36302098180d",
+    "Docs/Tasks/ci-reliability/EVIDENCE.md": "5e1de6b2d0f1259424dafe7e9aae4651a039edd9cceda65a15a0bf7c08f0e476"
+  },
+  "paidJobs": 0,
+  "paidMinutes": 0,
+  "paidAttempts": 0,
+  "allowanceUSD": "0.00",
+  "nativeCompilations": 0,
+  "remoteWrites": 0,
+  "publication": false
+}

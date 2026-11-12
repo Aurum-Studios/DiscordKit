@@ -135,7 +135,7 @@ class WorkflowScopeTests(unittest.TestCase):
         return coverage.validate_jobs(manifest, rows, head_sha='a'*40, test_evidence=proofs)
 
     def test_full_gate_requires_both_exact_platform_summaries_and_every_shared_row(self):
-        results={name:{'result':'success'} for name in ('scope','source','helpers','maintenance','native-linux','native-macos')}
+        results={name:{'result':'success'} for name in ('scope','source','helpers','maintenance','native-linux','native-macos','documentation-site')}
         results['scope']['outputs']={'mode':'full'}
         summaries={platform:self.successful_summary(self.plan(platform=platform)['coverage']) for platform in scope.PREFIXES}
         env={'GITHUB_SHA':'a'*40, 'GITHUB_RUN_ID':'42', 'GITHUB_RUN_ATTEMPT':'2'}
@@ -148,7 +148,7 @@ class WorkflowScopeTests(unittest.TestCase):
             shared=certify.call_args.kwargs['manifest']
             self.assertEqual({row['id'] for row in shared['entries'] if not row['id'].startswith(('linux-x64/','macos-arm64/'))},
                 {'scope','source','workflow','maintenance','helper/ci-python','helper/tooling-python',
-                 'helper/benchmark-python','helper/browser'})
+                 'helper/benchmark-python','helper/browser','documentation-site'})
             old=json.loads(json.dumps(summaries))
             old_manifest=self.plan(platform='linux-x64')['coverage']
             old_manifest['runAttempt']='1'
@@ -170,7 +170,7 @@ class WorkflowScopeTests(unittest.TestCase):
                     scope.verify_full(ROOT,results,summaries)
 
     def test_no_failed_skipped_or_missing_shared_gate_qualifies_full(self):
-        base={name:{'result':'success'} for name in ('scope','source','helpers','maintenance','native-linux','native-macos')}
+        base={name:{'result':'success'} for name in ('scope','source','helpers','maintenance','native-linux','native-macos','documentation-site')}
         base['scope']['outputs']={'mode':'full'}
         for name in base:
             for state in ('failure','cancelled','skipped'):
@@ -226,11 +226,31 @@ class WorkflowGraphTests(unittest.TestCase):
         self.assertIn('Verify full scope and complete coverage',complete)
         self.assertNotIn('name: Offline certification passed\n',complete)
 
-    def test_documentation_automatic_compile_and_deploy_remain_contained(self):
+    def test_documentation_requests_share_full_ci_without_automatic_compilation(self):
         docs=(ROOT/'.github/workflows/documentation.yml').read_text()
-        platform=self.job(docs,'platform')
-        self.assertIn("if: needs.preflight.outputs.native-enabled == 'true'",platform)
-        self.assertIn('needs: preflight',platform)
+        self.assertIn('  workflow_dispatch:', docs)
+        self.assertNotIn('  push:', docs)
+        self.assertNotIn('  pull_request:', docs)
+        self.assertNotIn('workflow_run:', docs)
+        self.assertNotIn('native_jobs.py', docs)
+        self.assertIn('gh workflow run ci.yml', docs)
+        self.assertIn('-f mode=full', docs)
+        site = self.job(self.ci, 'documentation-site')
+        self.assertIn('needs: [scope, native-macos]', site)
+        self.assertIn("if: needs.scope.outputs.mode == 'full'", site)
+        self.assertIn('documentation_workflow.py prepare-site', site)
+        self.assertNotIn('build_docc.py', site)
+        self.assertNotIn('upload-pages-artifact', site)
+        self.assertIn('documentation-site]', self.job(self.ci, 'complete'))
+        publisher = self.job(self.ci, 'publish-documentation')
+        self.assertIn('needs: [scope, complete, documentation-site]', publisher)
+        self.assertIn('documentation_publication.py', publisher)
+        self.assertIn('pages: write', publisher)
+        self.assertIn('name: github-pages', publisher)
+        api = self.job(self.native, 'public-api')
+        for component in ('root', 'macros', 'extensions'):
+            self.assertEqual(api.count('documentation_inputs.py prepare --component ' + component), 1)
+        self.assertNotIn('build_docc.py', api)
 
 
 if __name__=='__main__':

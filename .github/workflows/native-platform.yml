@@ -9,6 +9,9 @@ name: Native platform validation
 on:
   workflow_call:
     outputs:
+      documentation-inputs:
+        description: Immutable sealed macOS conversion inputs for the same-run site consumer
+        value: ${{ jobs.public-api.outputs.documentation-inputs }}
       coverage:
         description: Exact platform coverage observed by the fresh barrier
         value: ${{ jobs.complete.outputs.coverage }}
@@ -612,6 +615,8 @@ jobs:
         run: git diff --exit-code
 
   public-api:
+    outputs:
+      documentation-inputs: ${{ steps.documentation.outputs.artifact }}
     name: Public API and DocC / macOS ARM
     if: inputs.mode == 'full' && inputs.platform == 'macos-arm64'
     needs: [canary, build-core]
@@ -643,8 +648,6 @@ jobs:
           done
       - name: Compare scoped public API and convert all public DocC modules
         run: |
-          python3 Tools/ci/curate_docc.py --check
-          python3 Tools/ci/documentation_examples.py
           python3 Tools/DiscordKitTools/scripts/api_baseline.py snapshot --repository . --symbolgraphs .build/out/symbolgraph --version 0.20.0 --output .build/current-api.json
           python3 Tools/DiscordKitTools/scripts/api_baseline.py check --baseline Docs/Release/api-baseline.json --candidate .build/current-api.json --version 0.20.0 --output .build/api-comparison-runtime-original.json
           python3 Tools/DiscordKitTools/scripts/api_baseline.py check --baseline Docs/Release/api-baseline-0.15.0.json --candidate .build/current-api.json --version 0.20.0 --output .build/api-comparison-0.15.0.json
@@ -652,15 +655,23 @@ jobs:
           python3 Tools/DiscordKitTools/scripts/api_baseline.py check --baseline Docs/Release/api-baseline-0.17.0.json --candidate .build/current-api.json --version 0.20.0 --output .build/api-comparison-0.17.0.json
           python3 Tools/DiscordKitTools/scripts/api_baseline.py check --baseline Docs/Release/api-baseline-0.18.0.json --candidate .build/current-api.json --version 0.20.0 --output .build/api-comparison-0.18.0.json
           python3 Tools/DiscordKitTools/scripts/api_baseline.py check --baseline Docs/Release/api-baseline-0.19.0.json --candidate .build/current-api.json --version 0.20.0 --output .build/api-comparison-0.19.0.json
-          python3 Tools/ci/build_docc.py
-          python3 Tools/ci/curate_docc.py --repository Packages/DiscordDSLMacros --symbolgraphs Packages/DiscordDSLMacros/.build/out/symbolgraph --check
-          python3 Tools/ci/build_docc.py --repository Packages/DiscordDSLMacros --symbolgraphs Packages/DiscordDSLMacros/.build/out/symbolgraph --output .build/documentation-macros
+          python3 Tools/ci/documentation_inputs.py prepare --component root --output .build/documentation --archive "$RUNNER_TEMP/documentation-inputs/root.tar.gz" --receipt .build/api-ci/documentation-root.json
+          python3 Tools/ci/documentation_inputs.py prepare --component macros --output .build/documentation-macros --archive "$RUNNER_TEMP/documentation-inputs/macros.tar.gz" --receipt .build/api-ci/documentation-macros.json
           python3 Tools/DiscordKitTools/scripts/api_baseline.py snapshot --repository . --authoring-package Packages/DiscordDSLMacros --symbolgraphs Packages/DiscordDSLMacros/.build/out/symbolgraph --version 0.15.0 --output .build/current-macros-api.json
           python3 Tools/DiscordKitTools/scripts/api_baseline.py check --baseline Docs/Release/api-baseline-macros-0.15.0.json --candidate .build/current-macros-api.json --version 0.15.0 --output .build/api-comparison-macros-0.15.0.json
-          python3 Tools/ci/curate_docc.py --repository Packages/DiscordDSLExtensions --symbolgraphs Packages/DiscordDSLExtensions/.build/out/symbolgraph --check
-          python3 Tools/ci/build_docc.py --repository Packages/DiscordDSLExtensions --symbolgraphs Packages/DiscordDSLExtensions/.build/out/symbolgraph --output .build/documentation-extensions
+          python3 Tools/ci/documentation_inputs.py prepare --component extensions --output .build/documentation-extensions --archive "$RUNNER_TEMP/documentation-inputs/extensions.tar.gz" --receipt .build/api-ci/documentation-extensions.json
           python3 Tools/DiscordKitTools/scripts/api_baseline.py snapshot --repository . --authoring-package Packages/DiscordDSLExtensions --symbolgraphs Packages/DiscordDSLExtensions/.build/out/symbolgraph --version 0.15.0 --output .build/current-extensions-api.json
           python3 Tools/DiscordKitTools/scripts/api_baseline.py check --baseline Docs/Release/api-baseline-extensions-0.15.0.json --candidate .build/current-extensions-api.json --version 0.15.0 --output .build/api-comparison-extensions-0.15.0.json
+      - name: Share strict conversion inputs without rebuilding or reconverting
+        uses: ./.github/actions/upload-evidence
+        with:
+          name: documentation-inputs-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          paths: ${{ runner.temp }}/documentation-inputs/*.tar.gz
+          retention-days: 2
+          receipt: ${{ runner.temp }}/documentation-inputs-transfer.json
+      - name: Expose this nonmatrix immutable conversion identity
+        id: documentation
+        run: python3 Tools/ci/documentation_workflow.py artifact-output --receipt "$RUNNER_TEMP/documentation-inputs-transfer.json"
       - name: Retain API comparison diagnostics even on failure
         if: always()
         uses: ./.github/actions/upload-evidence
@@ -671,6 +682,10 @@ jobs:
             .build/current-macros-api.json
             .build/current-extensions-api.json
             .build/api-comparison-*.json
+            .build/api-ci/documentation-*.json
+            .build/documentation-preparation
+            .build/documentation-macros-preparation
+            .build/documentation-extensions-preparation
           retention-days: 14
           receipt: ${{ runner.temp }}/transfer-${{ github.job }}-${{ strategy.job-index }}.json
       - name: Package DocC archives and API evidence

@@ -22,7 +22,9 @@ implementation acceptance at `666f1371224fbe5bda03ec7b54be14a083bb6b09`; native 
 [scope and canary contracts](phase-6/IMPLEMENTATION.md). Phase 7 has local grouped-execution/leaf-accounting acceptance at `4db6c5e6181d790fd1cd304220059397a501467b`; see
 [its execution plan and contracts](phase-7/IMPLEMENTATION.md). Phase 8 has local verified-provisioning implementation acceptance at `db705cb6dade43da579d555461f3f36a13586b48`; see
 [its execution plan and contracts](phase-8/IMPLEMENTATION.md). Hosted cold/hit
-measurements remain open. Phases 9 through 11 remain proposed.
+measurements remain open. Phase 9 has local shared-documentation helper and
+real synthetic DocC acceptance; see [its execution plan and contracts](phase-9/IMPLEMENTATION.md).
+Its hosted producer/consumer proof remains Phase 11. Phases 10 and 11 remain proposed.
 See [STATE.md](STATE.md) for the
 commit-backed completion record and [BOOTSTRAP.md](BOOTSTRAP.md) for execution limits.
 Source inspected: `85eac6f3c1d3b17e53596c49e7438efee366c1b3`.

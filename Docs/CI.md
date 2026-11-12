@@ -8,7 +8,7 @@ https://aurum-studios.com
 # Continuous validation and upstream review
 
 The repository defines six workflow entry points: offline CI validation,
-documentation publication, manual GitHub releases, weekly official upstream
+manual documentation requests, manual GitHub releases, weekly official upstream
 review, manual controlled timing comparisons and periodic offline stress/soak.
 CI also calls one reusable native-platform workflow, which has no push,
 pull-request, schedule or manual trigger of its own.
@@ -35,8 +35,8 @@ explicit `preflight`, `diagnostic` and `full` scope. The checked-in
 [rollout setting](../Tools/ci/rollout.v1.json) selects **preflight** automatically
 and keeps native expansion disabled until reviewed Phase 10 spend admission.
 Manual full/diagnostic requests fail closed under this setting. Repository
-variables or dispatch fields cannot grant paid execution. Documentation's
-independent compilation and Pages deployment are contained too.
+variables or dispatch fields cannot grant paid execution. Documentation site preparation shares full CI inputs; Pages publication remains
+contained behind full certification and an explicit publication request.
 
 A source/policy/workflow job, four balanced Python/browser helper groups and the
 independent human upstream-maintenance freshness check precede native scheduling.
@@ -61,7 +61,8 @@ flowchart LR
     LB --> LP[Exact coverage, then Linux source export]
     MB --> MP[Exact coverage, then macOS source export]
     LP --> C[Fresh full coverage and producer barrier]
-    MP --> C
+    MP --> DS[Site from sealed strict DocC archives]
+    DS --> C
 ```
 
 | Target | Platform and runtime suite group | Build and compiler fixture group |
@@ -182,7 +183,7 @@ owning job; it cannot be bypassed with `continue-on-error`. After runner disposa
 lost files need explicit regeneration. Documentation/API directories remain tarred
 to preserve colon-containing names. Unix transport support covers the current
 Linux/macOS callers; it adds no Windows qualification. The separate documentation
-workflow retains its same-attempt transfer path until its Phase 9 integration.
+workflow now requests this same full CI graph manually, without separate builds.
 
 All compile/test/run commands enforce committed dependency pins and explicit
 positive job limits; the helper caps requests to CPUs visible to the process.
@@ -410,58 +411,65 @@ recorded as a passed compile.
 
 ## Documentation website
 
-The independent [Documentation workflow](../.github/workflows/documentation.yml)
-runs on every push, pull request and manual dispatch, independently of offline
-certification. A macOS ARM64 platform probe checks the host, compiler, linker and
-runtime before three independent root, macro and extension compilation jobs.
-Those jobs use the shared native setup and compile helper on `MacOS-26-5`, with
-Swift 6.4.1, committed dependency pins, the native build engine, source-built
-macro dependencies and a five-job limit capped at the available CPUs. They emit
-normalized public symbol graphs and retain the same sealed compilation receipts
-as offline certification. Compilation includes test executables and discovery;
-the documentation workflow does not execute Swift test suites.
+[Full CI](../.github/workflows/ci.yml) prepares the website from the same macOS
+root, macro and extension producers used for API qualification. Each component
+compiles and emits graphs in its existing producer; the public API job restores
+those exact artifacts, preserves every API comparison, and performs strict
+curation, tutorial checks and DocC conversion once. The
+[Phase 9 implementation](Tasks/ci-reliability/phase-9/IMPLEMENTATION.md) records
+local acceptance and its remaining hosted gates.
 
-After all three builds pass, Python helper tests run on `Linux-x64-8` with
-Python 3.12 while a macOS conversion job restores the three packages from this
-workflow's exact commit, run and attempt. Restore checks source and payload
-hashes, checkout path, platform and toolchain before accepting the artifacts.
-The conversion job checks curation and tutorial snapshots, then converts the
-root, macro and extension catalogs without emitting graphs or recompiling.
-It uses the same strict DocC helper as offline certification. The workflow
-retains platform, build, helper and conversion diagnostics for 14 days; compiled
-packages expire after two days. Use **Re-run all jobs** for a fresh attempt.
+[Sealed conversion inputs](../Tools/ci/documentation_inputs.py) bind the exact
+commit, tracked content, dependency pins, workflow/event/run/attempt, component,
+strict conversion report, module inventory and every payload file hash. All three
+inputs are uploaded together through bounded immutable transport. The read-only
+site job authenticates the original successful producer by API and immutable
+artifact ID/digest, verifies safe complete payloads, then merges and transforms
+those archives without compiling, emitting graphs, curating or converting again.
+An earlier successful same-run conversion may survive a partial rerun after fresh
+selection; a newer failed replacement prevents fallback. Inputs expire after two
+days and diagnostics after 14 days. Missing inputs require explicit regeneration.
 
-[The site builder](../Tools/ci/build_documentation_site.py) merges those public
-modules into one library navigator and exports static routes with the
-repository name as the hosting base path. The root URL redirects to the merged
-documentation landing page. The site is uploaded using GitHub's Pages artifact
-action, which preserves DocC filenames containing colons inside a tar archive.
-Generated website files remain build outputs and are not committed. The site
-builder's `--skip-symbol-graphs` mode consumes the verified restored graphs and
-fails if any public module is missing or malformed.
+The [site builder](../Tools/ci/build_documentation_site.py) preserves the combined
+library navigator, repository hosting base path, static routes, root redirect and
+hidden Pages marker. Site preparation is required by the fresh full certification
+barrier. It uploads a seven-day immutable site archive using read-only repository
+permissions; it has no Pages permission. The
+[Documentation workflow](../.github/workflows/documentation.yml) has only a manual
+trigger and requests the ordinary full CI workflow at the selected ref. It has no
+separate compiler/conversion graph. Requests remain blocked by the reviewed
+Phase 10 containment setting until spend admission is implemented.
 
-Only successful conversion and helper checks on the default branch can publish
-[the website](https://aurum-studios.github.io/DiscordKit/). Pull requests and
-other branches build an artifact without replacing the published site. The
-deployment job alone receives `pages: write` and `id-token: write`, and uses the
-`github-pages` environment. Deployments are serialized independently of CI;
-default-branch runs are not canceled while publishing. A failed documentation
-build leaves the previously deployed site available.
+Pages upload and deployment run in a separate job only when a manual request sets
+`publish-documentation=true` (or selects `publish` in Documentation). The job
+requires successful full certification, the trusted upstream default branch and
+an exact current-attempt site. Its
+[publication guard](../Tools/ci/documentation_publication.py) independently checks
+the live repository/fork identity, default-branch tip, original CI workflow/event,
+source revision, run attempt, successful exact full gate and site job/steps, and
+immutable site artifact. PRs, diagnostics, stale/failed/incomplete runs and changed
+artifacts cannot publish. Safe extraction admits only regular site files before
+Pages upload. A deploy-only partial rerun requires a fresh site preparation and
+full barrier for that attempt; old site outputs fail closed.
 
-In the repository's **Settings > Pages**, the publishing source must be
-**GitHub Actions**. No personal access token or additional repository secret is
-required by the workflow. For a local build, run:
+Only the publication job receives `pages: write` and `id-token: write`, preserves
+the `github-pages` environment and serialized Pages concurrency, and can replace
+[the website](https://aurum-studios.github.io/DiscordKit/). No `workflow_run`
+publication path executes PR code with write privileges. Repository Pages settings
+still require **GitHub Actions** as the publishing source. No deployment or setting
+change occurred during Phase 9 implementation; hosted qualification remains Phase 11.
+
+Local fresh documentation generation remains available:
 
 ```sh
 python3 Tools/ci/build_documentation_site.py --jobs 5 --hosting-base-path /DiscordKit
 ```
 
-The output is `.build/documentation-site`. Change the base path for a different
-repository name or use an empty base path when serving at a domain root. A
-custom domain also requires updating `DOCUMENTATION_BASE_PATH` in the workflow.
-Local builds refresh graphs with the native symbol-graph helper by default,
-using the same pins, build engine and bounded compiler jobs. Documentation
-success does not establish that independent build/test certification has passed.
+A local consumer can instead repeat `--sealed-input` for the three sealed
+component archives; CI additionally supplies a current immutable `--input-selection`.
+The output remains `.build/documentation-site`. An empty base path serves a domain
+root. Standalone local generation refreshes graphs and converts catalogs explicitly;
+its success does not establish full certification or authorize publication.
 
 ## Manual GitHub releases
 

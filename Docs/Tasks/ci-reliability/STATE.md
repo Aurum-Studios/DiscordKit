@@ -44,7 +44,7 @@ is claimed. See [BOOTSTRAP.md](BOOTSTRAP.md) for the zero-paid execution sheet.
 | 6 — Preflight and canaries | Implemented; local helper acceptance; native expansion contained | `666f1371224fbe5bda03ec7b54be14a083bb6b09` | [Contracts and execution sheet](phase-6/IMPLEMENTATION.md); [validation](phase-6/validation.json), [independent review](phase-6/review.json); hosted proof remains Phase 11 |
 | 7 — Suite groups and resources | Implemented; local helper acceptance; hosted measurements pending Phase 11 | `4db6c5e6181d790fd1cd304220059397a501467b` | [Grouped suites, leaf coverage and resources](phase-7/IMPLEMENTATION.md); [validation](phase-7/validation.json), [review](phase-7/review.json) |
 | 8 — Verified provisioning | Implemented; local helper/signature acceptance; hosted measurements pending Phase 11 | `db705cb6dade43da579d555461f3f36a13586b48` | [Verified distribution reuse and profiles](phase-8/IMPLEMENTATION.md); [validation](phase-8/validation.json), [review](phase-8/review.json), [upstream pins](phase-8/upstream/SOURCES.json) |
-| 9 — Shared documentation inputs | Not started | Pending | Pending invocation-count/trust proof |
+| 9 — Shared documentation inputs | Implemented; local helper and real synthetic DocC acceptance; hosted proof pending Phase 11 | Pending implementation commit | [Shared conversions and trust contracts](phase-9/IMPLEMENTATION.md); [validation](phase-9/validation.json), [review](phase-9/review.json), [real DocC counts/routes](phase-9/checks/real-docc/results.json) |
 | 10 — Spend admission | Not started | Pending | Pending |
 | 11 — Qualification and rollout | Not started | Pending | Pending exact-final-revision CI |
 
@@ -256,8 +256,9 @@ all tested executable/configuration/workflow/test bytes remain identical.
   `ci/phase-6-preflight-canaries`, sibling `DiscordKit-ci-phase6`, base `b759a25e`;
   its local execution sheet likewise keeps paid allowances at zero. Phase 7 owner
   is Codex `/root` on `ci/phase-7-suite-groups`, sibling `DiscordKit-ci-phase7`,
-  base `e47b506c`; its local sheet retains zero paid execution. Phases 8 through
-  11 ownership/paid experiment sheets are not assigned/authorized.
+  base `e47b506c`; its local sheet retains zero paid execution. Phase 8 and 9
+  ownership/local execution sheets are recorded in their implementation documents.
+  Phases 10 and 11 paid experiment sheets remain unassigned/unauthorized.
 
 These do not prevent beginning local preparation/helper implementation. Missing
 allowances or execution authorization prevent paid scheduling, not source work.
@@ -267,3 +268,29 @@ allowances or execution authorization prevent paid scheduling, not source work.
 For each active phase retain: owner, branch/worktree, base and tested commit/content
 hash, owned paths, commands/exits, diagnostic/artifact identities, allowance and
 remaining attempts, acceptance criteria still open, and the exact next action.
+
+## Phase 9 handoff
+
+Owner Codex `/root` prepared shared documentation inputs on
+`ci/phase-9-documentation`, sibling `DiscordKit-ci-phase9`, based on `e37ad2bc`.
+[The local plan/contracts](phase-9/IMPLEMENTATION.md) retain zero paid execution.
+MacOS root/macros/extensions build and graph producers are shared with full CI;
+strict conversion runs once per component, then the site consumes sealed archives.
+Read-only site preparation is required by full certification. Manual Documentation
+requests obtain the same producers; overlapping automatic builds are removed.
+Publication is a separate optional job with independent trusted-current-source,
+fresh full-gate/site and immutable-artifact admission. Earlier site attempts cannot
+publish on a deploy-only rerun; fresh site preparation and full barrier are required.
+
+[Validation](phase-9/validation.json) records 938 passing tests plus six existing
+Linux-only skips, actionlint/source checks and a supervised real DocC fixture.
+Its three tiny strict conversions feed one consumer merge/static transformation;
+all four landing/module routes and five base-path assets exist. No native Swift
+compilation or full production-catalog conversion is claimed. [Review](phase-9/review.json)
+closed the DocC lookup and newer-failed-producer fallback findings.
+The original four planning edits and prior worktrees remain preserved.
+
+Actual hosted producer/consumer and partial-rerun proof, pinned Swift 6.4.1
+production documentation conversion, site qualification and measured savings
+remain Phase 11. Phase 10 spending admission remains unimplemented and native
+expansion stays contained. No push, paid execution, dispatch or publication occurred.

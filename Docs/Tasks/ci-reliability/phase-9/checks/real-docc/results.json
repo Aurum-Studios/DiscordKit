@@ -1,0 +1,232 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "xcodeVersion": "Xcode 27.1\nBuild version 27A9275",
+  "doccSHA256": "a570f408e327fa647603cb7c9cb1e301abd89d1303dffefc66a4e54b24b827e1",
+  "qualification": "Local synthetic DocC transport and rendered static routes only",
+  "nativeCompilationCount": 0,
+  "symbolGraphEmissionCount": 0,
+  "syntheticGraphFixtureCount": 3,
+  "strictModuleConversionCount": 3,
+  "packageMergeCount": 3,
+  "consumerCommandCount": 2,
+  "consumerMergeCount": 1,
+  "consumerStaticTransformCount": 1,
+  "consumerCompilationCount": 0,
+  "consumerGraphEmissionCount": 0,
+  "consumerConversionCount": 0,
+  "hostingBasePath": "/Phase9Fixture",
+  "routes": [
+    "documentation/index.html",
+    "documentation/discordkit/index.html",
+    "documentation/discorddslmacros/index.html",
+    "documentation/discorddslextensions/index.html"
+  ],
+  "checkedDocumentationLinks": [
+    "/documentation/discorddslextensions",
+    "/documentation/discorddslmacros",
+    "/documentation/discordkit"
+  ],
+  "checkedAssetLinks": [
+    "/Phase9Fixture/css/index.63be42cf.css",
+    "/Phase9Fixture/favicon.ico",
+    "/Phase9Fixture/favicon.svg",
+    "/Phase9Fixture/js/chunk-vendors.88e02fc3.js",
+    "/Phase9Fixture/js/index.f7bc5188.js"
+  ],
+  "rootRedirectChecked": true,
+  "sourceIdentityAndSealedHashesChecked": true,
+  "testedInputs": {
+    "Tools/ci/build_docc.py": "23da2166bcecbcbce2bf29fce24afe33cd45a1baef98907b4cb0185e6d1466ac",
+    "Tools/ci/build_documentation_site.py": "9c02069357ac09cf017f8764cd8ec83804c7c4c61008bb2a6ad8d5c69dcedb34",
+    "Tools/ci/documentation_inputs.py": "a19df48b184e25eb11b3e690f26b3ccba2d61d54b4d97ee84a2c2e1e971824c5",
+    "Tools/ci/native_jobs.py": "b1cb5c3ea75348fb2089d25f65cef2a4ced77887706b16882d15cb1b4a5f6e96",
+    "Tools/ci/native_receipts.py": "4444c21bb7b8a6b3dac4bf6b943c97c2d50b18fdd04fa845832606de0413f9c0",
+    "Tools/ci/artifact_index.py": "170901937a7c65865f27a1d1a1a193870883ad662ca1aa0d1a73decfb4278e44",
+    "Tools/ci/artifact_transfer.py": "ec764bad1d985bbda2ada3b5dd3903b12029d76092eb07ae6e3e908c2d407022"
+  },
+  "commands": [
+    {
+      "stage": "toolchain",
+      "argv": [
+        "xcodebuild",
+        "-version"
+      ]
+    },
+    {
+      "stage": "prepare",
+      "argv": [
+        "git",
+        "init",
+        "--quiet"
+      ]
+    },
+    {
+      "stage": "prepare",
+      "argv": [
+        "git",
+        "add",
+        "."
+      ]
+    },
+    {
+      "stage": "prepare",
+      "argv": [
+        "git",
+        "-c",
+        "user.name=Phase 9 fixture",
+        "-c",
+        "user.email=phase9-fixture@example.invalid",
+        "commit",
+        "--quiet",
+        "-m",
+        "Create synthetic documentation source"
+      ]
+    },
+    {
+      "stage": "prepare",
+      "argv": [
+        "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/docc",
+        "convert",
+        "/Users/carsonrau/Developer/DiscordKit-ci-phase9/.build/phase9-real-docc-final/fixture/Sources/DiscordKit/DiscordKit.docc",
+        "--additional-symbol-graph-dir",
+        "/Users/carsonrau/Developer/DiscordKit-ci-phase9/.build/phase9-real-docc-final/graphs/root",
+        "--output-dir",
+        "/Users/carsonrau/Developer/DiscordKit-ci-phase9/.build/phase9-real-docc-final/converted/root/DiscordKit.doccarchive",
+        "--fallback-display-name",
+        "DiscordKit",
+        "--fallback-bundle-identifier",
+        "org.discordkit.DiscordKit",
+        "--warnings-as-errors",
+        "--analyze",
+        "--experimental-documentation-coverage",
+        "--coverage-summary-level",
+        "brief",
+        "--enable-experimental-external-link-support"
+      ]
+    },
+    {
+      "stage": "prepare",
+      "argv": [
+        "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/docc",
+        "merge",
+        "/Users/carsonrau/Developer/DiscordKit-ci-phase9/.build/phase9-real-docc-final/converted/root/DiscordKit.doccarchive",
+        "--output-path",
+        "/Users/carsonrau/Developer/DiscordKit-ci-phase9/.build/phase9-real-docc-final/converted/root/DiscordKitLibrary.doccarchive",
+        "--synthesized-landing-page-name",
+        "DiscordKit Library",
+        "--synthesized-landing-page-kind",
+        "Swift Package",
+        "--synthesized-landing-page-topics-style",
+        "list"
+      ]
+    },
+    {
+      "stage": "prepare",
+      "argv": [
+        "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/docc",
+        "convert",
+        "/Users/carsonrau/Developer/DiscordKit-ci-phase9/.build/phase9-real-docc-final/fixture/Packages/DiscordDSLMacros/Sources/DiscordDSLMacros/DiscordDSLMacros.docc",
+        "--additional-symbol-graph-dir",
+        "/Users/carsonrau/Developer/DiscordKit-ci-phase9/.build/phase9-real-docc-final/graphs/macros",
+        "--output-dir",
+        "/Users/carsonrau/Developer/DiscordKit-ci-phase9/.build/phase9-real-docc-final/converted/macros/DiscordDSLMacros.doccarchive",
+        "--fallback-display-name",
+        "DiscordDSLMacros",
+        "--fallback-bundle-identifier",
+        "org.discordkit.DiscordDSLMacros",
+        "--warnings-as-errors",
+        "--analyze",
+        "--experimental-documentation-coverage",
+        "--coverage-summary-level",
+        "brief",
+        "--enable-experimental-external-link-support"
+      ]
+    },
+    {
+      "stage": "prepare",
+      "argv": [
+        "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/docc",
+        "merge",
+        "/Users/carsonrau/Developer/DiscordKit-ci-phase9/.build/phase9-real-docc-final/converted/macros/DiscordDSLMacros.doccarchive",
+        "--output-path",
+        "/Users/carsonrau/Developer/DiscordKit-ci-phase9/.build/phase9-real-docc-final/converted/macros/DiscordKitLibrary.doccarchive",
+        "--synthesized-landing-page-name",
+        "DiscordKit Library",
+        "--synthesized-landing-page-kind",
+        "Swift Package",
+        "--synthesized-landing-page-topics-style",
+        "list"
+      ]
+    },
+    {
+      "stage": "prepare",
+      "argv": [
+        "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/docc",
+        "convert",
+        "/Users/carsonrau/Developer/DiscordKit-ci-phase9/.build/phase9-real-docc-final/fixture/Packages/DiscordDSLExtensions/Sources/DiscordDSLExtensions/DiscordDSLExtensions.docc",
+        "--additional-symbol-graph-dir",
+        "/Users/carsonrau/Developer/DiscordKit-ci-phase9/.build/phase9-real-docc-final/graphs/extensions",
+        "--output-dir",
+        "/Users/carsonrau/Developer/DiscordKit-ci-phase9/.build/phase9-real-docc-final/converted/extensions/DiscordDSLExtensions.doccarchive",
+        "--fallback-display-name",
+        "DiscordDSLExtensions",
+        "--fallback-bundle-identifier",
+        "org.discordkit.DiscordDSLExtensions",
+        "--warnings-as-errors",
+        "--analyze",
+        "--experimental-documentation-coverage",
+        "--coverage-summary-level",
+        "brief",
+        "--enable-experimental-external-link-support"
+      ]
+    },
+    {
+      "stage": "prepare",
+      "argv": [
+        "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/docc",
+        "merge",
+        "/Users/carsonrau/Developer/DiscordKit-ci-phase9/.build/phase9-real-docc-final/converted/extensions/DiscordDSLExtensions.doccarchive",
+        "--output-path",
+        "/Users/carsonrau/Developer/DiscordKit-ci-phase9/.build/phase9-real-docc-final/converted/extensions/DiscordKitLibrary.doccarchive",
+        "--synthesized-landing-page-name",
+        "DiscordKit Library",
+        "--synthesized-landing-page-kind",
+        "Swift Package",
+        "--synthesized-landing-page-topics-style",
+        "list"
+      ]
+    },
+    {
+      "stage": "consume",
+      "argv": [
+        "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/docc",
+        "merge",
+        "/Users/carsonrau/Developer/DiscordKit-ci-phase9/.build/phase9-real-docc-final/documentation-site-8cf59qq6/package-0/DiscordKit.doccarchive",
+        "/Users/carsonrau/Developer/DiscordKit-ci-phase9/.build/phase9-real-docc-final/documentation-site-8cf59qq6/package-1/DiscordDSLMacros.doccarchive",
+        "/Users/carsonrau/Developer/DiscordKit-ci-phase9/.build/phase9-real-docc-final/documentation-site-8cf59qq6/package-2/DiscordDSLExtensions.doccarchive",
+        "--output-path",
+        "/Users/carsonrau/Developer/DiscordKit-ci-phase9/.build/phase9-real-docc-final/documentation-site-8cf59qq6/DiscordKitLibrary.doccarchive",
+        "--synthesized-landing-page-name",
+        "DiscordKit Library",
+        "--synthesized-landing-page-kind",
+        "Swift Package",
+        "--synthesized-landing-page-topics-style",
+        "list"
+      ]
+    },
+    {
+      "stage": "consume",
+      "argv": [
+        "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/docc",
+        "process-archive",
+        "transform-for-static-hosting",
+        "/Users/carsonrau/Developer/DiscordKit-ci-phase9/.build/phase9-real-docc-final/documentation-site-8cf59qq6/DiscordKitLibrary.doccarchive",
+        "--output-path",
+        "/Users/carsonrau/Developer/DiscordKit-ci-phase9/.build/phase9-real-docc-final/documentation-site-8cf59qq6/site",
+        "--hosting-base-path",
+        "/Phase9Fixture"
+      ]
+    }
+  ]
+}

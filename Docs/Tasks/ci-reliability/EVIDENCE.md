@@ -458,3 +458,36 @@ Implementation commit `db705cb6dade43da579d555461f3f36a13586b48` contains all 20
 input blobs and 94 retained manifest artifacts. The [actual-blob commit receipt](phase-8/commit-receipt.json)
 verifies those objects; this completion follow-up changes documentation only.
 Phase 9 remains future work.
+
+## Phase 9 local shared-documentation acceptance
+
+Prepared from Phase 8 handoff `e37ad2bc` on isolated `ci/phase-9-documentation`.
+[Execution plan/contracts](phase-9/IMPLEMENTATION.md), [validation](phase-9/validation.json)
+and [independent review](phase-9/review.json) retain the local evidence. Full CI
+shares its three existing macOS root/authoring build+graph producers; strict
+conversion seals each public module archive once, and a same-run immutable
+consumer merges/transforms without compilation, graph emission or reconversion.
+The site job and exact preparation step are required by the fresh full barrier.
+Manual Documentation requests dispatch this contained full CI path with publication
+false by default; no overlapping automatic documentation compile graph remains.
+
+All seven Python/browser groups passed: **938 passed, six existing Linux-only
+skips**. CI helpers discovered 531 tests and passed 525; other Python helpers
+passed 375 tests and browser checks passed 38. Source policy, 32 displayed DocC
+listings, all-workflow actionlint and local syntax/JSON/link/diff checks passed.
+Input tests reject incomplete/corrupt/unsafe/changed source/pins/reports and newer
+failed/cancelled producer replacements. Publication fixtures reject PR/fork/scoped/
+stale/failed/incomplete/wrong-source/wrong-artifact admission and unsafe site tars.
+Release eligibility's existing 29 helper regressions remain passing and unchanged.
+
+The [supervised real DocC fixture](phase-9/checks/real-docc/results.json) used
+installed Xcode 27.1 DocC and three tiny synthetic catalogs, performing exactly
+three strict conversions, zero Swift compilations/graph emissions, and one consumer
+merge plus one static transformation. It verified the root redirect, combined
+landing and all three module routes, hidden markers and five base-path asset links.
+This is real local rendering evidence for the new transport/consumer, not full
+production-catalog, pinned 6.4.1/native or hosted qualification.
+
+Native/paid execution, hosted partial reruns, full production documentation and
+site qualification, savings, deployment/publication and Phase 10 admission remain
+open. No remote mutation or later-phase implementation occurred.

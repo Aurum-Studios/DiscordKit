@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 1,
+  "reviewer": "Codex /root/phase9_review",
+  "status": "no-blocking-findings",
+  "scope": "Independent current local Phase 9 workflow, artifact, site and publication review",
+  "reviewedInputs": {
+    ".github/workflows/ci.yml": "5b4ca516b76767191f364704f6e1932a1a2e2a2466600f05e672e9cd6110ad2e",
+    ".github/workflows/documentation.yml": "e3d79ee8cb318ded151c5f4d94f71f6a907d33433b1a090fd2d84d63ed2bb3c2",
+    ".github/workflows/native-platform.yml": "5b4d9458433fdce081358b439649c96f23cf6dc8a82565ada87df7814cf1e3d5",
+    "Tools/ci/documentation_inputs.py": "a19df48b184e25eb11b3e690f26b3ccba2d61d54b4d97ee84a2c2e1e971824c5",
+    "Tools/ci/build_documentation_site.py": "9c02069357ac09cf017f8764cd8ec83804c7c4c61008bb2a6ad8d5c69dcedb34",
+    "Tools/ci/documentation_workflow.py": "921e1dba0a2cf8579d3c96635cc47cd353c501b91a673fd9df03782aa421add5",
+    "Tools/ci/documentation_publication.py": "67772582728f7e1696ea786fbc08fadcf476fb5b77d1f13a90ffe4143b6b065d",
+    "Tools/ci/workflow_scope.py": "027f0ca7def876628d1bbf07b8806db40f711b86b43e2184513a9e5e26e5fe4d",
+    "Tools/ci/test_documentation_inputs.py": "50b5ececac295f00a99efac1661247a16048af0c1a85483bacc0aa41c4080c68",
+    "Tools/ci/test_documentation_site.py": "6fbbf5fab49d857764f52c9b206650fdddee71423755e8fba52ae6083f3a5c5a",
+    "Tools/ci/test_documentation_workflow.py": "138629025657829a839ff51a74542db12474121a88d9683a6603b73799e53f45",
+    "Tools/ci/test_documentation_publication.py": "fa1a31dd9d2474008cca91eb33dcf54902a00eba4d5c3cb8d8fab0a86a15c974",
+    "Tools/ci/test_workflow_scope.py": "5fad6aa745bafa7caa71dde631d2e44a06ed3704682fd1cf459053fdfe9dd58a",
+    "Tools/ci/github_release.py": "1a04177c8d3ea591c0160b909f4f8cf2d4ab6c4e23198ba0ab9907409050098d"
+  },
+  "findings": [
+    {
+      "id": "documentation-latest-producer",
+      "status": "resolved",
+      "finding": "Historical success initially ignored a newer failed or cancelled public-api replacement.",
+      "resolution": "Resolve producer jobs through the current attempt; reject superseded artifacts and run-attempt drift; derive omitted redundant job attempt from its endpoint."
+    },
+    {
+      "id": "documentation-docc-lookup",
+      "status": "resolved",
+      "finding": "DocC was absent from the local PATH while xcrun could locate it.",
+      "resolution": "Prepare CLI uses a finite xcrun --find docc fallback, covered by regression."
+    }
+  ],
+  "verifiedContracts": [
+    "Same-run public-api inputs reach the read-only site job through a nonmatrix immutable output.",
+    "The site is required by the exact full coverage gate, with latest API job and named step verification; publication follows that gate.",
+    "Manual Documentation only requests the ordinary contained full CI path; no overlapping automatic documentation graph remains.",
+    "Native rollout remains closed pending Phase 10; no workflow was dispatched.",
+    "Publication rejects PR, scoped, fork, wrong-source, stale-tip, incomplete and older-attempt input context before Pages upload.",
+    "Original repository/event/workflow, live default-branch tip, exact current full gate and immutable artifact ID/digest are checked.",
+    "Site extraction rejects links, special files, unsafe paths, duplicate members, missing routes/marker, oversized input and existing output.",
+    "Release eligibility remains the completed exact-commit ci.yml run and current-attempt full coverage step; github_release.py is unchanged."
+  ],
+  "checks": [
+    {
+      "command": "PYTHONPATH=Tools/ci python3 -m unittest test_documentation_inputs test_documentation_site test_documentation_workflow test_documentation_publication test_workflow_scope",
+      "result": "passed",
+      "tests": 71,
+      "seconds": 0.517
+    },
+    {
+      "command": "/private/tmp/discordkit-ci-lint.F1OyHF/actionlint",
+      "result": "passed",
+      "version": "1.7.12",
+      "shellcheck": "Not installed or available on PATH; actionlint-integrated shellcheck is not claimed."
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed"
+    },
+    {
+      "command": "python3 Docs/Tasks/ci-reliability/phase-9/checks/real-docc/replay.py --output .build/phase9-review-real-docc-final-verified",
+      "result": "passed",
+      "evidence": "checks/real-docc/results.json",
+      "strictModuleConversions": 3,
+      "packageMerges": 3,
+      "consumerMerges": 1,
+      "consumerStaticTransforms": 1,
+      "nativeBuilds": 0,
+      "graphEmissions": 0,
+      "consumerConversions": 0,
+      "moduleRoutes": 3,
+      "landingDocumentationLinks": 3,
+      "basePathAssetLinks": 5,
+      "testedInputsMatchFinalFiles": true
+    }
+  ],
+  "limitations": [
+    "Root owns full-suite validation and final retained-input/commit reconciliation; this review directly executed 71 focused tests.",
+    "Real DocC evidence uses synthetic local catalogs/graphs and Xcode 27.1 DocC, not the hosted pinned Swift 6.4.1 toolchain or all production modules.",
+    "No hosted CI, native Swift compilation, paid execution, remote write, publication, deployment or live Discord qualification occurred.",
+    "Publication deliberately requires a current-attempt site producer; a partial rerun can reuse older successful site preparation for certification but cannot publish that older artifact.",
+    "Hosted artifact round trips, partial reruns, actual check-context behavior, cost and pinned-toolchain complete native qualification remain Phase 11 work."
+  ],
+  "primarySources": [
+    {
+      "url": "https://docs.github.com/en/actions/reference/workflows-and-actions/reusing-workflow-configurations",
+      "use": "Verified caller-bound GitHub context, explicit workflow outputs, env isolation and permission downgrades."
+    },
+    {
+      "url": "https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages",
+      "use": "Verified Pages job permissions, environment and build/deploy dependency requirements."
+    },
+    {
+      "url": "https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site",
+      "use": "Verified trusted default-branch and environment protection guidance."
+    }
+  ]
+}
