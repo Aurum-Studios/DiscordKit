@@ -50,7 +50,7 @@ is claimed. See [BOOTSTRAP.md](BOOTSTRAP.md) for the zero-paid execution sheet.
 | 8 — Verified provisioning | Implemented; local helper/signature acceptance; hosted measurements pending Phase 11 | `db705cb6dade43da579d555461f3f36a13586b48` | [Verified distribution reuse and profiles](phase-8/IMPLEMENTATION.md); [validation](phase-8/validation.json), [review](phase-8/review.json), [upstream pins](phase-8/upstream/SOURCES.json) |
 | 9 — Shared documentation inputs | Implemented; local helper and real synthetic DocC acceptance; hosted proof pending Phase 11 | `b6fe729d61f7355cd8bcfc9ab4dcd93d020f2467` | [Shared conversions and trust contracts](phase-9/IMPLEMENTATION.md); [validation](phase-9/validation.json), [review](phase-9/review.json), [real DocC counts/routes](phase-9/checks/real-docc/results.json) |
 | 10 — Spend admission | Implemented; local acceptance; hosted qualification and operator settings pending | `c5624f8a726880298092269716f49102ff87e636` | [Contracts and execution sheet](phase-10/IMPLEMENTATION.md); [validation](phase-10/validation.json), [review](phase-10/review.json), [operator proposal](phase-10/OPERATOR-BUDGET.md) |
-| 11 — Qualification and rollout | Local preparation implemented and tested; hosted completion pending authorization | Pending local commit receipt | [Execution sheet](phase-11/IMPLEMENTATION.md), [1,015 passed / six existing skips](phase-11/validation.json), [review](phase-11/review.json); both native platforms, partial rerun and exact-final-revision full CI remain open |
+| 11 — Qualification and rollout | Local preparation implemented and tested; hosted completion pending authorization | `d9e006de6a2dbcdf507cec852f51e2dece343937` | [Execution sheet](phase-11/IMPLEMENTATION.md), [1,015 passed / six existing skips](phase-11/validation.json), [review](phase-11/review.json); both native platforms, partial rerun and exact-final-revision full CI remain open |
 
 ## Phase 1 handoff
 
@@ -360,3 +360,8 @@ Linux/macOS round trips and partial rerun, cold/cache/documentation measurements
 final exact-source full certification, measured cost comparison and required-check
 read-back are open. Hosted work requires operator-selected allowances and verified
 account/charge facts; the prepared repository budget remains a separate unset task.
+
+Implementation commit `d9e006de6a2dbcdf507cec852f51e2dece343937` contains all 14 tested input
+blobs and 71 retained manifest artifacts. The [actual-blob receipt](phase-11/commit-receipt.json)
+verifies them against Git and unchanged working inputs. This documentation-only
+follow-up records local preparation; it does not complete Phase 11's hosted gates.
