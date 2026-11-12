@@ -15,6 +15,11 @@ pull-request, schedule or manual trigger of its own.
 A workflow definition does not establish that a hosted runner
 has executed. Review actual artifacts before changing support claims.
 
+The proposed [CI reliability and spending plan](Tasks/ci-reliability/PLAN.md)
+tracks cancellation repairs, bounded diagnostics, artifact recovery and staged
+validation. Its phase ledger describes future work; the pipeline below remains
+the current implementation until those changes are completed and qualified.
+
 ## Offline validation
 
 [Offline validation](../.github/workflows/ci.yml) runs on push, pull request and
