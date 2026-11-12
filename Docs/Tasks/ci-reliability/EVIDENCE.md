@@ -8,7 +8,7 @@ https://aurum-studios.com
 # Incident baseline and evidence requirements
 
 This retains the read-only investigation preceding [PLAN.md](PLAN.md) and the
-Phase 0 implementation receipts below. The incident observations do not qualify
+Phase 0 and Phase 1 implementation receipts below. The incident observations do not qualify
 any runtime repair. Original logs/metadata are retained under `baseline/` because
 GitHub artifact links can expire.
 
@@ -89,8 +89,9 @@ Required final evidence inventory:
 - Operator budget configuration/read-back if separately authorized; otherwise pending.
 
 No implementation, native verification, push, dispatch, billing change or
-publication was performed while authoring the original plan. Phase 0 source work
-and local helper validation are recorded below; later phases are not complete.
+publication was performed while authoring the original plan. Phase 0 preparation
+and Phase 1 local helper acceptance are recorded below; Phases 2 through 11
+remain incomplete.
 
 ## Phase 0 preparation — November 12, 2026 UTC
 
@@ -169,3 +170,60 @@ and local helper validation are recorded below; later phases are not complete.
   follow-up records that actual commit; the tested input hashes remain unchanged.
   Phase 0's exit criteria are satisfied. [STATE.md](STATE.md) leaves all later
   phases not started, and paid jobs/minutes/attempts and allowances remain zero.
+
+
+## Phase 1 supervision — November 12, 2026 UTC
+
+- Owner Codex `/root`; isolated `ci/phase-1-supervision`, sibling
+  `DiscordKit-ci-phase1`, based on Phase 0 receipt
+  `a74d58a754048ff4058c64a2d75b5bb3b21d04e0`. The
+  [source preflight](phase-1/source-preflight.json) retains worktrees, identity,
+  remote read and original planning-file hashes. The original checkout and Phase 0
+  checkout remain preserved. [Implementation and acceptance](phase-1/IMPLEMENTATION.md)
+  supplies the local execution sheet and exact limits.
+- Native operation limits and multi-command elapsed deadlines now consume the
+  shared policy. Process supervision covers inherited output pipes, shell-free
+  argv, receipts, bounded diagnostics, signal interruption and process-group cleanup.
+  Discovery stdout remains separate and fails closed on overflow. Workflow
+  definitions, Swift/product/test sources and committed dependency pins are unchanged.
+- [Final validation](phase-1/validation.json):
+  `python3 -m unittest discover -s Tools/ci -p 'test_*.py'`, exit **0**,
+  **231 tests passed** in **12.054 seconds** under a **300-second** supervisor.
+  The seven executable/configuration/test inputs have retained SHA-256 values;
+  [compressed log](phase-1/local-ci-helpers.log.gz) and
+  [execution receipt](phase-1/local-ci-helpers.receipt.json) retain complete results.
+  Final test-process cleanup reports the process group gone and no reader threads.
+- [Nine retained process fixtures](phase-1/faults/results.json) cover normal
+  success/assertion failure, silent stall, TERM resistance, inherited stdout,
+  debugger failure, forwarding failure, real SIGTERM interruption and exact
+  discovery stdout. All expected outcomes, elapsed bounds and cleanup checks pass.
+  Failure statuses in these specimens are required failure evidence, not failing
+  acceptance. Each fixture command ran once, without an automatic test/build retry.
+- [Independent adversarial review](phase-1/review/results.json) also verifies a
+  successful parent leaving a TERM-ignoring child with closed output, actual
+  supervisor SIGTERM, a blocked real console pipe, bounded no-newline flooding,
+  discovery overflow rejection, and a diagnostic child retaining a pipe. A
+  deliberate escaped-session case records the process-group boundary honestly;
+  the fixture owner killed that escaped child afterward and verified all fixture
+  descendants absent. [Binary filename identity](phase-1/review/source-identity-check.json)
+  preserves source identity with newline/Unicode names and symlinks.
+- Review-driven fixes include signal interruption independent of `InterruptedError`
+  (selector retries can swallow that type), bounded console forwarding, exact
+  binary Git filenames, bounded sample output and shared symbol-emission limits.
+  Final review found no material blocker and verified all seven final input hashes.
+  Retained specimens predate final preflight integration; their
+  [input note](phase-1/specimen-inputs.json) distinguishes that snapshot from the
+  final full-helper acceptance hash.
+- [Budget arithmetic](phase-1/job-budget-check.json) fits all 12 compilation
+  components and audit/testing aggregates inside existing job deadlines. Consumer
+  compilation is capped at 5,400 seconds; discovery, packaging/identity and 840
+  seconds of setup/diagnostic/cleanup/upload reserve fit the unchanged 7,200-second
+  job. Cold-build capacity is unmeasured. Filesystem archive/hash operations have
+  elapsed boundary checks and the enclosing job cap, not hard in-process cancellation.
+- This is local macOS Python evidence, including simulated Swift commands. Native
+  Swift compilations/tests and paid jobs/minutes/attempts are **0**. No hosted run,
+  Linux/macOS native qualification, publication, push, dispatch or runtime repair
+  is claimed. The Linux blocked owner and event-hub regression remain later phases.
+- Static/link/hash/diff and preservation checks are recorded in the validation
+  receipt. The scoped implementation commit is recorded by the subsequent
+  documentation-only completion receipt, after its actual SHA exists.

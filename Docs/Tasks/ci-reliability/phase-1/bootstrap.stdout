@@ -1,0 +1,58 @@
+{
+  "allowances": {
+    "experimentUSD": "0.00",
+    "maximumPaidAttempts": 0,
+    "maximumPaidJobs": 0,
+    "maximumPaidMinutes": 0,
+    "safetyUSD": "0.00",
+    "workflowUSD": "0.00"
+  },
+  "bootstrap": {
+    "authorization": "local-helper-checks-only",
+    "futureDiagnostic": {
+      "authorized": false,
+      "coldCompileCommandSeconds": 1200,
+      "component": "load",
+      "maximumTestProcessAttempts": 2,
+      "platform": "linux-x64",
+      "requires": "Phase 1 supervisor, exact discovered selection, retained evidence, verified billing mapping and separate bounded execution authorization.",
+      "suite": "load",
+      "testProcessSeconds": 90
+    },
+    "localCommands": [
+      [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "Tools/ci",
+        "-p",
+        "test_*.py"
+      ],
+      [
+        "node",
+        "--test",
+        "Browser/DiscordActivityBridge/*.test.mjs"
+      ],
+      [
+        "git",
+        "diff",
+        "--check"
+      ]
+    ],
+    "localNativeCompilations": 0,
+    "localNativeTestAttempts": 0,
+    "nativeExecutionAuthorized": false
+  },
+  "limits": [
+    "Native helpers consume operation and aggregate process deadlines in Phase 1. Scheduling, concurrency, retention and paid admission changes remain preparation for later phases.",
+    "The native scope API delegates builds and suites to the existing planner; it does not inventory shared/native gates or documentation jobs for a complete workflow cost plan.",
+    "Declared root target inventory is source anchored, not evaluated SwiftPM inventory or discovered/executed test-leaf coverage.",
+    "Published runner list rates do not verify account pricing, configured runner mappings, storage charges, transfer charges or an invoice.",
+    "No paid execution, automatic spend admission, workflow expansion, retry, push or dispatch is authorized.",
+    "Component compilation limits are elapsed aggregate ceilings, including symbol-graph compilation. Consumers are capped at 5400 seconds so inventory, packaging/identity and paid-time reserves fit the unchanged 120-minute workflow build deadline. Cold-build capacity remains unqualified.",
+    "Upload reserves are placeholders, not a validated transport budget: later enclosing job plans must include all applicable 420-second transport totals, bounded attempts, cleanup and other operations."
+  ],
+  "policyID": "ci-reliability-phase-0-v1"
+}

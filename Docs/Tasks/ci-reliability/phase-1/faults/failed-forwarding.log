@@ -1,0 +1,2 @@
+/Library/Frameworks/Python.framework/Versions/3.14/bin/python3 -c 'print('"'"'output retained before failed forwarding'"'"', flush=True)'
+output retained before failed forwarding

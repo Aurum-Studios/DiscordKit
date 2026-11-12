@@ -11,13 +11,14 @@ Plan: [PLAN.md](PLAN.md). Evidence: [EVIDENCE.md](EVIDENCE.md).
 Starting source: `85eac6f3c1d3b17e53596c49e7438efee366c1b3`.
 Phase 0 is complete at implementation commit
 `5808ce32d867622ff6952d0f2057768a8a257f14` on `ci/phase-0-baseline`.
+Phase 1 local acceptance passed; its commit receipt is pending the scoped commit.
 No native check, paid execution, external configuration change or publication
 is claimed. See [BOOTSTRAP.md](BOOTSTRAP.md) for the zero-paid execution sheet.
 
 | Phase | Status | Implementation commit | Acceptance evidence |
 | --- | --- | --- | --- |
 | 0 — Baseline and initial limits | Complete; local preparation only | `5808ce32d867622ff6952d0f2057768a8a257f14` | [212 helper tests](baseline/validation.json), [retained capture](baseline/CAPTURE.md), [usage baseline](baseline/COST.md), [zero-paid sheet](BOOTSTRAP.md); hash/link/diff checks passed |
-| 1 — Process supervision | Not started | Pending | Pending |
+| 1 — Process supervision | Local acceptance passed; commit receipt pending | Pending | [231 helper tests](phase-1/validation.json), [nine retained fault specimens](phase-1/faults/results.json), [independent review](phase-1/review/results.json), [implementation and limits](phase-1/IMPLEMENTATION.md) |
 | 2 — Event-hub accounting | Not started | Pending | Pending red/green regression |
 | 3 — Linux hang repair | Not started | Pending | Cause unresolved |
 | 4 — Compatibility receipts | Not started | Pending | Pending |
@@ -29,21 +30,24 @@ is claimed. See [BOOTSTRAP.md](BOOTSTRAP.md) for the zero-paid execution sheet.
 | 10 — Spend admission | Not started | Pending | Pending |
 | 11 — Qualification and rollout | Not started | Pending | Pending exact-final-revision CI |
 
-## Next implementation session after Phase 0
+## Phase 1 handoff
 
-The implementation commit contains the tested policy/accounting inputs and all
-baseline receipts. This ledger follow-up changes documentation only; the tested
-input hashes still match the implementation commit. Its completion does not
-advance any later phase or authorize a native experiment.
+The supervisor, native planner and policy inputs passed local acceptance in the
+isolated `ci/phase-1-supervision` branch, sibling `DiscordKit-ci-phase1`, owner
+Codex `/root`, base `a74d58a754048ff4058c64a2d75b5bb3b21d04e0`.
+[Input hashes and the final helper invocation](phase-1/validation.json) bind the
+seven executable/configuration/test files. [Implementation notes](phase-1/IMPLEMENTATION.md)
+retain the execution sheet, command/aggregate bounds, review and qualification limits.
+The Phase 0 checkout and the original checkout's four planning files are preserved.
 
-1. Re-read identity/dirty/worktree/process state and the Phase 0 baseline receipts.
-   Retain the isolated implementation branch and keep intermediate commits local.
-2. Preserve [bootstrap limits](BOOTSTRAP.md) and define supervisor/receipt
-   interfaces. Keep one owner for native_jobs.py and workflow integration.
-3. Begin Phases 1, 2 and 4 in separate owned changes. Integrate the supervisor before
-   any native reproduction. The Linux investigation follows Phase 1.
-4. Update this ledger only from actual phase exit evidence. A proposed or reviewed
-   implementation is not a passing native qualification.
+1. Commit the tested owned changes; record the actual SHA in a documentation-only
+   follow-up before marking Phase 1 complete.
+2. Subsequent authorized sessions can prepare Phases 2 and 4 independently.
+   Phase 3 uses this supervisor for diagnosis; its Linux blocked owner remains
+   unresolved. No later phase starts as part of Phase 1 completion.
+3. Re-read source/worktree/process state, existing receipts and zero-paid limits
+   before the next implementation. Native experiments still require a concrete
+   allowed scope and execution allowance; helper acceptance supplies neither.
 
 ## Outstanding execution decisions
 
@@ -54,7 +58,8 @@ advance any later phase or authorize a native experiment.
 - Operator-selected repository budget amount/scope and authorization to configure it.
 - Phase 0 uses `ci/phase-0-baseline` in sibling `DiscordKit-ci-phase0`, owner
   Codex `/root`, base `85eac6f3c1d3b17e53596c49e7438efee366c1b3`.
-  Later phase owners and paid experiment sheets are not assigned/authorized.
+  Phase 1 ownership and its local-only sheet are recorded above. Phases 2 through
+  11 owners and paid experiment sheets are not assigned/authorized.
 
 These do not prevent beginning local preparation/helper implementation. Missing
 allowances or execution authorization prevent paid scheduling, not source work.

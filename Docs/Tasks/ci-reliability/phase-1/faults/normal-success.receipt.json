@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "name": "normal-success",
+  "stage": "phase-1-fault-injection",
+  "operation": "fixture",
+  "arguments": [
+    "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+    "-c",
+    "print('offline success')"
+  ],
+  "start": "2026-11-12T04:57:22.645867+00:00",
+  "startMonotonic": 317450.15826175,
+  "deadlineMonotonic": 317452.15826175,
+  "executionLimitSeconds": 2,
+  "cleanupAllowanceSeconds": 8.0,
+  "paths": {
+    "output": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/Docs/Tasks/ci-reliability/phase-1/faults/normal-success.log",
+    "stdout": null,
+    "diagnostics": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/Docs/Tasks/ci-reliability/phase-1/faults/normal-success.diagnostics.jsonl",
+    "receipt": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/Docs/Tasks/ci-reliability/phase-1/faults/normal-success.receipt.json"
+  },
+  "identity": {
+    "executionID": "cacb9457-6544-4b41-b2a3-5f98ca5907a3",
+    "supervisorPID": 54297,
+    "host": "Pokemon-GO-Plus",
+    "system": "Darwin",
+    "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase1"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 54302,
+  "group": 54302,
+  "cleanup": {
+    "status": "group-signalled",
+    "signals": [],
+    "parentReaped": true,
+    "allowanceSeconds": 8.0,
+    "seconds": 0.003,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/Docs/Tasks/ci-reliability/phase-1/faults/normal-success.log",
+      "retainedBytes": 117,
+      "observedBytes": 117,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T04:57:22.668609+00:00",
+  "endMonotonic": 317450.181041791,
+  "elapsedSeconds": 0.023,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}

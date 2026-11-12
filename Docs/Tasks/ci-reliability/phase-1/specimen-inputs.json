@@ -1,0 +1,12 @@
+{
+  "supervisorSHA256": "80c6d9c227e5c2f147b0e4416de148b937fc61359cb90c5140bb2398207f9484",
+  "note": "Retained specimens ran before final preflight-helper integration. Full helper acceptance is rerun on the final source.",
+  "reviewerInputsSHA256": {
+    "results.json": "04219a72de525fdd2631d2e4767ae29b1bd04114290d9676ce713cf4504e6706",
+    "source-identity-check.json": "dc1738ccb3b4bdc20eda7d326841e2dd193e58c1f69c06bdac52313318f1b89b",
+    "adversarial.py": "37d5f93f7feda4f739ebe9d5739f5c43026b35e51494d1e83f431f58c87abf6b"
+  },
+  "fixturesInputsSHA256": {
+    "retained_faults.py": "2e357e65a28abfe35fed81b76ed77be0c65e0eb35ca59c1f30bf3c3f9620b340"
+  }
+}

@@ -1,0 +1,1597 @@
+{
+  "certificationEstablished": false,
+  "completeWorkflowCostPlan": false,
+  "executionAuthorized": false,
+  "limits": [
+    "Native helpers consume operation and aggregate process deadlines in Phase 1. Scheduling, concurrency, retention and paid admission changes remain preparation for later phases.",
+    "The native scope API delegates builds and suites to the existing planner; it does not inventory shared/native gates or documentation jobs for a complete workflow cost plan.",
+    "Declared root target inventory is source anchored, not evaluated SwiftPM inventory or discovered/executed test-leaf coverage.",
+    "Published runner list rates do not verify account pricing, configured runner mappings, storage charges, transfer charges or an invoice.",
+    "No paid execution, automatic spend admission, workflow expansion, retry, push or dispatch is authorized.",
+    "Component compilation limits are elapsed aggregate ceilings, including symbol-graph compilation. Consumers are capped at 5400 seconds so inventory, packaging/identity and paid-time reserves fit the unchanged 120-minute workflow build deadline. Cold-build capacity remains unqualified.",
+    "Upload reserves are placeholders, not a validated transport budget: later enclosing job plans must include all applicable 420-second transport totals, bounded attempts, cleanup and other operations."
+  ],
+  "mode": "full",
+  "nativeBuilds": [
+    {
+      "component": "root",
+      "group": "Linux-x64-64",
+      "id": "build/linux-x64/root",
+      "jobs": 64,
+      "needs": [
+        "plan"
+      ],
+      "platform": "linux-x64",
+      "shell": "bash"
+    },
+    {
+      "component": "macros",
+      "group": "Linux-x64-64",
+      "id": "build/linux-x64/macros",
+      "jobs": 64,
+      "needs": [
+        "plan"
+      ],
+      "platform": "linux-x64",
+      "shell": "bash"
+    },
+    {
+      "component": "extensions",
+      "group": "Linux-x64-64",
+      "id": "build/linux-x64/extensions",
+      "jobs": 64,
+      "needs": [
+        "plan"
+      ],
+      "platform": "linux-x64",
+      "shell": "bash"
+    },
+    {
+      "component": "tooling",
+      "group": "Linux-x64-64",
+      "id": "build/linux-x64/tooling",
+      "jobs": 64,
+      "needs": [
+        "plan"
+      ],
+      "platform": "linux-x64",
+      "shell": "bash"
+    },
+    {
+      "component": "load",
+      "group": "Linux-x64-64",
+      "id": "build/linux-x64/load",
+      "jobs": 64,
+      "needs": [
+        "plan"
+      ],
+      "platform": "linux-x64",
+      "shell": "bash"
+    },
+    {
+      "component": "benchmarks",
+      "group": "Linux-x64-64",
+      "id": "build/linux-x64/benchmarks",
+      "jobs": 64,
+      "needs": [
+        "plan"
+      ],
+      "platform": "linux-x64",
+      "shell": "bash"
+    },
+    {
+      "component": "timing-support",
+      "group": "Linux-x64-64",
+      "id": "build/linux-x64/timing-support",
+      "jobs": 64,
+      "needs": [
+        "plan"
+      ],
+      "platform": "linux-x64",
+      "shell": "bash"
+    },
+    {
+      "component": "timing",
+      "group": "Linux-x64-64",
+      "id": "build/linux-x64/timing",
+      "jobs": 64,
+      "needs": [
+        "plan"
+      ],
+      "platform": "linux-x64",
+      "shell": "bash"
+    },
+    {
+      "component": "foundation",
+      "group": "Linux-x64-64",
+      "id": "build/linux-x64/foundation",
+      "jobs": 64,
+      "needs": [
+        "plan"
+      ],
+      "platform": "linux-x64",
+      "shell": "bash"
+    },
+    {
+      "component": "media",
+      "group": "Linux-x64-64",
+      "id": "build/linux-x64/media",
+      "jobs": 64,
+      "needs": [
+        "plan"
+      ],
+      "platform": "linux-x64",
+      "shell": "bash"
+    },
+    {
+      "component": "consumers",
+      "group": "Linux-x64-64",
+      "id": "build/linux-x64/consumers",
+      "jobs": 64,
+      "needs": [
+        "plan"
+      ],
+      "platform": "linux-x64",
+      "shell": "bash"
+    },
+    {
+      "component": "release",
+      "group": "Linux-x64-64",
+      "id": "build/linux-x64/release",
+      "jobs": 64,
+      "needs": [
+        "plan"
+      ],
+      "platform": "linux-x64",
+      "shell": "bash"
+    },
+    {
+      "component": "root",
+      "group": "MacOS-26-5",
+      "id": "build/macos-arm64/root",
+      "jobs": 5,
+      "needs": [
+        "plan"
+      ],
+      "platform": "macos-arm64",
+      "shell": "bash"
+    },
+    {
+      "component": "macros",
+      "group": "MacOS-26-5",
+      "id": "build/macos-arm64/macros",
+      "jobs": 5,
+      "needs": [
+        "plan"
+      ],
+      "platform": "macos-arm64",
+      "shell": "bash"
+    },
+    {
+      "component": "extensions",
+      "group": "MacOS-26-5",
+      "id": "build/macos-arm64/extensions",
+      "jobs": 5,
+      "needs": [
+        "plan"
+      ],
+      "platform": "macos-arm64",
+      "shell": "bash"
+    },
+    {
+      "component": "tooling",
+      "group": "MacOS-26-5",
+      "id": "build/macos-arm64/tooling",
+      "jobs": 5,
+      "needs": [
+        "plan"
+      ],
+      "platform": "macos-arm64",
+      "shell": "bash"
+    },
+    {
+      "component": "load",
+      "group": "MacOS-26-5",
+      "id": "build/macos-arm64/load",
+      "jobs": 5,
+      "needs": [
+        "plan"
+      ],
+      "platform": "macos-arm64",
+      "shell": "bash"
+    },
+    {
+      "component": "benchmarks",
+      "group": "MacOS-26-5",
+      "id": "build/macos-arm64/benchmarks",
+      "jobs": 5,
+      "needs": [
+        "plan"
+      ],
+      "platform": "macos-arm64",
+      "shell": "bash"
+    },
+    {
+      "component": "timing-support",
+      "group": "MacOS-26-5",
+      "id": "build/macos-arm64/timing-support",
+      "jobs": 5,
+      "needs": [
+        "plan"
+      ],
+      "platform": "macos-arm64",
+      "shell": "bash"
+    },
+    {
+      "component": "timing",
+      "group": "MacOS-26-5",
+      "id": "build/macos-arm64/timing",
+      "jobs": 5,
+      "needs": [
+        "plan"
+      ],
+      "platform": "macos-arm64",
+      "shell": "bash"
+    },
+    {
+      "component": "foundation",
+      "group": "MacOS-26-5",
+      "id": "build/macos-arm64/foundation",
+      "jobs": 5,
+      "needs": [
+        "plan"
+      ],
+      "platform": "macos-arm64",
+      "shell": "bash"
+    },
+    {
+      "component": "media",
+      "group": "MacOS-26-5",
+      "id": "build/macos-arm64/media",
+      "jobs": 5,
+      "needs": [
+        "plan"
+      ],
+      "platform": "macos-arm64",
+      "shell": "bash"
+    },
+    {
+      "component": "consumers",
+      "group": "MacOS-26-5",
+      "id": "build/macos-arm64/consumers",
+      "jobs": 5,
+      "needs": [
+        "plan"
+      ],
+      "platform": "macos-arm64",
+      "shell": "bash"
+    },
+    {
+      "component": "release",
+      "group": "MacOS-26-5",
+      "id": "build/macos-arm64/release",
+      "jobs": 5,
+      "needs": [
+        "plan"
+      ],
+      "platform": "macos-arm64",
+      "shell": "bash"
+    }
+  ],
+  "nativeSuites": [
+    {
+      "artifactProducer": "build/linux-x64/root",
+      "component": "root",
+      "group": "Linux-x64-8",
+      "jobs": 8,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "linux-x64",
+      "shell": "bash",
+      "suite": "DiscordActivitiesTests"
+    },
+    {
+      "artifactProducer": "build/linux-x64/root",
+      "component": "root",
+      "group": "Linux-x64-8",
+      "jobs": 8,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "linux-x64",
+      "shell": "bash",
+      "suite": "DiscordApplePlatformTests"
+    },
+    {
+      "artifactProducer": "build/linux-x64/root",
+      "component": "root",
+      "group": "Linux-x64-8",
+      "jobs": 8,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "linux-x64",
+      "shell": "bash",
+      "suite": "DiscordBitsTests"
+    },
+    {
+      "artifactProducer": "build/linux-x64/root",
+      "component": "root",
+      "group": "Linux-x64-8",
+      "jobs": 8,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "linux-x64",
+      "shell": "bash",
+      "suite": "DiscordBotDSLTests"
+    },
+    {
+      "artifactProducer": "build/linux-x64/root",
+      "component": "root",
+      "group": "Linux-x64-8",
+      "jobs": 8,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "linux-x64",
+      "shell": "bash",
+      "suite": "DiscordCacheTests"
+    },
+    {
+      "artifactProducer": "build/linux-x64/root",
+      "component": "root",
+      "group": "Linux-x64-8",
+      "jobs": 8,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "linux-x64",
+      "shell": "bash",
+      "suite": "DiscordCertifiedDevicesTests"
+    },
+    {
+      "artifactProducer": "build/linux-x64/root",
+      "component": "root",
+      "group": "Linux-x64-8",
+      "jobs": 8,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "linux-x64",
+      "shell": "bash",
+      "suite": "DiscordClientTests"
+    },
+    {
+      "artifactProducer": "build/linux-x64/root",
+      "component": "root",
+      "group": "Linux-x64-8",
+      "jobs": 8,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "linux-x64",
+      "shell": "bash",
+      "suite": "DiscordCommandDSLTests"
+    },
+    {
+      "artifactProducer": "build/linux-x64/root",
+      "component": "root",
+      "group": "Linux-x64-8",
+      "jobs": 8,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "linux-x64",
+      "shell": "bash",
+      "suite": "DiscordCommandsTests"
+    },
+    {
+      "artifactProducer": "build/linux-x64/root",
+      "component": "root",
+      "group": "Linux-x64-8",
+      "jobs": 8,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "linux-x64",
+      "shell": "bash",
+      "suite": "DiscordCommerceTests"
+    },
+    {
+      "artifactProducer": "build/linux-x64/root",
+      "component": "root",
+      "group": "Linux-x64-8",
+      "jobs": 8,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "linux-x64",
+      "shell": "bash",
+      "suite": "DiscordCoreTests"
+    },
+    {
+      "artifactProducer": "build/linux-x64/root",
+      "component": "root",
+      "group": "Linux-x64-8",
+      "jobs": 8,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "linux-x64",
+      "shell": "bash",
+      "suite": "DiscordDAVETests"
+    },
+    {
+      "artifactProducer": "build/linux-x64/root",
+      "component": "root",
+      "group": "Linux-x64-8",
+      "jobs": 8,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "linux-x64",
+      "shell": "bash",
+      "suite": "DiscordDSLTests"
+    },
+    {
+      "artifactProducer": "build/linux-x64/root",
+      "component": "root",
+      "group": "Linux-x64-8",
+      "jobs": 8,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "linux-x64",
+      "shell": "bash",
+      "suite": "DiscordGameServicesTests"
+    },
+    {
+      "artifactProducer": "build/linux-x64/root",
+      "component": "root",
+      "group": "Linux-x64-8",
+      "jobs": 8,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "linux-x64",
+      "shell": "bash",
+      "suite": "DiscordGatewayTests"
+    },
+    {
+      "artifactProducer": "build/linux-x64/root",
+      "component": "root",
+      "group": "Linux-x64-8",
+      "jobs": 8,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "linux-x64",
+      "shell": "bash",
+      "suite": "DiscordHTTPTests"
+    },
+    {
+      "artifactProducer": "build/linux-x64/root",
+      "component": "root",
+      "group": "Linux-x64-8",
+      "jobs": 8,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "linux-x64",
+      "shell": "bash",
+      "suite": "DiscordInteractionsTests"
+    },
+    {
+      "artifactProducer": "build/linux-x64/root",
+      "component": "root",
+      "group": "Linux-x64-8",
+      "jobs": 8,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "linux-x64",
+      "shell": "bash",
+      "suite": "DiscordKitTests"
+    },
+    {
+      "artifactProducer": "build/linux-x64/root",
+      "component": "root",
+      "group": "Linux-x64-8",
+      "jobs": 8,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "linux-x64",
+      "shell": "bash",
+      "suite": "DiscordLogHandlersTests"
+    },
+    {
+      "artifactProducer": "build/linux-x64/root",
+      "component": "root",
+      "group": "Linux-x64-8",
+      "jobs": 8,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "linux-x64",
+      "shell": "bash",
+      "suite": "DiscordLoggingTests"
+    },
+    {
+      "artifactProducer": "build/linux-x64/root",
+      "component": "root",
+      "group": "Linux-x64-8",
+      "jobs": 8,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "linux-x64",
+      "shell": "bash",
+      "suite": "DiscordMLSTests"
+    },
+    {
+      "artifactProducer": "build/linux-x64/root",
+      "component": "root",
+      "group": "Linux-x64-8",
+      "jobs": 8,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "linux-x64",
+      "shell": "bash",
+      "suite": "DiscordMediaTests"
+    },
+    {
+      "artifactProducer": "build/linux-x64/root",
+      "component": "root",
+      "group": "Linux-x64-8",
+      "jobs": 8,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "linux-x64",
+      "shell": "bash",
+      "suite": "DiscordModelsTests"
+    },
+    {
+      "artifactProducer": "build/linux-x64/root",
+      "component": "root",
+      "group": "Linux-x64-8",
+      "jobs": 8,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "linux-x64",
+      "shell": "bash",
+      "suite": "DiscordNIOTransportTests"
+    },
+    {
+      "artifactProducer": "build/linux-x64/root",
+      "component": "root",
+      "group": "Linux-x64-8",
+      "jobs": 8,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "linux-x64",
+      "shell": "bash",
+      "suite": "DiscordOAuthTests"
+    },
+    {
+      "artifactProducer": "build/linux-x64/root",
+      "component": "root",
+      "group": "Linux-x64-8",
+      "jobs": 8,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "linux-x64",
+      "shell": "bash",
+      "suite": "DiscordRPCTests"
+    },
+    {
+      "artifactProducer": "build/linux-x64/root",
+      "component": "root",
+      "group": "Linux-x64-8",
+      "jobs": 8,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "linux-x64",
+      "shell": "bash",
+      "suite": "DiscordSocialTests"
+    },
+    {
+      "artifactProducer": "build/linux-x64/root",
+      "component": "root",
+      "group": "Linux-x64-8",
+      "jobs": 8,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "linux-x64",
+      "shell": "bash",
+      "suite": "DiscordTestSupportTests"
+    },
+    {
+      "artifactProducer": "build/linux-x64/root",
+      "component": "root",
+      "group": "Linux-x64-8",
+      "jobs": 8,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "linux-x64",
+      "shell": "bash",
+      "suite": "DiscordTransportTests"
+    },
+    {
+      "artifactProducer": "build/linux-x64/root",
+      "component": "root",
+      "group": "Linux-x64-8",
+      "jobs": 8,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "linux-x64",
+      "shell": "bash",
+      "suite": "DiscordUnixPlatformTests"
+    },
+    {
+      "artifactProducer": "build/linux-x64/root",
+      "component": "root",
+      "group": "Linux-x64-8",
+      "jobs": 8,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "linux-x64",
+      "shell": "bash",
+      "suite": "DiscordVoiceCodecsTests"
+    },
+    {
+      "artifactProducer": "build/linux-x64/root",
+      "component": "root",
+      "group": "Linux-x64-8",
+      "jobs": 8,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "linux-x64",
+      "shell": "bash",
+      "suite": "DiscordVoiceCryptoTests"
+    },
+    {
+      "artifactProducer": "build/linux-x64/root",
+      "component": "root",
+      "group": "Linux-x64-8",
+      "jobs": 8,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "linux-x64",
+      "shell": "bash",
+      "suite": "DiscordVoiceTests"
+    },
+    {
+      "artifactProducer": "build/linux-x64/macros",
+      "component": "macros",
+      "group": "Linux-x64-8",
+      "jobs": 8,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "linux-x64",
+      "shell": "bash",
+      "suite": "macros"
+    },
+    {
+      "artifactProducer": "build/linux-x64/extensions",
+      "component": "extensions",
+      "group": "Linux-x64-8",
+      "jobs": 8,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "linux-x64",
+      "shell": "bash",
+      "suite": "extensions"
+    },
+    {
+      "artifactProducer": "build/linux-x64/tooling",
+      "component": "tooling",
+      "group": "Linux-x64-8",
+      "jobs": 8,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "linux-x64",
+      "shell": "bash",
+      "suite": "tooling"
+    },
+    {
+      "artifactProducer": "build/linux-x64/load",
+      "component": "load",
+      "group": "Linux-x64-8",
+      "jobs": 8,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "linux-x64",
+      "shell": "bash",
+      "suite": "load"
+    },
+    {
+      "artifactProducer": "build/linux-x64/benchmarks",
+      "component": "benchmarks",
+      "group": "Linux-x64-8",
+      "jobs": 8,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "linux-x64",
+      "shell": "bash",
+      "suite": "benchmarks"
+    },
+    {
+      "artifactProducer": "build/linux-x64/timing-support",
+      "component": "timing-support",
+      "group": "Linux-x64-8",
+      "jobs": 8,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "linux-x64",
+      "shell": "bash",
+      "suite": "timing-support"
+    },
+    {
+      "artifactProducer": "build/linux-x64/timing",
+      "component": "timing",
+      "group": "Linux-x64-8",
+      "jobs": 8,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "linux-x64",
+      "shell": "bash",
+      "suite": "timing"
+    },
+    {
+      "artifactProducer": "build/linux-x64/foundation",
+      "component": "foundation",
+      "group": "Linux-x64-8",
+      "jobs": 8,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "linux-x64",
+      "shell": "bash",
+      "suite": "foundation"
+    },
+    {
+      "artifactProducer": "build/linux-x64/media",
+      "component": "media",
+      "group": "Linux-x64-8",
+      "jobs": 8,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "linux-x64",
+      "shell": "bash",
+      "suite": "media"
+    },
+    {
+      "artifactProducer": "build/linux-x64/consumers",
+      "component": "consumers",
+      "group": "Linux-x64-8",
+      "jobs": 8,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "linux-x64",
+      "shell": "bash",
+      "suite": "ActivityHost"
+    },
+    {
+      "artifactProducer": "build/linux-x64/consumers",
+      "component": "consumers",
+      "group": "Linux-x64-8",
+      "jobs": 8,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "linux-x64",
+      "shell": "bash",
+      "suite": "CommandsApp"
+    },
+    {
+      "artifactProducer": "build/linux-x64/consumers",
+      "component": "consumers",
+      "group": "Linux-x64-8",
+      "jobs": 8,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "linux-x64",
+      "shell": "bash",
+      "suite": "DSLBot"
+    },
+    {
+      "artifactProducer": "build/linux-x64/consumers",
+      "component": "consumers",
+      "group": "Linux-x64-8",
+      "jobs": 8,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "linux-x64",
+      "shell": "bash",
+      "suite": "DSLCommands"
+    },
+    {
+      "artifactProducer": "build/linux-x64/consumers",
+      "component": "consumers",
+      "group": "Linux-x64-8",
+      "jobs": 8,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "linux-x64",
+      "shell": "bash",
+      "suite": "DSLEvents"
+    },
+    {
+      "artifactProducer": "build/linux-x64/consumers",
+      "component": "consumers",
+      "group": "Linux-x64-8",
+      "jobs": 8,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "linux-x64",
+      "shell": "bash",
+      "suite": "LoggingApp"
+    },
+    {
+      "artifactProducer": "build/linux-x64/consumers",
+      "component": "consumers",
+      "group": "Linux-x64-8",
+      "jobs": 8,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "linux-x64",
+      "shell": "bash",
+      "suite": "SocialApp"
+    },
+    {
+      "artifactProducer": "build/linux-x64/consumers",
+      "component": "consumers",
+      "group": "Linux-x64-8",
+      "jobs": 8,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "linux-x64",
+      "shell": "bash",
+      "suite": "VoiceBot"
+    },
+    {
+      "artifactProducer": "build/macos-arm64/root",
+      "component": "root",
+      "group": "MacOS-26-5",
+      "jobs": 5,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "macos-arm64",
+      "shell": "bash",
+      "suite": "DiscordActivitiesTests"
+    },
+    {
+      "artifactProducer": "build/macos-arm64/root",
+      "component": "root",
+      "group": "MacOS-26-5",
+      "jobs": 5,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "macos-arm64",
+      "shell": "bash",
+      "suite": "DiscordApplePlatformTests"
+    },
+    {
+      "artifactProducer": "build/macos-arm64/root",
+      "component": "root",
+      "group": "MacOS-26-5",
+      "jobs": 5,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "macos-arm64",
+      "shell": "bash",
+      "suite": "DiscordBitsTests"
+    },
+    {
+      "artifactProducer": "build/macos-arm64/root",
+      "component": "root",
+      "group": "MacOS-26-5",
+      "jobs": 5,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "macos-arm64",
+      "shell": "bash",
+      "suite": "DiscordBotDSLTests"
+    },
+    {
+      "artifactProducer": "build/macos-arm64/root",
+      "component": "root",
+      "group": "MacOS-26-5",
+      "jobs": 5,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "macos-arm64",
+      "shell": "bash",
+      "suite": "DiscordCacheTests"
+    },
+    {
+      "artifactProducer": "build/macos-arm64/root",
+      "component": "root",
+      "group": "MacOS-26-5",
+      "jobs": 5,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "macos-arm64",
+      "shell": "bash",
+      "suite": "DiscordCertifiedDevicesTests"
+    },
+    {
+      "artifactProducer": "build/macos-arm64/root",
+      "component": "root",
+      "group": "MacOS-26-5",
+      "jobs": 5,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "macos-arm64",
+      "shell": "bash",
+      "suite": "DiscordClientTests"
+    },
+    {
+      "artifactProducer": "build/macos-arm64/root",
+      "component": "root",
+      "group": "MacOS-26-5",
+      "jobs": 5,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "macos-arm64",
+      "shell": "bash",
+      "suite": "DiscordCommandDSLTests"
+    },
+    {
+      "artifactProducer": "build/macos-arm64/root",
+      "component": "root",
+      "group": "MacOS-26-5",
+      "jobs": 5,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "macos-arm64",
+      "shell": "bash",
+      "suite": "DiscordCommandsTests"
+    },
+    {
+      "artifactProducer": "build/macos-arm64/root",
+      "component": "root",
+      "group": "MacOS-26-5",
+      "jobs": 5,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "macos-arm64",
+      "shell": "bash",
+      "suite": "DiscordCommerceTests"
+    },
+    {
+      "artifactProducer": "build/macos-arm64/root",
+      "component": "root",
+      "group": "MacOS-26-5",
+      "jobs": 5,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "macos-arm64",
+      "shell": "bash",
+      "suite": "DiscordCoreTests"
+    },
+    {
+      "artifactProducer": "build/macos-arm64/root",
+      "component": "root",
+      "group": "MacOS-26-5",
+      "jobs": 5,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "macos-arm64",
+      "shell": "bash",
+      "suite": "DiscordDAVETests"
+    },
+    {
+      "artifactProducer": "build/macos-arm64/root",
+      "component": "root",
+      "group": "MacOS-26-5",
+      "jobs": 5,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "macos-arm64",
+      "shell": "bash",
+      "suite": "DiscordDSLTests"
+    },
+    {
+      "artifactProducer": "build/macos-arm64/root",
+      "component": "root",
+      "group": "MacOS-26-5",
+      "jobs": 5,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "macos-arm64",
+      "shell": "bash",
+      "suite": "DiscordFoundationTransportTests"
+    },
+    {
+      "artifactProducer": "build/macos-arm64/root",
+      "component": "root",
+      "group": "MacOS-26-5",
+      "jobs": 5,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "macos-arm64",
+      "shell": "bash",
+      "suite": "DiscordGameServicesTests"
+    },
+    {
+      "artifactProducer": "build/macos-arm64/root",
+      "component": "root",
+      "group": "MacOS-26-5",
+      "jobs": 5,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "macos-arm64",
+      "shell": "bash",
+      "suite": "DiscordGatewayTests"
+    },
+    {
+      "artifactProducer": "build/macos-arm64/root",
+      "component": "root",
+      "group": "MacOS-26-5",
+      "jobs": 5,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "macos-arm64",
+      "shell": "bash",
+      "suite": "DiscordHTTPTests"
+    },
+    {
+      "artifactProducer": "build/macos-arm64/root",
+      "component": "root",
+      "group": "MacOS-26-5",
+      "jobs": 5,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "macos-arm64",
+      "shell": "bash",
+      "suite": "DiscordInteractionsTests"
+    },
+    {
+      "artifactProducer": "build/macos-arm64/root",
+      "component": "root",
+      "group": "MacOS-26-5",
+      "jobs": 5,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "macos-arm64",
+      "shell": "bash",
+      "suite": "DiscordKitTests"
+    },
+    {
+      "artifactProducer": "build/macos-arm64/root",
+      "component": "root",
+      "group": "MacOS-26-5",
+      "jobs": 5,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "macos-arm64",
+      "shell": "bash",
+      "suite": "DiscordLogHandlersTests"
+    },
+    {
+      "artifactProducer": "build/macos-arm64/root",
+      "component": "root",
+      "group": "MacOS-26-5",
+      "jobs": 5,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "macos-arm64",
+      "shell": "bash",
+      "suite": "DiscordLoggingTests"
+    },
+    {
+      "artifactProducer": "build/macos-arm64/root",
+      "component": "root",
+      "group": "MacOS-26-5",
+      "jobs": 5,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "macos-arm64",
+      "shell": "bash",
+      "suite": "DiscordMLSTests"
+    },
+    {
+      "artifactProducer": "build/macos-arm64/root",
+      "component": "root",
+      "group": "MacOS-26-5",
+      "jobs": 5,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "macos-arm64",
+      "shell": "bash",
+      "suite": "DiscordMediaTests"
+    },
+    {
+      "artifactProducer": "build/macos-arm64/root",
+      "component": "root",
+      "group": "MacOS-26-5",
+      "jobs": 5,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "macos-arm64",
+      "shell": "bash",
+      "suite": "DiscordModelsTests"
+    },
+    {
+      "artifactProducer": "build/macos-arm64/root",
+      "component": "root",
+      "group": "MacOS-26-5",
+      "jobs": 5,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "macos-arm64",
+      "shell": "bash",
+      "suite": "DiscordNIOTransportTests"
+    },
+    {
+      "artifactProducer": "build/macos-arm64/root",
+      "component": "root",
+      "group": "MacOS-26-5",
+      "jobs": 5,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "macos-arm64",
+      "shell": "bash",
+      "suite": "DiscordOAuthTests"
+    },
+    {
+      "artifactProducer": "build/macos-arm64/root",
+      "component": "root",
+      "group": "MacOS-26-5",
+      "jobs": 5,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "macos-arm64",
+      "shell": "bash",
+      "suite": "DiscordRPCTests"
+    },
+    {
+      "artifactProducer": "build/macos-arm64/root",
+      "component": "root",
+      "group": "MacOS-26-5",
+      "jobs": 5,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "macos-arm64",
+      "shell": "bash",
+      "suite": "DiscordSocialTests"
+    },
+    {
+      "artifactProducer": "build/macos-arm64/root",
+      "component": "root",
+      "group": "MacOS-26-5",
+      "jobs": 5,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "macos-arm64",
+      "shell": "bash",
+      "suite": "DiscordTestSupportTests"
+    },
+    {
+      "artifactProducer": "build/macos-arm64/root",
+      "component": "root",
+      "group": "MacOS-26-5",
+      "jobs": 5,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "macos-arm64",
+      "shell": "bash",
+      "suite": "DiscordTransportTests"
+    },
+    {
+      "artifactProducer": "build/macos-arm64/root",
+      "component": "root",
+      "group": "MacOS-26-5",
+      "jobs": 5,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "macos-arm64",
+      "shell": "bash",
+      "suite": "DiscordUnixPlatformTests"
+    },
+    {
+      "artifactProducer": "build/macos-arm64/root",
+      "component": "root",
+      "group": "MacOS-26-5",
+      "jobs": 5,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "macos-arm64",
+      "shell": "bash",
+      "suite": "DiscordVoiceCodecsTests"
+    },
+    {
+      "artifactProducer": "build/macos-arm64/root",
+      "component": "root",
+      "group": "MacOS-26-5",
+      "jobs": 5,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "macos-arm64",
+      "shell": "bash",
+      "suite": "DiscordVoiceCryptoTests"
+    },
+    {
+      "artifactProducer": "build/macos-arm64/root",
+      "component": "root",
+      "group": "MacOS-26-5",
+      "jobs": 5,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "macos-arm64",
+      "shell": "bash",
+      "suite": "DiscordVoiceTests"
+    },
+    {
+      "artifactProducer": "build/macos-arm64/macros",
+      "component": "macros",
+      "group": "MacOS-26-5",
+      "jobs": 5,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "macos-arm64",
+      "shell": "bash",
+      "suite": "macros"
+    },
+    {
+      "artifactProducer": "build/macos-arm64/extensions",
+      "component": "extensions",
+      "group": "MacOS-26-5",
+      "jobs": 5,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "macos-arm64",
+      "shell": "bash",
+      "suite": "extensions"
+    },
+    {
+      "artifactProducer": "build/macos-arm64/tooling",
+      "component": "tooling",
+      "group": "MacOS-26-5",
+      "jobs": 5,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "macos-arm64",
+      "shell": "bash",
+      "suite": "tooling"
+    },
+    {
+      "artifactProducer": "build/macos-arm64/load",
+      "component": "load",
+      "group": "MacOS-26-5",
+      "jobs": 5,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "macos-arm64",
+      "shell": "bash",
+      "suite": "load"
+    },
+    {
+      "artifactProducer": "build/macos-arm64/benchmarks",
+      "component": "benchmarks",
+      "group": "MacOS-26-5",
+      "jobs": 5,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "macos-arm64",
+      "shell": "bash",
+      "suite": "benchmarks"
+    },
+    {
+      "artifactProducer": "build/macos-arm64/timing-support",
+      "component": "timing-support",
+      "group": "MacOS-26-5",
+      "jobs": 5,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "macos-arm64",
+      "shell": "bash",
+      "suite": "timing-support"
+    },
+    {
+      "artifactProducer": "build/macos-arm64/timing",
+      "component": "timing",
+      "group": "MacOS-26-5",
+      "jobs": 5,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "macos-arm64",
+      "shell": "bash",
+      "suite": "timing"
+    },
+    {
+      "artifactProducer": "build/macos-arm64/foundation",
+      "component": "foundation",
+      "group": "MacOS-26-5",
+      "jobs": 5,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "macos-arm64",
+      "shell": "bash",
+      "suite": "foundation"
+    },
+    {
+      "artifactProducer": "build/macos-arm64/media",
+      "component": "media",
+      "group": "MacOS-26-5",
+      "jobs": 5,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "macos-arm64",
+      "shell": "bash",
+      "suite": "media"
+    },
+    {
+      "artifactProducer": "build/macos-arm64/consumers",
+      "component": "consumers",
+      "group": "MacOS-26-5",
+      "jobs": 5,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "macos-arm64",
+      "shell": "bash",
+      "suite": "ActivityHost"
+    },
+    {
+      "artifactProducer": "build/macos-arm64/consumers",
+      "component": "consumers",
+      "group": "MacOS-26-5",
+      "jobs": 5,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "macos-arm64",
+      "shell": "bash",
+      "suite": "CommandsApp"
+    },
+    {
+      "artifactProducer": "build/macos-arm64/consumers",
+      "component": "consumers",
+      "group": "MacOS-26-5",
+      "jobs": 5,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "macos-arm64",
+      "shell": "bash",
+      "suite": "DSLBot"
+    },
+    {
+      "artifactProducer": "build/macos-arm64/consumers",
+      "component": "consumers",
+      "group": "MacOS-26-5",
+      "jobs": 5,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "macos-arm64",
+      "shell": "bash",
+      "suite": "DSLCommands"
+    },
+    {
+      "artifactProducer": "build/macos-arm64/consumers",
+      "component": "consumers",
+      "group": "MacOS-26-5",
+      "jobs": 5,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "macos-arm64",
+      "shell": "bash",
+      "suite": "DSLEvents"
+    },
+    {
+      "artifactProducer": "build/macos-arm64/consumers",
+      "component": "consumers",
+      "group": "MacOS-26-5",
+      "jobs": 5,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "macos-arm64",
+      "shell": "bash",
+      "suite": "LoggingApp"
+    },
+    {
+      "artifactProducer": "build/macos-arm64/consumers",
+      "component": "consumers",
+      "group": "MacOS-26-5",
+      "jobs": 5,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "macos-arm64",
+      "shell": "bash",
+      "suite": "SocialApp"
+    },
+    {
+      "artifactProducer": "build/macos-arm64/consumers",
+      "component": "consumers",
+      "group": "MacOS-26-5",
+      "jobs": 5,
+      "needs": [
+        "plan",
+        "build"
+      ],
+      "platform": "macos-arm64",
+      "shell": "bash",
+      "suite": "VoiceBot"
+    }
+  ],
+  "policyID": "ci-reliability-phase-0-v1"
+}

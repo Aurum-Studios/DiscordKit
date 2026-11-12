@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "policyID": "ci-reliability-phase-0-v1",
-  "status": "local-planning-only; workflows do not consume this policy yet",
+  "status": "Phase 1 native process deadlines active; scheduling and paid admission remain planning-only",
   "modes": {
     "preflight": {
       "certifying": false
@@ -133,7 +133,7 @@
     "timing": 2400,
     "foundation": 2400,
     "media": 2400,
-    "consumers": 15600,
+    "consumers": 5400,
     "release": 3600
   },
   "reservesSeconds": {
@@ -243,12 +243,12 @@
     "localNativeCompilations": 0
   },
   "limits": [
-    "All deadlines, reserves, concurrency and retention changes are proposals until later phases wire and verify them.",
+    "Native helpers consume operation and aggregate process deadlines in Phase 1. Scheduling, concurrency, retention and paid admission changes remain preparation for later phases.",
     "The native scope API delegates builds and suites to the existing planner; it does not inventory shared/native gates or documentation jobs for a complete workflow cost plan.",
     "Declared root target inventory is source anchored, not evaluated SwiftPM inventory or discovered/executed test-leaf coverage.",
     "Published runner list rates do not verify account pricing, configured runner mappings, storage charges, transfer charges or an invoice.",
     "No paid execution, automatic spend admission, workflow expansion, retry, push or dispatch is authorized.",
-    "Compilation aggregate budgets are command-count ceilings proposed for later integration; consumers may exceed the current workflow job timeout and these values are not active enclosing job deadlines.",
+    "Component compilation limits are elapsed aggregate ceilings, including symbol-graph compilation. Consumers are capped at 5400 seconds so inventory, packaging/identity and paid-time reserves fit the unchanged 120-minute workflow build deadline. Cold-build capacity remains unqualified.",
     "Upload reserves are placeholders, not a validated transport budget: later enclosing job plans must include all applicable 420-second transport totals, bounded attempts, cleanup and other operations."
   ]
 }

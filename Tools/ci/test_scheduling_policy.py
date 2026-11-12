@@ -136,8 +136,15 @@ class SchedulingPolicyTests(unittest.TestCase):
                 policy[section][field] = value
                 scheduling.validate_policy(policy)
         policy = copy.deepcopy(self.policy)
-        policy["componentCompileSeconds"]["load"] = policy["deadlinesSeconds"]["coldCompileCommand"]
-        with self.assertRaisesRegex(ValueError, "aggregate compilation budget omits commands"):
+        policy["componentCompileSeconds"]["load"] = policy["deadlinesSeconds"]["coldCompileCommand"] - 1
+        with self.assertRaisesRegex(ValueError, "aggregate compilation budget is shorter"):
+            scheduling.validate_source_inventory(policy)
+        # A serial component may have a stricter elapsed ceiling than the sum of
+        # its command maxima, but cannot consume cleanup or packaging time.
+        self.assertEqual(self.policy["componentCompileSeconds"]["consumers"], 5400)
+        policy = copy.deepcopy(self.policy)
+        policy["componentCompileSeconds"]["consumers"] += 1
+        with self.assertRaisesRegex(ValueError, "enclosing workflow"):
             scheduling.validate_source_inventory(policy)
 
     def test_rounding_is_per_job_including_each_attempt(self):

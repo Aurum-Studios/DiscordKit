@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "status": "failed",
+  "name": "silent-stuck",
+  "stage": "phase-1-fault-injection",
+  "operation": "fixture",
+  "arguments": [
+    "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+    "-c",
+    "import time; time.sleep(60)"
+  ],
+  "start": "2026-11-12T04:57:22.692607+00:00",
+  "startMonotonic": 317450.205010083,
+  "deadlineMonotonic": 317450.905010083,
+  "executionLimitSeconds": 0.7,
+  "cleanupAllowanceSeconds": 8.0,
+  "paths": {
+    "output": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/Docs/Tasks/ci-reliability/phase-1/faults/silent-stuck.log",
+    "stdout": null,
+    "diagnostics": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/Docs/Tasks/ci-reliability/phase-1/faults/silent-stuck.diagnostics.jsonl",
+    "receipt": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/Docs/Tasks/ci-reliability/phase-1/faults/silent-stuck.receipt.json"
+  },
+  "identity": {
+    "executionID": "6e232c23-ba3c-4d37-8d8a-5573b1d2d5ec",
+    "supervisorPID": 54297,
+    "host": "Pokemon-GO-Plus",
+    "system": "Darwin",
+    "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase1"
+  },
+  "exitCode": -15,
+  "signal": 15,
+  "timeoutCategory": "execution",
+  "pid": 54312,
+  "group": 54312,
+  "error": "Command '('/Library/Frameworks/Python.framework/Versions/3.14/bin/python3', '-c', 'import time; time.sleep(60)')' timed out after 0.7 seconds",
+  "errorType": "TimeoutExpired",
+  "cleanup": {
+    "status": "group-signalled",
+    "signals": [
+      "SIGTERM"
+    ],
+    "parentReaped": true,
+    "allowanceSeconds": 8.0,
+    "seconds": 0.005,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/Docs/Tasks/ci-reliability/phase-1/faults/silent-stuck.log",
+      "retainedBytes": 96,
+      "observedBytes": 96,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T04:57:23.398741+00:00",
+  "endMonotonic": 317450.911172375,
+  "elapsedSeconds": 0.706,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}

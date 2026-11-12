@@ -18,9 +18,10 @@ has executed. Review actual artifacts before changing support claims.
 The [CI reliability and spending plan](Tasks/ci-reliability/PLAN.md)
 tracks cancellation repairs, bounded diagnostics, artifact recovery and staged
 validation. Phase 0 retains a baseline and local planning policy with a
-[zero-paid-execution sheet](Tasks/ci-reliability/BOOTSTRAP.md). Later phases
-remain future work; the pipeline below remains the current implementation until
-those changes are completed and qualified.
+[zero-paid-execution sheet](Tasks/ci-reliability/BOOTSTRAP.md). The
+[Phase 1 implementation and acceptance](Tasks/ci-reliability/phase-1/IMPLEMENTATION.md)
+records local process-supervisor work. Later scheduling, runtime repairs and
+hosted qualification remain tracked in the plan.
 
 ## Offline validation
 
@@ -137,9 +138,24 @@ The release graph policy also declares `Dispatch` specifically for
 observed import audit failure. These changes need a fresh hosted run for proof
 on the pinned toolchain.
 
-Build and test commands have finite process timeouts and durable progress logs.
-POSIX execution terminates the child process group on failure or timeout. Each
-job retains its own diagnostics even after failure. The final
+Native commands consume the shared scheduling policy's operation deadlines:
+60 seconds for discovery, 300 for a compiled suite, 600 for whole load-package
+confirmation, 120 for finite offline smokes and 1,200 per cold compilation
+command. Serial compilation commands, symbol emission and package inventories
+also have aggregate elapsed limits. Consumer compilation is capped at 5,400
+seconds so discovery, archive/identity work and setup/diagnostic/cleanup/upload
+reserves fit the existing two-hour build job. These caps do not establish
+cold-build capacity. Archive/hash filesystem work remains subject to the
+enclosing job timeout and explicit elapsed checks.
+
+The POSIX supervisor owns the command process group and inherited output pipes.
+It retains command receipts separately from machine-readable discovery stdout,
+and cleans the group on failure or timeout. Bounded heartbeat, resource, process
+and stack diagnostics record unavailable or denied probes explicitly. Diagnostic
+work shares the execution deadline; silence is diagnostic evidence rather than
+a deadlock verdict. Windows cleanup retains its best-effort helper coverage and
+has no Windows qualification claim. Each job retains diagnostics even after
+failure. The final
 **Offline certification passed** job runs with `always()` and requires both
 platform pipelines, shared helper
 suites and maintenance freshness to pass. Each pipeline has its own final gate

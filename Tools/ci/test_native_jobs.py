@@ -17,6 +17,7 @@ import subprocess
 import sys
 import tarfile
 import tempfile
+import time
 import unittest
 from unittest.mock import patch
 
@@ -64,9 +65,14 @@ class NativePlanTests(unittest.TestCase):
         """Formatting or dependencies in Package.swift cannot confuse regular-expression target discovery."""
         document = {"targets": [{"name": "Runtime", "type": "regular"},
                                 {"name": "ZTests", "type": "test"}, {"name": "ATests", "type": "test"}]}
-        with patch.object(jobs.subprocess, "check_output", return_value=json.dumps(document)) as query:
+        def manifest(command, repository, log, *, stdout_log=None, deadline=None):
+            log.write_text("warning: manifest diagnostics\n")
+            stdout_log.write_text(json.dumps(document))
+
+        with patch.object(jobs.linux_ci, "execute", side_effect=manifest) as query, redirect_stdout(io.StringIO()):
             self.assertEqual(jobs.dump_targets(Path(".")), ["ATests", "ZTests"])
-        self.assertIn("dump-package", query.call_args.args[0])
+        self.assertIn("dump-package", query.call_args.args[0].arguments)
+        self.assertEqual(query.call_args.args[0].timeout, 60)
 
     def test_selected_platform_partitions_equal_complete_plan_without_overlap(self):
         """Independent platform workflows retain every original producer, suite and runner choice."""
@@ -171,6 +177,39 @@ class NativePlanTests(unittest.TestCase):
             for option, value in (("--configuration", "release"), ("--duration-seconds", "3"), ("--profile", "smoke")):
                 self.assertEqual(command.arguments[command.arguments.index(option) + 1], value)
         self.assertEqual(jobs.timing_smoke_commands("root", 8), [])
+
+    def test_operation_limits_replace_generic_swift_timeout_without_retries(self):
+        """Cold builds, inventories, suites and finite smokes use the shared operation policy."""
+        policy = jobs.execution_policy()
+        for component in jobs.COMPONENTS:
+            for command in jobs.compile_commands(component, 2):
+                self.assertEqual(command.operation, "coldCompileCommand")
+                self.assertEqual(command.timeout, policy["deadlinesSeconds"]["coldCompileCommand"])
+        for package, arguments, operation in ((".", ("list", "--skip-build"), "discovery"),
+                (".", ("--skip-build",), "suite"),
+                (jobs.PACKAGES["load"], ("--skip-build",), "wholeLoadPackage")):
+            command = jobs.swift_command("test", "test", package, 2, *arguments)
+            self.assertEqual((command.operation, command.timeout), (operation, policy["deadlinesSeconds"][operation]))
+        self.assertEqual(jobs.swift_command("smoke", "run", ".", 2, "--skip-build").timeout, 120)
+        focused = jobs.swift_command("reproduction", "test", jobs.PACKAGES["load"], 2,
+            "--skip-build", "--no-parallel", "--filter", "SyntheticCommandTimingRunnerTests", operation="focusedTest")
+        self.assertEqual((focused.timeout, focused.operation), (90, "focusedTest"))
+        audit = jobs.test_commands("tooling", "audit", 2, {"identity": {"repository": str(Path.cwd())}})
+        self.assertTrue(all(command.timeout <= 300 for command in audit))
+        self.assertEqual(sum(command.arguments[:2] == ("swift", "run") for command in audit), 4)
+
+    def test_component_aggregate_keeps_existing_workflow_cap_and_paid_reserves(self):
+        """A large serial consumer graph cannot increase the enclosing two-hour runner ceiling."""
+        policy = jobs.execution_policy()
+        for component in jobs.COMPONENTS:
+            required = jobs.validate_enclosing_budget(jobs.compilation_budget(component, policy),
+                jobs.BUILD_JOB_SECONDS, packaging=True, policy=policy)
+            self.assertLessEqual(required, 7200)
+        self.assertEqual(jobs.compilation_budget("consumers", policy), 5400 + 6 * 60)
+        self.assertEqual(jobs.validate_enclosing_budget(jobs.compilation_budget("consumers", policy),
+            jobs.BUILD_JOB_SECONDS, packaging=True, policy=policy), 7200)
+        with self.assertRaisesRegex(ValueError, "enclosing workflow"):
+            jobs.validate_enclosing_budget(7200, 7200, policy=policy)
 
     def test_test_discovery_rejects_empty_foreign_duplicate_and_prefix_collisions(self):
         """A successful SwiftPM invocation with zero selected tests must not produce a green suite."""
@@ -343,10 +382,12 @@ class NativeArtifactTests(unittest.TestCase):
     def test_synthetic_compile_then_independent_test_uses_restored_inventory(self):
         """Exercise production orchestration through actual tar transport with a controlled compiler boundary."""
         calls = []
+        deadlines = []
 
-        def compiler(command, repository, log, *, stdout_log=None):
+        def compiler(command, repository, log, *, stdout_log=None, deadline=None):
             """Model split diagnostics while production discovery, planning and transport remain real."""
             calls.append(command.arguments)
+            deadlines.append((command.name, deadline))
             if command.arguments[1] == "build":
                 self.binary.parent.mkdir(parents=True, exist_ok=True)
                 self.binary.write_bytes(b"fresh compilation")
@@ -379,6 +420,11 @@ class NativeArtifactTests(unittest.TestCase):
                              "CoreTests.Suite/test()\n")
         self.assertEqual(sum(arguments[1] == "build" for arguments in calls), 1)
         self.assertTrue(all("--skip-build" in arguments for arguments in calls if arguments[1] == "test"))
+        test_deadlines = [deadline for name, deadline in deadlines if name in ("verify-discovery", "tests")]
+        self.assertEqual(len(test_deadlines), 2)
+        self.assertEqual(test_deadlines[0], test_deadlines[1])
+        self.assertEqual(report["aggregateSeconds"], 360)
+        self.assertEqual(report["identity"], self.current)
 
     def test_discovery_stdout_excludes_warning_written_between_identifier_fragments(self):
         """A real child's stderr cannot corrupt the inventory parsed from its captured stdout."""
@@ -401,11 +447,13 @@ class NativeArtifactTests(unittest.TestCase):
     def test_macos_archive_contains_fresh_public_graphs_from_the_build_phase(self):
         """The later API job must receive compiler graphs without needing stripped object files."""
         calls = []
+        deadlines = {}
         generated = self.repository / ".build/out/symbolgraph/Library.symbols.json"
 
-        def compiler(command, repository, log, *, stdout_log=None):
+        def compiler(command, repository, log, *, stdout_log=None, deadline=None):
             """Produce build outputs and documentation inputs at their actual archive locations."""
             calls.append(command.name)
+            deadlines[command.name] = deadline
             if command.name == "public-symbol-graphs":
                 self.assertTrue(self.binary.exists())
                 generated.parent.mkdir(parents=True)
@@ -421,6 +469,7 @@ class NativeArtifactTests(unittest.TestCase):
                                    self.output / "compile", self.archive)
         self.assertLess(calls.index("root"), calls.index("public-symbol-graphs"))
         self.assertLess(calls.index("public-symbol-graphs"), calls.index("discovery-0"))
+        self.assertEqual(deadlines["root"], deadlines["public-symbol-graphs"])
         with tarfile.open(self.archive) as archive:
             self.assertIn(str(generated.relative_to(self.repository)), archive.getnames())
 
@@ -434,6 +483,71 @@ class NativeArtifactTests(unittest.TestCase):
         self.assertEqual(retained["status"], "failed")
         self.assertEqual(retained["commands"][0]["status"], "failed")
         self.assertTrue((self.output / retained["commands"][0]["log"]).is_file())
+
+    def test_aggregate_timeout_stops_serial_commands_without_retry(self):
+        """An aggregate deadline interrupts the next process despite its longer per-command limit."""
+        sentinel = self.root / "must-not-run"
+        commands = [jobs.linux_ci.Command("first", (sys.executable, "-c", "print('first passed')"), 5),
+                    jobs.linux_ci.Command("stuck", (sys.executable, "-c", "import time; time.sleep(10)"), 5),
+                    jobs.linux_ci.Command("never", (sys.executable, "-c",
+                        "from pathlib import Path; Path(__import__('sys').argv[1]).touch()", str(sentinel)), 5)]
+        report = {"status": "running", "commands": []}
+        started = time.monotonic()
+        with self.assertRaises(subprocess.TimeoutExpired), redirect_stdout(io.StringIO()):
+            jobs.execute_commands(commands, self.repository, self.output, report, deadline=started + 0.5)
+        self.assertLess(time.monotonic() - started, 5)
+        self.assertFalse(sentinel.exists())
+        self.assertEqual([record["name"] for record in report["commands"]], ["first", "stuck"])
+        self.assertEqual([record["status"] for record in report["commands"]], ["passed", "failed"])
+        failed = report["commands"][-1]
+        self.assertEqual(failed["timeoutCategory"], "aggregate")
+        self.assertEqual(failed["execution"]["timeoutCategory"], "aggregate")
+        self.assertIn("identity", failed["execution"])
+        self.assertTrue((self.output / failed["executionReceipt"]).is_file())
+        self.assertTrue((self.output / failed["diagnostics"]).is_file())
+
+    def test_expired_aggregate_is_reported_without_starting_child(self):
+        """A deadline exhausted between commands cannot admit another process or leave running status."""
+        sentinel = self.root / "must-not-run"
+        command = jobs.linux_ci.Command("never", (sys.executable, "-c",
+            "from pathlib import Path; Path(__import__('sys').argv[1]).touch()", str(sentinel)), 5)
+        report = {"status": "running", "commands": []}
+        with self.assertRaises(subprocess.TimeoutExpired), redirect_stdout(io.StringIO()):
+            jobs.execute_commands([command], self.repository, self.output, report, deadline=time.monotonic() - 1)
+        self.assertFalse(sentinel.exists())
+        retained = json.loads((self.output / "commands.json").read_text())
+        self.assertEqual(retained["status"], "failed")
+        self.assertEqual(retained["commands"][0]["timeoutCategory"], "aggregate")
+
+    def test_group_console_failure_marks_failed_and_preserves_primary_error(self):
+        """Workflow group markers cannot leave a running receipt or mask a child assertion failure."""
+        command = jobs.linux_ci.Command("example", (sys.executable, "-c", "pass"), 5)
+        report = {"status": "running", "commands": []}
+        with patch.object(jobs.linux_ci, "_console_write", side_effect=OSError("console closed")), \
+                patch.object(jobs.linux_ci, "execute") as execute, self.assertRaisesRegex(OSError, "console closed"):
+            jobs.execute_commands([command], self.repository, self.output, report)
+        execute.assert_not_called()
+        self.assertEqual(report["commands"][0]["status"], "failed")
+        primary = subprocess.CalledProcessError(7, command.arguments)
+        with patch.object(jobs.linux_ci, "_console_write", side_effect=[None, OSError("closing marker failed")]), \
+                patch.object(jobs.linux_ci, "execute", side_effect=primary), self.assertRaises(subprocess.CalledProcessError) as error:
+            jobs.execute_commands([command], self.repository, self.output, report)
+        self.assertIs(error.exception, primary)
+
+    def test_empty_inventory_failure_preserves_failed_component_report(self):
+        """A passing discovery process with no leaves fails the entire component and emits no archive."""
+        def compiler(command, repository, log, *, stdout_log=None, deadline=None):
+            log.write_text("passed but no test leaves\n")
+            if stdout_log is not None:
+                stdout_log.write_text("")
+
+        with patch.object(jobs, "identity", return_value=self.current), \
+                patch.object(jobs, "dump_targets", return_value=["CoreTests"]), \
+                patch.object(jobs.linux_ci, "execute", side_effect=compiler), redirect_stdout(io.StringIO()), \
+                self.assertRaisesRegex(ValueError, "at least one test"):
+            jobs.compile_component(self.repository, "root", "linux-x64", 2, self.output, self.archive)
+        self.assertFalse(self.archive.exists())
+        self.assertEqual(json.loads((self.output / "commands.json").read_text())["status"], "failed")
 
 
 class NativeSourceTests(unittest.TestCase):
@@ -449,7 +563,7 @@ class NativeSourceTests(unittest.TestCase):
             subprocess.run(["git", "-C", str(repository), "add", "source.swift"], check=True)
             subprocess.run(["git", "-C", str(repository), "-c", "user.name=CI Fixture", "-c", "user.email=fixture@example.invalid",
                             "commit", "--quiet", "-m", "fixture"], check=True)
-            with patch.dict(os.environ, {}, clear=True):
+            with patch.dict(os.environ, {}, clear=True), redirect_stdout(io.StringIO()):
                 first = jobs.source_identity(repository)
                 source.write_text("changed without committing\n")
                 second = jobs.source_identity(repository)
@@ -472,7 +586,7 @@ class NativeSourceTests(unittest.TestCase):
                 stack.enter_context(patch.object(jobs.platform, "machine", return_value="x86_64"))
                 stack.enter_context(patch.object(jobs.platform, "freedesktop_os_release", return_value={"ID": "ubuntu", "VERSION_ID": distribution}, create=True))
                 stack.enter_context(patch.object(jobs, "source_identity", return_value={"commit": "a" * 40}))
-                stack.enter_context(patch.object(jobs.subprocess, "check_output", side_effect=["Swift version 6.4.1", json.dumps({"target": {"triple": target}})]))
+                stack.enter_context(patch.object(jobs, "metadata_output", side_effect=["Swift version 6.4.1", json.dumps({"target": {"triple": target}})]))
                 stack.enter_context(patch.dict(os.environ, assigned, clear=True))
                 if accepted:
                     self.assertEqual(jobs.identity(Path.cwd(), "linux-x64")["swiftTarget"], target)

@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "status": "interrupted",
+  "name": "interruption",
+  "stage": "phase-1-fault-injection",
+  "operation": "fixture",
+  "arguments": [
+    "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+    "-c",
+    "import time; time.sleep(60)"
+  ],
+  "start": "2026-11-12T04:57:30.741265+00:00",
+  "startMonotonic": 317458.253606458,
+  "deadlineMonotonic": 317461.253606458,
+  "executionLimitSeconds": 3,
+  "cleanupAllowanceSeconds": 8.0,
+  "paths": {
+    "output": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/Docs/Tasks/ci-reliability/phase-1/faults/interruption.log",
+    "stdout": null,
+    "diagnostics": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/Docs/Tasks/ci-reliability/phase-1/faults/interruption.diagnostics.jsonl",
+    "receipt": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/Docs/Tasks/ci-reliability/phase-1/faults/interruption.receipt.json"
+  },
+  "identity": {
+    "executionID": "ebaf832f-1974-4c5d-82f7-5587aef89916",
+    "supervisorPID": 54297,
+    "host": "Pokemon-GO-Plus",
+    "system": "Darwin",
+    "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase1"
+  },
+  "exitCode": -15,
+  "signal": 15,
+  "timeoutCategory": null,
+  "pid": 54617,
+  "group": 54617,
+  "error": "supervisor interrupted by signal 15",
+  "errorType": "CommandInterrupted",
+  "interruptSignal": 15,
+  "cleanup": {
+    "status": "group-signalled",
+    "signals": [
+      "SIGTERM"
+    ],
+    "parentReaped": true,
+    "allowanceSeconds": 8.0,
+    "seconds": 0.005,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/Docs/Tasks/ci-reliability/phase-1/faults/interruption.log",
+      "retainedBytes": 96,
+      "observedBytes": 96,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T04:57:31.001371+00:00",
+  "endMonotonic": 317458.513750625,
+  "elapsedSeconds": 0.26,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}

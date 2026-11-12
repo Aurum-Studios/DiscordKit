@@ -8,7 +8,9 @@ https://aurum-studios.com
 # CI reliability, cancellation repair, and bounded spending
 
 Status: phased implementation plan. Phase 0 is complete as local preparation at
-`5808ce32d867622ff6952d0f2057768a8a257f14`; later phases remain proposed.
+`5808ce32d867622ff6952d0f2057768a8a257f14`. Phase 1 local acceptance passed;
+its actual implementation commit is recorded in the ledger after committing.
+Phases 2 through 11 remain proposed.
 See [STATE.md](STATE.md) for the
 commit-backed completion record and [BOOTSTRAP.md](BOOTSTRAP.md) for execution limits.
 Source inspected: `85eac6f3c1d3b17e53596c49e7438efee366c1b3`.
@@ -16,9 +18,10 @@ Failure snapshot: offline certification run `43146954720`, November 12, 2026 UTC
 
 Use [STATE.md](STATE.md) as the execution ledger and [EVIDENCE.md](EVIDENCE.md)
 for the observed failures and implementation receipts. The current implemented
-pipeline remains documented in [CI.md](../../CI.md). This plan describes future
-changes; it does not establish native qualification or authorize paid execution,
-runner/billing changes, publication, deployment, or live Discord access.
+pipeline remains documented in [CI.md](../../CI.md). This plan distinguishes
+completed local phases from future changes; it does not establish native
+qualification or authorize paid execution, runner/billing changes, publication,
+deployment, or live Discord access.
 
 ## Outcome and nonnegotiable contracts
 
@@ -173,6 +176,12 @@ finish within the execution limit plus recorded cleanup allowance.
 
 Exit: focused helper tests pass; injected hangs fail promptly with retained
 diagnostics; discovery stdout remains parseable; no test/compile retry occurs.
+
+Local implementation and acceptance: [Phase 1 receipts](phase-1/IMPLEMENTATION.md).
+The initial limits are active in native helpers. Consumer compilation uses a
+5,400-second aggregate so all applicable reserves fit the existing 120-minute
+build job. These limits remain unqualified cold-build capacity; no native
+reproduction or hosted execution occurred in Phase 1.
 
 ## Phase 2 — Repair event-hub cancellation accounting
 

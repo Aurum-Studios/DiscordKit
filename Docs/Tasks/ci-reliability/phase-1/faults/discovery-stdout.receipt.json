@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "name": "discovery-stdout",
+  "stage": "phase-1-fault-injection",
+  "operation": "fixture",
+  "arguments": [
+    "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+    "-c",
+    "import os; os.write(1,b'FixtureTests.Su'); os.write(2,b'BogusTests/diagnosticOnly()\\n'); os.write(1,b'ite/test()\\n')"
+  ],
+  "start": "2026-11-12T04:57:31.002007+00:00",
+  "startMonotonic": 317458.51436875,
+  "deadlineMonotonic": 317460.51436875,
+  "executionLimitSeconds": 2,
+  "cleanupAllowanceSeconds": 8.0,
+  "paths": {
+    "output": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/Docs/Tasks/ci-reliability/phase-1/faults/discovery-stdout.log",
+    "stdout": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/Docs/Tasks/ci-reliability/phase-1/faults/discovery-stdout.stdout",
+    "diagnostics": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/Docs/Tasks/ci-reliability/phase-1/faults/discovery-stdout.diagnostics.jsonl",
+    "receipt": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/Docs/Tasks/ci-reliability/phase-1/faults/discovery-stdout.receipt.json"
+  },
+  "identity": {
+    "executionID": "8eb2276c-3703-4b83-9b08-af540b32e7be",
+    "supervisorPID": 54297,
+    "host": "Pokemon-GO-Plus",
+    "system": "Darwin",
+    "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase1"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 54643,
+  "group": 54643,
+  "cleanup": {
+    "status": "group-signalled",
+    "signals": [],
+    "parentReaped": true,
+    "allowanceSeconds": 8.0,
+    "seconds": 0.004,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/Docs/Tasks/ci-reliability/phase-1/faults/discovery-stdout.log",
+      "retainedBytes": 237,
+      "observedBytes": 237,
+      "truncated": false
+    },
+    {
+      "path": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/Docs/Tasks/ci-reliability/phase-1/faults/discovery-stdout.stdout",
+      "retainedBytes": 26,
+      "observedBytes": 26,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T04:57:31.024494+00:00",
+  "endMonotonic": 317458.536869625,
+  "elapsedSeconds": 0.023,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}

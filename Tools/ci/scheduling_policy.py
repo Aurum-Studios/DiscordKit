@@ -4,10 +4,11 @@
 # Copyright (c) 2026 Aurum Studios.
 # https://aurum-studios.com
 
-"""Read the Phase 0 policy without scheduling work or authorizing spending.
+"""Read the versioned scheduling policy without authorizing spending.
 
 This is a shared planning/accounting interface for later phases, not Phase 10
-admission. Existing workflows do not read it. Native build/suite scope comes from
+admission. Phase 1 native helpers consume its process deadlines; scheduling,
+concurrency and paid admission remain preparation. Native build/suite scope comes from
 native_jobs.matrices; it is deliberately not presented as an entire workflow or
 cost plan. Root targets are anchored to the retained manifest bytes. Evaluated
 SwiftPM inventory, discovered test leaves, shared gates and documentation remain
@@ -219,10 +220,13 @@ def validate_source_inventory(policy, repository=REPOSITORY):
     require(inventory["consumerSuites"] == list(native_jobs.CONSUMER_SUITES), "planner consumer inventory drift")
     require(inventory["plannerSource"] == "Tools/ci/native_jobs.py", "unsupported planner source")
     for component in native_jobs.COMPONENTS:
-        command_count = len(native_jobs.compile_commands(component, policy["concurrency"]["compilerJobsPerProcess"]))
         require(policy["componentCompileSeconds"][component] >=
-                command_count * policy["deadlinesSeconds"]["coldCompileCommand"],
-                f"{component} aggregate compilation budget omits commands")
+                policy["deadlinesSeconds"]["coldCompileCommand"],
+                f"{component} aggregate compilation budget is shorter than one command")
+        # Aggregate limits may be stricter than the sum of command maxima. They
+        # stop serial graphs when elapsed capacity is exhausted, without retries.
+        native_jobs.validate_enclosing_budget(native_jobs.compilation_budget(component, policy),
+                                             native_jobs.BUILD_JOB_SECONDS, packaging=True, policy=policy)
     for platform in PLATFORMS:
         for large in (False, True):
             group = native_jobs.runner_entry(platform, large)["group"]

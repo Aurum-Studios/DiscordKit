@@ -1,0 +1,9 @@
+{
+  "matchesPriorAlgorithm": true,
+  "source": {
+    "commit": "ac84d9b9e04e2be70b95134dba483665e9bd8220",
+    "sourceSHA256": "e128a7d5aabbc309a7cf7d344a8378674c980a50fdd145d2cfb467627296df90"
+  },
+  "trackedNamesCount": 2,
+  "namesIncludeNewlineUnicodeAndSymlink": true
+}

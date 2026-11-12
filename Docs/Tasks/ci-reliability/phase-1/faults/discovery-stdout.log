@@ -1,0 +1,2 @@
+/Library/Frameworks/Python.framework/Versions/3.14/bin/python3 -c 'import os; os.write(1,b'"'"'FixtureTests.Su'"'"'); os.write(2,b'"'"'BogusTests/diagnosticOnly()\n'"'"'); os.write(1,b'"'"'ite/test()\n'"'"')'
+BogusTests/diagnosticOnly()

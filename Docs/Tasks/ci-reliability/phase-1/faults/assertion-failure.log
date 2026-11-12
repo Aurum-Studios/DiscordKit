@@ -1,0 +1,2 @@
+/Library/Frameworks/Python.framework/Versions/3.14/bin/python3 -c 'import sys; print('"'"'assertion fixture failed'"'"', flush=True); sys.exit(7)'
+assertion fixture failed

@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "name": "policy-validate",
+  "stage": "phase-1-static",
+  "operation": "localHelperCheck",
+  "arguments": [
+    "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+    "Tools/ci/scheduling_policy.py",
+    "validate"
+  ],
+  "start": "2026-11-12T05:04:32.875424+00:00",
+  "startMonotonic": 317880.384881541,
+  "deadlineMonotonic": 318180.384881541,
+  "executionLimitSeconds": 300,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "operation",
+  "paths": {
+    "output": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/Docs/Tasks/ci-reliability/phase-1/policy-validate.log",
+    "stdout": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/Docs/Tasks/ci-reliability/phase-1/policy-validate.stdout",
+    "diagnostics": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/Docs/Tasks/ci-reliability/phase-1/policy-validate.diagnostics.jsonl",
+    "receipt": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/Docs/Tasks/ci-reliability/phase-1/policy-validate.receipt.json"
+  },
+  "identity": {
+    "executionID": "7c082304-5858-4d0a-adb0-be3b84c8e91d",
+    "supervisorPID": 64705,
+    "host": "Pokemon-GO-Plus",
+    "system": "Darwin",
+    "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase1"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 64725,
+  "group": 64725,
+  "cleanup": {
+    "status": "group-signalled",
+    "signals": [],
+    "parentReaped": true,
+    "allowanceSeconds": 8.0,
+    "seconds": 0.004,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/Docs/Tasks/ci-reliability/phase-1/policy-validate.log",
+      "retainedBytes": 102,
+      "observedBytes": 102,
+      "truncated": false
+    },
+    {
+      "path": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/Docs/Tasks/ci-reliability/phase-1/policy-validate.stdout",
+      "retainedBytes": 223,
+      "observedBytes": 223,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T05:04:32.944292+00:00",
+  "endMonotonic": 317880.45382325,
+  "elapsedSeconds": 0.069,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}
