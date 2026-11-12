@@ -1,0 +1,254 @@
+{
+  "schemaVersion": 1,
+  "policyID": "ci-reliability-phase-0-v1",
+  "status": "local-planning-only; workflows do not consume this policy yet",
+  "modes": {
+    "preflight": {
+      "certifying": false
+    },
+    "diagnostic": {
+      "certifying": false
+    },
+    "full": {
+      "certifying": true
+    }
+  },
+  "platforms": [
+    "linux-x64",
+    "macos-arm64"
+  ],
+  "excludedPlatforms": {
+    "windows-x64": "No Windows qualification in this repair plan."
+  },
+  "inventory": {
+    "level": "declared-targets-and-existing-planner-suites; not discovered test leaves",
+    "rootManifest": "Package.swift",
+    "rootManifestSHA256": "d6822bdd8a38ecf262d0f22625f8c57699c4f720f77c8aa4f531d9d895f6e23e",
+    "rootTargets": [
+      "DiscordActivitiesTests",
+      "DiscordApplePlatformTests",
+      "DiscordBitsTests",
+      "DiscordBotDSLTests",
+      "DiscordCacheTests",
+      "DiscordCertifiedDevicesTests",
+      "DiscordClientTests",
+      "DiscordCommandDSLTests",
+      "DiscordCommandsTests",
+      "DiscordCommerceTests",
+      "DiscordCoreTests",
+      "DiscordDAVETests",
+      "DiscordDSLTests",
+      "DiscordFoundationTransportTests",
+      "DiscordGameServicesTests",
+      "DiscordGatewayTests",
+      "DiscordHTTPTests",
+      "DiscordInteractionsTests",
+      "DiscordKitTests",
+      "DiscordLogHandlersTests",
+      "DiscordLoggingTests",
+      "DiscordMLSTests",
+      "DiscordMediaTests",
+      "DiscordModelsTests",
+      "DiscordNIOTransportTests",
+      "DiscordOAuthTests",
+      "DiscordRPCTests",
+      "DiscordSocialTests",
+      "DiscordTestSupportTests",
+      "DiscordTransportTests",
+      "DiscordUnixPlatformTests",
+      "DiscordVoiceCodecsTests",
+      "DiscordVoiceCryptoTests",
+      "DiscordVoiceTests"
+    ],
+    "components": [
+      "root",
+      "macros",
+      "extensions",
+      "tooling",
+      "load",
+      "benchmarks",
+      "timing-support",
+      "timing",
+      "foundation",
+      "media",
+      "consumers",
+      "release"
+    ],
+    "packageSuites": {
+      "macros": "macros",
+      "extensions": "extensions",
+      "tooling": "tooling",
+      "load": "load",
+      "benchmarks": "benchmarks",
+      "timing-support": "timing-support",
+      "timing": "timing",
+      "foundation": "foundation",
+      "media": "media"
+    },
+    "consumerSuites": [
+      "ActivityHost",
+      "CommandsApp",
+      "DSLBot",
+      "DSLCommands",
+      "DSLEvents",
+      "LoggingApp",
+      "SocialApp",
+      "VoiceBot"
+    ],
+    "plannerSource": "Tools/ci/native_jobs.py"
+  },
+  "dependencies": {
+    "platform": [],
+    "plan": [
+      "platform"
+    ],
+    "build": [
+      "plan"
+    ],
+    "test": [
+      "plan",
+      "build"
+    ]
+  },
+  "deadlinesSeconds": {
+    "discovery": 60,
+    "focusedTest": 90,
+    "suite": 300,
+    "wholeLoadPackage": 600,
+    "timingSmoke": 120,
+    "debuggerProbe": 5,
+    "coldCompileCommand": 1200,
+    "transportAttempt": 120,
+    "transportTotal": 420,
+    "localHelperCheck": 300
+  },
+  "componentCompileSeconds": {
+    "root": 1200,
+    "macros": 1200,
+    "extensions": 1200,
+    "tooling": 1200,
+    "load": 2400,
+    "benchmarks": 2400,
+    "timing-support": 1200,
+    "timing": 2400,
+    "foundation": 2400,
+    "media": 2400,
+    "consumers": 15600,
+    "release": 3600
+  },
+  "reservesSeconds": {
+    "setup": 600,
+    "diagnostics": 30,
+    "cleanup": 30,
+    "upload": 180
+  },
+  "jobSeconds": {
+    "focusedTest": 930,
+    "suite": 1140,
+    "wholeLoadPackage": 1440
+  },
+  "concurrency": {
+    "buildsPerPlatform": 2,
+    "runtimeGroupsPerPlatform": 2,
+    "compilerJobsPerProcess": 2
+  },
+  "retentionDays": {
+    "compiledArtifacts": 2,
+    "diagnosticArtifacts": 14,
+    "baselineArtifacts": 90
+  },
+  "attempts": {
+    "testProcessesPerExperiment": 2,
+    "transportPerOperation": 3,
+    "workflowMaximum": 1
+  },
+  "billing": {
+    "currency": "USD",
+    "rounding": "ceil-each-job-minute",
+    "rateMaxAgeDays": 30
+  },
+  "runnerRates": {
+    "Linux-x64-8": {
+      "sku": "linux_8_core",
+      "platform": "linux-x64",
+      "usdPerMinute": "0.022",
+      "verifiedOn": "2026-11-12",
+      "sourceURL": "https://docs.github.com/en/billing/reference/actions-runner-pricing",
+      "mappingAssurance": "workflow-declared; not billing-verified",
+      "billingMappingVerified": false
+    },
+    "Linux-x64-64": {
+      "sku": "linux_64_core",
+      "platform": "linux-x64",
+      "usdPerMinute": "0.162",
+      "verifiedOn": "2026-11-12",
+      "sourceURL": "https://docs.github.com/en/billing/reference/actions-runner-pricing",
+      "mappingAssurance": "workflow-declared; not billing-verified",
+      "billingMappingVerified": false
+    },
+    "MacOS-26-5": {
+      "sku": "macos_xl",
+      "platform": "macos-arm64",
+      "usdPerMinute": "0.102",
+      "verifiedOn": "2026-11-12",
+      "sourceURL": "https://docs.github.com/en/billing/reference/actions-runner-pricing",
+      "mappingAssurance": "workflow-declared; not billing-verified",
+      "billingMappingVerified": false
+    }
+  },
+  "allowances": {
+    "experimentUSD": "0.00",
+    "workflowUSD": "0.00",
+    "safetyUSD": "0.00",
+    "maximumPaidJobs": 0,
+    "maximumPaidMinutes": 0,
+    "maximumPaidAttempts": 0
+  },
+  "bootstrap": {
+    "authorization": "local-helper-checks-only",
+    "nativeExecutionAuthorized": false,
+    "localCommands": [
+      [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "Tools/ci",
+        "-p",
+        "test_*.py"
+      ],
+      [
+        "node",
+        "--test",
+        "Browser/DiscordActivityBridge/*.test.mjs"
+      ],
+      [
+        "git",
+        "diff",
+        "--check"
+      ]
+    ],
+    "futureDiagnostic": {
+      "authorized": false,
+      "platform": "linux-x64",
+      "component": "load",
+      "suite": "load",
+      "maximumTestProcessAttempts": 2,
+      "testProcessSeconds": 90,
+      "coldCompileCommandSeconds": 1200,
+      "requires": "Phase 1 supervisor, exact discovered selection, retained evidence, verified billing mapping and separate bounded execution authorization."
+    },
+    "localNativeTestAttempts": 0,
+    "localNativeCompilations": 0
+  },
+  "limits": [
+    "All deadlines, reserves, concurrency and retention changes are proposals until later phases wire and verify them.",
+    "The native scope API delegates builds and suites to the existing planner; it does not inventory shared/native gates or documentation jobs for a complete workflow cost plan.",
+    "Declared root target inventory is source anchored, not evaluated SwiftPM inventory or discovered/executed test-leaf coverage.",
+    "Published runner list rates do not verify account pricing, configured runner mappings, storage charges, transfer charges or an invoice.",
+    "No paid execution, automatic spend admission, workflow expansion, retry, push or dispatch is authorized.",
+    "Compilation aggregate budgets are command-count ceilings proposed for later integration; consumers may exceed the current workflow job timeout and these values are not active enclosing job deadlines.",
+    "Upload reserves are placeholders, not a validated transport budget: later enclosing job plans must include all applicable 420-second transport totals, bounded attempts, cleanup and other operations."
+  ]
+}

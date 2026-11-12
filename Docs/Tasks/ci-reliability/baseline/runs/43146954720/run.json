@@ -1,0 +1,40 @@
+{
+  "id": 43146954720,
+  "name": "Offline certification",
+  "display_title": "fix(ci): repair macOS API checks and stalled rate retries",
+  "workflow_id": 388677616,
+  "run_number": 41,
+  "run_attempt": 1,
+  "event": "push",
+  "status": "completed",
+  "conclusion": "cancelled",
+  "head_branch": "main",
+  "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3",
+  "head_commit": {
+    "message": "fix(ci): repair macOS API checks and stalled rate retries\n\nReview six DSL extension fingerprint changes from CI run 43140630559's\npinned Swift 6.4.1 artifact without relaxing isolation or semver checks.\nRetain comparison reports and candidate snapshots when API admission fails.\n\nWake eligible parked requests when an authority retry elapsed before the\nshared timer started. Preserve FIFO, capacity and fresh authority admission,\nand reproduce the old lost wake with a deterministic clock regression.\n\nValidation: 2,708 root tests, 146 load-tool tests, 423 Python helper tests,\nstrict HTTP DocC, documentation audit/navigation/examples, and actionlint.\nThe timer regression fails before the fix and passes afterward. Hosted\nSwift 6.4.1 extension graphs exactly match the refreshed 86-symbol baseline."
+  },
+  "path": ".github/workflows/ci.yml",
+  "html_url": "https://github.com/Aurum-Studios/DiscordKit/actions/runs/43146954720",
+  "actor": {
+    "login": "CarsonAurum",
+    "id": 53197646,
+    "profile_url": "https://github.com/CarsonAurum",
+    "avatar_url": "https://avatars.githubusercontent.com/u/53197646?v=4"
+  },
+  "triggering_actor": {
+    "login": "CarsonAurum",
+    "id": 53197646,
+    "profile_url": "https://github.com/CarsonAurum",
+    "avatar_url": "https://avatars.githubusercontent.com/u/53197646?v=4"
+  },
+  "referenced_workflows": [
+    {
+      "path": "Aurum-Studios/DiscordKit/.github/workflows/native-platform.yml@85eac6f3c1d3b17e53596c49e7438efee366c1b3",
+      "sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3",
+      "ref": "refs/heads/main"
+    }
+  ],
+  "created_at": "2026-11-12T03:15:22Z",
+  "updated_at": "2026-11-12T03:59:39Z",
+  "run_started_at": "2026-11-12T03:15:22Z"
+}

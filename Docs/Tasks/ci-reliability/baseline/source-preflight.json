@@ -1,0 +1,20 @@
+{
+  "base": "85eac6f3c1d3b17e53596c49e7438efee366c1b3",
+  "branch": "ci/phase-0-baseline",
+  "gitAuthor": "Carson R <carsonaurum1@icloud.com> 1794457807 -0600",
+  "implementationCheckout": "/Users/carsonrau/Developer/DiscordKit-ci-phase0",
+  "initialStatus": "1 .M N... 100644 100644 100644 324c7eb78da37e30afb82e54d6746d0e2dc4636e 324c7eb78da37e30afb82e54d6746d0e2dc4636e Docs/CI.md\n1 .A N... 000000 000000 100644 0000000000000000000000000000000000000000 0000000000000000000000000000000000000000 Docs/Tasks/ci-reliability/EVIDENCE.md\n1 .A N... 000000 000000 100644 0000000000000000000000000000000000000000 0000000000000000000000000000000000000000 Docs/Tasks/ci-reliability/PLAN.md\n1 .A N... 000000 000000 100644 0000000000000000000000000000000000000000 0000000000000000000000000000000000000000 Docs/Tasks/ci-reliability/STATE.md\n",
+  "initialWorktrees": "worktree /Users/carsonrau/Developer/DiscordKit\nHEAD 85eac6f3c1d3b17e53596c49e7438efee366c1b3\nbranch refs/heads/main\n\nworktree /Users/carsonrau/Developer/DiscordKit/.build/performance-phase1/baseline-source\nHEAD 01c743e44615aa48fb81a2e193b41195cd9e86c3\ndetached\n\nworktree /Users/carsonrau/Developer/DiscordKit/.build/performance-phase10/baseline-source\nHEAD a8a7539b32851e122ca1f81e399e77be996590c6\ndetached\n\nworktree /Users/carsonrau/Developer/DiscordKit/.build/performance-phase2/baseline-source\nHEAD 1b10c663e70cae90c0f49c7bb80aba89ff90600f\ndetached\n\nworktree /Users/carsonrau/Developer/DiscordKit/.build/performance-phase3/baseline-source\nHEAD 5e06464b9dae57fcdeae63c14ea7f4c534de68ca\ndetached\n\nworktree /Users/carsonrau/Developer/DiscordKit/.build/performance-phase4/baseline-source\nHEAD 3e8066749f1ba9e043438b13a6e160cd2ab77f8f\ndetached\n\nworktree /Users/carsonrau/Developer/DiscordKit/.build/performance-phase5/baseline-source\nHEAD ca5c4cb9d45a824f2470555161158634c7714bb8\ndetached\n\nworktree /Users/carsonrau/Developer/DiscordKit/.build/performance-phase6/baseline-source\nHEAD 035cf9f02f5955552f5b0357a0e0abf90cdc6729\ndetached\n\nworktree /Users/carsonrau/Developer/DiscordKit/.build/performance-phase7/baseline-source\nHEAD d766cf83db7a9baffeb46bcadbc1153336f4ba9b\ndetached\n\nworktree /Users/carsonrau/Developer/DiscordKit/.build/performance-phase8/baseline-source\nHEAD 57328709aaafd440750623b196053e8bc1e07f61\ndetached\n\nworktree /Users/carsonrau/Developer/DiscordKit/.build/performance-phase9/baseline-source\nHEAD f150293e75bace0b1e72519346f09389b9d3925e\ndetached\n\nworktree /Users/carsonrau/Developer/MiniCarson/.git/air-local/MC-33/20261112-finish/validation-pair/DiscordKit\nHEAD 85eac6f3c1d3b17e53596c49e7438efee366c1b3\ndetached\n\n",
+  "originalCheckout": "/Users/carsonrau/Developer/DiscordKit",
+  "owner": "Codex /root; single integration owner",
+  "planningInputs": {
+    "Docs/CI.md": "52d344b12487a46ec46f3ff0ad7f1c207faf876f937a172473c3f44b7aa81629",
+    "Docs/Tasks/ci-reliability/EVIDENCE.md": "5e1de6b2d0f1259424dafe7e9aae4651a039edd9cceda65a15a0bf7c08f0e476",
+    "Docs/Tasks/ci-reliability/PLAN.md": "2fa145ad46499a1fbe26d272704f825d590fe1937a5f59e2f2f4099431527d83",
+    "Docs/Tasks/ci-reliability/STATE.md": "b2a181246e1c3e323a433be1c0f17d6db36039658e4dde68c19f36302098180d"
+  },
+  "platform": "Darwin Pokemon-GO-Plus 27.0.0 Darwin Kernel Version 27.0.0: Tue Aug 11 21:05:42 PDT 2026; root:xnu-13432.1.9~1/RELEASE_ARM64_T6031 arm64",
+  "processes": [],
+  "remoteMain": "85eac6f3c1d3b17e53596c49e7438efee366c1b3\trefs/heads/main",
+  "remotes": "origin\thttps://github.com/Aurum-Studios/DiscordKit.git (fetch)\norigin\thttps://github.com/Aurum-Studios/DiscordKit.git (push)\n"
+}

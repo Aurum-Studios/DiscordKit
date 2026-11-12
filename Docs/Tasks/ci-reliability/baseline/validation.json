@@ -1,0 +1,61 @@
+{
+  "baseRevision": "85eac6f3c1d3b17e53596c49e7438efee366c1b3",
+  "branch": "ci/phase-0-baseline",
+  "checks": {
+    "allOriginalPlanningFilesPreserved": true,
+    "captureManifestFilesVerified": 29,
+    "costSummaryReproducedByteForByte": true,
+    "fullNativeDeclaredBuilds": 24,
+    "fullNativeDeclaredSuiteJobs": 101,
+    "fullNativeDiscoveredTestLeaves": false,
+    "gitDiffCheck": "passed",
+    "policyValid": true,
+    "rawLogDigestsVerified": 16,
+    "workflowAndNativeSourceInputsUnchanged": true
+  },
+  "commands": [
+    {
+      "argv": [
+        "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "Tools/ci",
+        "-p",
+        "test_*.py"
+      ],
+      "exit": 0,
+      "logSHA256": "fb2af5f66227b786ba14f3da93610005c2b48a159244410be2632302ed9602f2",
+      "seconds": 9.384,
+      "status": "passed",
+      "timeoutSeconds": 300
+    }
+  ],
+  "completedAt": "2026-11-12T04:39:21.564980+00:00",
+  "independentReview": "Read-only review by baseline_capture: no material unresolved findings; Windows full-scope issue fixed before final tests.",
+  "inputsSHA256": {
+    "Tools/ci/baseline_usage.py": "c65f53b81bc8abfe9a138301957af9888ef7fff4600cada97dc15c03261b8177",
+    "Tools/ci/scheduling-policy.v1.json": "b852e8dd8c620e49433da6a8dceff137c8e62cf82672bde8a8fe057d256699ef",
+    "Tools/ci/scheduling_policy.py": "8708209c02ba646cff07972f920a7e8433290b7d639595eab16600d830353954",
+    "Tools/ci/test_baseline_usage.py": "946fbc52ed1e0895ff86e8b8dc4dcdbd8b6663fbd7c52ab0435e64dabf4443d8",
+    "Tools/ci/test_scheduling_policy.py": "93bef8ffb93ee66988a1307b2996473d97630019174b4f7b39ccb476e68d87d8"
+  },
+  "newFocusedTests": 25,
+  "owner": "Codex /root",
+  "paidExecution": {
+    "attempts": 0,
+    "jobs": 0,
+    "minutes": 0,
+    "usdAllowance": "0.00"
+  },
+  "qualification": "local Python helper checks only",
+  "schemaVersion": 1,
+  "startedAt": "2026-11-12T04:38:36.067141+00:00",
+  "testCount": 212,
+  "testLog": {
+    "path": "local-ci-helpers.log.gz",
+    "sha256Gzip": "a1cbbfaf8ff2ae30d25a1eaac2e9d6a5f5ee6be39d6cab2d6f887b2673333dc8",
+    "sha256Uncompressed": "fb2af5f66227b786ba14f3da93610005c2b48a159244410be2632302ed9602f2"
+  }
+}
