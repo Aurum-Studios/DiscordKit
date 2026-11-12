@@ -12,6 +12,7 @@ from collections import deque
 from contextlib import ExitStack, suppress
 from dataclasses import dataclass
 from datetime import datetime, timezone
+import errno
 import io
 import json
 import math
@@ -570,21 +571,32 @@ def _snapshot(process, repository, command, started, deadline, last_output, last
 
 
 def _console_write(text):
-    """Fail promptly on a saturated console pipe instead of extending a deadline."""
+    """Mirror available console bytes without waiting; return bytes omitted by pressure.
+
+    Durable child output is written before this optional mirror. A full pipe may
+    omit the current remainder, while permanent sink errors still fail normally.
+    No retry or pending queue can extend the command's execution deadline.
+    """
     try:
         descriptor = sys.stdout.fileno()
     except (AttributeError, io.UnsupportedOperation):
         print(text, end="", flush=True)
-        return
+        return 0
     blocking = os.get_blocking(descriptor)
     try:
         os.set_blocking(descriptor, False)
         data = text.encode("utf-8", errors="replace")
         while data:
-            written = os.write(descriptor, data[:4096])
+            try:
+                written = os.write(descriptor, data[:4096])
+            except BlockingIOError as error:
+                if error.errno not in (errno.EAGAIN, errno.EWOULDBLOCK):
+                    raise
+                return len(data)
             if written <= 0:
                 raise BrokenPipeError("console sink accepted zero bytes")
             data = data[written:]
+        return 0
     finally:
         os.set_blocking(descriptor, blocking)
 
@@ -665,7 +677,8 @@ def execute(command, repository, log, *, stdout_log=None, deadline=None):
                "identity": {"executionID": str(uuid.uuid4()), "supervisorPID": os.getpid(),
                             "host": platform.node(), "system": platform.system(),
                             "repository": str(repository)},
-               "exitCode": None, "signal": None, "timeoutCategory": None}
+               "exitCode": None, "signal": None, "timeoutCategory": None,
+               "consoleOmittedBytes": 0}
     # Deliberate allowlist, never a dump of the environment.
     receipt["identity"].update({key: os.environ[key] for key in
                                ("GITHUB_RUN_ID", "GITHUB_RUN_ATTEMPT", "GITHUB_JOB", "GITHUB_SHA",
@@ -704,7 +717,7 @@ def execute(command, repository, log, *, stdout_log=None, deadline=None):
             match = re.search(r"Test (?:Case|Suite) '([A-Za-z0-9_.$/()+ :\[\]-]+)'|[◇✔✘] Test ([A-Za-z0-9_.$/()+-]+)", line)
             if match:
                 last_test = (match[1] or match[2])[:256]
-            _console_write(line)
+            receipt["consoleOmittedBytes"] += _console_write(line) or 0
         console_buffers[stream_id] = pending
 
     try:

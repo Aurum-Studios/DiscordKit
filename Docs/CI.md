@@ -232,7 +232,10 @@ enclosing job timeout and explicit elapsed checks.
 
 The POSIX supervisor owns the command process group and inherited output pipes.
 It retains command receipts separately from machine-readable discovery stdout,
-and cleans the group on failure or timeout. Bounded heartbeat, resource, process
+and cleans the group on failure or timeout. Temporary console-pipe backpressure
+can omit console copies, with omitted bytes recorded in the command receipt;
+the bounded retained output remains authoritative. Console copying never waits
+or queues output, and permanent sink or retained-output failures still fail. Bounded heartbeat, resource, process
 and stack diagnostics record unavailable or denied probes explicitly. Diagnostic
 work shares the execution deadline; silence is diagnostic evidence rather than
 a deadlock verdict. Windows cleanup retains its best-effort helper coverage and

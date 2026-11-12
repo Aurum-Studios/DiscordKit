@@ -88,7 +88,9 @@
     "Tools/ci/test_native_provisioning.py": "efda7ed14d0ffe93716655dbcff51b25c1789e9df8369dbd85ed7d097ec18ce5",
     "Tools/ci/test_platform_probe.py": "eb6fc8ebd50118247e8e604c190eb66f1633ecf18ad1a9d7421419bda1d84c0b",
     ".github/actions/setup-native/action.yml": "d940894cb646f21de6407a57e0607741282ffeb43620de4bbf852e70899149a6",
-    "Tools/ci/test_provisioning_workflow.py": "2a2bbc908604ba8d463d366ec61558a3de0841d1346381cad96f8f94c6da2ed8"
+    "Tools/ci/test_provisioning_workflow.py": "2a2bbc908604ba8d463d366ec61558a3de0841d1346381cad96f8f94c6da2ed8",
+    "Tools/ci/linux_ci.py": "6ea21e44f99a50404cf425f3729427a57519b39c85b6dec08dc911190e4672fe",
+    "Tools/ci/test_linux_ci.py": "19d8099a4a7f1c7ce001c4c49f60e61dd38457ebe78edb9d69794fba8d56ab6d"
   },
   "nextRun": {
     "mode": "full",
@@ -295,6 +297,66 @@
       "Local compiler/SDK differs from pinned hosted Swift 6.4.1; actual hosted compile/link/runtime must pass.",
       "Six Linux-only helper cases skip on local macOS.",
       "Full certification and same-run documentation publication remain pending."
+    ]
+  },
+  "consoleFollowup": {
+    "observedAt": "2026-11-12T17:58:21.234572+00:00",
+    "source": "72c2c69f5be2b0b0813f48e0109bd7e975ba5d6d",
+    "preflightRun": {
+      "id": 43273347555,
+      "conclusion": "success"
+    },
+    "fullRun": {
+      "id": 43273373368,
+      "conclusion": "cancelled",
+      "reason": "macOS planning encountered console-only EAGAIN while mirroring package-manifest JSON"
+    },
+    "hostedEvidence": {
+      "sharedChecks": "passed",
+      "linuxProbe": "passed: pinned compile/link/runtime",
+      "macosProbe": "passed: pinned compile/link/runtime",
+      "linuxPlan": "passed",
+      "linuxLoadBuild": "started compilation; cancelled after macOS planning failure"
+    },
+    "validation": {
+      "supervisorDiscovered": 59,
+      "supervisorPassed": 53,
+      "supervisorSkipped": 6,
+      "redGreen": "Real saturated POSIX console pipe caused the same errno35 failure before the fix; success/output-preservation and inherited-pipe timeout regressions pass after it.",
+      "localManifestRoundtrip": {
+        "status": "passed",
+        "qualification": "local installed Apple Swift only; no pinned or hosted qualification",
+        "swiftVersion": "Apple Swift version 6.4 (swiftlang-6.4.0.34.1 clang-2100.3.34.1)\nTarget: arm64-apple-macosx27.0.0",
+        "SDKROOT": "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX27.0.sdk",
+        "command": [
+          "swift",
+          "package",
+          "--package-path",
+          ".",
+          "dump-package"
+        ],
+        "elapsedSeconds": 0.78,
+        "targetCount": 34,
+        "consoleOmittedBytes": 86821,
+        "blockingRestored": true
+      },
+      "ciPython": {
+        "exitCode": 0,
+        "elapsedSeconds": 19.971,
+        "context": "Simulated full GitHub Actions identity/admission on macOS; final real full-pipe, partial-write and inherited-pipe timeout regressions",
+        "log": ".build/ci-recovery-2026-11-12/ci-python-console-fix-final.log"
+      },
+      "discovered": 633,
+      "passed": 627,
+      "skipped": 6
+    },
+    "independentReview": {
+      "blockingFindings": 0,
+      "scope": "Only transient console EAGAIN/EWOULDBLOCK omits mirrored bytes; retained stdout/logs, permanent sink failures, child results, exact output caps, deadlines and cleanup remain enforced."
+    },
+    "limitations": [
+      "Local Linux-only helper cases skip on macOS.",
+      "Hosted full certification and publication remain pending."
     ]
   }
 }

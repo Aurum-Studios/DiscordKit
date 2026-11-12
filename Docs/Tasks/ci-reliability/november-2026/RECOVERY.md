@@ -131,3 +131,36 @@ hosted pinned Swift 6.4.1 distribution.
 The next push retains automatic preflight and launches one full publishing run.
 Successful hosted native certification and publication remain pending. Budget
 amounts, stop-usage behavior and the authorized workflow envelope are unchanged.
+
+## Transient hosted console backpressure
+
+At source `72c2c69f5be2b0b0813f48e0109bd7e975ba5d6d`, push preflight
+`43273347555` passed. Full publishing run `43273373368` passed all shared checks
+and both hosted platform probes, including real pinned-compiler compile, link
+and runtime execution. Linux planning passed and its load build started. macOS
+planning then failed while mirroring SwiftPM's package manifest to the console:
+`[Errno 35] Resource temporarily unavailable`. The full run was cancelled and
+its Linux build stopped because macOS failure already prevented certification
+and publication.
+
+The nonblocking console sink treated temporary pipe backpressure as a permanent
+output failure, even after the supervisor had saved that chunk to the command's
+captured output. The console mirror now omits bytes that the pipe cannot accept
+immediately, without waiting or queuing. The child output continues to drain to
+its bounded retained files and command receipts record console omissions. Child
+exit status, durable output errors, permanent console errors and deadline/cleanup
+failures retain their existing failure behavior. No timed retry or extra resource
+allowance is introduced.
+
+Three real-pipe regressions cover partial writes and exact omitted UTF-8 byte
+counts with both prior descriptor modes, simultaneous complete stdout/stderr
+capture under saturation, and inherited-output timeout with descendant cleanup.
+The existing permanent console-failure regression still passes. Independently,
+the repository's actual SwiftPM manifest query completed against an undrained
+full console pipe: all 34 test targets parsed, 86,821 console bytes omitted,
+complete retained output, no truncation, and descriptor mode restored. This
+local check used the installed compiler rather than the pinned hosted compiler.
+
+The final simulated-hosted helper run completed all 633 tests: 627 passed and
+six existing Linux-only cases skipped locally on macOS. Normal push preflight
+and one new full publishing dispatch remain enabled under the unchanged budget.

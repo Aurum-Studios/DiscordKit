@@ -5,7 +5,7 @@
 
 """Native offline gate contracts, durable failure reports and real process cleanup."""
 
-from contextlib import ExitStack, redirect_stderr, redirect_stdout, suppress
+from contextlib import ExitStack, contextmanager, redirect_stderr, redirect_stdout, suppress
 import io
 import json
 import os
@@ -273,6 +273,82 @@ class LinuxExecutionTests(unittest.TestCase):
                 with self.assertRaisesRegex(OSError, "could not preserve command output"):
                     linux_ci.execute(command, repository, repository / "logging.log")
             self.assertIn("offline output", (repository / "logging.log").read_text())
+
+    @contextmanager
+    def saturated_console(self, *, available_bytes=0, blocking=True):
+        """Keep a real POSIX pipe full, optionally leaving one finite write available."""
+        read_descriptor, write_descriptor = os.pipe()
+        with os.fdopen(read_descriptor, "rb") as reader, os.fdopen(write_descriptor, "w") as console:
+            os.set_blocking(write_descriptor, False)
+            while True:
+                try:
+                    os.write(write_descriptor, b"c" * 4096)
+                except BlockingIOError:
+                    break
+            if available_bytes:
+                self.assertEqual(len(os.read(reader.fileno(), available_bytes)), available_bytes)
+            os.set_blocking(write_descriptor, blocking)
+            with redirect_stdout(console):
+                yield console
+
+    @unittest.skipUnless(os.name == "posix", "nonblocking console pipes are a POSIX contract")
+    def test_console_partial_write_counts_omitted_utf8_bytes_and_restores_mode(self):
+        """Only the unwritten byte suffix is omitted after the first write fills the pipe."""
+        for blocking in (False, True):
+            with self.subTest(blocking=blocking), self.saturated_console(available_bytes=4096, blocking=blocking) as console:
+                self.assertEqual(linux_ci.console_write("é" * 4096), 4096)
+                self.assertEqual(os.get_blocking(console.fileno()), blocking)
+
+    @unittest.skipUnless(os.name == "posix", "nonblocking console pipes are a POSIX contract")
+    def test_saturated_console_preserves_exact_output_without_failing_child(self):
+        """Console backpressure cannot interrupt draining either durable child stream."""
+        with tempfile.TemporaryDirectory() as temporary, self.saturated_console() as console:
+            repository = Path(temporary)
+            code = ("import os\n"
+                    "for index in range(64):\n"
+                    "    os.write(1, b'o' * 8191 + b'\\n')\n"
+                    "    os.write(2, b'e' * 8191 + b'\\n')\n")
+            command = linux_ci.Command("pressure", (sys.executable, "-c", code), timeout=5)
+            stdout_log, log = repository / "pressure.stdout", repository / "pressure.log"
+            receipt = linux_ci.execute(command, repository, log, stdout_log=stdout_log)
+            expected_stdout = (b"o" * 8191 + b"\n") * 64
+            expected_stderr = (b"e" * 8191 + b"\n") * 64
+            self.assertEqual(stdout_log.read_bytes(), expected_stdout)
+            self.assertEqual(log.read_bytes(), linux_ci.shlex.join(command.arguments).encode() + b"\n" + expected_stderr)
+            self.assertEqual(receipt["status"], "passed")
+            self.assertGreaterEqual(receipt["consoleOmittedBytes"], len(expected_stdout) + len(expected_stderr))
+            self.assertFalse(any(output["truncated"] for output in receipt["outputs"]))
+            self.assertTrue(os.get_blocking(console.fileno()))
+            self.assertEqual(json.loads(log.with_suffix(".receipt.json").read_text()), receipt)
+
+    @unittest.skipUnless(os.name == "posix", "nonblocking console pipes are a POSIX contract")
+    def test_saturated_console_cannot_extend_inherited_pipe_deadline(self):
+        """An exited parent still times out and cleans its pipe-owning child under pressure."""
+        with tempfile.TemporaryDirectory() as temporary, self.saturated_console() as console:
+            repository = Path(temporary)
+            pid_file = repository / "descendant.pid"
+            child = ("import os,pathlib,time; "
+                     f"pathlib.Path({str(pid_file)!r}).write_text(str(os.getpid())); "
+                     "print('inherited output fixture',flush=True);time.sleep(60)")
+            parent = f"import subprocess,sys;subprocess.Popen([sys.executable,'-c',{child!r}])"
+            command = linux_ci.Command("pressure-timeout", (sys.executable, "-c", parent), timeout=1.5)
+            log = repository / "pressure-timeout.log"
+            started = time.monotonic()
+            try:
+                with self.assertRaises(subprocess.TimeoutExpired):
+                    linux_ci.execute(command, repository, log)
+                self.assertLess(time.monotonic() - started, 8)
+                receipt = json.loads(log.with_suffix(".receipt.json").read_text())
+                self.assertEqual(receipt["status"], "failed")
+                self.assertEqual(receipt["timeoutCategory"], "inherited-output")
+                self.assertGreater(receipt["consoleOmittedBytes"], 0)
+                self.assertFalse(self.process_is_running(int(pid_file.read_text())))
+                self.assertIn("inherited output fixture\n", log.read_text())
+                self.assertTrue(os.get_blocking(console.fileno()))
+            finally:
+                if pid_file.exists():
+                    with suppress(ProcessLookupError):
+                        os.kill(int(pid_file.read_text()), signal.SIGKILL)
 
     def test_discovery_stdout_stays_separate_on_success_and_failure_on_both_executors(self):
         """A warning emitted between partial identifier writes cannot corrupt captured discovery text."""
