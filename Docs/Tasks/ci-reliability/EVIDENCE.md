@@ -272,5 +272,8 @@ remain incomplete.
   Linux, pinned hosted-toolchain and final certification are not qualified here.
   Paid jobs/minutes/attempts and spend are **0 / 0 / 0 / USD 0.00**. No push,
   dispatch, billing/runner change, publication, deployment or live Discord action.
-- Source acceptance is complete; the actual implementation commit will be added
-  in the documentation-only completion receipt.
+- Implementation commit `4dbb085521f1977dc40ea5b8818edb9d61cd2f9f` contains all
+  tested inputs and retained evidence. Eight input hashes were checked against
+  the actual commit before this documentation-only completion receipt; executable
+  inputs and the 61-file evidence manifest remain unchanged. Phase 2 local exit
+  criteria are complete; [STATE.md](STATE.md) advances only Phase 2.

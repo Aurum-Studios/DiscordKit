@@ -109,5 +109,8 @@ build, discovery, focused test and smoke invocation.
 
 Local acceptance is complete. Whole-package load confirmation, Linux diagnosis,
 hosted pinned Swift 6.4.1 and exact-final-source certification remain Phases 3/11.
-No remote action or later-phase implementation is included. The implementation
-commit SHA will be recorded after committing in a documentation-only receipt.
+No remote action or later-phase implementation is included. Implementation commit
+`4dbb085521f1977dc40ea5b8818edb9d61cd2f9f` contains the tested executable inputs and
+retained evidence. All eight input hashes match that commit. A documentation-only
+follow-up records the actual SHA and marks Phase 2 complete; executable inputs and
+the 61-file evidence manifest remain unchanged.

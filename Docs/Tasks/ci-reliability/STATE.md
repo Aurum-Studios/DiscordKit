@@ -13,7 +13,9 @@ Phase 0 is complete at implementation commit
 `5808ce32d867622ff6952d0f2057768a8a257f14` on `ci/phase-0-baseline`.
 Phase 1 is complete at implementation commit
 `1bc5de45a6dbeef1ab31bd7f6fbbe85b69771600` on `ci/phase-1-supervision`.
-Phase 2 has passed local macOS ARM64 Swift acceptance; its commit receipt is pending.
+Phase 2 is complete at implementation commit
+`4dbb085521f1977dc40ea5b8818edb9d61cd2f9f` on `ci/phase-2-event-hub`
+with local macOS ARM64 Swift acceptance.
 No hosted qualification, paid execution, external configuration change or publication
 is claimed. See [BOOTSTRAP.md](BOOTSTRAP.md) for the zero-paid execution sheet.
 
@@ -21,7 +23,7 @@ is claimed. See [BOOTSTRAP.md](BOOTSTRAP.md) for the zero-paid execution sheet.
 | --- | --- | --- | --- |
 | 0 — Baseline and initial limits | Complete; local preparation only | `5808ce32d867622ff6952d0f2057768a8a257f14` | [212 helper tests](baseline/validation.json), [retained capture](baseline/CAPTURE.md), [usage baseline](baseline/COST.md), [zero-paid sheet](BOOTSTRAP.md); hash/link/diff checks passed |
 | 1 — Process supervision | Complete; local helper acceptance only | `1bc5de45a6dbeef1ab31bd7f6fbbe85b69771600` | [231 helper tests](phase-1/validation.json), [nine retained fault specimens](phase-1/faults/results.json), [independent review](phase-1/review/results.json), [implementation and limits](phase-1/IMPLEMENTATION.md) |
-| 2 — Event-hub accounting | Local acceptance passed; commit receipt pending | Pending | [Red/green, 23 load + 21 runtime tests, four CLI checks](phase-2/validation.json), [independent review](phase-2/review.json), [implementation and limits](phase-2/IMPLEMENTATION.md) |
+| 2 — Event-hub accounting | Complete; local macOS Swift acceptance | `4dbb085521f1977dc40ea5b8818edb9d61cd2f9f` | [Red/green, 23 load + 21 runtime tests, four CLI checks](phase-2/validation.json), [independent review](phase-2/review.json), [implementation and limits](phase-2/IMPLEMENTATION.md) |
 | 3 — Linux hang repair | Not started | Pending | Cause unresolved |
 | 4 — Compatibility receipts | Not started | Pending | Pending |
 | 5 — Transfer and partial reruns | Not started | Pending | Pending local and hosted proof |
@@ -61,7 +63,9 @@ Apple Swift 6.4 evidence from hosted Swift 6.4.1 and Linux qualification.
 [Validation](phase-2/validation.json) binds the tested inputs and retained process
 receipts. [Independent review](phase-2/review.json) found no blocking findings.
 The original checkout's planning changes and completed phase checkouts remain
-preserved. The actual implementation SHA will be recorded after committing.
+preserved. Implementation commit `4dbb085521f1977dc40ea5b8818edb9d61cd2f9f`
+contains the tested inputs and retained evidence. All eight input hashes match
+that commit and remain unchanged; this completion receipt is documentation only.
 
 The next authorized implementation phase is Phase 3: diagnose the Linux synthetic
 command hang using Phase 1 supervision. Its blocked owner remains unresolved.
