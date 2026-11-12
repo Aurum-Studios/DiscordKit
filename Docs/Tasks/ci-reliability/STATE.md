@@ -24,6 +24,9 @@ Phase 5 has local helper acceptance at implementation commit
 Phase 6 has local helper acceptance at implementation commit
 `666f1371224fbe5bda03ec7b54be14a083bb6b09` on `ci/phase-6-preflight-canaries`;
 its source remains contained and hosted acceptance stays Phase 11.
+Phase 7 has local helper acceptance at implementation commit
+`4db6c5e6181d790fd1cd304220059397a501467b` on `ci/phase-7-suite-groups`;
+hosted performance and complete native acceptance remain Phase 11.
 No hosted qualification, paid execution, external configuration change or publication
 is claimed. See [BOOTSTRAP.md](BOOTSTRAP.md) for the zero-paid execution sheet.
 
@@ -36,7 +39,7 @@ is claimed. See [BOOTSTRAP.md](BOOTSTRAP.md) for the zero-paid execution sheet.
 | 4 — Compatibility receipts | Complete; local helper acceptance | `4590c5d76c1024d8eec5132a1be343220577cccf` | [270 helpers, six existing Linux-only skips](phase-4/validation.json), [review](phase-4/review.json), [v2 contracts and execution sheet](phase-4/IMPLEMENTATION.md) |
 | 5 — Transfer and partial reruns | Implemented; local helper acceptance; hosted proof pending Phase 11 | `d466d50bc153f2799a33e200d574569958905295` | [Contracts and execution sheet](phase-5/IMPLEMENTATION.md); [314 passed, six existing skips](phase-5/validation.json), [review](phase-5/review.json) |
 | 6 — Preflight and canaries | Implemented; local helper acceptance; native expansion contained | `666f1371224fbe5bda03ec7b54be14a083bb6b09` | [Contracts and execution sheet](phase-6/IMPLEMENTATION.md); [validation](phase-6/validation.json), [independent review](phase-6/review.json); hosted proof remains Phase 11 |
-| 7 — Suite groups and resources | Implemented; local helper acceptance; hosted measurements pending Phase 11 | Current phase implementation; see commit receipt | [Grouped suites, leaf coverage and resources](phase-7/IMPLEMENTATION.md); [validation](phase-7/validation.json), [review](phase-7/review.json) |
+| 7 — Suite groups and resources | Implemented; local helper acceptance; hosted measurements pending Phase 11 | `4db6c5e6181d790fd1cd304220059397a501467b` | [Grouped suites, leaf coverage and resources](phase-7/IMPLEMENTATION.md); [validation](phase-7/validation.json), [review](phase-7/review.json) |
 | 8 — Verified provisioning | Not started | Pending | Pending cold/cache evidence |
 | 9 — Shared documentation inputs | Not started | Pending | Pending invocation-count/trust proof |
 | 10 — Spend admission | Not started | Pending | Pending |
@@ -200,6 +203,10 @@ Post-change runtime, transfer bytes, runner minutes and savings remain unmeasure
 No native Swift execution, hosted/paid job, remote write, billing/pool mutation,
 publication or live runtime occurred. Current native rollout stays contained.
 Phase 3 native x64 acceptance and Phase 11 hosted/cost/rerun acceptance stay open.
+Implementation commit `4db6c5e6181d790fd1cd304220059397a501467b` contains all 24 verified tested
+inputs and 50 retained manifest artifacts. The [commit receipt](phase-7/commit-receipt.json)
+verifies actual Git blobs. This completion follow-up changes documentation only;
+all tested source/configuration/workflow/test bytes remain identical.
 Phase 8 is the next authorized implementation stage when requested.
 
 ## Outstanding execution decisions

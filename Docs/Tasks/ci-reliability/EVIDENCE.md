@@ -421,3 +421,10 @@ baseline scheduling choice, not hosted capacity qualification. Post-change time,
 bytes, runner minutes and spend remain unknown. No native build/test, hosted or
 paid execution, remote write, publication, runner/billing mutation or live Discord
 operation occurred. All native rollout remains contained pending Phase 10/11.
+
+Implementation commit `4db6c5e6181d790fd1cd304220059397a501467b` contains the final 24 tested input
+hashes and 50 retained manifest artifacts. All 861 Python/browser tests passed;
+six existing Linux-only CI tests skipped on macOS. Workflow lint, source policy,
+displayed examples, 215 local documentation links and maintenance freshness passed.
+The [actual-blob commit receipt](phase-7/commit-receipt.json) verifies the committed
+inputs/artifacts. This completion follow-up changes documentation only.

@@ -1,0 +1,20 @@
+{
+  "base": "e47b506ce4b619e5a055d248f5c42df3b9f68f2a",
+  "branch": "ci/phase-7-suite-groups",
+  "followUpScope": "Documentation-only completion receipt; all tested executable/configuration/workflow/test inputs unchanged.",
+  "implementationCommit": "4db6c5e6181d790fd1cd304220059397a501467b",
+  "limits": [
+    "Six existing Linux-only CI tests skipped on macOS",
+    "No native Swift build/test execution",
+    "No hosted/paid execution or remote write",
+    "Phase 3 native x64 acceptance remains open",
+    "Post-change time/bytes/runner minutes/cost and native partial-rerun proof remain Phase 11"
+  ],
+  "schemaVersion": 1,
+  "status": "verified-committed-blobs",
+  "validationSHA256": "345bbfbe77b1764fb9b16782ebd27a2fdc4f93a79408cfb41e8d81baf4eab69a",
+  "verified": {
+    "artifacts": 50,
+    "inputs": 24
+  }
+}
