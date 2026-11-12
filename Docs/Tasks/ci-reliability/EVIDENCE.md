@@ -454,5 +454,7 @@ GPG check used an emulated offline container and establishes signature proof onl
 Native installation/compilation/tests, real hosted cache round trip, cold/hit
 compatibility, timing/savings and paid/native qualification remain open. No remote
 write, hosted/paid execution, runtime, publication or pool/billing change occurred.
-The local implementation commit and actual-blob receipt are recorded after final
-staging; Phase 9 remains future work.
+Implementation commit `db705cb6dade43da579d555461f3f36a13586b48` contains all 20 verified tested
+input blobs and 94 retained manifest artifacts. The [actual-blob commit receipt](phase-8/commit-receipt.json)
+verifies those objects; this completion follow-up changes documentation only.
+Phase 9 remains future work.

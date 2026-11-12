@@ -27,6 +27,9 @@ its source remains contained and hosted acceptance stays Phase 11.
 Phase 7 has local helper acceptance at implementation commit
 `4db6c5e6181d790fd1cd304220059397a501467b` on `ci/phase-7-suite-groups`;
 hosted performance and complete native acceptance remain Phase 11.
+Phase 8 has local helper/signature acceptance at implementation commit
+`db705cb6dade43da579d555461f3f36a13586b48` on `ci/phase-8-provisioning`;
+hosted cold/hit compatibility and savings remain Phase 11.
 No hosted qualification, paid execution, external configuration change or publication
 is claimed. See [BOOTSTRAP.md](BOOTSTRAP.md) for the zero-paid execution sheet.
 
@@ -40,7 +43,7 @@ is claimed. See [BOOTSTRAP.md](BOOTSTRAP.md) for the zero-paid execution sheet.
 | 5 — Transfer and partial reruns | Implemented; local helper acceptance; hosted proof pending Phase 11 | `d466d50bc153f2799a33e200d574569958905295` | [Contracts and execution sheet](phase-5/IMPLEMENTATION.md); [314 passed, six existing skips](phase-5/validation.json), [review](phase-5/review.json) |
 | 6 — Preflight and canaries | Implemented; local helper acceptance; native expansion contained | `666f1371224fbe5bda03ec7b54be14a083bb6b09` | [Contracts and execution sheet](phase-6/IMPLEMENTATION.md); [validation](phase-6/validation.json), [independent review](phase-6/review.json); hosted proof remains Phase 11 |
 | 7 — Suite groups and resources | Implemented; local helper acceptance; hosted measurements pending Phase 11 | `4db6c5e6181d790fd1cd304220059397a501467b` | [Grouped suites, leaf coverage and resources](phase-7/IMPLEMENTATION.md); [validation](phase-7/validation.json), [review](phase-7/review.json) |
-| 8 — Verified provisioning | Implemented; local helper/signature acceptance; hosted measurements pending Phase 11 | Pending scoped implementation commit | [Verified distribution reuse and profiles](phase-8/IMPLEMENTATION.md); [validation](phase-8/validation.json), [review](phase-8/review.json), [upstream pins](phase-8/upstream/SOURCES.json) |
+| 8 — Verified provisioning | Implemented; local helper/signature acceptance; hosted measurements pending Phase 11 | `db705cb6dade43da579d555461f3f36a13586b48` | [Verified distribution reuse and profiles](phase-8/IMPLEMENTATION.md); [validation](phase-8/validation.json), [review](phase-8/review.json), [upstream pins](phase-8/upstream/SOURCES.json) |
 | 9 — Shared documentation inputs | Not started | Pending | Pending invocation-count/trust proof |
 | 10 — Spend admission | Not started | Pending | Pending |
 | 11 — Qualification and rollout | Not started | Pending | Pending exact-final-revision CI |
@@ -231,8 +234,10 @@ No compiler installation/native compilation/tests, hosted/paid job, remote cache
 write, push, dispatch, publication, billing/pool change or live Discord occurred.
 Hosted cold/hit performance and platform compatibility remain Phase 11, as does
 Phase 3 native x64 acceptance. Phase 9 is the next implementation stage when
-requested. The scoped implementation commit and actual-blob receipt follow after
-final validation and staging.
+requested. Implementation commit `db705cb6dade43da579d555461f3f36a13586b48` contains all 20
+verified tested inputs and 94 retained manifest artifacts. The [commit receipt](phase-8/commit-receipt.json)
+verifies actual Git blobs. This completion follow-up changes documentation only;
+all tested executable/configuration/workflow/test bytes remain identical.
 
 ## Outstanding execution decisions
 
