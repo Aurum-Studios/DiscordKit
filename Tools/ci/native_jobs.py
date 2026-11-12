@@ -500,6 +500,10 @@ def create_archive(repository, component, archive, metadata, excluded=()):
             return None
         root = next(root for root in roots if relative == PurePosixPath(root) or PurePosixPath(root) in relative.parents)
         parts = relative.relative_to(root).parts
+        # Every root producer and consumer writes its own spend reservation.
+        # Preserve that job evidence separately from reusable compiled products.
+        if root == ".build" and parts and parts[0] == "spend":
+            return None
         if (any(part in ("ci", "native-ci", "linux-ci", "index", "Index.noindex", "ModuleCache", "ModuleCache.noindex") for part in parts)
                 or any(part.endswith(".build") for part in parts)
                 or (parts and PurePosixPath(parts[-1]).suffix in (".o", ".obj", ".pch", ".d", ".dia", ".swiftdeps"))):
@@ -587,7 +591,7 @@ def restore_archive(repository, component, native_platform, archive, output, *, 
             destination = repository / Path(*relative.parts)
             if any(parent.is_symlink() for parent in (destination, *destination.parents)
                    if parent == repository or repository in parent.parents) or (destination.exists() and not (destination.is_dir() and member.isdir())):
-                raise ValueError("native artifact would overwrite an existing build output")
+                raise ValueError(f"native artifact would overwrite an existing build output: {relative.as_posix()}")
             with transport.extractfile(member) if member.isfile() else suppress() as stream:
                 member_digest(payload, member, stream)
         if payload.hexdigest() != metadata.get("payloadSHA256"):

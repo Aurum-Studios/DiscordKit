@@ -438,6 +438,26 @@ class NativeArtifactTests(unittest.TestCase):
         self.assertFalse((self.repository / ".build/checkouts/dependency/.build").exists())
         self.assertEqual(json.loads((self.output / "restored.json").read_text())["status"], "passed")
 
+    def test_root_transport_excludes_spend_evidence_and_preserves_consumer_guard(self):
+        """A producer's job reservation cannot collide with the fresh consumer's reservation."""
+        guard = self.repository / ".build/spend/guard.json"
+        guard.parent.mkdir(parents=True)
+        guard.write_text('{"job":"producer","status":"admitted"}\n')
+        resource = self.binary.parent / "Library.resources/spend/fixture.json"
+        resource.parent.mkdir(parents=True)
+        resource.write_text('{"resource":"preserved"}\n')
+        self.seal()
+        guard.parent.mkdir(parents=True)
+        consumer_guard = '{"job":"consumer","status":"admitted"}\n'
+        guard.write_text(consumer_guard)
+        self.restore()
+        self.assertEqual(guard.read_text(), consumer_guard)
+        self.assertEqual(self.binary.read_bytes(), b"compiled executable\0payload")
+        self.assertEqual(resource.read_text(), '{"resource":"preserved"}\n')
+        with tarfile.open(self.archive) as transport:
+            self.assertFalse(any(name == ".build/spend" or name.startswith(".build/spend/")
+                                 for name in transport.getnames()))
+
     def test_identity_change_rejects_before_any_binary_is_restored(self):
         """A different run attempt, path, source or compiler cannot borrow green build products."""
         self.seal()
@@ -657,7 +677,7 @@ class NativeArtifactTests(unittest.TestCase):
         self.seal()
         self.binary.parent.mkdir(parents=True)
         self.binary.write_bytes(b"unrelated existing build")
-        with self.assertRaisesRegex(ValueError, "overwrite"):
+        with self.assertRaisesRegex(ValueError, "overwrite.*PackageTests[.]xctest"):
             self.restore()
         self.assertEqual(self.binary.read_bytes(), b"unrelated existing build")
 

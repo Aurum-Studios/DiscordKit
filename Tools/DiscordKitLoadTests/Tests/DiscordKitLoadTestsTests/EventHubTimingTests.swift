@@ -302,8 +302,11 @@ struct EventHubTimingTests {
 /// Finite state barrier: wait for actual ownership endpoints with a three-second failure bound.
 private actor EventHubTimingTestBarrier {
     private var arrivals = 0
+    /// Records one completed ownership checkpoint.
     func arrive() { arrivals += 1 }
+    /// Reports whether the requested number of ownership checkpoints has arrived.
     func reached(_ target: Int) -> Bool { arrivals >= target }
+    /// Yields until the requested checkpoints arrive or the three-second deadline expires.
     nonisolated func wait(for target: Int) async throws {
         let clock = ContinuousClock(), deadline = clock.now.advanced(by: .seconds(3))
         while !(await reached(target)) {

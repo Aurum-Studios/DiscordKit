@@ -17,6 +17,7 @@ struct EventHubTimingReport: Codable, Sendable {
 
 /// Native accounting changed incompatibly; do not reinterpret historical schema-1 reports.
 extension EventHubTimingReport {
+    /// Decodes the current owner-accounting format and rejects incompatible report schemas.
     init(from decoder: any Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         format = try values.decode(String.self, forKey: .format)

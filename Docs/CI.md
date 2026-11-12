@@ -172,7 +172,9 @@ retain their own identity, selected producer, archive digest, artifact identity,
 discovery, selected suite and terminal results. Legacy v1 requires regeneration.
 
 Consumers validate the entire payload and safe members/links before extraction and
-refuse mismatches or existing build outputs. Compiled Swift tests embed absolute
+refuse mismatches or existing build outputs. Root archives exclude repository-level
+`.build/spend` so each consumer preserves its own current reservation; spend
+evidence remains in the separate job evidence artifact. Compiled Swift tests embed absolute
 source paths, so each platform's runner images must provide the same checkout path
 and exact required OS/SDK/runtime inputs. A different path fails explicitly instead
 of silently rebuilding. The native certification workflow now resolves an explicit

@@ -1,0 +1,89 @@
+{
+  "observedAt": "2026-11-12T18:34:22.411192+00:00",
+  "source": "7d226ce42382ad136559f8139f4483c371d49555",
+  "failedRun": 43275033751,
+  "runConclusion": "cancelled",
+  "failedJobs": {
+    "root01": 131395691037,
+    "root02": 131395691024,
+    "root03": 131395691079,
+    "root04": 131395690992,
+    "audit": 131395690982
+  },
+  "rootTestsExecuted": false,
+  "causes": {
+    "root01_03_04": "Producer root build archive contained its .build/spend/guard.json, colliding with the current consumer reservation.",
+    "root02": "Exact image version mismatch during upstream Ubuntu runner-image deployment.",
+    "audit": "Four missing callable comments in EventHubTimingCommand and EventHubTimingTests."
+  },
+  "validation": {
+    "ciPython": {
+      "exitCode": 0,
+      "elapsedSeconds": 20.394,
+      "context": "Simulated full GitHub Actions identity/admission on macOS; root spend archive isolation regression",
+      "log": ".build/ci-root-recovery-2026-11-12/ci-python-full.log"
+    },
+    "discovered": 634,
+    "passed": 628,
+    "skipped": 6,
+    "nativeJobsIndependent": 50,
+    "documentation": {
+      "swiftFiles": 995,
+      "callableDeclarations": 10685,
+      "missingComments": 0,
+      "log": ".build/ci-root-recovery-2026-11-12/documentation-audit-fixed.log"
+    }
+  },
+  "imageAudit": {
+    "schemaVersion": 1,
+    "producerImage": {
+      "kind": "runner-image",
+      "os": "ubuntu24",
+      "version": "20261101.360.1"
+    },
+    "consumerImage": {
+      "kind": "runner-image",
+      "os": "ubuntu24",
+      "version": "20261111.370.1"
+    },
+    "runtimeDifferences": [
+      {
+        "field": "runtime.image.version",
+        "producer": "20261101.360.1",
+        "consumer": "20261111.370.1"
+      }
+    ],
+    "compilerReceiptMatchesObservedQuery": true,
+    "officialNewImageRelease": {
+      "tag_name": "ubuntu24/20261111.370",
+      "prerelease": true,
+      "published_at": "2026-11-11T23:04:24Z",
+      "updated_at": "2026-11-11T23:05:18Z",
+      "html_url": "https://github.com/actions/runner-images/releases/tag/ubuntu24/20261111.370"
+    },
+    "scope": "Required runtime subtree reconstructed from verified provisioning receipt and exact consumer stdout; build environment not reconstructed."
+  },
+  "independentReview": {
+    "blockingFindings": 0,
+    "scope": "Narrow top-level spend exclusion, retained consumer reservation and nested resources, unchanged identity/payload/safe-extraction/overwrite/deadline contracts."
+  },
+  "inputSHA256": {
+    "Tools/ci/native_jobs.py": "ff335118fe0b7e0ca1d8bcc930c4027df9f6eda344f2f38adceeccee7901e229",
+    "Tools/ci/test_native_jobs.py": "ee5c6926f29ecc4f46e0d91802c5d497605644184faf3715cf20132c6b39a12a",
+    "Tools/DiscordKitLoadTests/Sources/DiscordKitLoadTests/EventHubTimingCommand.swift": "23d2ab8d6ff3db4045b458ed6f3cf1b9e3ea87ff11b1cc579f050836dd5abd75",
+    "Tools/DiscordKitLoadTests/Tests/DiscordKitLoadTestsTests/EventHubTimingTests.swift": "7b29c4c1e9c86c407ef40f1bfc2d71af1bfedf0f2975af61ae5597bd9227fbfc"
+  },
+  "nextRun": {
+    "mode": "full",
+    "publish-documentation": true,
+    "qualification-fault": false,
+    "automaticPushPreflight": "enabled",
+    "freshProducers": true
+  },
+  "limitations": [
+    "Mixed upstream image versions remain incompatible during rollout.",
+    "Local macOS helper checks do not qualify hosted Linux test execution or publication.",
+    "Six Linux-specific helper cases skip locally.",
+    "Source/run identifiers and outcomes for the new push are not asserted before they exist."
+  ]
+}
