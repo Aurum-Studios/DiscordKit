@@ -23,7 +23,7 @@ class NativeReceiptTrustTests(unittest.TestCase):
                             "GITHUB_REPOSITORY_ID": "123", "GITHUB_WORKFLOW_REF":
                             "aurum/DiscordKit/.github/workflows/native-platform.yml@refs/heads/main",
                             "GITHUB_WORKFLOW_SHA": "a" * 40, "GITHUB_RUN_ID": "42",
-                            "GITHUB_RUN_ATTEMPT": "2", "GITHUB_JOB": "compile",
+                            "GITHUB_RUN_ATTEMPT": "2", "GITHUB_JOB": "build",
                             "GITHUB_EVENT_NAME": "push", "GITHUB_REF": "refs/heads/main"}
         with patch.dict(os.environ, self.environment, clear=True):
             self.producer_execution = receipts.execution_identity(Path.cwd())
@@ -42,24 +42,42 @@ class NativeReceiptTrustTests(unittest.TestCase):
     def validate(self, execution):
         receipts.validate_metadata(self.metadata, self.compatibility, execution, "root", [".build"])
 
+    def selection(self, execution, archive_digest="e" * 64):
+        """Model the complete immutable resolver output rather than accepting a naked artifact ID."""
+        return {"formatVersion": 1, "execution": {**execution, "jobID": "resolve"},
+                "sourceCommit": self.compatibility["identity"]["commit"], "platform": "linux-x64",
+                "expectedComponents": ["root"], "components": {"root": {
+                    "artifactID": "9001", "artifactDigest": "sha256:" + "f" * 64,
+                    "archiveSHA256": archive_digest,
+                    "artifactName": "compiled-linux-x64-root-" + self.compatibility["identity"]["commit"] + "-42-2-t1",
+                    "producer": copy.deepcopy(self.metadata["producer"]), "metadata": copy.deepcopy(self.metadata),
+                    "receiptArtifactID": "9002"}}}
+
     def test_consumer_owns_its_job_and_retains_selected_producer_and_artifact(self):
         """The build job's provenance survives while the independent suite records its own identity."""
         consumer_execution = {**self.producer_execution, "jobID": "test_CoreTests"}
         self.validate(consumer_execution)
-        consumer = receipts.consumer_receipt(consumer_execution, self.metadata["producer"], "e" * 64, "9001")
+        selection = self.selection(consumer_execution)
+        consumer = receipts.consumer_receipt(consumer_execution, self.metadata["producer"], "e" * 64,
+                                            selection=selection, metadata=self.metadata)
         self.assertEqual(consumer["execution"], consumer_execution)
         self.assertEqual(consumer["selectedProducer"], self.producer_execution)
         self.assertNotEqual(consumer["execution"]["jobID"], consumer["selectedProducer"]["jobID"])
         self.assertEqual(consumer["selectedProducer"]["runAttempt"], "2")
         self.assertEqual(consumer["artifact"]["id"], "9001")
+        self.assertEqual(consumer["artifact"]["idSource"], "verified-artifact-index")
+        self.assertEqual(consumer["artifact"]["apiDigest"], "sha256:" + "f" * 64)
         self.assertEqual(consumer["artifact"]["archiveSHA256"], "e" * 64)
+        self.assertEqual(consumer["selectedProducerReceipt"], self.metadata["producer"])
+        self.assertEqual(consumer["selection"]["consumerExecution"], consumer_execution)
+        self.assertEqual(consumer["selection"]["indexSHA256"], receipts.digest(selection))
         self.assertTrue(consumer["compatibilityVerified"])
         self.assertEqual(consumer["discovery"], "pending")
         self.assertNotIn("runAttempt", self.compatibility["identity"])
         self.assertNotIn("runID", self.compatibility["identity"])
 
     def test_default_admission_rejects_other_valid_attempts_runs_and_trust_scopes(self):
-        """Phase 4 defines the new receipt without enabling Phase 5 reuse across successful attempts."""
+        """Missing resolver evidence never permits an earlier or otherwise unrelated producer."""
         for field, value in (("runAttempt", "1"), ("runAttempt", "3"), ("runID", "43"),
                              ("repositoryID", "124"), ("workflowSHA", "f" * 40),
                              ("workflowRef", "aurum/DiscordKit/.github/workflows/other.yml@refs/heads/main"),
@@ -107,9 +125,43 @@ class NativeReceiptTrustTests(unittest.TestCase):
                              ("workflowRef", "foreign/DiscordKit/.github/workflows/ci.yml@refs/heads/main")):
             with self.subTest(field=field), self.assertRaises(ValueError):
                 receipts.validate_execution({**self.producer_execution, field: value})
-        for artifact_id in ("", "0", "-1", "mutable-name", "1.0"):
-            with self.subTest(artifact_id=artifact_id), self.assertRaises(ValueError):
-                receipts.consumer_receipt(self.producer_execution, self.metadata["producer"], "e" * 64, artifact_id)
+        for artifact_id in ("", "0", "-1", "mutable-name", "1.0", "9001"):
+            with self.subTest(artifact_id=artifact_id), self.assertRaises(TypeError):
+                receipts.consumer_receipt(self.producer_execution, self.metadata["producer"], "e" * 64,
+                                          artifact_id=artifact_id)
+
+    def test_earlier_successful_attempt_requires_current_complete_selection(self):
+        """Only this attempt's exact-source resolver evidence admits an earlier same-run producer."""
+        consumer = {**self.producer_execution, "jobID": "test", "runAttempt": "3"}
+        selection = self.selection(consumer)
+        receipts.validate_metadata(self.metadata, self.compatibility, consumer, "root", [".build"],
+                                   selection=selection, archive_sha256="e" * 64)
+        receipt = receipts.consumer_receipt(consumer, self.metadata["producer"], "e" * 64,
+                                           selection=selection, metadata=self.metadata)
+        self.assertEqual(receipt["selection"]["producerAttempt"], "2")
+        self.assertEqual(receipt["selection"]["consumerExecution"]["runAttempt"], "3")
+        self.assertEqual(receipt["selectedProducer"]["runAttempt"], "2")
+        with self.assertRaises(ValueError):
+            self.validate(consumer)
+        with self.assertRaises(ValueError):
+            receipts.consumer_receipt(consumer, self.metadata["producer"], "e" * 64)
+        for field, value in (("runAttempt", "4"), ("runID", "43"), ("workflowSHA", "d" * 40)):
+            changed = {**consumer, field: value}
+            with self.subTest(field=field), self.assertRaises(ValueError):
+                receipts.validate_metadata(self.metadata, self.compatibility, changed, "root", [".build"],
+                                           selection=selection, archive_sha256="e" * 64)
+
+    def test_selection_cannot_substitute_archive_or_successful_producer_receipt(self):
+        """Matching IDs cannot excuse altered bytes or different full producer metadata."""
+        consumer = {**self.producer_execution, "jobID": "test", "runAttempt": "3"}
+        selection = self.selection(consumer)
+        with self.assertRaises(ValueError):
+            receipts.validate_metadata(self.metadata, self.compatibility, consumer, "root", [".build"],
+                                       selection=selection, archive_sha256="0" * 64)
+        changed = copy.deepcopy(self.metadata["producer"])
+        changed["startedAt"] = "2001-01-01T00:00:00Z"
+        with self.assertRaisesRegex(ValueError, "producer"):
+            receipts.consumer_receipt(consumer, changed, "e" * 64, selection=selection, metadata=self.metadata)
 
     def test_components_without_test_packages_record_discovery_as_not_applicable(self):
         """Release graphs carry an empty inventory only when their exact build profile has no test packages."""

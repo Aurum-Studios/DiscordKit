@@ -143,7 +143,10 @@ class SchedulingPolicyTests(unittest.TestCase):
         # its command maxima, but cannot consume cleanup or packaging time.
         self.assertEqual(self.policy["componentCompileSeconds"]["consumers"], 5400)
         policy = copy.deepcopy(self.policy)
-        policy["componentCompileSeconds"]["consumers"] += 1
+        # Transfer recovery widens the enclosing job without changing the compute
+        # policy. Test its actual boundary rather than the former 120-minute cap.
+        import native_jobs
+        policy["componentCompileSeconds"]["consumers"] = native_jobs.BUILD_JOB_SECONDS
         with self.assertRaisesRegex(ValueError, "enclosing workflow"):
             scheduling.validate_source_inventory(policy)
 

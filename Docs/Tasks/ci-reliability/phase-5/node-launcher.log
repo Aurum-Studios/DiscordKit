@@ -1,0 +1,1 @@
+node --check .github/actions/artifact-transfer/index.mjs

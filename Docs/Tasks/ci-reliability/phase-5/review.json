@@ -1,0 +1,65 @@
+{
+  "base": "b190a963f27fc3910b7226e7d15f386ac97b5498",
+  "qualification": "Local helper/localhost protocol evidence only; hosted roundtrip, failed-job rerun and full latest-attempt certification remain Phase 11.",
+  "resolvedFindings": [
+    {
+      "id": "R1",
+      "issue": "SDK discarded non-JSON HTTP service status",
+      "resolution": "Official one-call HTTP transport classifies HTTP before JSON, with internal retries/redirects disabled; actual HTML502/503 and malformed200 tests pass."
+    },
+    {
+      "id": "R2",
+      "issue": "Concurrent artifact creation invalidated paginated list totals",
+      "resolution": "Changed/incomplete snapshots are transient under the shared bounded recovery operation; malformed stable identities remain permanent."
+    },
+    {
+      "id": "R3",
+      "issue": "Azure BlobClient constructor requires options in the third argument",
+      "resolution": "Actual success protocol fixture caught and now verifies correct overload with two blocks, ordered commit, byte-exact ZIP, hash and Create/Finalize identity."
+    },
+    {
+      "id": "I1",
+      "issue": "Shell steps do not receive runtime artifact credentials",
+      "resolution": "Local JavaScript launcher inherits runner runtime credentials without persisting them to GITHUB_ENV; launcher fixture verifies literal argv."
+    },
+    {
+      "id": "I2",
+      "issue": "Large downloads and extraction could exceed memory or leave partial files",
+      "resolution": "Stream to disk, verify API digest, stage extraction before no-overwrite installation, and enforce aggregate/per-attempt wall deadlines."
+    },
+    {
+      "id": "I3",
+      "issue": "Cancellation could leave separately grouped upload worker alive",
+      "resolution": "SIGTERM/SIGINT unwind the Python transport, retain terminal receipt and kill worker group."
+    },
+    {
+      "id": "I4",
+      "issue": "Expired older producer poisoned an explicitly regenerated newer producer",
+      "resolution": "Select latest successful producer attempt before validating its receipts; selected invalid artifacts still fail closed."
+    }
+  ],
+  "reviewers": [
+    "Codex /root/phase5_review (independent whole-change review)",
+    "Codex /root/native_integration (cross-file integration review)"
+  ],
+  "scope": [
+    "Phase 5 plan and contracts",
+    "native, receipt, immutable index and transfer helpers and tests",
+    "native/caller workflows and documentation helper prerequisites",
+    "four local artifact actions and locked Node adapter"
+  ],
+  "status": "passed; no remaining local scope blockers",
+  "validation": [
+    {
+      "command": "PYTHONPATH=Tools/ci python3 -m unittest test_artifact_index test_artifact_workflows test_artifact_transfer test_scheduling_policy",
+      "exit": 0,
+      "seconds": 4.326,
+      "tests": 56
+    },
+    {
+      "command": "Native receipt/job focused tests",
+      "exit": 0,
+      "tests": 55
+    }
+  ]
+}

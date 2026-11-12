@@ -347,3 +347,31 @@ Phases 2 through 11 remained incomplete; later entries record subsequent work.
   `4590c5d76c1024d8eec5132a1be343220577cccf` contains all six tested input hashes and
   17 retained manifest artifacts. The [commit receipt](phase-4/commit-receipt.json)
   verifies actual Git blobs; the completion follow-up changes documentation only.
+
+
+## Phase 5 local transfer and rerun acceptance
+
+Owner Codex `/root` implemented on `ci/phase-5-transfer`, sibling
+`DiscordKit-ci-phase5`, based on Phase 4 handoff `b190a963`.
+The [execution sheet and contracts](phase-5/IMPLEMENTATION.md) retain zero paid
+allowance and the unchanged retention duration, with explicit future accounting
+for sidecar/retry storage. The [preflight](phase-5/source-preflight.json) binds
+preservation of the original four planning edits and completed phase worktrees.
+
+[Final validation](phase-5/validation.json) records 320 discovered helpers,
+314 passed, six existing Linux-only skips, zero failures; actionlint, Node/Python
+syntax, scheduling policy and link/diff checks passed. Actual pinned SDK localhost
+fixtures verify successful Create/two-block Blob upload/Finalize, byte preservation,
+HTTP JSON/HTML faults and no hidden retries. Index/native fixtures prove immutable
+source/provenance admission and failed-test rerun without compilation. Earlier
+failed full-helper evidence is retained alongside the corrected final result.
+[Independent review](phase-5/review.json) found no remaining blockers.
+
+The platform workflow now reconciles all expected producers in an explicit stage,
+resolves a fresh selection in each consumer, retries evidence while files remain,
+and checks the complete index in the latest platform barrier. The independent
+Documentation workflow's helper job only gains the protocol-test SDK prerequisite;
+its same-attempt transport/conversion path remains for Phase 9 integration.
+No remote upload, push, hosted dispatch/rerun, paid job, native compilation/test,
+publication, deployment, runtime or Discord access occurred. Hosted transfer and
+partial-rerun acceptance remains Phase 11; Phase 3 native x64 remains pending.

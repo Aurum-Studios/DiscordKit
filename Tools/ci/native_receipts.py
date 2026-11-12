@@ -4,13 +4,14 @@
 # Copyright (c) 2026 Aurum Studios.
 # https://aurum-studios.com
 
-"""Version 2 native artifact contracts; compatibility never contains run attempts.
+"""Version 2 native contracts with explicit immutable selection for producer reuse.
 
-Phase 4 deliberately retains same-run, same-attempt admission. Selecting an earlier
-producer and authenticating a remote immutable artifact are Phase 5 operations.
+Default admission stays same-run and same-attempt. Only a complete resolver index
+may authorize a successful earlier producer from this run and exact revision.
 """
 
 from datetime import datetime, timezone
+import copy
 import hashlib
 import json
 import os
@@ -137,8 +138,8 @@ def validate_inventory(tests, packages):
                 raise ValueError("compiled test inventory must be canonical")
 
 
-def validate_metadata(metadata, current, execution, component, roots):
-    """Admit only v2, identical build inputs and a successful producer in this attempt."""
+def validate_metadata(metadata, current, execution, component, roots, *, selection=None, archive_sha256=None):
+    """Admit exact inputs and require immutable resolver evidence before earlier-attempt reuse."""
     if not isinstance(metadata, dict) or type(metadata.get("formatVersion")) is not int or metadata.get("formatVersion") != VERSION:
         raise ValueError("native receipt version requires regeneration as version 2")
     object_keys(metadata, {"formatVersion", "status", "component", "compatibility", "producer", "tests",
@@ -174,20 +175,46 @@ def validate_metadata(metadata, current, execution, component, roots):
             raise ValueError("invalid producer timestamps")
     except (AttributeError, TypeError, ValueError) as error:
         raise ValueError("invalid producer timestamps") from error
-    if any(producer["execution"][key] != execution[key] for key in EXECUTION_KEYS - {"jobID"}):
-        raise ValueError("native artifact producer differs from this repository, workflow, event, run or attempt")
     if not isinstance(metadata["payloadSHA256"], str) or not SHA256.fullmatch(metadata["payloadSHA256"]):
         raise ValueError("invalid producer payload digest")
+    if selection is None:
+        if any(producer["execution"][key] != execution[key] for key in EXECUTION_KEYS - {"jobID"}):
+            raise ValueError("native artifact producer differs from this repository, workflow, event, run or attempt")
+    else:
+        selected_artifact(selection, execution, metadata, archive_sha256)
 
 
-def consumer_receipt(execution, producer, archive_digest, artifact_id=None):
-    """Record this consumer and selected producer; local files use a content address, not a GitHub ID."""
+def selected_artifact(selection, execution, metadata, archive_sha256):
+    """Keep resolver checks mandatory for every admission path that accepts an index."""
+    import artifact_index
+    return artifact_index.validate_selection(selection, execution=execution,
+        component=metadata["component"], platform=metadata["compatibility"]["identity"]["platform"],
+        archive_sha256=archive_sha256, metadata=metadata)
+
+
+def consumer_receipt(execution, producer, archive_digest, *, selection=None, metadata=None):
+    """Bind this consumer to verified immutable selection or an explicit local content address."""
     validate_execution(execution)
-    if artifact_id is not None and not re.fullmatch(r"[1-9][0-9]*", artifact_id):
-        raise ValueError("immutable artifact ID must be a positive GitHub artifact ID")
+    validate_execution(producer["execution"])
+    if not isinstance(archive_digest, str) or not SHA256.fullmatch(archive_digest):
+        raise ValueError("invalid consumer archive digest")
+    artifact = {"id": "local:sha256:" + archive_digest, "idSource": "local-content-address",
+                "archiveSHA256": archive_digest}
+    verified = None
+    if selection is not None:
+        if metadata is None or digest(metadata["producer"]) != digest(producer):
+            raise ValueError("consumer producer differs from the selected compilation receipt")
+        selected = selected_artifact(selection, execution, metadata, archive_digest)
+        artifact.update(id=selected["artifactID"], idSource="verified-artifact-index",
+                        apiDigest=selected["artifactDigest"], name=selected["artifactName"],
+                        receiptArtifactID=selected["receiptArtifactID"])
+        verified = {"indexSHA256": digest(selection), "resolverExecution": dict(selection["execution"]),
+                    "consumerExecution": dict(execution), "sourceCommit": selection["sourceCommit"],
+                    "platform": selection["platform"], "component": metadata["component"],
+                    "producerAttempt": producer["execution"]["runAttempt"]}
+    elif any(producer["execution"][key] != execution[key] for key in EXECUTION_KEYS - {"jobID"}):
+        raise ValueError("consumer requires verified selection for an earlier producer attempt")
     return {"execution": dict(execution), "selectedProducer": dict(producer["execution"]),
-            "artifact": {"id": artifact_id or "local:sha256:" + archive_digest,
-                         "idSource": "caller-supplied" if artifact_id else "local-content-address",
-                         "archiveSHA256": archive_digest},
+            "selectedProducerReceipt": copy.deepcopy(producer), "artifact": artifact, "selection": verified,
             "compatibilityVerified": True, "discovery": "pending", "selectedScope": None,
             "startedAt": utc_now(), "status": "restored"}

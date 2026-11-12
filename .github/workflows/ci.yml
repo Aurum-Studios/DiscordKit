@@ -12,6 +12,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 concurrency:
   group: offline-${{ github.workflow }}-${{ github.ref }}
@@ -79,6 +80,8 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: '24'
+      - uses: ./.github/actions/setup-artifact-sdk
+        if: matrix.suite == 'ci-python'
       - name: Run selected Python suite
         if: matrix.suite != 'browser'
         run: python -m unittest discover -s ${{ matrix.directory }} -p 'test_*.py'

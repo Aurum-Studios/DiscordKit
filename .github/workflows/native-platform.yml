@@ -30,6 +30,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 # Caller workflow env does not propagate into a reusable workflow.
 env:
@@ -41,7 +42,7 @@ jobs:
     name: Platform check
     runs-on:
       group: ${{ inputs.runner-group }}
-    timeout-minutes: 20
+    timeout-minutes: 30
     defaults:
       run:
         shell: ${{ inputs.shell }}
@@ -60,20 +61,19 @@ jobs:
           --output .build/platform-ci/${{ inputs.platform }}
       - name: Retain platform check evidence
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: ./.github/actions/upload-evidence
         with:
           name: platform-${{ inputs.platform }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
-          path: .build/platform-ci/${{ inputs.platform }}
-          if-no-files-found: error
-          include-hidden-files: true
+          paths: .build/platform-ci/${{ inputs.platform }}
           retention-days: 14
+          receipt: ${{ runner.temp }}/transfer-${{ github.job }}-${{ strategy.job-index }}.json
 
   plan:
     name: Plan platform builds and suites
     needs: platform
     runs-on:
       group: ${{ inputs.runner-group }}
-    timeout-minutes: 15
+    timeout-minutes: 25
     outputs:
       builds: ${{ steps.plan.outputs.builds }}
       tests: ${{ steps.plan.outputs.tests }}
@@ -104,20 +104,19 @@ jobs:
               for key, filename in [('builds', 'build-matrix.json'), ('tests', 'test-matrix.json')]:
                   matrix = json.loads((Path('.build/ci-plan') / filename).read_text())
                   output.write(key + '=' + json.dumps(matrix, separators=(',', ':')) + '\n')
-      - uses: actions/upload-artifact@v7
+      - uses: ./.github/actions/upload-evidence
         with:
           name: ci-plan-${{ inputs.platform }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
-          path: .build/ci-plan
-          if-no-files-found: error
-          include-hidden-files: true
+          paths: .build/ci-plan
           retention-days: 14
+          receipt: ${{ runner.temp }}/transfer-${{ github.job }}-${{ strategy.job-index }}.json
 
   build:
-    name: Builds / ${{ matrix.component }}
+    name: Builds / ${{ matrix.platform }} / ${{ matrix.component }}
     needs: plan
     runs-on:
       group: ${{ matrix.group }}
-    timeout-minutes: 120
+    timeout-minutes: 150
     defaults:
       run:
         shell: ${{ matrix.shell }}
@@ -142,29 +141,55 @@ jobs:
       - name: Verify generated source and dependency pins remain unchanged
         run: git diff --exit-code
       - name: Share compiled products with independent test jobs
-        uses: actions/upload-artifact@v7
+        uses: ./.github/actions/upload-evidence
         with:
           name: compiled-${{ matrix.platform }}-${{ matrix.component }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
-          path: ${{ runner.temp }}/compiled/${{ matrix.platform }}-${{ matrix.component }}.tar.gz
-          if-no-files-found: error
-          compression-level: 0
+          paths: ${{ runner.temp }}/compiled/${{ matrix.platform }}-${{ matrix.component }}.tar.gz
           retention-days: 2
+          receipt: ${{ runner.temp }}/compiled-transfer.json
+          producer-metadata: .build/build-ci/${{ matrix.platform }}-${{ matrix.component }}/compilation.json
+          producer-receipt-name: compiled-receipt-${{ matrix.platform }}-${{ matrix.component }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
       - name: Retain build diagnostics
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: ./.github/actions/upload-evidence
         with:
           name: build-evidence-${{ matrix.platform }}-${{ matrix.component }}-${{ github.run_id }}-${{ github.run_attempt }}
-          path: .build/build-ci/${{ matrix.platform }}-${{ matrix.component }}
-          if-no-files-found: warn
-          include-hidden-files: true
+          paths: .build/build-ci/${{ matrix.platform }}-${{ matrix.component }}
           retention-days: 14
+          receipt: ${{ runner.temp }}/transfer-${{ github.job }}-${{ strategy.job-index }}.json
+
+  resolve:
+    name: Resolve immutable producers
+    needs: [plan, build]
+    runs-on:
+      group: ${{ inputs.runner-group }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Reconcile every expected component without matrix outputs
+        shell: python
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NATIVE_PLATFORM: ${{ inputs.platform }}
+          EXPECTED_BUILDS: ${{ needs.plan.outputs.builds }}
+        run: |
+          import os, subprocess, sys
+          subprocess.run([sys.executable, 'Tools/ci/artifact_index.py', 'resolve',
+                          '--platform', os.environ['NATIVE_PLATFORM'],
+                          '--components-json', os.environ['EXPECTED_BUILDS'],
+                          '--output', '.build/resolved-producers.json'], check=True)
 
   tests:
     name: Tests / ${{ matrix.suite }}
-    needs: [plan, build]
+    needs: [plan, build, resolve]
     runs-on:
       group: ${{ matrix.group }}
-    timeout-minutes: 60
+    timeout-minutes: 75
     defaults:
       run:
         shell: ${{ matrix.shell }}
@@ -180,38 +205,38 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup-native
-      - name: Download this run's compiled package
-        uses: actions/download-artifact@v8
+      - uses: ./.github/actions/consume-native
         with:
-          name: compiled-${{ matrix.platform }}-${{ matrix.component }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
-          path: ${{ runner.temp }}/compiled
+          platform: ${{ matrix.platform }}
+          components-json: '["${{ matrix.component }}"]'
+          destination: ${{ runner.temp }}/compiled
       - name: Run only the selected suite without rebuilding
         run: >-
           python Tools/ci/native_jobs.py test --component ${{ matrix.component }}
           --suite ${{ matrix.suite }} --platform ${{ matrix.platform }} --jobs ${{ matrix.jobs }}
           --archive "${{ runner.temp }}/compiled/${{ matrix.platform }}-${{ matrix.component }}.tar.gz"
+          --selection .build/artifact-index.json
           --output .build/test-ci/${{ matrix.platform }}-${{ matrix.suite }}
       - name: Verify generated source and dependency pins remain unchanged
         run: git diff --exit-code
       - name: Retain selected suite evidence
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: ./.github/actions/upload-evidence
         with:
           name: test-evidence-${{ matrix.platform }}-${{ matrix.suite }}-${{ github.run_id }}-${{ github.run_attempt }}
-          path: |
+          paths: |
             .build/test-ci/${{ matrix.platform }}-${{ matrix.suite }}
             .build/dsl-measurements/runtime-smoke.json
             .build/timing-smoke/${{ matrix.component }}
-          if-no-files-found: warn
-          include-hidden-files: true
           retention-days: 14
+          receipt: ${{ runner.temp }}/transfer-${{ github.job }}-${{ strategy.job-index }}.json
 
   audit:
     name: Documentation, inventory, generation and release audits
-    needs: build
+    needs: [build, resolve]
     runs-on:
       group: ${{ inputs.runner-group }}
-    timeout-minutes: 30
+    timeout-minutes: 45
     defaults:
       run:
         shell: ${{ inputs.shell }}
@@ -224,30 +249,30 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup-native
-      - uses: actions/download-artifact@v8
+      - uses: ./.github/actions/consume-native
         with:
-          name: compiled-${{ inputs.platform }}-tooling-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
-          path: ${{ runner.temp }}/compiled
+          platform: ${{ inputs.platform }}
+          components-json: '["tooling"]'
+          destination: ${{ runner.temp }}/compiled
       - name: Run audits using the compiled tooling executable
         run: >-
           python Tools/ci/native_jobs.py test --component tooling --suite audit
           --platform ${{ inputs.platform }} --jobs ${{ inputs.jobs }} --archive "${{ runner.temp }}/compiled/${{ inputs.platform }}-tooling.tar.gz"
-          --output .build/audit-ci
+          --selection .build/artifact-index.json --output .build/audit-ci
       - name: Verify generated source and dependency pins remain unchanged
         run: git diff --exit-code
       - name: Retain audit diagnostics
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: ./.github/actions/upload-evidence
         with:
           name: audit-evidence-${{ inputs.platform }}-${{ github.run_id }}-${{ github.run_attempt }}
-          path: .build/audit-ci
-          if-no-files-found: warn
-          include-hidden-files: true
+          paths: .build/audit-ci
           retention-days: 14
+          receipt: ${{ runner.temp }}/transfer-${{ github.job }}-${{ strategy.job-index }}.json
 
   fixtures:
     name: Compiler fixtures / ${{ matrix.suite }}
-    needs: build
+    needs: [build, resolve]
     # These suites compile positive and intentionally invalid consumers.
     # Keep their compiler work on the large pools rather than the runtime pool.
     runs-on:
@@ -279,10 +304,10 @@ jobs:
   public-api:
     name: Public API and DocC / macOS ARM
     if: inputs.platform == 'macos-arm64'
-    needs: build
+    needs: [build, resolve]
     runs-on:
       group: MacOS-26-5
-    timeout-minutes: 120
+    timeout-minutes: 165
     defaults:
       run:
         shell: bash
@@ -291,26 +316,17 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup-native
-      - name: Download compiled macOS root
-        uses: actions/download-artifact@v8
+      - uses: ./.github/actions/consume-native
         with:
-          name: compiled-macos-arm64-root-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
-          path: ${{ runner.temp }}/compiled
-      - name: Download compiled macOS macros
-        uses: actions/download-artifact@v8
-        with:
-          name: compiled-macos-arm64-macros-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
-          path: ${{ runner.temp }}/compiled
-      - name: Download compiled macOS extensions
-        uses: actions/download-artifact@v8
-        with:
-          name: compiled-macos-arm64-extensions-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
-          path: ${{ runner.temp }}/compiled
+          platform: macos-arm64
+          components-json: '["root","macros","extensions"]'
+          destination: ${{ runner.temp }}/compiled
       - name: Restore compiled root and authoring packages
         run: |
           for component in root macros extensions; do
             python Tools/ci/native_jobs.py restore --component "$component" --platform macos-arm64 \
-              --archive "$RUNNER_TEMP/compiled/macos-arm64-$component.tar.gz" --output .build/api-ci
+              --archive "$RUNNER_TEMP/compiled/macos-arm64-$component.tar.gz" \
+              --selection .build/artifact-index.json --output .build/api-ci
           done
       - name: Compare scoped public API and convert all public DocC modules
         run: |
@@ -334,17 +350,16 @@ jobs:
           python3 Tools/DiscordKitTools/scripts/api_baseline.py check --baseline Docs/Release/api-baseline-extensions-0.15.0.json --candidate .build/current-extensions-api.json --version 0.15.0 --output .build/api-comparison-extensions-0.15.0.json
       - name: Retain API comparison diagnostics even on failure
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: ./.github/actions/upload-evidence
         with:
           name: api-diagnostics-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
-          path: |
+          paths: |
             .build/current-api.json
             .build/current-macros-api.json
             .build/current-extensions-api.json
             .build/api-comparison-*.json
-          if-no-files-found: warn
-          include-hidden-files: true
           retention-days: 14
+          receipt: ${{ runner.temp }}/transfer-${{ github.job }}-${{ strategy.job-index }}.json
       - name: Package DocC archives and API evidence
         run: |
           # DocC symbol filenames contain colons, which upload-artifact rejects.
@@ -354,13 +369,12 @@ jobs:
             documentation-macros current-macros-api.json \
             documentation-extensions current-extensions-api.json
       - name: Upload DocC archives and API evidence
-        uses: actions/upload-artifact@v7
+        uses: ./.github/actions/upload-evidence
         with:
-          name: public-documentation-and-api
-          path: ${{ runner.temp }}/public-documentation-and-api.tar.gz
-          compression-level: 0
-          if-no-files-found: error
-          include-hidden-files: true
+          name: public-documentation-and-api-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          paths: ${{ runner.temp }}/public-documentation-and-api.tar.gz
+          retention-days: 14
+          receipt: ${{ runner.temp }}/documentation-transfer.json
       - name: Verify tracked generated source and dependency pins remain unchanged
         run: git diff --exit-code
 
@@ -370,11 +384,14 @@ jobs:
     needs: platform
     runs-on:
       group: MacOS-26-5
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v6
         with:
           persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
       - uses: swift-actions/setup-swift@v3
         with:
           swift-version: '6.4.1'
@@ -385,12 +402,12 @@ jobs:
           xcodebuild -version
       - name: Emit selected modules with installed Xcode SDKs
         run: python3 Tools/ci/compile_apple.py
-      - uses: actions/upload-artifact@v7
+      - uses: ./.github/actions/upload-evidence
         with:
-          name: apple-selected-module-compilation
-          path: .build/apple-compile.json
-          if-no-files-found: error
-          include-hidden-files: true
+          name: apple-selected-module-compilation-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          paths: .build/apple-compile.json
+          retention-days: 14
+          receipt: ${{ runner.temp }}/apple-transfer.json
 
   package:
     name: Export validated platform source
@@ -405,7 +422,7 @@ jobs:
            (needs.public-api.result == 'success' && needs.apple-compilation.result == 'success')) }}
     runs-on:
       group: ${{ inputs.runner-group }}
-    timeout-minutes: 15
+    timeout-minutes: 25
     defaults:
       run:
         shell: ${{ inputs.shell }}
@@ -425,23 +442,24 @@ jobs:
           --output .build/packages
       - name: Upload platform SwiftPM source bundle
         if: github.event_name != 'pull_request'
-        uses: actions/upload-artifact@v7
+        uses: ./.github/actions/upload-evidence
         with:
           name: DiscordKit-${{ inputs.platform }}-source-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
-          path: .build/packages/*
-          if-no-files-found: error
-          include-hidden-files: true
-          compression-level: 0
+          paths: .build/packages/*
           retention-days: 14
+          receipt: ${{ runner.temp }}/transfer-${{ github.job }}-${{ strategy.job-index }}.json
 
   complete:
     name: Platform validation passed
     if: always()
-    needs: [platform, plan, build, tests, audit, fixtures, public-api, apple-compilation, package]
+    needs: [platform, plan, build, resolve, tests, audit, fixtures, public-api, apple-compilation, package]
     runs-on:
       group: ${{ inputs.runner-group }}
-    timeout-minutes: 5
+    timeout-minutes: 15
     steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
       - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
@@ -458,3 +476,15 @@ jobs:
                     if value['result'] != 'success' and not (name in optional and value['result'] == 'skipped')}
           if failed:
               raise SystemExit('Platform validation incomplete: ' + json.dumps(failed, sort_keys=True))
+      - name: Verify the complete producer index in this barrier attempt
+        shell: python
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NATIVE_PLATFORM: ${{ inputs.platform }}
+          EXPECTED_BUILDS: ${{ needs.plan.outputs.builds }}
+        run: |
+          import os, subprocess, sys
+          subprocess.run([sys.executable, 'Tools/ci/artifact_index.py', 'resolve',
+                          '--platform', os.environ['NATIVE_PLATFORM'],
+                          '--components-json', os.environ['EXPECTED_BUILDS'],
+                          '--output', '.build/barrier-producers.json'], check=True)

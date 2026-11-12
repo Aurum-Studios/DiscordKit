@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "name": "phase5-node-worker",
+  "stage": "phase5",
+  "operation": "localHelperCheck",
+  "arguments": [
+    "node",
+    "--check",
+    "Tools/ci/artifact-sdk/upload.mjs"
+  ],
+  "start": "2026-11-12T14:30:41.664108+00:00",
+  "startMonotonic": 351849.04192825,
+  "deadlineMonotonic": 351909.04192825,
+  "executionLimitSeconds": 60,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "operation",
+  "paths": {
+    "output": "/Users/carsonrau/Developer/DiscordKit-ci-phase5/Docs/Tasks/ci-reliability/phase-5/node-worker.log",
+    "stdout": null,
+    "diagnostics": "/Users/carsonrau/Developer/DiscordKit-ci-phase5/Docs/Tasks/ci-reliability/phase-5/node-worker.diagnostics.jsonl",
+    "receipt": "/Users/carsonrau/Developer/DiscordKit-ci-phase5/Docs/Tasks/ci-reliability/phase-5/node-worker.receipt.json"
+  },
+  "identity": {
+    "executionID": "4fe38f3e-d4e0-4280-9346-8f0057d0caf3",
+    "supervisorPID": 85484,
+    "host": "Pokemon-GO-Plus",
+    "system": "Darwin",
+    "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase5"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 85486,
+  "group": 85486,
+  "cleanup": {
+    "status": "group-signalled",
+    "signals": [],
+    "parentReaped": true,
+    "allowanceSeconds": 8.0,
+    "seconds": 0.003,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "verificationMalformedRows": 0,
+    "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "/Users/carsonrau/Developer/DiscordKit-ci-phase5/Docs/Tasks/ci-reliability/phase-5/node-worker.log",
+      "retainedBytes": 46,
+      "observedBytes": 46,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T14:30:41.699132+00:00",
+  "endMonotonic": 351849.0769835,
+  "elapsedSeconds": 0.035,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}

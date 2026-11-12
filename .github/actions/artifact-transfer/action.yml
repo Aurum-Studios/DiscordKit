@@ -1,0 +1,14 @@
+# File: .github/actions/artifact-transfer/action.yml
+# Created by Carson Rau.
+# Copyright (c) 2026 Aurum Studios.
+# https://aurum-studios.com
+
+name: Bounded immutable artifact transfer
+description: Run the supervised transport with the runner's JavaScript-action artifact credentials.
+inputs:
+  arguments:
+    description: JSON array of artifact_transfer.py arguments, excluding the executable and script.
+    required: true
+runs:
+  using: node24
+  main: index.mjs

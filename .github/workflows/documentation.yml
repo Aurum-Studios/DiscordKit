@@ -104,6 +104,7 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
+      - uses: ./.github/actions/setup-artifact-sdk
       - name: Test documentation and artifact helpers without a compiler
         run: |
           mkdir -p .build/documentation-ci/helpers

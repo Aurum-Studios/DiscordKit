@@ -128,11 +128,34 @@ Consumers validate the entire payload and safe members/links before extraction a
 refuse mismatches or existing build outputs. Compiled Swift tests embed absolute
 source paths, so each platform's runner images must provide the same checkout path
 and exact required OS/SDK/runtime inputs. A different path fails explicitly instead
-of silently rebuilding. Artifacts remain local to the same workflow attempt and
-expire after two days. Use **Re-run all jobs** for matching fresh artifacts. Phase 4
-retains same-attempt admission; authenticated immutable artifact resolution and
-partial reruns remain Phase 5 work. Existing callers record a local content address
-until the resolver supplies a verified immutable GitHub artifact ID.
+of silently rebuilding. The native certification workflow now resolves an explicit
+component index from successful producer jobs, immutable GitHub artifact IDs and
+API SHA256 digests. Every consumer resolves again in its current job and records
+its own attempt plus the selected producer attempt. An earlier successful attempt
+is admitted only within this run, source revision, workflow and trust scope, after
+exact compatibility, full archive and inventory checks. No matrix job output is
+used as a component-to-artifact map.
+
+**Re-run failed jobs** can reuse those successful producers without rebuilding.
+Compiled artifacts and their producer receipts expire after two days; the planned
+retry window is at most 48 hours and ends at actual API expiry. Missing/expired
+artifacts require an explicitly scheduled fresh producer. An invalid selection,
+changed image/path/compiler or corrupt archive fails closed. The latest platform
+barrier checks the full producer index again. Real hosted rerun qualification
+remains Phase 11 work; local helper evidence is recorded in the
+[Phase 5 handoff](Tasks/ci-reliability/phase-5/IMPLEMENTATION.md).
+
+[The transfer helper](../Tools/ci/artifact_transfer.py) retries classified transient
+transport errors at most three times, with 120 seconds per attempt and 420 seconds
+per aggregate operation. It uploads unchanged prepared bytes to immutable candidate
+names, verifies final API identity/digest and never invokes tests or compilation.
+Builds share one transfer budget for compiled payload plus producer sidecar, then
+retain diagnostics through a separate bounded upload. Evidence failure fails its
+owning job; it cannot be bypassed with `continue-on-error`. After runner disposal,
+lost files need explicit regeneration. Documentation/API directories remain tarred
+to preserve colon-containing names. Unix transport support covers the current
+Linux/macOS callers; it adds no Windows qualification. The separate documentation
+workflow retains its same-attempt transfer path until its Phase 9 integration.
 
 All compile/test/run commands enforce committed dependency pins and explicit
 positive job limits; the helper caps requests to CPUs visible to the process.
@@ -179,7 +202,7 @@ dispatch, even if another platform or a shared certification check fails. The
 export waits for that platform's builds, runtime suites, compiler fixtures and
 source audits; macOS also requires its API/DocC and Apple SDK checks. Pull requests
 run the same validation without creating source bundles. Artifacts are named
-`DiscordKit-<platform>-source-<revision>-<run>-<attempt>` and contain a SwiftPM
+`DiscordKit-<platform>-source-<revision>-<run>-<attempt>-t<transfer-attempt>` and contain a SwiftPM
 source archive, checksum and native compiler/host provenance. A platform export
 records that platform's validation; release publication still requires complete
 certification across all platforms and shared checks.

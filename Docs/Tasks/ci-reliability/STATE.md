@@ -29,7 +29,7 @@ is claimed. See [BOOTSTRAP.md](BOOTSTRAP.md) for the zero-paid execution sheet.
 | 2 — Event-hub accounting | Complete; local macOS Swift acceptance | `4dbb085521f1977dc40ea5b8818edb9d61cd2f9f` | [Red/green, 23 load + 21 runtime tests, four CLI checks](phase-2/validation.json), [independent review](phase-2/review.json), [implementation and limits](phase-2/IMPLEMENTATION.md) |
 | 3 — Linux hang repair | Implemented and locally tested; native x64 acceptance pending | `69a21b325c4eaa6181eb31dcc7e78ab083ac6411` | [Stack-supported peer repair, red/green and whole-package checks](phase-3/IMPLEMENTATION.md); [native gate](phase-3/NATIVE-ACCEPTANCE.md) remains open |
 | 4 — Compatibility receipts | Complete; local helper acceptance | `4590c5d76c1024d8eec5132a1be343220577cccf` | [270 helpers, six existing Linux-only skips](phase-4/validation.json), [review](phase-4/review.json), [v2 contracts and execution sheet](phase-4/IMPLEMENTATION.md) |
-| 5 — Transfer and partial reruns | Not started | Pending | Pending local and hosted proof |
+| 5 — Transfer and partial reruns | Implemented; local helper acceptance; hosted proof pending Phase 11 | Pending scoped implementation commit | [Contracts and execution sheet](phase-5/IMPLEMENTATION.md); [314 passed, six existing skips](phase-5/validation.json), [review](phase-5/review.json) |
 | 6 — Preflight and canaries | Not started | Pending | Pending |
 | 7 — Suite groups and resources | Not started | Pending | Pending coverage/cost comparison |
 | 8 — Verified provisioning | Not started | Pending | Pending cold/cache evidence |
@@ -123,6 +123,31 @@ This completion follow-up changes documentation only; tested executable/test/bui
 inputs remain unchanged. Phase 4 is complete as local helper implementation;
 Phase 3 native x64 acceptance and all hosted qualification remain open.
 
+## Phase 5 handoff
+
+Owner Codex `/root` prepared immutable transfer/rerun recovery on
+`ci/phase-5-transfer`, sibling `DiscordKit-ci-phase5`, based on
+`b190a963f27fc3910b7226e7d15f386ac97b5498`.
+[Contracts and execution bounds](phase-5/IMPLEMENTATION.md) retain same-run/exact-source
+successful producer provenance, immutable API IDs/digests, fresh current-attempt
+consumer selection and strict native compatibility. Transfer retries never invoke
+compilation/tests, and final evidence failure fails its owning job. The full index
+is checked in a separate stage and again in the latest platform barrier.
+
+[Validation](phase-5/validation.json) binds 23 source/test/workflow/dependency inputs:
+314 helper tests passed, six existing Linux-only tests skipped on macOS, plus
+actual pinned SDK localhost success/fault fixtures, actionlint, syntax, policy and
+link/diff checks. [Review](phase-5/review.json) has no remaining blockers. The
+original planning edits and prior phase checkouts are preserved. The scoped
+implementation commit is recorded by the following commit receipt; no remote
+write, hosted run, paid job or native Swift execution occurred.
+
+Phase 5 has local implementation acceptance. Its real hosted round trip, partial
+failed-job rerun and complete latest-attempt barrier acceptance remain Phase 11.
+Phase 3 native x64 acceptance stays open. The next authorized implementation can
+prepare Phase 6 with these bounded transfer interfaces; paid expansion remains
+unauthorized pending admission and an explicit allowance.
+
 ## Outstanding execution decisions
 
 - Paid execution remains unauthorized: experiment/workflow allowances are USD 0,
@@ -133,8 +158,11 @@ Phase 3 native x64 acceptance and all hosted qualification remain open.
 - Operator-selected repository budget amount/scope and authorization to configure it.
 - Phase 0 uses `ci/phase-0-baseline` in sibling `DiscordKit-ci-phase0`, owner
   Codex `/root`, base `85eac6f3c1d3b17e53596c49e7438efee366c1b3`.
-  Phase 1 through Phase 4 ownership and local-only sheets are recorded above. Phases 5
-  through 11 owners and paid experiment sheets are not assigned/authorized.
+  Phase 1 through Phase 4 ownership and local-only sheets are recorded above. Phase 5
+  owner is Codex `/root` on `ci/phase-5-transfer`, sibling `DiscordKit-ci-phase5`,
+  based on `b190a963`; its [local execution sheet](phase-5/IMPLEMENTATION.md) keeps
+  all paid allowances at zero. Phases 6 through 11 ownership/paid experiment sheets
+  are not assigned/authorized.
 
 These do not prevent beginning local preparation/helper implementation. Missing
 allowances or execution authorization prevent paid scheduling, not source work.

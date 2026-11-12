@@ -1,0 +1,63 @@
+# File: .github/actions/upload-evidence/action.yml
+# Created by Carson Rau.
+# Copyright (c) 2026 Aurum Studios.
+# https://aurum-studios.com
+
+name: Upload immutable evidence with bounded recovery
+description: Preserve local files and require verified transfer without rerunning their producer.
+inputs:
+  name:
+    required: true
+    description: Unique artifact base including source, run and attempt.
+  paths:
+    required: true
+    description: Newline separated paths or globs; at least one must exist.
+  receipt:
+    required: true
+    description: Local final transfer receipt.
+  retention-days:
+    default: '14'
+    description: Artifact retention from the scheduling policy.
+  producer-metadata:
+    default: ''
+    description: Successful compilation.json for a compiled producer.
+  producer-receipt-name:
+    default: ''
+    description: Immutable producer sidecar base.
+runs:
+  using: composite
+  steps:
+    - uses: ./.github/actions/setup-artifact-sdk
+    - name: Prepare unchanged local file selection
+      id: arguments
+      shell: python
+      env:
+        TRANSFER_NAME: ${{ inputs.name }}
+        TRANSFER_PATHS: ${{ inputs.paths }}
+        TRANSFER_RECEIPT: ${{ inputs.receipt }}
+        TRANSFER_RETENTION: ${{ inputs.retention-days }}
+        PRODUCER_METADATA: ${{ inputs.producer-metadata }}
+        PRODUCER_RECEIPT_NAME: ${{ inputs.producer-receipt-name }}
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        import glob, json, os
+        paths = sorted({path for pattern in os.environ['TRANSFER_PATHS'].splitlines()
+                        if pattern.strip() for path in glob.glob(pattern.strip(), include_hidden=True)})
+        if not paths:
+            raise SystemExit('Evidence is incomplete: local files are missing; explicitly regenerate the owning stage.')
+        arguments = ['upload',
+                     '--name', os.environ['TRANSFER_NAME'], '--receipt', os.environ['TRANSFER_RECEIPT'],
+                     '--retention-days', os.environ['TRANSFER_RETENTION']]
+        for path in paths:
+            arguments += ['--path', path]
+        if os.environ['PRODUCER_METADATA']:
+            arguments += ['--producer-metadata', os.environ['PRODUCER_METADATA'],
+                          '--producer-receipt-name', os.environ['PRODUCER_RECEIPT_NAME']]
+        with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+            output.write('arguments=' + json.dumps(arguments) + '\n')
+    - name: Transfer and verify immutable result with runtime credentials
+      uses: ./.github/actions/artifact-transfer
+      env:
+        GH_TOKEN: ${{ github.token }}
+      with:
+        arguments: ${{ steps.arguments.outputs.arguments }}

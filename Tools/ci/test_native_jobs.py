@@ -199,16 +199,17 @@ class NativePlanTests(unittest.TestCase):
         self.assertTrue(all(command.timeout <= 300 for command in audit))
         self.assertEqual(sum(command.arguments[:2] == ("swift", "run") for command in audit), 4)
 
-    def test_component_aggregate_keeps_existing_workflow_cap_and_paid_reserves(self):
-        """A large serial consumer graph cannot increase the enclosing two-hour runner ceiling."""
+    def test_component_compute_budget_leaves_room_for_bounded_transfer_recovery(self):
+        """The unchanged compute budget leaves two transfer aggregates inside the enclosing build job."""
         policy = jobs.execution_policy()
+        from artifact_transfer import AGGREGATE_SECONDS
         for component in jobs.COMPONENTS:
             required = jobs.validate_enclosing_budget(jobs.compilation_budget(component, policy),
                 jobs.BUILD_JOB_SECONDS, packaging=True, policy=policy)
-            self.assertLessEqual(required, 7200)
+            actual_required = required - policy["reservesSeconds"]["upload"] + 2 * AGGREGATE_SECONDS
+            self.assertLessEqual(actual_required, jobs.BUILD_JOB_SECONDS)
         self.assertEqual(jobs.compilation_budget("consumers", policy), 5400 + 6 * 60)
-        self.assertEqual(jobs.validate_enclosing_budget(jobs.compilation_budget("consumers", policy),
-            jobs.BUILD_JOB_SECONDS, packaging=True, policy=policy), 7200)
+        self.assertEqual(policy["componentCompileSeconds"]["consumers"], 5400)
         with self.assertRaisesRegex(ValueError, "enclosing workflow"):
             jobs.validate_enclosing_budget(7200, 7200, policy=policy)
 
@@ -269,6 +270,29 @@ class NativePlanTests(unittest.TestCase):
                 discover.assert_not_called()
             self.assertFalse(invalid_output.exists())
 
+    def test_restore_cli_loads_complete_selection_and_rejects_ambiguous_or_oversized_json(self):
+        """A workflow passes the exact bounded resolver document through restore admission."""
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            selection_path, output = root / "selection.json", root / "evidence"
+            arguments = ["native_jobs.py", "restore", "--output", str(output), "--platform", "linux-x64",
+                         "--component", "root", "--archive", str(root / "compiled.tar.gz"),
+                         "--selection", str(selection_path)]
+            document = {"formatVersion": 1, "components": {"root": {"artifactID": "9001"}}}
+            selection_path.write_text(json.dumps(document))
+            with patch.object(sys, "argv", arguments), patch.object(jobs, "restore_archive") as restore:
+                self.assertEqual(jobs.main(), 0)
+            self.assertEqual(restore.call_args.kwargs["selection"], document)
+            for text, limit in (("{\"formatVersion\":1,\"formatVersion\":2}", 64 * 1024 * 1024),
+                                (json.dumps(document), 1)):
+                selection_path.write_text(text)
+                with (self.subTest(document=text, limit=limit), patch.object(sys, "argv", arguments),
+                      patch.object(jobs, "MAX_SELECTION_BYTES", limit), patch.object(jobs, "restore_archive") as restore,
+                      patch.object(sys, "stderr", io.StringIO())):
+                    self.assertEqual(jobs.main(), 1)
+                restore.assert_not_called()
+                self.assertEqual(json.loads((output / "failure.json").read_text())["status"], "failed")
+
 
 class NativeArtifactTests(unittest.TestCase):
     """Exercise real compressed transport and reject stale, altered or unsafe compiled artifacts."""
@@ -318,6 +342,16 @@ class NativeArtifactTests(unittest.TestCase):
         """Use a deterministic host identity while exercising all real archive admission checks."""
         with patch.object(jobs, "identity", return_value=self.current):
             return jobs.restore_archive(self.repository, "root", "linux-x64", self.archive, self.output)
+
+    def selection(self, metadata, execution):
+        """Use all immutable resolver fields to bind bytes, producer and the current rerun attempt."""
+        return {"formatVersion": 1, "execution": {**execution, "jobID": "resolve"},
+                "sourceCommit": self.current["commit"], "platform": "linux-x64", "expectedComponents": ["root"],
+                "components": {"root": {"artifactID": "9001", "artifactDigest": "sha256:" + "f" * 64,
+                    "archiveSHA256": jobs.file_digest(self.archive),
+                    "artifactName": "compiled-linux-x64-root-" + self.current["commit"] + "-42-2-t1",
+                    "producer": copy.deepcopy(metadata["producer"]), "metadata": copy.deepcopy(metadata),
+                    "receiptArtifactID": "9002"}}}
 
     def rewrite(self, update):
         """Rewrite an archive fixture without changing members unrelated to one negative case."""
@@ -699,32 +733,59 @@ class NativeArtifactTests(unittest.TestCase):
             self.assertEqual(report["consumer"]["status"], "failed")
             shutil.rmtree(self.repository / ".build")
 
-    def test_distinct_hosted_consumer_keeps_own_identity_and_selected_successful_producer(self):
-        """Independent suite execution may use a different job within the same exact hosted attempt."""
+    def test_partial_failed_test_rerun_reuses_successful_producer_without_compilation(self):
+        """The next attempt reruns discovery and failed tests against the same immutable producer bytes."""
         producer = {"scope": "github", "repository": "aurum/DiscordKit", "repositoryID": "123",
                     "workflowRef": "aurum/DiscordKit/.github/workflows/native-platform.yml@refs/heads/main",
-                    "workflowSHA": "a" * 40, "runID": "42", "runAttempt": "2", "jobID": "compile",
+                    "workflowSHA": "a" * 40, "runID": "42", "runAttempt": "2", "jobID": "build",
                     "event": "push", "ref": "refs/heads/main", "headRef": "", "baseRef": ""}
         self.metadata["producer"] = jobs.receipts.producer_receipt(producer, self.metadata["tests"])
-        self.seal()
+        metadata = self.seal()
         consumer = {**producer, "jobID": "test_CoreTests"}
+        calls = []
 
         def executor(command, repository, log, *, stdout_log=None, deadline=None):
+            calls.append(command.arguments)
+            self.assertEqual(command.arguments[:2], ("swift", "test"))
+            self.assertIn("--skip-build", command.arguments)
             log.write_text("passed\n")
             if stdout_log is not None:
                 stdout_log.write_text("CoreTests.Suite/test()\n")
+
+        def failed_executor(command, repository, log, *, stdout_log=None, deadline=None):
+            executor(command, repository, log, stdout_log=stdout_log, deadline=deadline)
+            if stdout_log is None:
+                raise subprocess.CalledProcessError(1, command.arguments)
+
+        with (patch.object(jobs, "identity", return_value=self.current),
+              patch.object(jobs.receipts, "execution_identity", return_value=consumer),
+              patch.object(jobs.linux_ci, "execute", side_effect=failed_executor), redirect_stdout(io.StringIO()),
+              self.assertRaises(subprocess.CalledProcessError)):
+            jobs.run_tests(self.repository, "root", "CoreTests", "linux-x64", 2,
+                           self.output / "failed-attempt", self.archive)
+        failure = json.loads((self.output / "failed-attempt/consumer.json").read_text())
+        self.assertEqual(failure["status"], "failed")
+        shutil.rmtree(self.repository / ".build")
+        consumer = {**consumer, "runAttempt": "3"}
+        selection = self.selection(metadata, consumer)
 
         with (patch.object(jobs, "identity", return_value=self.current),
               patch.object(jobs.receipts, "execution_identity", return_value=consumer),
               patch.object(jobs.linux_ci, "execute", side_effect=executor), redirect_stdout(io.StringIO())):
             report = jobs.run_tests(self.repository, "root", "CoreTests", "linux-x64", 2,
-                                    self.output, self.archive, artifact_id="9001")
+                                    self.output, self.archive, selection=selection)
         self.assertEqual(report["status"], "passed")
         self.assertEqual(report["producer"]["execution"], producer)
         self.assertEqual(report["consumer"]["execution"], consumer)
         self.assertEqual(report["consumer"]["selectedProducer"], producer)
         self.assertEqual(report["consumer"]["artifact"]["id"], "9001")
+        self.assertEqual(report["consumer"]["artifact"]["apiDigest"], "sha256:" + "f" * 64)
         self.assertEqual(report["consumer"]["artifact"]["archiveSHA256"], jobs.file_digest(self.archive))
+        self.assertEqual(report["consumer"]["selection"]["producerAttempt"], "2")
+        self.assertEqual(report["consumer"]["selection"]["consumerExecution"]["runAttempt"], "3")
+        self.assertEqual(report["consumer"]["selectedProducerReceipt"], metadata["producer"])
+        self.assertEqual(len(calls), 4)
+        self.assertFalse(any(arguments[1] == "build" for arguments in calls))
         self.assertEqual(report["consumer"]["selectedScope"], {"component": "root", "suite": "CoreTests"})
         self.assertEqual(report["consumer"]["discovery"], "passed")
         self.assertEqual(report["consumer"]["status"], "passed")
@@ -745,14 +806,46 @@ class NativeArtifactTests(unittest.TestCase):
         self.assertEqual(report["consumer"]["selectedProducer"], self.execution)
         self.assertTrue(report["consumer"]["completedAt"])
 
-    def test_malformed_artifact_id_is_rejected_before_extraction(self):
-        """A bad selected immutable identifier fails admission before any compiled payload is restored."""
+    def test_caller_supplied_artifact_id_cannot_bypass_resolver_admission(self):
+        """Even a valid integer ID cannot grant provenance without a complete verified index."""
         self.seal()
-        for artifact_id in ("", "0", "-1", "mutable-name", "1.0"):
+        for artifact_id in ("", "0", "-1", "mutable-name", "1.0", "9001"):
             with (self.subTest(artifact_id=artifact_id), patch.object(jobs, "identity", return_value=self.current),
-                  patch.object(tarfile.TarFile, "extractall") as extract, self.assertRaisesRegex(ValueError, "artifact ID")):
+                  patch.object(tarfile.TarFile, "extractall") as extract, self.assertRaises(TypeError)):
                 jobs.restore_archive(self.repository, "root", "linux-x64", self.archive, self.output,
                                      artifact_id=artifact_id)
+            extract.assert_not_called()
+            self.assertFalse(self.binary.exists())
+            self.assertFalse((self.output / "restored.json").exists())
+
+    def test_invalid_complete_selection_is_rejected_before_extraction(self):
+        """Immutable IDs do not excuse changed bytes, stale attempts, incomplete indices or altered receipts."""
+        producer = {"scope": "github", "repository": "aurum/DiscordKit", "repositoryID": "123",
+                    "workflowRef": "aurum/DiscordKit/.github/workflows/native-platform.yml@refs/heads/main",
+                    "workflowSHA": "a" * 40, "runID": "42", "runAttempt": "2", "jobID": "build",
+                    "event": "push", "ref": "refs/heads/main", "headRef": "", "baseRef": ""}
+        self.metadata["producer"] = jobs.receipts.producer_receipt(producer, self.metadata["tests"])
+        metadata = self.seal()
+        consumer = {**producer, "jobID": "test", "runAttempt": "3"}
+        baseline = self.selection(metadata, consumer)
+        cases = {
+            "wrong-archive": lambda index: index["components"]["root"].update(archiveSHA256="0" * 64),
+            "unverified-id": lambda index: index["components"]["root"].update(artifactID="mutable-name"),
+            "stale-index": lambda index: index["execution"].update(runAttempt="2"),
+            "foreign-run": lambda index: index["execution"].update(runID="43"),
+            "wrong-source": lambda index: index.update(sourceCommit="c" * 40),
+            "incomplete": lambda index: index.update(expectedComponents=["macros", "root"]),
+            "different-receipt": lambda index: index["components"]["root"]["metadata"]["producer"].update(
+                startedAt="2001-01-01T00:00:00Z"),
+        }
+        for name, update in cases.items():
+            selection = copy.deepcopy(baseline)
+            update(selection)
+            with (self.subTest(case=name), patch.object(jobs, "identity", return_value=self.current),
+                  patch.object(jobs.receipts, "execution_identity", return_value=consumer),
+                  patch.object(tarfile.TarFile, "extractall") as extract, self.assertRaises(ValueError)):
+                jobs.restore_archive(self.repository, "root", "linux-x64", self.archive, self.output,
+                                     selection=selection)
             extract.assert_not_called()
             self.assertFalse(self.binary.exists())
             self.assertFalse((self.output / "restored.json").exists())

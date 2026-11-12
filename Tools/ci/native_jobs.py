@@ -7,8 +7,8 @@
 """Compile native graphs once and consume versioned compatibility/provenance receipts.
 
 SwiftPM requires exact source, pins, flags, paths and native runtime identity.
-Producer and consumer execution records are separate; Phase 4 still admits only
-the same run/attempt. Tests always use --skip-build and nonempty exact inventories.
+Producer and consumer execution records are separate. Earlier same-run producers
+require a verified immutable index. Tests use --skip-build and exact inventories.
 """
 
 from contextlib import contextmanager, suppress
@@ -49,10 +49,11 @@ CONSUMER_SMOKES = ("LoggingApp", "CommandsApp", "DSLCommands", "DSLEvents", "DSL
 CONSUMER_SUITES = tuple(sorted(set(CONSUMER_TESTS) | set(CONSUMER_SMOKES)))
 METADATA = "native-build.json"
 MAX_METADATA_BYTES = 16 * 1024 * 1024
+MAX_SELECTION_BYTES = 64 * 1024 * 1024
 IDENTIFIER = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
-BUILD_JOB_SECONDS = 120 * 60
-TEST_JOB_SECONDS = 60 * 60
-AUDIT_JOB_SECONDS = 30 * 60
+BUILD_JOB_SECONDS = 150 * 60
+TEST_JOB_SECONDS = 75 * 60
+AUDIT_JOB_SECONDS = 45 * 60
 PACKAGING_IDENTITY_SECONDS = 600
 
 
@@ -497,7 +498,7 @@ def create_archive(repository, component, archive, metadata, excluded=()):
     return metadata
 
 
-def restore_archive(repository, component, native_platform, archive, output, *, deadline=None, artifact_id=None):
+def restore_archive(repository, component, native_platform, archive, output, *, deadline=None, selection=None):
     """Validate the whole transport before extracting into an identical clean native checkout."""
     restore_seconds = execution_policy()["reservesSeconds"]["setup"]
     deadline = deadline if deadline is not None else time.monotonic() + restore_seconds
@@ -505,8 +506,6 @@ def restore_archive(repository, component, native_platform, archive, output, *, 
     execution = receipts.execution_identity(repository)
     archive_digest = file_digest(archive)
     remaining_seconds(deadline, restore_seconds)
-    if artifact_id is not None and not re.fullmatch(r"[1-9][0-9]*", artifact_id):
-        raise ValueError("immutable artifact ID must be a positive GitHub artifact ID")
     with tarfile.open(archive, "r:gz") as transport:
         members = transport.getmembers()
         manifests = [member for member in members if member.name == METADATA]
@@ -514,7 +513,10 @@ def restore_archive(repository, component, native_platform, archive, output, *, 
             raise ValueError("native artifact must contain exactly one bounded compilation receipt")
         metadata = receipts.read_json(transport.extractfile(manifests[0]))
         roots = build_roots(component)
-        receipts.validate_metadata(metadata, current, execution, component, roots)
+        receipts.validate_metadata(metadata, current, execution, component, roots,
+                                   selection=selection, archive_sha256=archive_digest)
+        consumer = receipts.consumer_receipt(execution, metadata["producer"], archive_digest,
+                                             selection=selection, metadata=metadata)
         payload, seen = hashlib.sha256(), set()
         links = {member.name for member in members if member.issym() or member.islnk()}
         regular = {member.name for member in members if member.isfile()}
@@ -565,7 +567,6 @@ def restore_archive(repository, component, native_platform, archive, output, *, 
         remaining_seconds(deadline, restore_seconds)
         transport.extractall(repository, members=[member for member in members if member.name != METADATA], filter="data")
     remaining_seconds(deadline, restore_seconds)
-    consumer = receipts.consumer_receipt(execution, metadata["producer"], archive_digest, artifact_id)
     restored = {**metadata, "archiveSHA256": archive_digest, "consumer": consumer}
     write_json(output / f"restored-{component}.json", restored)
     write_json(output / "restored.json", restored)
@@ -774,10 +775,10 @@ def verify_common_smoke(common):
             raise ValueError("timing smoke histogram has missing observations, loss or inconsistent accounting")
 
 
-def run_tests(repository, component, suite, native_platform, jobs, output, archive, *, artifact_id=None):
+def run_tests(repository, component, suite, native_platform, jobs, output, archive, *, selection=None):
     """Restore an exact compilation and verify/execute one aggregate without rebuilding."""
     jobs = bounded_jobs(jobs)
-    metadata = restore_archive(repository, component, native_platform, archive, output, artifact_id=artifact_id)
+    metadata = restore_archive(repository, component, native_platform, archive, output, selection=selection)
     with (output / "restored.json").open() as stream:
         restored = receipts.read_json(stream)
     consumer = restored["consumer"]
@@ -835,7 +836,7 @@ def main():
     parser.add_argument("--jobs", type=int, default=2)
     parser.add_argument("--suite")
     parser.add_argument("--archive", type=Path)
-    parser.add_argument("--artifact-id", help="selected immutable GitHub artifact ID; resolver validation is Phase 5")
+    parser.add_argument("--selection", type=Path, help="complete immutable artifact resolver index")
     arguments = parser.parse_args()
     if arguments.operation != "plan" and (not arguments.component or not arguments.platform or not arguments.archive):
         parser.error("compile, restore and test require --component, --platform and --archive")
@@ -843,6 +844,14 @@ def main():
         parser.error("test requires --suite")
     repository, output = arguments.repository.resolve(), arguments.output.resolve()
     try:
+        selection = None
+        if arguments.selection is not None:
+            if arguments.operation not in ("restore", "test"):
+                raise ValueError("artifact selection is only valid for restore or test")
+            if not 0 < arguments.selection.stat().st_size <= MAX_SELECTION_BYTES:
+                raise ValueError("artifact selection index is empty or exceeds its size ceiling")
+            with arguments.selection.open() as stream:
+                selection = receipts.read_json(stream)
         if arguments.operation == "plan":
             report = {"status": "running", "operation": "plan", "commands": []}
             with execution_report(output, report):
@@ -852,9 +861,9 @@ def main():
         elif arguments.operation == "compile":
             compile_component(repository, arguments.component, arguments.platform, arguments.jobs, output, arguments.archive.resolve())
         elif arguments.operation == "restore":
-            restore_archive(repository, arguments.component, arguments.platform, arguments.archive.resolve(), output, artifact_id=arguments.artifact_id)
+            restore_archive(repository, arguments.component, arguments.platform, arguments.archive.resolve(), output, selection=selection)
         else:
-            run_tests(repository, arguments.component, arguments.suite, arguments.platform, arguments.jobs, output, arguments.archive.resolve(), artifact_id=arguments.artifact_id)
+            run_tests(repository, arguments.component, arguments.suite, arguments.platform, arguments.jobs, output, arguments.archive.resolve(), selection=selection)
     except (ValueError, OSError, KeyError, TypeError, AttributeError, RecursionError, tarfile.TarError, subprocess.SubprocessError) as error:
         write_json(output / "failure.json", {"status": "failed", "operation": arguments.operation, "error": str(error)})
         print(f"Native job failed: {error}", file=sys.stderr)
