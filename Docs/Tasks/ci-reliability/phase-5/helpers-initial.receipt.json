@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "status": "failed",
+  "name": "phase5-helpers",
+  "stage": "phase5",
+  "operation": "localHelperCheck",
+  "arguments": [
+    "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "Tools/ci",
+    "-p",
+    "test_*.py",
+    "-v"
+  ],
+  "start": "2026-11-12T14:28:30.008218+00:00",
+  "startMonotonic": 351717.386826,
+  "deadlineMonotonic": 352017.386826,
+  "executionLimitSeconds": 300,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "operation",
+  "paths": {
+    "output": "/Users/carsonrau/Developer/DiscordKit-ci-phase5/Docs/Tasks/ci-reliability/phase-5/helpers.log",
+    "stdout": null,
+    "diagnostics": "/Users/carsonrau/Developer/DiscordKit-ci-phase5/Docs/Tasks/ci-reliability/phase-5/helpers.diagnostics.jsonl",
+    "receipt": "/Users/carsonrau/Developer/DiscordKit-ci-phase5/Docs/Tasks/ci-reliability/phase-5/helpers.receipt.json"
+  },
+  "identity": {
+    "executionID": "b3832286-b72a-4bbc-b57f-b25a4b4d8613",
+    "supervisorPID": 82134,
+    "host": "Pokemon-GO-Plus",
+    "system": "Darwin",
+    "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase5"
+  },
+  "exitCode": 1,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 82144,
+  "group": 82144,
+  "error": "Command '('/Library/Frameworks/Python.framework/Versions/3.14/bin/python3', '-m', 'unittest', 'discover', '-s', 'Tools/ci', '-p', 'test_*.py', '-v')' returned non-zero exit status 1.",
+  "errorType": "CalledProcessError",
+  "cleanup": {
+    "status": "group-signalled",
+    "signals": [],
+    "parentReaped": true,
+    "allowanceSeconds": 8.0,
+    "seconds": 0.004,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "verificationMalformedRows": 0,
+    "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "/Users/carsonrau/Developer/DiscordKit-ci-phase5/Docs/Tasks/ci-reliability/phase-5/helpers.log",
+      "retainedBytes": 74741,
+      "observedBytes": 74741,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T14:28:45.749587+00:00",
+  "endMonotonic": 351733.128133916,
+  "elapsedSeconds": 15.741,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}

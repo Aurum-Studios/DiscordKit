@@ -1,0 +1,12 @@
+/usr/bin/python3 -m unittest discover -s Tools/ci -p 'test_*.py'
+....................................................Built 4 public-module archives into /tmp/documentation test w103e_t6/.build/site export
+.Built 4 public-module archives into /tmp/tmp9ai19z1s/site
+..Built 4 public-module archives into /tmp/tmp9jfw1irh/site
+...Built 4 public-module archives into /tmp/tmpe3gsys2s/site
+.................................................Published v1.2.37 from abcdef0123abcdef0123abcdef0123abcdef0123
+.Published v1.2.37 from abcdef0123abcdef0123abcdef0123abcdef0123
+...............................................................................................................................
+----------------------------------------------------------------------
+Ran 235 tests in 54.238s
+
+OK

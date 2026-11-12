@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "status": "verified-implementation-commit",
+  "commit": "db705cb6dade43da579d555461f3f36a13586b48",
+  "branch": "ci/phase-8-provisioning",
+  "base": "06b2efb14332de764492292eae6380c26224112a",
+  "validationSHA256": "176cb97aac78b68123a2f993333e9e477257caef465ebe2292adf006f5130209",
+  "verifiedInputBlobs": 20,
+  "verifiedArtifactBlobs": 94,
+  "workingSourceInputsStillMatch": true,
+  "completionFollowup": "Documentation-only ledger and actual-blob receipt; tested inputs unchanged.",
+  "testResult": {
+    "passed": 891,
+    "skipped": 6
+  },
+  "hostedProvisioningOrSavingsQualified": false,
+  "completionChecks": {
+    "testedInputHashesUnchanged": true,
+    "validationManifestUnchanged": true,
+    "originalPlanningHashesUnchanged": true,
+    "localMarkdownLinks": 237,
+    "allPhase8JSONValid": true,
+    "trackedChangesDocumentationOnly": true
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "name": "discordkit-ci-artifact-transport",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "engines": {"node": ">=24"},
+  "dependencies": {
+    "@actions/artifact": "6.3.1",
+    "@actions/http-client": "4.0.1",
+    "@azure/storage-blob": "12.31.0"
+  }
+}

@@ -14,6 +14,7 @@ import signal
 import subprocess
 import sys
 import tempfile
+import threading
 import time
 import unittest
 from unittest.mock import MagicMock, call, patch
@@ -187,7 +188,7 @@ class LinuxExecutionTests(unittest.TestCase):
             planned = [linux_ci.Command(name, ("fixture", name)) for name in ("first", "failure", "never")]
             seen = []
 
-            def execute(command, checkout, log):
+            def execute(command, checkout, log, *, deadline=None):
                 """Observe persisted admission and fail on the second command without invoking a compiler."""
                 self.assertEqual(checkout, repository)
                 report = json.loads((output / "root.json").read_text())
@@ -233,7 +234,7 @@ class LinuxExecutionTests(unittest.TestCase):
             self.assertFalse(destination.exists())
             seen = []
 
-            def execute(command, checkout, log):
+            def execute(command, checkout, log, *, deadline=None):
                 """Check the actual smoke program's destination before any stage command runs."""
                 self.assertTrue(destination.is_dir())
                 self.assertEqual(checkout, repository)
@@ -268,7 +269,7 @@ class LinuxExecutionTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             repository = Path(temporary)
             command = linux_ci.Command("logging", (sys.executable, "-c", "print('offline output')"), timeout=5)
-            with patch.object(linux_ci, "print", side_effect=BrokenPipeError("console sink failed"), create=True):
+            with patch.object(linux_ci, "_console_write", side_effect=BrokenPipeError("console sink failed")):
                 with self.assertRaisesRegex(OSError, "could not preserve command output"):
                     linux_ci.execute(command, repository, repository / "logging.log")
             self.assertIn("offline output", (repository / "logging.log").read_text())
@@ -495,6 +496,412 @@ class LinuxExecutionTests(unittest.TestCase):
         return True
 
 
+@unittest.skipUnless(sys.platform.startswith("linux"), "Linux session ownership covers distinct child groups")
+class LinuxSessionTests(unittest.TestCase):
+    """SwiftPM and Foundation child groups stay owned by the admitted Linux session."""
+
+    def test_malformed_session_rows_cannot_claim_an_empty_session(self):
+        """Invalid columns, session identity and resource/state values invalidate enumeration."""
+        for row in ("bad row", "1 0 nope 123 S 0 0 peer", "1 0 1 999 S 0 0 peer",
+                    "1 0 1 123 Z? 0 0 peer", "1 0 1 123 S nan 0 peer", "1 0 1 123 S 0 -1 peer"):
+            with self.subTest(row=row), patch.object(linux_ci, "_probe", return_value={"status": "available", "output": row + "\n"}):
+                tree = linux_ci._process_tree(123, time.monotonic() + 1)
+            self.assertEqual(tree["status"], "malformed")
+            self.assertEqual(tree["malformedRows"], 1)
+            self.assertEqual(tree["processes"], [])
+
+    def test_timeout_cleans_separate_child_and_grandchild_groups(self):
+        """TERM resistance in two child groups cannot escape an execution deadline."""
+        self.assert_session_cleanup(parent_waits=True)
+
+    def test_exited_parent_cannot_leave_separate_groups_holding_output(self):
+        """Session identity survives orphaning when an exited parent leaves inherited pipes."""
+        self.assert_session_cleanup(parent_waits=False)
+
+    def test_success_cleans_separate_groups_without_inherited_output(self):
+        """Successful parents must also clean hidden descendants in their own process groups."""
+        self.assert_session_cleanup(parent_waits=False, hidden_output=True)
+
+    def test_sigterm_cleans_separate_child_and_grandchild_groups(self):
+        """An interrupted supervisor retains the same session ownership and cleanup receipt."""
+        self.assert_session_cleanup(parent_waits=True, interrupted=True)
+
+    def assert_session_cleanup(self, *, parent_waits, hidden_output=False, interrupted=False):
+        """Exercise real harmless process groups and always reap fixture survivors on failure."""
+        with tempfile.TemporaryDirectory() as temporary, redirect_stdout(io.StringIO()):
+            repository = Path(temporary)
+            child_file, grandchild_file = repository / "child.json", repository / "grandchild.json"
+
+            def sleeper(path):
+                return ("import json,os,pathlib,signal,time\n"
+                        "os.setpgrp()\n"
+                        "signal.signal(signal.SIGTERM,signal.SIG_IGN)\n"
+                        f"pathlib.Path({str(path)!r}).write_text(json.dumps(dict(pid=os.getpid(),group=os.getpgrp(),session=os.getsid(0))))\n")
+
+            grandchild = sleeper(grandchild_file) + "time.sleep(60)\n"
+            child = (sleeper(child_file) + "import subprocess,sys\n"
+                     f"subprocess.Popen([sys.executable,'-c',{grandchild!r}])\n"
+                     "time.sleep(60)\n")
+            redirection = ",stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL" if hidden_output else ""
+            parent = ("import pathlib,subprocess,sys,time\n"
+                      f"subprocess.Popen([sys.executable,'-c',{child!r}]{redirection})\n"
+                      f"while not pathlib.Path({str(grandchild_file)!r}).exists(): time.sleep(.01)\n"
+                      "print('session tree ready',flush=True)\n" + ("time.sleep(60)\n" if parent_waits else ""))
+            unrelated = subprocess.Popen([sys.executable, "-c", "import time;time.sleep(60)"],
+                                         start_new_session=True, stdout=subprocess.DEVNULL,
+                                         stderr=subprocess.DEVNULL)
+            log = repository / "session.log"
+            command = linux_ci.Command("session", (sys.executable, "-c", parent), 60 if interrupted else 1)
+            supervisor = None
+            try:
+                if interrupted:
+                    worker = ("import sys;from pathlib import Path;"
+                              f"sys.path.insert(0,{str(Path(linux_ci.__file__).parent)!r});import linux_ci;"
+                              "linux_ci.CLEANUP_GRACE_SECONDS=.15;"
+                              f"linux_ci.execute(linux_ci.Command('session',{command.arguments!r},60),"
+                              f"Path({str(repository)!r}),Path({str(log)!r}))")
+                    supervisor = subprocess.Popen([sys.executable, "-c", worker], stdout=subprocess.DEVNULL,
+                                                  stderr=subprocess.DEVNULL, start_new_session=True)
+                    cutoff = time.monotonic() + 3
+                    while not grandchild_file.exists() and time.monotonic() < cutoff:
+                        time.sleep(.01)
+                    self.assertTrue(grandchild_file.exists())
+                    supervisor.send_signal(signal.SIGTERM)
+                    self.assertNotEqual(supervisor.wait(timeout=3), 0)
+                else:
+                    with patch.object(linux_ci, "CLEANUP_GRACE_SECONDS", .15), \
+                            patch.object(linux_ci, "_stacks", return_value={"status": "unavailable"}):
+                        if hidden_output:
+                            linux_ci.execute(command, repository, log)
+                        else:
+                            with self.assertRaises(subprocess.TimeoutExpired):
+                                linux_ci.execute(command, repository, log)
+                identities = [json.loads(path.read_text()) for path in (child_file, grandchild_file)]
+                receipt = json.loads(log.with_suffix(".receipt.json").read_text())
+                self.assertEqual(receipt["status"], "interrupted" if interrupted else "passed" if hidden_output else "failed")
+                self.assertIsNone(unrelated.poll(), "cleanup reached an unrelated session")
+                for identity in identities:
+                    self.assertFalse(LinuxExecutionTests.process_is_running(identity["pid"]),
+                                     "a separate-group descendant survived cleanup")
+                self.assertEqual(receipt["cleanup"]["session"], receipt["pid"])
+                self.assertLessEqual(receipt["elapsedSeconds"], command.timeout + receipt["cleanupAllowanceSeconds"])
+                self.assertIn(receipt["cleanup"]["groupState"], ("gone", "zombies-only"))
+                if not hidden_output and not interrupted:
+                    snapshots = [json.loads(line) for line in log.with_suffix(".diagnostics.jsonl").read_text().splitlines()]
+                    observed = {row["pid"] for row in snapshots[-1]["children"]["processes"]}
+                    self.assertTrue({identity["pid"] for identity in identities}.issubset(observed))
+                for identity in identities:
+                    self.assertEqual(identity["session"], receipt["pid"])
+                    self.assertNotEqual(identity["group"], receipt["group"])
+                    self.assertIn(identity["group"], receipt["cleanup"]["groups"])
+                    self.assertIn({"group": identity["group"], "signal": "SIGTERM"},
+                                  receipt["cleanup"]["groupSignals"])
+                    self.assertIn({"group": identity["group"], "signal": "SIGKILL"},
+                                  receipt["cleanup"]["groupSignals"])
+            finally:
+                if supervisor is not None and supervisor.poll() is None:
+                    supervisor.kill()
+                    supervisor.wait(timeout=1)
+                for path in (grandchild_file, child_file):
+                    if path.exists():
+                        with suppress(ProcessLookupError):
+                            os.kill(json.loads(path.read_text())["pid"], signal.SIGKILL)
+                unrelated.kill()
+                unrelated.wait(timeout=1)
+
+
+@unittest.skipUnless(os.name == "posix", "process deadline evidence is a POSIX contract")
+class SupervisorEvidenceTests(unittest.TestCase):
+    """Real, harmless fault injections protect finite evidence and ownership."""
+
+    def test_silent_stall_retains_pretimeout_evidence_without_reader_threads(self):
+        with tempfile.TemporaryDirectory() as temporary, redirect_stdout(io.StringIO()):
+            repository = Path(temporary)
+            log = repository / "silent.log"
+            before = set(threading.enumerate())
+            command = linux_ci.Command("silent", (sys.executable, "-c", "import time;time.sleep(60)"), .4,
+                                       operation="focusedTest", stage="fault-fixture")
+            with patch.object(linux_ci, "_stacks", return_value={"status": "denied", "reason": "ptrace denied"}), \
+                    self.assertRaises(subprocess.TimeoutExpired):
+                linux_ci.execute(command, repository, log)
+            receipt = json.loads(log.with_suffix(".receipt.json").read_text())
+            snapshots = [json.loads(line) for line in log.with_suffix(".diagnostics.jsonl").read_text().splitlines()]
+            self.assertEqual(receipt["timeoutCategory"], "execution")
+            self.assertEqual(receipt["readerThreads"], 0)
+            self.assertEqual(set(threading.enumerate()), before)
+            self.assertLessEqual(receipt["elapsedSeconds"], command.timeout + receipt["cleanupAllowanceSeconds"])
+            self.assertEqual(snapshots[-1]["reason"], "before-timeout")
+            self.assertEqual(snapshots[-1]["stacks"][0]["status"], "denied")
+            for key in ("stage", "elapsedSeconds", "deadlineMonotonic", "lastOutputAgeSeconds", "pid", "group",
+                        "lastObservedTest", "cpuPercent", "rssKiB", "memory", "diskAvailableBytes", "children"):
+                self.assertIn(key, snapshots[-1])
+            self.assertIn(receipt["cleanup"]["groupState"], ("gone", "zombies-only"))
+            self.assertIn("executionID", receipt["identity"])
+            self.assertEqual(receipt["arguments"], list(command.arguments))
+            self.assertIn("end", receipt)
+
+    def test_term_ignoring_parent_is_killed_within_recorded_cleanup_allowance(self):
+        with tempfile.TemporaryDirectory() as temporary, redirect_stdout(io.StringIO()):
+            repository = Path(temporary)
+            log = repository / "ignore.log"
+            command = linux_ci.Command("ignore", (sys.executable, "-c",
+                                       "import signal,time;signal.signal(signal.SIGTERM,signal.SIG_IGN);time.sleep(60)"), .3)
+            with patch.object(linux_ci, "CLEANUP_GRACE_SECONDS", .1), \
+                    patch.object(linux_ci, "_stacks", return_value={"status": "unavailable"}), \
+                    self.assertRaises(subprocess.TimeoutExpired):
+                linux_ci.execute(command, repository, log)
+            receipt = json.loads(log.with_suffix(".receipt.json").read_text())
+            self.assertEqual(receipt["signal"], signal.SIGKILL)
+            self.assertIn("SIGKILL", receipt["cleanup"]["signals"])
+            self.assertLess(receipt["elapsedSeconds"], 2)
+            self.assertFalse(LinuxExecutionTests.process_is_running(receipt["pid"]))
+
+    def test_failed_debugger_records_denial_and_uses_argument_free_stacks(self):
+        original_probe = linux_ci._probe
+        seen = []
+
+        def denied(arguments, deadline):
+            seen.append(arguments)
+            return original_probe((sys.executable, "-c",
+                                   "import sys;print('ptrace: Operation not permitted');sys.exit(1)"), deadline)
+
+        with patch.object(linux_ci.platform, "system", return_value="Linux"), \
+                patch.object(linux_ci.shutil, "which", side_effect=lambda tool: "/fixture/gdb" if tool == "gdb" else None), \
+                patch.object(linux_ci, "_probe", side_effect=denied):
+            record = linux_ci._stacks(os.getpid(), time.monotonic() + 1)
+        self.assertEqual(record["status"], "denied")
+        self.assertIn("set print frame-arguments none", seen[0])
+        self.assertIn("set auto-load off", seen[0])
+        self.assertNotIn("thread apply all bt full", seen[0])
+        with patch.object(linux_ci.shutil, "which", return_value=None):
+            self.assertEqual(linux_ci._stacks(os.getpid(), time.monotonic() + 1)["status"], "unavailable")
+        with patch.object(linux_ci.platform, "system", return_value="Darwin"), \
+                patch.object(linux_ci.shutil, "which", return_value="/usr/bin/sample"), \
+                patch.object(linux_ci, "_probe", return_value={"status": "available"}) as sample:
+            linux_ci._stacks(os.getpid(), time.monotonic() + 1)
+        self.assertEqual(sample.call_args.args[0][-2:], ("-file", "/dev/stdout"))
+
+    def test_probe_deadline_kills_descendant_after_probe_parent_exit(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            pid_file = Path(temporary) / "probe-child.pid"
+            child = ("import os,pathlib,time;"
+                     f"pathlib.Path({str(pid_file)!r}).write_text(str(os.getpid()));time.sleep(60)")
+            parent = f"import subprocess,sys;subprocess.Popen([sys.executable,'-c',{child!r}])"
+            started = time.monotonic()
+            try:
+                with patch.object(linux_ci, "PROBE_SECONDS", .3):
+                    record = linux_ci._probe((sys.executable, "-c", parent), time.monotonic() + 1)
+                self.assertEqual(record["status"], "timeout")
+                self.assertLess(time.monotonic() - started, .6)
+                self.assertTrue(pid_file.exists())
+                deadline = time.monotonic() + 1
+                while LinuxExecutionTests.process_is_running(int(pid_file.read_text())) and time.monotonic() < deadline:
+                    time.sleep(.01)
+                self.assertFalse(LinuxExecutionTests.process_is_running(int(pid_file.read_text())))
+            finally:
+                if pid_file.exists():
+                    with suppress(ProcessLookupError):
+                        os.kill(int(pid_file.read_text()), signal.SIGKILL)
+
+    def test_actual_sigterm_interrupts_selector_and_retains_cleanup_receipt(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            repository = Path(temporary)
+            pid_file = repository / "signal-child.pid"
+            log = repository / "interrupted.log"
+            child = ("import os,pathlib,time;"
+                     f"pathlib.Path({str(pid_file)!r}).write_text(str(os.getpid()));time.sleep(60)")
+            worker = ("import sys,signal;from pathlib import Path;"
+                      f"sys.path.insert(0,{str(Path(linux_ci.__file__).parent)!r});import linux_ci;"
+                      f"linux_ci.execute(linux_ci.Command('signal',(sys.executable,'-c',{child!r}),60),"
+                      f"Path({str(repository)!r}),Path({str(log)!r}))")
+            supervisor = subprocess.Popen([sys.executable, "-c", worker], stdout=subprocess.DEVNULL,
+                                          stderr=subprocess.DEVNULL)
+            try:
+                cutoff = time.monotonic() + 3
+                while not pid_file.exists() and time.monotonic() < cutoff:
+                    time.sleep(.01)
+                self.assertTrue(pid_file.exists())
+                time.sleep(.03)  # Deliver during the idle selector wait, after launch.
+                supervisor.send_signal(signal.SIGTERM)
+                self.assertNotEqual(supervisor.wait(timeout=3), 0)
+                receipt = json.loads(log.with_suffix(".receipt.json").read_text())
+                self.assertEqual(receipt["status"], "interrupted")
+                self.assertEqual(receipt["interruptSignal"], signal.SIGTERM)
+                self.assertTrue(receipt["cleanup"]["parentReaped"])
+                self.assertFalse(LinuxExecutionTests.process_is_running(int(pid_file.read_text())))
+            finally:
+                if supervisor.poll() is None:
+                    supervisor.kill()
+                    supervisor.wait(timeout=1)
+                if pid_file.exists():
+                    with suppress(ProcessLookupError):
+                        os.kill(int(pid_file.read_text()), signal.SIGKILL)
+
+    def test_success_always_cleans_descendants_without_inherited_output(self):
+        with tempfile.TemporaryDirectory() as temporary, redirect_stdout(io.StringIO()):
+            repository = Path(temporary)
+            pid_file = repository / "hidden-child.pid"
+            child = ("import os,pathlib,signal,time;signal.signal(signal.SIGTERM,signal.SIG_IGN);"
+                     f"pathlib.Path({str(pid_file)!r}).write_text(str(os.getpid()));time.sleep(60)")
+            wait_code = f"while not pathlib.Path({str(pid_file)!r}).exists(): time.sleep(.01)"
+            parent = ("import subprocess,sys,time,pathlib;"
+                      f"subprocess.Popen([sys.executable,'-c',{child!r}],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL);"
+                      f"exec({wait_code!r})")
+            try:
+                receipt = linux_ci.execute(linux_ci.Command("success", (sys.executable, "-c", parent), 2),
+                                           repository, repository / "success.log")
+                self.assertEqual(receipt["status"], "passed")
+                self.assertIn(receipt["cleanup"]["groupState"], ("gone", "zombies-only"))
+                self.assertFalse(LinuxExecutionTests.process_is_running(int(pid_file.read_text())))
+            finally:
+                if pid_file.exists():
+                    with suppress(ProcessLookupError):
+                        os.kill(int(pid_file.read_text()), signal.SIGKILL)
+
+    def test_bounded_unterminated_output_and_exact_discovery_fail_closed(self):
+        for exact in (False, True):
+            with self.subTest(exact=exact), tempfile.TemporaryDirectory() as temporary, redirect_stdout(io.StringIO()):
+                repository = Path(temporary)
+                log, stdout = repository / "flood.log", repository / "flood.stdout"
+                command = linux_ci.Command("flood", (sys.executable, "-c", "import os;os.write(1,b'x'*65536)"), 2)
+                with patch.object(linux_ci, "OUTPUT_LIMIT_BYTES", 1024):
+                    if exact:
+                        with self.assertRaisesRegex(OSError, "machine-readable stdout exceeded"):
+                            linux_ci.execute(command, repository, log, stdout_log=stdout)
+                    else:
+                        linux_ci.execute(command, repository, log)
+                receipt = json.loads(log.with_suffix(".receipt.json").read_text())
+                target = stdout if exact else log
+                self.assertLessEqual(target.stat().st_size, 1024)
+                self.assertEqual(receipt["status"], "failed" if exact else "passed")
+                self.assertTrue(any(output["truncated"] for output in receipt["outputs"]))
+
+    def test_diagnostic_ring_keeps_complete_final_snapshot_records(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "diagnostics.jsonl"
+            sink = linux_ci.BoundedOutput(path, 256, ring=True)
+            try:
+                for index in range(20):
+                    sink.write((json.dumps({"index": index, "reason": "before-timeout", "padding": "x" * 60}) + "\n").encode())
+            finally:
+                sink.close()
+            records = [json.loads(line) for line in path.read_text().splitlines()]
+            self.assertTrue(sink.truncated)
+            self.assertEqual(records[-1]["index"], 19)
+            self.assertLessEqual(path.stat().st_size, 256)
+
+    def test_truncated_process_listing_never_claims_verified_group_gone(self):
+        with tempfile.TemporaryDirectory() as temporary, redirect_stdout(io.StringIO()):
+            repository = Path(temporary)
+            with ExitStack() as stack:
+                stack.enter_context(patch.object(linux_ci, "CLEANUP_GRACE_SECONDS", .01))
+                stack.enter_context(patch.object(linux_ci, "_process_tree", return_value={"status": "available", "processes": [], "truncated": True}))
+                if sys.platform.startswith("linux"):
+                    stack.enter_context(self.assertRaisesRegex(OSError, "could not verify admitted Linux session"))
+                linux_ci.execute(linux_ci.Command("empty", (sys.executable, "-c", "pass"), 2),
+                                 repository, repository / "empty.log")
+            receipt = json.loads((repository / "empty.receipt.json").read_text())
+            self.assertEqual(receipt["cleanup"]["groupState"], "unknown")
+            self.assertTrue(receipt["cleanup"]["verificationTruncated"])
+            self.assertEqual(receipt["status"], "failed" if sys.platform.startswith("linux") else "passed")
+
+    @unittest.skipUnless(sys.platform.startswith("linux"), "Linux cleanup requires verified session enumeration")
+    def test_unavailable_linux_session_verification_fails_closed(self):
+        """A successful child cannot qualify when unseen process groups may remain."""
+        with tempfile.TemporaryDirectory() as temporary, redirect_stdout(io.StringIO()):
+            repository = Path(temporary)
+            log = repository / "unavailable.log"
+            for status in ("unavailable", "malformed"):
+                with self.subTest(status=status), patch.object(linux_ci, "CLEANUP_GRACE_SECONDS", .01), \
+                        patch.object(linux_ci, "_process_tree", return_value={"status": status, "processes": [], "truncated": False}), \
+                        self.assertRaisesRegex(OSError, "could not verify admitted Linux session"):
+                    linux_ci.execute(linux_ci.Command("empty", (sys.executable, "-c", "pass"), 2), repository, log)
+                receipt = json.loads(log.with_suffix(".receipt.json").read_text())
+                self.assertEqual(receipt["status"], "failed")
+                self.assertEqual(receipt["cleanup"]["groupState"], "unknown")
+                self.assertEqual(receipt["cleanup"]["verification"], status)
+                self.assertTrue(receipt["finalizationErrors"])
+
+    def test_cleanup_failure_still_closes_outputs_restores_signals_and_saves_receipt(self):
+        with tempfile.TemporaryDirectory() as temporary, redirect_stdout(io.StringIO()):
+            repository = Path(temporary)
+            log = repository / "cleanup-failure.log"
+            previous = signal.getsignal(signal.SIGTERM)
+            with patch.object(linux_ci, "stop_process_group", side_effect=OSError("cleanup fixture failed")), \
+                    self.assertRaisesRegex(OSError, "cleanup fixture failed"):
+                linux_ci.execute(linux_ci.Command("empty", (sys.executable, "-c", "pass"), 2), repository, log)
+            receipt = json.loads(log.with_suffix(".receipt.json").read_text())
+            self.assertEqual(receipt["status"], "failed")
+            self.assertIn("end", receipt)
+            self.assertEqual(signal.getsignal(signal.SIGTERM), previous)
+            self.assertEqual(receipt["cleanup"]["status"], "failed")
+            self.assertFalse(LinuxExecutionTests.process_is_running(receipt["pid"]))
+
+    def test_metadata_queries_use_supervisor_and_preserve_separate_stdout(self):
+        with tempfile.TemporaryDirectory() as temporary, redirect_stdout(io.StringIO()):
+            repository = Path(temporary)
+            code = "import sys;print('metadata');print('warning',file=sys.stderr)"
+            result = linux_ci.metadata_query([sys.executable, "-c", code], repository, repository, "fixture")
+            receipt = json.loads((repository / "metadata-fixture.receipt.json").read_text())
+            self.assertEqual(result, "metadata\n")
+            self.assertEqual(receipt["operation"], "metadata")
+            self.assertEqual(receipt["executionLimitSeconds"], 30)
+            self.assertIn("warning", (repository / "metadata-fixture.log").read_text())
+
+    def test_invalid_and_expired_deadlines_never_launch_a_child(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            repository = Path(temporary)
+            for timeout in (0, -1, float("nan"), float("inf")):
+                with self.subTest(timeout=timeout), patch.object(linux_ci.subprocess, "Popen") as spawn, self.assertRaises(ValueError):
+                    linux_ci.execute(linux_ci.Command("invalid", ("fixture",), timeout), repository, repository / "invalid.log")
+                spawn.assert_not_called()
+            with patch.object(linux_ci.subprocess, "Popen") as spawn, self.assertRaises(subprocess.TimeoutExpired):
+                linux_ci.execute(linux_ci.Command("expired", ("fixture",), 1), repository, repository / "expired.log",
+                                 deadline=time.monotonic() - 1)
+            spawn.assert_not_called()
+            self.assertEqual(json.loads((repository / "expired.receipt.json").read_text())["timeoutCategory"], "aggregate")
+
+    def test_focused_heartbeat_uses_stable_cadence_and_reports_last_test(self):
+        observed = []
+
+        def snapshot(process, repository, command, started, deadline, last_output, last_test, reason):
+            observed.append((time.monotonic() - started, reason, last_test))
+            time.sleep(.02)
+            return {"reason": reason, "lastObservedTest": last_test}
+
+        with tempfile.TemporaryDirectory() as temporary, redirect_stdout(io.StringIO()):
+            repository = Path(temporary)
+            child = "import time;print(\"Test Case 'FixtureTests.testStall' started.\",flush=True);time.sleep(60)"
+            arguments = (sys.executable, "-c", child)
+            spawn = subprocess.Popen
+            process = spawn(arguments, start_new_session=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            try:
+                # Interpreter startup is outside this cadence/parser fixture. Its marker
+                # must be available before the first 50ms observation, including on Rosetta.
+                with linux_ci.selectors.DefaultSelector() as ready:
+                    ready.register(process.stdout, linux_ci.selectors.EVENT_READ)
+                    self.assertTrue(ready.select(3), "heartbeat fixture did not produce its marker")
+
+                def admit(command, **keywords):
+                    return process if command == arguments else spawn(command, **keywords)
+
+                with patch.object(linux_ci.subprocess, "Popen", side_effect=admit), \
+                        patch.object(linux_ci, "HEARTBEAT_SECONDS", .05), \
+                        patch.object(linux_ci, "_snapshot", side_effect=snapshot), \
+                        self.assertRaises(subprocess.TimeoutExpired):
+                    linux_ci.execute(linux_ci.Command("focused", arguments, .18, "focusedTest"),
+                                     repository, repository / "focused.log")
+            finally:
+                if process.poll() is None:
+                    process.kill()
+                process.wait(timeout=1)
+                process.stdout.close()
+            heartbeats = [row for row in observed if row[1] == "heartbeat"]
+            self.assertGreaterEqual(len(heartbeats), 2)
+            self.assertLess(heartbeats[1][0] - heartbeats[0][0], .065)
+            self.assertEqual(heartbeats[0][2], "FixtureTests.testStall")
+
+
 class LinuxPreflightTests(unittest.TestCase):
     """Reject misleading host/toolchain combinations while recording nonsecret diagnostics."""
 
@@ -503,7 +910,7 @@ class LinuxPreflightTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             repository = Path(temporary)
             with patch.object(linux_ci.platform, "system", return_value="Darwin"), \
-                    patch.object(linux_ci.subprocess, "check_output") as compiler:
+                    patch.object(linux_ci, "metadata_query") as compiler:
                 with self.assertRaisesRegex(ValueError, "native Linux"):
                     linux_ci.preflight(repository, repository / "reports")
                 compiler.assert_not_called()
@@ -516,7 +923,7 @@ class LinuxPreflightTests(unittest.TestCase):
                 repository = Path(temporary)
                 with self.host_mocks(release), \
                         patch.object(linux_ci.shutil, "which", side_effect=lambda name: None if name == missing else "/fixture/" + name), \
-                        patch.object(linux_ci.subprocess, "check_output", return_value="fixture-revision\n") as queries:
+                        patch.object(linux_ci, "metadata_query", return_value="fixture-revision\n") as queries:
                     with self.assertRaisesRegex(ValueError, message):
                         linux_ci.preflight(repository, repository / "reports")
                     self.assertEqual([call.args[0] for call in queries.call_args_list], [["git", "rev-parse", "HEAD"]])
@@ -532,7 +939,7 @@ class LinuxPreflightTests(unittest.TestCase):
                 repository = Path(temporary)
                 target = {"target": {"triple": triple}}
                 with self.host_mocks(), patch.object(linux_ci.shutil, "which", return_value="/fixture/tool"), \
-                        patch.object(linux_ci.subprocess, "check_output", side_effect=["fixture-revision\n", version, json.dumps(target)]):
+                        patch.object(linux_ci, "metadata_query", side_effect=["fixture-revision\n", version, json.dumps(target)]):
                     with self.assertRaisesRegex(ValueError, message):
                         linux_ci.preflight(repository, repository / "reports")
                 self.assertEqual((repository / "reports/swift-version.txt").read_text(), version)
@@ -544,12 +951,14 @@ class LinuxPreflightTests(unittest.TestCase):
             repository = Path(temporary)
             version = "Swift version 6.4.1 (swift-6.4.1-RELEASE)\nTarget: x86_64-unknown-linux-gnu\n"
             target = {"target": {"triple": "x86_64-unknown-linux-gnu"}}
-            with self.host_mocks(), patch.object(linux_ci.shutil, "which", return_value="/fixture/tool"), \
-                    patch.object(linux_ci.subprocess, "check_output", side_effect=["fixture-revision\n", version, json.dumps(target)]) as compiler:
+            with self.host_mocks(), patch.object(linux_ci.shutil, "which",
+                    side_effect=lambda name: None if name == "node" else "/fixture/" + name), \
+                    patch.object(linux_ci, "metadata_query", side_effect=["fixture-revision\n", version, json.dumps(target)]) as compiler:
                 linux_ci.preflight(repository, repository / "reports")
             self.assertEqual([call.args[0] for call in compiler.call_args_list],
                              [["git", "rev-parse", "HEAD"], ["swift", "--version"], ["swift", "-print-target-info"]])
-            self.assertTrue(all(call.kwargs["timeout"] == 30 for call in compiler.call_args_list))
+            self.assertEqual([query.args[3] for query in compiler.call_args_list],
+                             ["revision", "swift-version", "swift-target"])
             self.assertTrue((repository / "reports/host.json").is_file())
 
     @staticmethod
@@ -614,7 +1023,7 @@ class NativePreflightTests(unittest.TestCase):
             repository = Path(temporary)
             output = repository / "reports"
             with patch.object(linux_ci.platform, "system", return_value="Darwin"), \
-                    patch.object(linux_ci.subprocess, "check_output") as compiler:
+                    patch.object(linux_ci, "metadata_query") as compiler:
                 with self.assertRaisesRegex(ValueError, "native Windows"):
                     linux_ci.native_preflight(repository, output, "windows-x64")
             compiler.assert_not_called()
@@ -646,7 +1055,7 @@ class NativePreflightTests(unittest.TestCase):
         stack.enter_context(patch.object(linux_ci.platform, "system", return_value=system))
         stack.enter_context(patch.object(linux_ci.platform, "machine", return_value=machine))
         stack.enter_context(patch.object(linux_ci.shutil, "which", return_value="/fixture/tool"))
-        stack.enter_context(patch.object(linux_ci.subprocess, "check_output",
+        stack.enter_context(patch.object(linux_ci, "metadata_query",
                                        side_effect=["fixture-revision\n", f"Swift version {version}\n",
                                                     json.dumps({"target": {"triple": triple}})]))
         return stack

@@ -38,7 +38,9 @@ def ci_run(**changes):
 
 def ci_gate(**changes):
     job = {"name": "Offline certification passed", "run_id": 1234,
-           "head_sha": REVISION, "status": "completed", "conclusion": "success"}
+           "head_sha": REVISION, "status": "completed", "conclusion": "success",
+           "steps": [{"name": "Verify full scope and complete coverage",
+                      "status": "completed", "conclusion": "success"}]}
     job.update(changes)
     return job
 
@@ -143,6 +145,37 @@ class ReleaseGateTests(unittest.TestCase):
         self.assertTrue(github_release.certification_gate_passed(api, ci_run()))
         self.assertEqual([call[0] for call in api.calls], [prefix + "1", prefix + "2"])
 
+    def test_scoped_final_names_never_qualify_as_full_certification(self):
+        path = "actions/runs/1234/attempts/2/jobs?per_page=100&page=1"
+        for name in ("Offline diagnostic passed", "Offline preflight passed",
+                     "Offline diagnostic complete", "Offline preflight complete",
+                     "Diagnostic scope passed", "Preflight scope passed",
+                     "Offline certification passed / diagnostic"):
+            with self.subTest(name=name):
+                api = FakeAPI()
+                api.responses[path] = {"jobs": [ci_gate(name=name)]}
+                self.assertFalse(github_release.certification_gate_passed(api, ci_run()))
+                self.assertEqual(api.mutations, [])
+
+    def test_full_named_gate_requires_completed_unique_full_coverage_validation(self):
+        step = ci_gate()["steps"][0]
+        invalid = ([], [{**step, "name": "Record qualification scope"}],
+                   [{**step, "conclusion": "failure"}], [{**step, "conclusion": "skipped"}],
+                   [{**step, "conclusion": "cancelled"}], [{**step, "conclusion": None}],
+                   [{**step, "status": "in_progress"}], [step, step])
+        path = "actions/runs/1234/attempts/2/jobs?per_page=100&page=1"
+        for steps in invalid:
+            with self.subTest(steps=steps):
+                api = FakeAPI()
+                api.responses[path] = {"jobs": [ci_gate(steps=steps)]}
+                self.assertFalse(github_release.certification_gate_passed(api, ci_run()))
+                self.assertEqual(api.mutations, [])
+        api = FakeAPI()
+        legacy = ci_gate()
+        del legacy["steps"]
+        api.responses[path] = {"jobs": [legacy]}
+        self.assertFalse(github_release.certification_gate_passed(api, ci_run()))
+
     def test_successful_legacy_run_without_final_gate_is_not_certification(self):
         api = FakeAPI()
         prefix = f"actions/workflows/ci.yml/runs?head_sha={REVISION}&per_page=100&page=1"
@@ -158,6 +191,30 @@ class ReleaseGateTests(unittest.TestCase):
         api.responses[prefix] = {"workflow_runs": [ci_run(id=5678), ci_run()]}
         api.responses["actions/runs/5678/attempts/2/jobs?per_page=100&page=1"] = {"jobs": []}
         self.assertEqual(github_release.successful_ci(api, REVISION), ci_run())
+
+    def test_newer_successful_scoped_run_does_not_supersede_full_certification(self):
+        for name in ("Diagnostic scope passed", "Preflight scope passed"):
+            with self.subTest(name=name):
+                api = FakeAPI()
+                path = f"actions/workflows/ci.yml/runs?head_sha={REVISION}&per_page=100&page=1"
+                scoped = ci_run(id=5678, event="workflow_dispatch")
+                api.responses[path] = {"workflow_runs": [scoped, ci_run()]}
+                api.responses["actions/runs/5678/attempts/2/jobs?per_page=100&page=1"] = {
+                    "jobs": [ci_gate(name=name, run_id=5678)]}
+                self.assertEqual(github_release.successful_ci(api, REVISION), ci_run())
+                self.assertEqual(api.mutations, [])
+
+    def test_partial_run_alone_never_establishes_full_certification(self):
+        for gate in (ci_gate(name="Diagnostic scope passed"),
+                     ci_gate(name="Preflight scope passed"), ci_gate(steps=[])):
+            with self.subTest(gate=gate):
+                api = FakeAPI()
+                path = f"actions/workflows/ci.yml/runs?head_sha={REVISION}&per_page=100&page=1"
+                api.responses[path] = {"workflow_runs": [ci_run(event="workflow_dispatch")]}
+                api.responses["actions/runs/1234/attempts/2/jobs?per_page=100&page=1"] = {"jobs": [gate]}
+                with self.assertRaisesRegex(ValueError, "verified full coverage"):
+                    github_release.successful_ci(api, REVISION)
+                self.assertEqual(api.mutations, [])
 
     def test_absent_or_failed_certification_never_becomes_a_success(self):
         for runs in ([], [ci_run(conclusion="failure")], [ci_run(head_sha="0" * 40)]):
@@ -354,7 +411,9 @@ class ReleasePublicationTests(unittest.TestCase):
 
     def test_missing_or_nonpassing_final_gate_never_publishes(self):
         path = "actions/runs/1234/attempts/2/jobs?per_page=100&page=1"
-        for jobs in ([], [ci_gate(conclusion="failure")], [ci_gate(conclusion="skipped")]):
+        for jobs in ([], [ci_gate(conclusion="failure")], [ci_gate(conclusion="skipped")],
+                     [ci_gate(name="Diagnostic scope passed")],
+                     [ci_gate(name="Preflight scope passed")], [ci_gate(steps=[])]):
             with self.subTest(jobs=jobs):
                 self.api = FakeAPI()
                 self.api.responses[path] = {"jobs": jobs}

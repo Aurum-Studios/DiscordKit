@@ -7,15 +7,38 @@ https://aurum-studios.com
 
 # CI reliability, cancellation repair, and bounded spending
 
-Status: proposed implementation plan. No phase is implementation-complete.
+Status: phased implementation plan. Phase 0 is complete as local preparation at
+`5808ce32d867622ff6952d0f2057768a8a257f14`. Phase 1 is complete as
+local helper implementation at `1bc5de45a6dbeef1ab31bd7f6fbbe85b69771600`.
+Phase 2 is complete as local Swift implementation at
+`4dbb085521f1977dc40ea5b8818edb9d61cd2f9f`.
+Phase 3 is implemented with local emulated acceptance; native x64 acceptance remains open.
+Phase 4 is complete as local helper implementation at
+`4590c5d76c1024d8eec5132a1be343220577cccf`; see
+[the implementation](phase-4/IMPLEMENTATION.md). Phase 5 is implemented at `d466d50bc153f2799a33e200d574569958905295` with local
+helper acceptance; its hosted transfer/rerun proof remains Phase 11 work. See
+[the execution plan and contracts](phase-5/IMPLEMENTATION.md). Phase 6 has local
+implementation acceptance at `666f1371224fbe5bda03ec7b54be14a083bb6b09`; native expansion remains contained pending Phase 10. See
+[scope and canary contracts](phase-6/IMPLEMENTATION.md). Phase 7 has local grouped-execution/leaf-accounting acceptance at `4db6c5e6181d790fd1cd304220059397a501467b`; see
+[its execution plan and contracts](phase-7/IMPLEMENTATION.md). Phase 8 has local verified-provisioning implementation acceptance at `db705cb6dade43da579d555461f3f36a13586b48`; see
+[its execution plan and contracts](phase-8/IMPLEMENTATION.md). Hosted cold/hit
+measurements remain open. Phase 9 has local shared-documentation helper and
+real synthetic DocC acceptance at `b6fe729d61f7355cd8bcfc9ab4dcd93d020f2467`; see [its execution plan and contracts](phase-9/IMPLEMENTATION.md).
+Its hosted producer/consumer proof remains Phase 11. Phase 10 has local spend-admission
+and usage-reporting acceptance at `c5624f8a726880298092269716f49102ff87e636`; see
+[its execution plan and contracts](phase-10/IMPLEMENTATION.md).
+Phase 11 qualification/rollout remains proposed.
+See [STATE.md](STATE.md) for the
+commit-backed completion record and [BOOTSTRAP.md](BOOTSTRAP.md) for execution limits.
 Source inspected: `85eac6f3c1d3b17e53596c49e7438efee366c1b3`.
 Failure snapshot: offline certification run `43146954720`, November 12, 2026 UTC.
 
 Use [STATE.md](STATE.md) as the execution ledger and [EVIDENCE.md](EVIDENCE.md)
 for the observed failures and implementation receipts. The current implemented
-pipeline remains documented in [CI.md](../../CI.md). This plan describes future
-changes; it does not establish native qualification or authorize paid execution,
-runner/billing changes, publication, deployment, or live Discord access.
+pipeline remains documented in [CI.md](../../CI.md). This plan distinguishes
+completed local phases from future changes; it does not establish native
+qualification or authorize paid execution, runner/billing changes, publication,
+deployment, or live Discord access.
 
 ## Outcome and nonnegotiable contracts
 
@@ -111,6 +134,13 @@ commit and validation result before moving its ledger entry to complete.
 Exit: baseline inventory and initial execution sheet exist; source ownership,
 allowed experiments, and stop conditions are explicit. No broad CI dispatch.
 
+Phase 0's concrete local scope is [BOOTSTRAP.md](BOOTSTRAP.md). The initial policy
+and source planner are [scheduling_policy.py](../../../Tools/ci/scheduling_policy.py)
+and [scheduling-policy.v1.json](../../../Tools/ci/scheduling-policy.v1.json); runner
+usage reconstruction is [baseline_usage.py](../../../Tools/ci/baseline_usage.py).
+These offline helpers do not yet integrate policy into workflow execution or
+enforce runtime admission; those remain Phases 6 and 10.
+
 ## Phase 1 — Enforce process deadlines and retain stall evidence
 
 Files: [linux_ci.py](../../../Tools/ci/linux_ci.py),
@@ -163,6 +193,12 @@ finish within the execution limit plus recorded cleanup allowance.
 
 Exit: focused helper tests pass; injected hangs fail promptly with retained
 diagnostics; discovery stdout remains parseable; no test/compile retry occurs.
+
+Local implementation and acceptance: [Phase 1 receipts](phase-1/IMPLEMENTATION.md).
+The initial limits are active in native helpers. Consumer compilation uses a
+5,400-second aggregate so all applicable reserves fit the existing 120-minute
+build job. These limits remain unqualified cold-build capacity; no native
+reproduction or hosted execution occurred in Phase 1.
 
 ## Phase 2 — Repair event-hub cancellation accounting
 

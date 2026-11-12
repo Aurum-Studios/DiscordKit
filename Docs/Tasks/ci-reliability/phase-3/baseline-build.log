@@ -1,0 +1,1888 @@
+swift build --package-path Tools/DiscordKitLoadTests --scratch-path /scratch --build-system native --jobs 6 --force-resolved-versions --disable-experimental-prebuilts --explicit-target-dependency-import-check error --build-tests
+Fetching https://github.com/apple/swift-nio-ssl.git
+Fetching https://github.com/apple/swift-asn1.git
+Fetching https://github.com/apple/swift-crypto.git
+Fetching https://github.com/apple/swift-nio.git
+[1/2067] Fetching swift-asn1
+[105/19018] Fetching swift-asn1, swift-nio-ssl
+[755/37966] Fetching swift-asn1, swift-nio-ssl, swift-crypto
+Fetched https://github.com/apple/swift-asn1.git (1.08s)
+[1437/35899] Fetching swift-nio-ssl, swift-crypto
+Fetching https://github.com/apple/swift-log.git
+[4959/122762] Fetching swift-nio-ssl, swift-crypto, swift-nio
+[12672/131112] Fetching swift-nio-ssl, swift-crypto, swift-nio, swift-log
+Fetched https://github.com/apple/swift-crypto.git (2.42s)
+[45503/112164] Fetching swift-nio-ssl, swift-nio, swift-log
+Fetching https://github.com/apple/swift-atomics.git
+Fetched https://github.com/apple/swift-log.git (1.50s)
+[59535/103814] Fetching swift-nio-ssl, swift-nio
+Fetching https://github.com/apple/swift-collections.git
+[77757/105741] Fetching swift-nio-ssl, swift-nio, swift-atomics
+Fetched https://github.com/apple/swift-nio-ssl.git (3.45s)
+[66614/88790] Fetching swift-nio, swift-atomics
+Fetching https://github.com/apple/swift-system.git
+Fetched https://github.com/apple/swift-atomics.git (1.19s)
+[66251/86863] Fetching swift-nio
+[67755/116785] Fetching swift-nio, swift-collections
+[104518/124317] Fetching swift-nio, swift-collections, swift-system
+Fetched https://github.com/apple/swift-system.git (1.41s)
+Fetched https://github.com/apple/swift-collections.git (2.44s)
+Fetched https://github.com/apple/swift-nio.git (5.66s)
+Creating working copy for https://github.com/apple/swift-log.git
+Creating working copy for https://github.com/apple/swift-nio-ssl.git
+Creating working copy for https://github.com/apple/swift-asn1.git
+Creating working copy for https://github.com/apple/swift-crypto.git
+Creating working copy for https://github.com/apple/swift-atomics.git
+Creating working copy for https://github.com/apple/swift-system.git
+Working copy of https://github.com/apple/swift-asn1.git resolved at 1.7.3
+Creating working copy for https://github.com/apple/swift-nio.git
+Working copy of https://github.com/apple/swift-log.git resolved at 1.16.1
+Working copy of https://github.com/apple/swift-atomics.git resolved at 1.3.1
+Working copy of https://github.com/apple/swift-nio-ssl.git resolved at 2.37.5
+Creating working copy for https://github.com/apple/swift-collections.git
+Working copy of https://github.com/apple/swift-system.git resolved at 1.8.1
+Working copy of https://github.com/apple/swift-crypto.git resolved at 5.0.1
+Working copy of https://github.com/apple/swift-nio.git resolved at 2.104.0
+Working copy of https://github.com/apple/swift-collections.git resolved at 1.7.3
+Building for debugging...
+[0/902] Compiling a_i2d_fp.cc
+[0/902] Compiling a_d2i_fp.cc
+[2/902] Write sources
+[4/902] Compiling unicode.cc
+[5/902] Write sources
+[51/902] Compiling a_bool.cc
+[52/902] Write sources
+[55/902] Compiling a_mbstr.cc
+[56/902] Compiling a_int.cc
+[57/902] Compiling _AtomicsShims.c
+[58/902] Compiling SimpleFIPS202.c
+[59/902] Compiling CXKCPShims shims.c
+[60/902] Write swift-version-24593BA9C3E375BF.txt
+[61/902] Compiling KeccakSponge.c
+[62/902] Compiling CNIOWindows shim.c
+[63/902] Compiling CNIOWindows WSAStartup.c
+[64/902] Compiling KeccakP-1600-opt64.c
+[65/902] Compiling KeccakHash.c
+[67/963] Emitting module DiscordBits
+[68/963] Emitting module InternalCollectionsUtilities
+[69/968] Emitting module SwiftASN1
+[70/971] Compiling InternalCollectionsUtilities BorrowingIteratorProtocol+Equality.swift
+[71/971] Compiling InternalCollectionsUtilities BorrowingIteratorProtocol+Extras.swift
+[72/971] Compiling InternalCollectionsUtilities Debugging.swift
+[73/971] Compiling InternalCollectionsUtilities Descriptions.swift
+[74/971] Compiling InternalCollectionsUtilities FixedWidthInteger+roundUpToPowerOfTwo.swift
+[75/971] Compiling InternalCollectionsUtilities UnsafeMutableRawBufferPointer+Extras.swift
+[76/971] Compiling InternalCollectionsUtilities UnsafePointer+Extras.swift
+[77/971] Compiling InternalCollectionsUtilities UnsafeRawBufferPointer+Extras.swift
+[78/971] Compiling InternalCollectionsUtilities _SortedCollection.swift
+[79/971] Compiling InternalCollectionsUtilities _UniqueCollection.swift
+[82/971] Compiling InternalCollectionsUtilities _UnsafeBitSet+_Word.swift
+[83/971] Compiling SwiftASN1 UTCTime.swift
+[84/971] Compiling SwiftASN1 DER.swift
+[85/971] Compiling SwiftASN1 Errors.swift
+[86/971] Compiling InternalCollectionsUtilities Iterable+CopyContents.swift
+[87/971] Compiling InternalCollectionsUtilities Iterable+Equality.swift
+[88/971] Compiling InternalCollectionsUtilities LifetimeOverride.swift
+[89/971] Compiling InternalCollectionsUtilities MutableRef.swift
+[90/971] Compiling InternalCollectionsUtilities MutableSpan+Extras.swift
+[91/971] Compiling InternalCollectionsUtilities OutputSpan+Extras.swift
+[92/971] Compiling InternalCollectionsUtilities RandomAccessCollection+Offsets.swift
+[93/971] Compiling InternalCollectionsUtilities Span+Extras.swift
+[94/971] Compiling InternalCollectionsUtilities Strideable+LimitHelpers.swift
+[95/971] Compiling InternalCollectionsUtilities String+Padding.swift
+[96/971] Compiling InternalCollectionsUtilities TemporaryAllocation.swift
+[97/971] Compiling InternalCollectionsUtilities _UnsafeBitSet+Index.swift
+[98/971] Compiling InternalCollectionsUtilities _UnsafeBitSet.swift
+[99/971] Compiling InternalCollectionsUtilities UnsafeBufferPointer+Extras.swift
+[100/971] Compiling InternalCollectionsUtilities UnsafeMutableBufferPointer+Extras.swift
+[105/971] Compiling InternalCollectionsUtilities UnsafeMutablePointer+Extras.swift
+[112/972] Compiling DiscordBits UnsignedBitSet.swift
+[113/973] Emitting module _NIOBase64
+[114/973] Compiling _NIOBase64 Base64.swift
+[118/981] Emitting module Logging
+[119/981] Compiling DiscordBenchmarkSupport Histogram.swift
+[120/981] Compiling DiscordBenchmarkSupport Provenance.swift
+[135/982] Compiling _NIODataStructures _TinyArray.swift
+[136/982] Emitting module _NIODataStructures
+[137/982] Compiling _NIODataStructures Heap.swift
+[138/982] Compiling _NIODataStructures PriorityQueue.swift
+[141/997] Emitting module SpanPreview
+[142/997] Compiling SpanPreview OutputSpan+InputSpanHelpers.swift
+[143/997] Compiling SpanPreview InputSpan.swift
+[144/997] Compiling SpanPreview MutableSpan+InputSpanHelpers.swift
+[144/998] Wrapping AST for _NIOBase64 for debugging
+[145/998] Wrapping AST for SwiftASN1 for debugging
+[146/998] Wrapping AST for _NIODataStructures for debugging
+[149/998] Compiling Logging MetadataProvider.swift
+[149/999] Wrapping AST for InternalCollectionsUtilities for debugging
+[150/999] Compiling CNIOWASI CNIOWASI.c
+[151/999] Wrapping AST for DiscordBits for debugging
+[153/1039] Wrapping AST for SpanPreview for debugging
+[154/1045] Compiling CNIOSHA1 c_nio_sha1.c
+[155/1045] Wrapping AST for Logging for debugging
+[157/1045] Compiling DiscordBenchmarkSupport RunStatistics.swift
+[158/1046] Emitting module DiscordCore
+[159/1046] Compiling DequeModule Deque+Codable.swift
+[160/1046] Compiling DequeModule Deque+Collection.swift
+[161/1046] Compiling DiscordCore RawValue.swift
+[162/1046] Compiling DequeModule Deque+CustomReflectable.swift
+[163/1046] Compiling DequeModule Deque+Descriptions.swift
+[164/1046] Compiling DiscordCore Redaction.swift
+[165/1046] Compiling DequeModule Deque+Equatable.swift
+[166/1046] Compiling DequeModule Deque+ExpressibleByArrayLiteral.swift
+[166/1047] Compiling CNIOPosix event_loop_id.c
+[167/1047] Compiling CNIOOpenBSD shim.c
+[168/1047] Compiling CNIOLinux liburing_shims.c
+[170/1047] Emitting module DiscordBenchmarkSupport
+[171/1047] Compiling DiscordBenchmarkSupport Regression.swift
+[172/1047] Compiling DiscordBenchmarkSupport Report.swift
+[173/1047] Compiling DiscordBenchmarkSupport Reservoir.swift
+[175/1047] Compiling CNIOLinux shim.c
+[177/1047] Compiling DiscordLogging DiscordTimingObservation.swift
+[177/1047] Compiling CNIOLLHTTP c_nio_http.c
+[179/1047] Compiling DequeModule UniqueDeque+Deprecations.swift
+[180/1047] Compiling DequeModule UniqueDeque+Descriptions.swift
+[181/1047] Compiling DequeModule UniqueDeque+Equatable.swift
+[182/1047] Compiling DequeModule UniqueDeque+Hashable.swift
+[183/1047] Compiling DequeModule UniqueDeque+Initializers.swift
+[184/1047] Compiling DequeModule UniqueDeque+Insertions.swift
+[185/1047] Compiling DequeModule UniqueDeque+Iterable.swift
+[185/1054] Compiling CNIOLLHTTP c_nio_llhttp.c
+[187/1054] Compiling DequeModule RigidDeque+ContainerOperations.swift
+[188/1054] Compiling DequeModule RigidDeque+Deprecations.swift
+[189/1054] Compiling DequeModule RigidDeque+Descriptions.swift
+[190/1054] Compiling DequeModule RigidDeque+Equatable.swift
+[191/1054] Compiling DequeModule RigidDeque+Hashable.swift
+[192/1054] Compiling DequeModule RigidDeque+Initializers.swift
+[193/1054] Compiling DequeModule RigidDeque+Insertions.swift
+[194/1054] Compiling DequeModule RigidDeque+Iterable.swift
+[195/1054] Compiling DiscordLogging DiscordLogConfiguration.swift
+[196/1054] Compiling DiscordLogging DiscordLog.swift
+[197/1054] Compiling DiscordLogging DiscordLogOperation.swift
+[197/1054] Compiling CNIOFreeBSD shim.c
+[199/1054] Compiling DiscordCore Snowflake.swift
+[206/1055] Compiling DequeModule Deque+Extras.swift
+[207/1055] Compiling DequeModule Deque+Hashable.swift
+[208/1055] Compiling DequeModule Deque+Testing.swift
+[209/1055] Compiling DequeModule Deque._Storage.swift
+[210/1055] Compiling DequeModule Deque._UnsafeHandle.swift
+[211/1055] Compiling DequeModule Deque.swift
+[212/1055] Compiling DequeModule _DequeBuffer.swift
+[213/1055] Compiling DequeModule _DequeBufferHeader.swift
+[214/1055] Compiling DequeModule RigidDeque+Append.swift
+[215/1055] Compiling DequeModule RigidDeque+Consumption.swift
+[216/1055] Compiling DequeModule RigidDeque+Prepend.swift
+[217/1055] Compiling DequeModule RigidDeque+Removals.swift
+[218/1055] Compiling DequeModule RigidDeque+Replacements.swift
+[219/1055] Compiling DequeModule RigidDeque+Testing.swift
+[220/1055] Compiling DequeModule RigidDeque.swift
+[221/1055] Compiling DequeModule UniqueDeque+Append.swift
+[222/1055] Compiling DequeModule UniqueDeque+Consumption.swift
+[223/1055] Compiling DequeModule UniqueDeque+ContainerOperations.swift
+[224/1055] Compiling DiscordLogging DiscordIntervalTiming.swift
+[225/1055] Emitting module DiscordLogging
+[225/1056] Compiling CNIOLLHTTP c_nio_api.c
+[226/1056] Compiling CNIODarwin shim.c
+[228/1056] Compiling DiscordBenchmarkSupport Summary.swift
+[231/1057] Compiling fiat_p256_adx_sqr.S
+[232/1057] Compiling fiat_p256_adx_mul.S
+[233/1057] Compiling CNIOBoringSSLShims shims.c
+[235/1058] Emitting module DequeModule
+[235/1141] Wrapping AST for DiscordLogging for debugging
+[236/1141] Wrapping AST for DiscordCore for debugging
+[237/1141] Wrapping AST for DiscordBenchmarkSupport for debugging
+[238/1141] Compiling fiat_curve25519_adx_square.S
+[239/1141] Compiling fiat_curve25519_adx_mul.S
+[241/1141] Compiling DiscordModels ChannelValues.swift
+[242/1141] Compiling DiscordModels Component.swift
+[243/1141] Compiling DiscordModels ComponentContentScan.swift
+[244/1141] Compiling DiscordModels ComponentEmbed.swift
+[245/1141] Compiling DiscordModels ComputedPermissions.swift
+[246/1141] Compiling DiscordModels Emoji.swift
+[247/1141] Compiling DiscordModels EmojiRequest.swift
+[249/1142] Compiling DiscordTransport Lifecycle.swift
+[250/1142] Compiling DiscordTransport OperationTiming.swift
+[251/1142] Emitting module DiscordTransport
+[252/1142] Compiling DiscordMedia PCMFramePacer.swift
+[253/1142] Compiling DiscordTransport HTTPTransport.swift
+[254/1142] Compiling DiscordMedia MediaFrames.swift
+[255/1142] Compiling DiscordMedia PCM.swift
+[256/1142] Compiling DiscordTransport OperationTimingOutputs.swift
+[257/1142] Compiling DiscordTransport RuntimeCleanupFailure.swift
+[258/1142] Compiling DiscordMedia MediaClock.swift
+[259/1142] Compiling DiscordMedia MediaDescriptors.swift
+[260/1142] Compiling DiscordMedia PCMBandlimitedResampler.swift
+[263/1144] Compiling DiscordMedia PCMFrameStream.swift
+[268/1144] Emitting module DiscordMedia
+[269/1144] Compiling DiscordMedia PCMSpeechActivityDetector.swift
+[269/1145] Compiling tls_method.cc
+[270/1145] Compiling tls_record.cc
+[271/1145] Wrapping AST for DequeModule for debugging
+[273/1145] Emitting module DiscordModels
+/work/Sources/DiscordModels/Interaction.swift:35:97: warning: 'premiumRequired' is deprecated: Use premium-style message buttons instead of the premium-required callback. [#DeprecatedDeclaration]
+ 33 |     /// callers should use premium-style message buttons instead of constructing the deprecated callback.
+ 34 |     public static let allCases: [Self] = [.pong, .channelMessageWithSource, .deferredChannelMessageWithSource,
+ 35 |         .deferredUpdateMessage, .updateMessage, .applicationCommandAutocompleteResult, .modal, .premiumRequired,
+    |                                                                                                 `- warning: 'premiumRequired' is deprecated: Use premium-style message buttons instead of the premium-required callback. [#DeprecatedDeclaration]
+ 36 |         .launchActivity]
+ 37 | }
+
+[#DeprecatedDeclaration]: <https://docs.swift.org/compiler/documentation/diagnostics/deprecated-declaration>
+[273/1157] Compiling tls13_server.cc
+[275/1157] Compiling DiscordMedia PCMStreamingResampler.swift
+[276/1158] Compiling DiscordTransport ShardOwnership.swift
+[277/1158] Compiling DiscordTransport WebSocketTransport.swift
+[279/1159] Compiling DiscordModels GatewayValues.swift
+[280/1159] Compiling DiscordModels HTTPResources.generated.swift
+[281/1159] Compiling DiscordModels Guild.swift
+[282/1159] Compiling DiscordModels GuildAdministration.swift
+[283/1159] Compiling DiscordModels GuildMember.swift
+[284/1159] Compiling DiscordModels GuildOnboarding.swift
+[285/1159] Compiling DiscordModels GuildRequest.swift
+[286/1159] Compiling DiscordModels GuildRequestAdministration.swift
+[287/1159] Compiling DiscordModels GuildRequestMember.swift
+[288/1159] Compiling DiscordModels GuildRequestOnboarding.swift
+[289/1159] Compiling DiscordModels GuildRole.swift
+[290/1159] Compiling DiscordModels GuildTemplate.swift
+[292/1159] Compiling DiscordModels MessageValues.swift
+[293/1159] Compiling DiscordModels MonetizationValues.swift
+[294/1159] Compiling DiscordModels Poll.swift
+[295/1159] Compiling DiscordModels RoleConnection.swift
+[296/1159] Compiling DiscordModels RoleConnectionRequest.swift
+[297/1159] Compiling DiscordModels SKU.swift
+[298/1159] Compiling DiscordModels ScheduledEvent.swift
+[299/1159] Compiling DiscordModels ScheduledEventRequest.swift
+[300/1159] Compiling DiscordModels ScheduledEventValues.swift
+[301/1159] Compiling DiscordModels Soundboard.swift
+[302/1159] Compiling DiscordModels SoundboardRequest.swift
+[303/1159] Compiling DiscordModels Sticker.swift
+[303/1159] Compiling tls13_client.cc
+[304/1192] Compiling tls13_enc.cc
+[305/1192] Wrapping AST for DiscordMedia for debugging
+[306/1205] Compiling tls13_both.cc
+[308/1211] Compiling DiscordFoundationTransport FoundationSession.swift
+[309/1211] Compiling DiscordFoundationTransport FoundationHTTPTransport.swift
+[310/1211] Compiling DiscordRPC RPCArguments.swift
+[311/1211] Compiling DiscordRPC RPCCatalog.swift
+[312/1211] Compiling DiscordRPC RPCClient.swift
+[313/1211] Compiling DiscordRPC RPCConnection.swift
+[314/1211] Compiling DiscordVoiceCodecs CELTFrameDecoder.swift
+[315/1211] Compiling DiscordVoiceCodecs CELTFrameEncoder.swift
+[316/1211] Compiling DiscordVoiceCodecs CELTFrameHeader.swift
+[317/1211] Compiling DiscordVoiceCodecs CELTPacketCodec.swift
+[318/1211] Compiling DiscordVoiceCodecs CELTPacketLossConcealment.swift
+[319/1211] Compiling DiscordVoiceCodecs CELTPulseCodebook.swift
+[320/1211] Compiling DiscordVoiceCodecs CELTShapeCoding.swift
+[321/1211] Compiling DiscordVoiceCodecs CELTShapeTables.swift
+[322/1211] Compiling DiscordVoiceCodecs CELTSynthesis.swift
+[323/1211] Compiling DiscordFoundationTransport FoundationWebSocketTransport.swift
+[323/1211] Wrapping AST for DiscordTransport for debugging
+[325/1211] Emitting module DiscordFoundationTransport
+[326/1211] Emitting module DiscordVoiceCodecs
+[327/1217] Compiling DiscordFoundationTransport FoundationTransportConfiguration.swift
+[328/1218] Compiling DiscordRPC RPCFraming.swift
+[329/1218] Emitting module DiscordRPC
+[331/1219] Compiling DiscordModels StickerRequest.swift
+[332/1219] Compiling DiscordModels Subscription.swift
+[333/1219] Compiling DiscordModels User.swift
+[334/1219] Compiling DiscordModels UserConnection.swift
+[335/1219] Compiling DiscordModels UserRequest.swift
+[336/1219] Compiling DiscordModels UserValues.swift
+[337/1219] Compiling DiscordModels VoiceState.swift
+[338/1219] Compiling DiscordModels VoiceStateRequest.swift
+[339/1219] Compiling DiscordModels Webhook.swift
+[340/1219] Compiling DiscordModels WebhookCompatibilityRequest.swift
+[341/1219] Compiling DiscordModels WebhookEvent.swift
+[342/1219] Compiling DiscordModels WebhookRequest.swift
+[343/1219] Compiling DiscordActivities ActivityCatalog.swift
+[344/1219] Emitting module DiscordActivities
+[345/1220] Compiling DiscordActivities ActivityPayload.swift
+[346/1220] Compiling DiscordActivities ActivityRequests.swift
+[347/1220] Compiling DiscordRPC RPCPayload.swift
+[349/1220] Compiling t1_enc.cc
+[351/1220] Compiling DiscordVoiceCodecs OpusAudioDecoder.swift
+[352/1220] Compiling DiscordVoiceCodecs OpusAudioEncoder.swift
+[353/1220] Compiling DiscordVoiceCodecs OpusHybridDecoder.swift
+[354/1220] Compiling DiscordVoiceCodecs OpusHybridEncoder.swift
+[355/1220] Compiling DiscordVoiceCodecs OpusPCMEncoding.swift
+[356/1220] Compiling DiscordVoiceCodecs OpusPacket.swift
+[356/1220] Wrapping AST for DiscordFoundationTransport for debugging
+[358/1220] Compiling DiscordRPC RPCDispatch.swift
+[361/1220] Compiling DiscordVoiceCodecs SILKLinearPrediction.swift
+[362/1220] Compiling DiscordVoiceCodecs SILKLongTermPrediction.swift
+[363/1220] Compiling DiscordVoiceCodecs SILKMonoDecoder.swift
+[364/1220] Compiling DiscordVoiceCodecs SILKMonoEncoder.swift
+[365/1220] Compiling DiscordVoiceCodecs SILKMonoPacketDecoder.swift
+[366/1220] Compiling DiscordVoiceCodecs SILKNLSF.swift
+[367/1220] Compiling DiscordModels GuildTemplateRequest.swift
+/work/Sources/DiscordModels/Interaction.swift:35:97: warning: 'premiumRequired' is deprecated: Use premium-style message buttons instead of the premium-required callback. [#DeprecatedDeclaration]
+ 33 |     /// callers should use premium-style message buttons instead of constructing the deprecated callback.
+ 34 |     public static let allCases: [Self] = [.pong, .channelMessageWithSource, .deferredChannelMessageWithSource,
+ 35 |         .deferredUpdateMessage, .updateMessage, .applicationCommandAutocompleteResult, .modal, .premiumRequired,
+    |                                                                                                 `- warning: 'premiumRequired' is deprecated: Use premium-style message buttons instead of the premium-required callback. [#DeprecatedDeclaration]
+ 36 |         .launchActivity]
+ 37 | }
+
+/work/Sources/DiscordModels/InteractionRequest.swift:187:33: warning: 'premiumRequired' is deprecated: Use premium-style message buttons instead of the premium-required callback. [#DeprecatedDeclaration]
+185 |         case .autocomplete: .applicationCommandAutocompleteResult
+186 |         case .modal: .modal
+187 |         case .premiumRequired: .premiumRequired
+    |                                 `- warning: 'premiumRequired' is deprecated: Use premium-style message buttons instead of the premium-required callback. [#DeprecatedDeclaration]
+188 |         case .launchActivity: .launchActivity
+189 |         }
+
+[#DeprecatedDeclaration]: <https://docs.swift.org/compiler/documentation/diagnostics/deprecated-declaration>
+[368/1220] Compiling DiscordModels GuildValues.swift
+/work/Sources/DiscordModels/Interaction.swift:35:97: warning: 'premiumRequired' is deprecated: Use premium-style message buttons instead of the premium-required callback. [#DeprecatedDeclaration]
+ 33 |     /// callers should use premium-style message buttons instead of constructing the deprecated callback.
+ 34 |     public static let allCases: [Self] = [.pong, .channelMessageWithSource, .deferredChannelMessageWithSource,
+ 35 |         .deferredUpdateMessage, .updateMessage, .applicationCommandAutocompleteResult, .modal, .premiumRequired,
+    |                                                                                                 `- warning: 'premiumRequired' is deprecated: Use premium-style message buttons instead of the premium-required callback. [#DeprecatedDeclaration]
+ 36 |         .launchActivity]
+ 37 | }
+
+/work/Sources/DiscordModels/InteractionRequest.swift:187:33: warning: 'premiumRequired' is deprecated: Use premium-style message buttons instead of the premium-required callback. [#DeprecatedDeclaration]
+185 |         case .autocomplete: .applicationCommandAutocompleteResult
+186 |         case .modal: .modal
+187 |         case .premiumRequired: .premiumRequired
+    |                                 `- warning: 'premiumRequired' is deprecated: Use premium-style message buttons instead of the premium-required callback. [#DeprecatedDeclaration]
+188 |         case .launchActivity: .launchActivity
+189 |         }
+
+[#DeprecatedDeclaration]: <https://docs.swift.org/compiler/documentation/diagnostics/deprecated-declaration>
+[369/1220] Compiling DiscordModels GuildWidget.swift
+/work/Sources/DiscordModels/Interaction.swift:35:97: warning: 'premiumRequired' is deprecated: Use premium-style message buttons instead of the premium-required callback. [#DeprecatedDeclaration]
+ 33 |     /// callers should use premium-style message buttons instead of constructing the deprecated callback.
+ 34 |     public static let allCases: [Self] = [.pong, .channelMessageWithSource, .deferredChannelMessageWithSource,
+ 35 |         .deferredUpdateMessage, .updateMessage, .applicationCommandAutocompleteResult, .modal, .premiumRequired,
+    |                                                                                                 `- warning: 'premiumRequired' is deprecated: Use premium-style message buttons instead of the premium-required callback. [#DeprecatedDeclaration]
+ 36 |         .launchActivity]
+ 37 | }
+
+/work/Sources/DiscordModels/InteractionRequest.swift:187:33: warning: 'premiumRequired' is deprecated: Use premium-style message buttons instead of the premium-required callback. [#DeprecatedDeclaration]
+185 |         case .autocomplete: .applicationCommandAutocompleteResult
+186 |         case .modal: .modal
+187 |         case .premiumRequired: .premiumRequired
+    |                                 `- warning: 'premiumRequired' is deprecated: Use premium-style message buttons instead of the premium-required callback. [#DeprecatedDeclaration]
+188 |         case .launchActivity: .launchActivity
+189 |         }
+
+[#DeprecatedDeclaration]: <https://docs.swift.org/compiler/documentation/diagnostics/deprecated-declaration>
+[370/1220] Compiling DiscordModels HTTPResources.swift
+/work/Sources/DiscordModels/Interaction.swift:35:97: warning: 'premiumRequired' is deprecated: Use premium-style message buttons instead of the premium-required callback. [#DeprecatedDeclaration]
+ 33 |     /// callers should use premium-style message buttons instead of constructing the deprecated callback.
+ 34 |     public static let allCases: [Self] = [.pong, .channelMessageWithSource, .deferredChannelMessageWithSource,
+ 35 |         .deferredUpdateMessage, .updateMessage, .applicationCommandAutocompleteResult, .modal, .premiumRequired,
+    |                                                                                                 `- warning: 'premiumRequired' is deprecated: Use premium-style message buttons instead of the premium-required callback. [#DeprecatedDeclaration]
+ 36 |         .launchActivity]
+ 37 | }
+
+/work/Sources/DiscordModels/InteractionRequest.swift:187:33: warning: 'premiumRequired' is deprecated: Use premium-style message buttons instead of the premium-required callback. [#DeprecatedDeclaration]
+185 |         case .autocomplete: .applicationCommandAutocompleteResult
+186 |         case .modal: .modal
+187 |         case .premiumRequired: .premiumRequired
+    |                                 `- warning: 'premiumRequired' is deprecated: Use premium-style message buttons instead of the premium-required callback. [#DeprecatedDeclaration]
+188 |         case .launchActivity: .launchActivity
+189 |         }
+
+[#DeprecatedDeclaration]: <https://docs.swift.org/compiler/documentation/diagnostics/deprecated-declaration>
+[371/1220] Compiling DiscordModels Interaction.swift
+/work/Sources/DiscordModels/Interaction.swift:35:97: warning: 'premiumRequired' is deprecated: Use premium-style message buttons instead of the premium-required callback. [#DeprecatedDeclaration]
+ 33 |     /// callers should use premium-style message buttons instead of constructing the deprecated callback.
+ 34 |     public static let allCases: [Self] = [.pong, .channelMessageWithSource, .deferredChannelMessageWithSource,
+ 35 |         .deferredUpdateMessage, .updateMessage, .applicationCommandAutocompleteResult, .modal, .premiumRequired,
+    |                                                                                                 `- warning: 'premiumRequired' is deprecated: Use premium-style message buttons instead of the premium-required callback. [#DeprecatedDeclaration]
+ 36 |         .launchActivity]
+ 37 | }
+
+/work/Sources/DiscordModels/InteractionRequest.swift:187:33: warning: 'premiumRequired' is deprecated: Use premium-style message buttons instead of the premium-required callback. [#DeprecatedDeclaration]
+185 |         case .autocomplete: .applicationCommandAutocompleteResult
+186 |         case .modal: .modal
+187 |         case .premiumRequired: .premiumRequired
+    |                                 `- warning: 'premiumRequired' is deprecated: Use premium-style message buttons instead of the premium-required callback. [#DeprecatedDeclaration]
+188 |         case .launchActivity: .launchActivity
+189 |         }
+
+[#DeprecatedDeclaration]: <https://docs.swift.org/compiler/documentation/diagnostics/deprecated-declaration>
+[372/1220] Compiling DiscordModels InteractionRequest.swift
+/work/Sources/DiscordModels/Interaction.swift:35:97: warning: 'premiumRequired' is deprecated: Use premium-style message buttons instead of the premium-required callback. [#DeprecatedDeclaration]
+ 33 |     /// callers should use premium-style message buttons instead of constructing the deprecated callback.
+ 34 |     public static let allCases: [Self] = [.pong, .channelMessageWithSource, .deferredChannelMessageWithSource,
+ 35 |         .deferredUpdateMessage, .updateMessage, .applicationCommandAutocompleteResult, .modal, .premiumRequired,
+    |                                                                                                 `- warning: 'premiumRequired' is deprecated: Use premium-style message buttons instead of the premium-required callback. [#DeprecatedDeclaration]
+ 36 |         .launchActivity]
+ 37 | }
+
+/work/Sources/DiscordModels/InteractionRequest.swift:187:33: warning: 'premiumRequired' is deprecated: Use premium-style message buttons instead of the premium-required callback. [#DeprecatedDeclaration]
+185 |         case .autocomplete: .applicationCommandAutocompleteResult
+186 |         case .modal: .modal
+187 |         case .premiumRequired: .premiumRequired
+    |                                 `- warning: 'premiumRequired' is deprecated: Use premium-style message buttons instead of the premium-required callback. [#DeprecatedDeclaration]
+188 |         case .launchActivity: .launchActivity
+189 |         }
+
+[#DeprecatedDeclaration]: <https://docs.swift.org/compiler/documentation/diagnostics/deprecated-declaration>
+[373/1220] Compiling DiscordModels Invite.swift
+/work/Sources/DiscordModels/Interaction.swift:35:97: warning: 'premiumRequired' is deprecated: Use premium-style message buttons instead of the premium-required callback. [#DeprecatedDeclaration]
+ 33 |     /// callers should use premium-style message buttons instead of constructing the deprecated callback.
+ 34 |     public static let allCases: [Self] = [.pong, .channelMessageWithSource, .deferredChannelMessageWithSource,
+ 35 |         .deferredUpdateMessage, .updateMessage, .applicationCommandAutocompleteResult, .modal, .premiumRequired,
+    |                                                                                                 `- warning: 'premiumRequired' is deprecated: Use premium-style message buttons instead of the premium-required callback. [#DeprecatedDeclaration]
+ 36 |         .launchActivity]
+ 37 | }
+
+/work/Sources/DiscordModels/InteractionRequest.swift:187:33: warning: 'premiumRequired' is deprecated: Use premium-style message buttons instead of the premium-required callback. [#DeprecatedDeclaration]
+185 |         case .autocomplete: .applicationCommandAutocompleteResult
+186 |         case .modal: .modal
+187 |         case .premiumRequired: .premiumRequired
+    |                                 `- warning: 'premiumRequired' is deprecated: Use premium-style message buttons instead of the premium-required callback. [#DeprecatedDeclaration]
+188 |         case .launchActivity: .launchActivity
+189 |         }
+
+[#DeprecatedDeclaration]: <https://docs.swift.org/compiler/documentation/diagnostics/deprecated-declaration>
+[374/1220] Compiling DiscordModels Lobby.swift
+/work/Sources/DiscordModels/Interaction.swift:35:97: warning: 'premiumRequired' is deprecated: Use premium-style message buttons instead of the premium-required callback. [#DeprecatedDeclaration]
+ 33 |     /// callers should use premium-style message buttons instead of constructing the deprecated callback.
+ 34 |     public static let allCases: [Self] = [.pong, .channelMessageWithSource, .deferredChannelMessageWithSource,
+ 35 |         .deferredUpdateMessage, .updateMessage, .applicationCommandAutocompleteResult, .modal, .premiumRequired,
+    |                                                                                                 `- warning: 'premiumRequired' is deprecated: Use premium-style message buttons instead of the premium-required callback. [#DeprecatedDeclaration]
+ 36 |         .launchActivity]
+ 37 | }
+
+/work/Sources/DiscordModels/InteractionRequest.swift:187:33: warning: 'premiumRequired' is deprecated: Use premium-style message buttons instead of the premium-required callback. [#DeprecatedDeclaration]
+185 |         case .autocomplete: .applicationCommandAutocompleteResult
+186 |         case .modal: .modal
+187 |         case .premiumRequired: .premiumRequired
+    |                                 `- warning: 'premiumRequired' is deprecated: Use premium-style message buttons instead of the premium-required callback. [#DeprecatedDeclaration]
+188 |         case .launchActivity: .launchActivity
+189 |         }
+
+[#DeprecatedDeclaration]: <https://docs.swift.org/compiler/documentation/diagnostics/deprecated-declaration>
+[375/1220] Compiling DiscordModels LobbyRequest.swift
+/work/Sources/DiscordModels/Interaction.swift:35:97: warning: 'premiumRequired' is deprecated: Use premium-style message buttons instead of the premium-required callback. [#DeprecatedDeclaration]
+ 33 |     /// callers should use premium-style message buttons instead of constructing the deprecated callback.
+ 34 |     public static let allCases: [Self] = [.pong, .channelMessageWithSource, .deferredChannelMessageWithSource,
+ 35 |         .deferredUpdateMessage, .updateMessage, .applicationCommandAutocompleteResult, .modal, .premiumRequired,
+    |                                                                                                 `- warning: 'premiumRequired' is deprecated: Use premium-style message buttons instead of the premium-required callback. [#DeprecatedDeclaration]
+ 36 |         .launchActivity]
+ 37 | }
+
+/work/Sources/DiscordModels/InteractionRequest.swift:187:33: warning: 'premiumRequired' is deprecated: Use premium-style message buttons instead of the premium-required callback. [#DeprecatedDeclaration]
+185 |         case .autocomplete: .applicationCommandAutocompleteResult
+186 |         case .modal: .modal
+187 |         case .premiumRequired: .premiumRequired
+    |                                 `- warning: 'premiumRequired' is deprecated: Use premium-style message buttons instead of the premium-required callback. [#DeprecatedDeclaration]
+188 |         case .launchActivity: .launchActivity
+189 |         }
+
+[#DeprecatedDeclaration]: <https://docs.swift.org/compiler/documentation/diagnostics/deprecated-declaration>
+[376/1220] Compiling DiscordModels LobbyValues.swift
+/work/Sources/DiscordModels/Interaction.swift:35:97: warning: 'premiumRequired' is deprecated: Use premium-style message buttons instead of the premium-required callback. [#DeprecatedDeclaration]
+ 33 |     /// callers should use premium-style message buttons instead of constructing the deprecated callback.
+ 34 |     public static let allCases: [Self] = [.pong, .channelMessageWithSource, .deferredChannelMessageWithSource,
+ 35 |         .deferredUpdateMessage, .updateMessage, .applicationCommandAutocompleteResult, .modal, .premiumRequired,
+    |                                                                                                 `- warning: 'premiumRequired' is deprecated: Use premium-style message buttons instead of the premium-required callback. [#DeprecatedDeclaration]
+ 36 |         .launchActivity]
+ 37 | }
+
+/work/Sources/DiscordModels/InteractionRequest.swift:187:33: warning: 'premiumRequired' is deprecated: Use premium-style message buttons instead of the premium-required callback. [#DeprecatedDeclaration]
+185 |         case .autocomplete: .applicationCommandAutocompleteResult
+186 |         case .modal: .modal
+187 |         case .premiumRequired: .premiumRequired
+    |                                 `- warning: 'premiumRequired' is deprecated: Use premium-style message buttons instead of the premium-required callback. [#DeprecatedDeclaration]
+188 |         case .launchActivity: .launchActivity
+189 |         }
+
+[#DeprecatedDeclaration]: <https://docs.swift.org/compiler/documentation/diagnostics/deprecated-declaration>
+[377/1220] Compiling DiscordModels Message.swift
+/work/Sources/DiscordModels/Interaction.swift:35:97: warning: 'premiumRequired' is deprecated: Use premium-style message buttons instead of the premium-required callback. [#DeprecatedDeclaration]
+ 33 |     /// callers should use premium-style message buttons instead of constructing the deprecated callback.
+ 34 |     public static let allCases: [Self] = [.pong, .channelMessageWithSource, .deferredChannelMessageWithSource,
+ 35 |         .deferredUpdateMessage, .updateMessage, .applicationCommandAutocompleteResult, .modal, .premiumRequired,
+    |                                                                                                 `- warning: 'premiumRequired' is deprecated: Use premium-style message buttons instead of the premium-required callback. [#DeprecatedDeclaration]
+ 36 |         .launchActivity]
+ 37 | }
+
+/work/Sources/DiscordModels/InteractionRequest.swift:187:33: warning: 'premiumRequired' is deprecated: Use premium-style message buttons instead of the premium-required callback. [#DeprecatedDeclaration]
+185 |         case .autocomplete: .applicationCommandAutocompleteResult
+186 |         case .modal: .modal
+187 |         case .premiumRequired: .premiumRequired
+    |                                 `- warning: 'premiumRequired' is deprecated: Use premium-style message buttons instead of the premium-required callback. [#DeprecatedDeclaration]
+188 |         case .launchActivity: .launchActivity
+189 |         }
+
+[#DeprecatedDeclaration]: <https://docs.swift.org/compiler/documentation/diagnostics/deprecated-declaration>
+[378/1220] Compiling DiscordModels MessageRequest.swift
+/work/Sources/DiscordModels/Interaction.swift:35:97: warning: 'premiumRequired' is deprecated: Use premium-style message buttons instead of the premium-required callback. [#DeprecatedDeclaration]
+ 33 |     /// callers should use premium-style message buttons instead of constructing the deprecated callback.
+ 34 |     public static let allCases: [Self] = [.pong, .channelMessageWithSource, .deferredChannelMessageWithSource,
+ 35 |         .deferredUpdateMessage, .updateMessage, .applicationCommandAutocompleteResult, .modal, .premiumRequired,
+    |                                                                                                 `- warning: 'premiumRequired' is deprecated: Use premium-style message buttons instead of the premium-required callback. [#DeprecatedDeclaration]
+ 36 |         .launchActivity]
+ 37 | }
+
+/work/Sources/DiscordModels/InteractionRequest.swift:187:33: warning: 'premiumRequired' is deprecated: Use premium-style message buttons instead of the premium-required callback. [#DeprecatedDeclaration]
+185 |         case .autocomplete: .applicationCommandAutocompleteResult
+186 |         case .modal: .modal
+187 |         case .premiumRequired: .premiumRequired
+    |                                 `- warning: 'premiumRequired' is deprecated: Use premium-style message buttons instead of the premium-required callback. [#DeprecatedDeclaration]
+188 |         case .launchActivity: .launchActivity
+189 |         }
+
+[#DeprecatedDeclaration]: <https://docs.swift.org/compiler/documentation/diagnostics/deprecated-declaration>
+[379/1220] Compiling DiscordVoiceCodecs SILKStereoEncoder.swift
+[380/1220] Compiling DiscordModels ChannelRequest.swift
+[388/1220] Compiling DiscordModels Entitlement.swift
+[389/1220] Compiling DiscordModels EntitlementRequest.swift
+[390/1220] Compiling DiscordModels GatewayDispatch.swift
+[391/1220] Compiling DiscordModels GatewayPayloads.swift
+[392/1220] Compiling DiscordVoiceCodecs OpusRangeCoding.swift
+[393/1220] Compiling DiscordVoiceCodecs SILKExcitation.swift
+[394/1220] Compiling DiscordVoiceCodecs SILKFrameDecoder.swift
+[395/1220] Compiling DiscordVoiceCodecs SILKFrameParameterEncoder.swift
+[396/1220] Compiling DiscordVoiceCodecs SILKFrameParameters.swift
+[397/1220] Compiling DiscordVoiceCodecs SILKFrameQuantization.swift
+[406/1221] Compiling DiscordActivities ActivityTransport.swift
+[406/1221] Compiling ssl_x509.cc
+[408/1221] Compiling DiscordActivities ActivityPayloadModels.swift
+[409/1221] Compiling DiscordActivities ActivityClient.swift
+[416/1222] Compiling DiscordVoiceCodecs CELTTransform.swift
+[417/1222] Compiling ssl_versions.cc
+[419/1222] Compiling DiscordRPC RPCProjections.swift
+[421/1287] Compiling DiscordHTTP ChannelEndpoints.swift
+[422/1287] Compiling DiscordHTTP ChannelInviteUpload.swift
+[423/1287] Compiling DiscordHTTP ChannelOperations.swift
+[424/1287] Compiling DiscordHTTP EmojiEndpoints.swift
+[425/1287] Compiling DiscordHTTP EmojiOperations.swift
+[426/1287] Compiling DiscordHTTP GuildEndpoints.swift
+[426/1288] Wrapping AST for DiscordModels for debugging
+[427/1288] Compiling ssl_transcript.cc
+[429/1293] Wrapping AST for DiscordRPC for debugging
+[430/1293] Wrapping AST for DiscordActivities for debugging
+[432/1293] Emitting module DiscordDSL
+[433/1293] Compiling DiscordDSL BotDefinition.swift
+[434/1294] Compiling DiscordDSL ModuleExtensions.swift
+[434/1294] Wrapping AST for DiscordVoiceCodecs for debugging
+[436/1294] Compiling DiscordDSL MessageContent.swift
+[437/1294] Compiling DiscordDSL BotBuilder.swift
+[438/1294] Compiling DiscordDSL DefinitionPlan.swift
+[439/1294] Compiling DiscordCertifiedDevices CertifiedDeviceRPCPublisher.swift
+[440/1294] Compiling DiscordCertifiedDevices CertifiedDevice.swift
+[441/1294] Emitting module DiscordCertifiedDevices
+[442/1294] Compiling DiscordCertifiedDevices CertifiedDeviceWebSocketConnector.swift
+[443/1294] Compiling DiscordCertifiedDevices CertifiedDeviceHTTPPublisher.swift
+[443/1294] Compiling ssl_stat.cc
+[451/1295] Compiling DiscordHTTP GuildOperations.swift
+[452/1295] Compiling DiscordHTTP GuildTemplateEndpoints.swift
+[453/1295] Compiling DiscordHTTP GuildTemplateOperations.swift
+[454/1295] Compiling DiscordHTTP InteractionEndpoints.swift
+[455/1305] Emitting module DiscordCache
+[456/1305] Compiling DiscordCache EventReducer.swift
+[457/1305] Compiling DiscordCache PermissionResolver.swift
+[458/1305] Compiling DiscordCache EntityCache.swift
+[459/1305] Compiling DiscordCache CacheValues.swift
+[460/1305] Compiling DiscordDSL PolicyComposition.swift
+[461/1307] Compiling ssl_session.cc
+[465/1307] Compiling DiscordHTTP InviteEndpoints.swift
+[466/1307] Compiling DiscordHTTP InviteOperations.swift
+[467/1307] Compiling DiscordHTTP InviteTargetUsersCSV.swift
+[468/1307] Compiling DiscordHTTP InviteTargetUsersPlan.swift
+[469/1307] Compiling DiscordHTTP LobbyEndpoints.swift
+[470/1307] Compiling DiscordHTTP LobbyOperations.swift
+[471/1307] Compiling DiscordHTTP MessageEndpoints.swift
+[472/1307] Compiling DiscordHTTP MessageOperations.swift
+[473/1307] Compiling DiscordHTTP MessageQuery.swift
+[474/1307] Compiling DiscordHTTP MonetizationEndpoints.swift
+[474/1307] Wrapping AST for DiscordCertifiedDevices for debugging
+[475/1307] Wrapping AST for DiscordCache for debugging
+[476/1307] Compiling ssl_privkey.cc
+[477/1307] Wrapping AST for DiscordDSL for debugging
+[478/1307] Compiling ssl_key_share.cc
+[479/1307] Compiling ssl_lib.cc
+[480/1307] Compiling ssl_file.cc
+[482/1307] Compiling DiscordHTTP AssetClient.swift
+[483/1307] Compiling DiscordHTTP DiscordEndpoints.swift
+[484/1307] Compiling DiscordHTTP Endpoint.swift
+[485/1307] Compiling DiscordHTTP DiscordEndpoints.generated.swift
+[486/1307] Compiling DiscordHTTP MessageUpload.swift
+[487/1307] Compiling DiscordHTTP Pagination.swift
+[488/1307] Compiling DiscordHTTP RESTClient.swift
+[489/1307] Compiling DiscordHTTP RESTTiming.swift
+[490/1307] Compiling DiscordHTTP RateLimitCoordinator.swift
+[491/1307] Compiling DiscordHTTP RateLimitStore.swift
+[492/1307] Compiling DiscordHTTP ReadCache.swift
+[493/1307] Emitting module DiscordHTTP
+[494/1307] Compiling DiscordHTTP MonetizationOperations.swift
+[495/1307] Compiling DiscordHTTP PermissionEndpoints.swift
+[496/1307] Compiling DiscordHTTP PollEndpoints.swift
+[497/1307] Compiling DiscordHTTP RoleConnectionEndpoints.swift
+[498/1307] Compiling DiscordHTTP ScheduledEventEndpoints.swift
+[499/1307] Compiling DiscordHTTP ScheduledEventOperations.swift
+[500/1307] Compiling DiscordHTTP SoundboardEndpoints.swift
+[501/1307] Compiling DiscordHTTP SoundboardOperations.swift
+[502/1307] Compiling DiscordHTTP StageInstanceEndpoints.swift
+[503/1307] Compiling DiscordHTTP StickerEndpoints.swift
+[504/1307] Compiling DiscordHTTP RequestBody.swift
+[505/1307] Compiling DiscordHTTP RequestCoalescer.swift
+[506/1307] Compiling DiscordHTTP ApplicationCommandEndpoints.swift
+[507/1307] Compiling DiscordHTTP ApplicationCommandOperations.swift
+[508/1307] Compiling DiscordHTTP ApplicationEndpoints.swift
+[509/1307] Compiling DiscordHTTP ApplicationIdentityEndpoints.swift
+[510/1307] Compiling DiscordHTTP ApplicationOperations.swift
+[511/1307] Compiling DiscordHTTP AuditLogEndpoints.swift
+[512/1307] Compiling DiscordHTTP AuditLogOperations.swift
+[513/1307] Compiling DiscordHTTP AutoModerationEndpoints.swift
+[514/1307] Compiling DiscordHTTP AutoModerationOperations.swift
+[514/1307] Compiling ssl_cipher.cc
+[515/1307] Compiling ssl_credential.cc
+[517/1307] Compiling DiscordHTTP StickerOperations.swift
+[518/1307] Compiling DiscordHTTP UserEndpoints.swift
+[519/1307] Compiling DiscordHTTP UserOperations.swift
+[520/1307] Compiling DiscordHTTP VoiceEndpoints.swift
+[521/1307] Compiling DiscordHTTP WebhookEndpoints.swift
+[522/1307] Compiling DiscordHTTP WebhookOperations.swift
+[523/1307] Compiling DiscordHTTP ResponseCodec.swift
+[524/1307] Compiling DiscordHTTP RetryPolicy.swift
+[525/1307] Compiling DiscordHTTP SchedulingPolicy.swift
+[526/1307] Compiling DiscordHTTP StickerUpload.swift
+[527/1308] Compiling ssl_buffer.cc
+[528/1308] Compiling ssl_cert.cc
+[529/1320] Wrapping AST for DiscordHTTP for debugging
+[530/1320] Compiling ssl_asn1.cc
+[531/1320] Compiling ssl_aead_ctx.cc
+[532/1320] Compiling s3_pkt.cc
+[534/1320] Emitting module DiscordCommerce
+[535/1320] Compiling DiscordCommerce EntitlementVerification.swift
+[536/1321] Compiling handshake_server.cc
+[537/1321] Compiling s3_lib.cc
+[538/1321] Compiling handshake_client.cc
+[539/1321] Compiling s3_both.cc
+[540/1321] Wrapping AST for DiscordCommerce for debugging
+[542/1321] Compiling DiscordGateway GatewayReconnectBudgetPolicy.swift
+[543/1321] Compiling DiscordGateway GatewayRequests.swift
+[544/1321] Emitting module DiscordGateway
+[545/1321] Compiling DiscordGateway EventHandlers.swift
+[546/1321] Compiling DiscordGateway EventHub.swift
+[547/1322] Compiling DiscordGateway GatewayCommandCoordinator.swift
+[548/1322] Compiling DiscordGateway GatewayCommands.swift
+[549/1322] Compiling DiscordGateway GatewayEndpoints.swift
+[550/1322] Compiling DiscordGateway GatewayProtocol.swift
+[551/1322] Compiling DiscordGateway GatewayShard.swift
+[551/1322] Compiling handshake.cc
+[552/1322] Compiling handoff.cc
+[553/1322] Compiling extensions.cc
+[554/1322] Compiling encrypted_client_hello.cc
+[555/1322] Compiling dtls_record.cc
+[557/1322] Compiling DiscordGateway GatewayStartup.swift
+[558/1329] Compiling dtls_method.cc
+[559/1329] Compiling d1_srtp.cc
+[560/1329] Compiling d1_pkt.cc
+[561/1329] Compiling d1_lib.cc
+[562/1329] Compiling md5-x86_64-linux.S
+[563/1329] Wrapping AST for DiscordGateway for debugging
+[564/1329] Compiling d1_both.cc
+[565/1329] Compiling md5-x86_64-apple.S
+[566/1329] Compiling md5-586-linux.S
+[567/1329] Compiling bio_ssl.cc
+[568/1329] Compiling md5-586-apple.S
+[570/1329] Emitting module DiscordClient
+[571/1329] Compiling DiscordClient ServiceContext.swift
+[572/1329] Compiling DiscordClient ClientAuthority.swift
+[573/1329] Compiling DiscordClient ClientCacheProjection.swift
+[573/1329] Compiling chacha20_poly1305_x86_64-apple.S
+[574/1329] Compiling chacha20_poly1305_x86_64-linux.S
+[575/1329] Compiling chacha20_poly1305_armv8-win.S
+[576/1329] Compiling chacha20_poly1305_armv8-linux.S
+[577/1329] Compiling err_data.cc
+[578/1329] Compiling chacha20_poly1305_armv8-apple.S
+[579/1329] Compiling chacha-x86_64-linux.S
+[580/1329] Compiling chacha-x86_64-apple.S
+[581/1329] Compiling chacha-x86-linux.S
+[582/1329] Compiling chacha-x86-apple.S
+[584/1329] Compiling DiscordClient DiscordClient.swift
+[585/1329] Compiling DiscordClient ClientConfiguration.swift
+[585/1330] Compiling chacha-armv8-win.S
+[586/1330] Compiling chacha-armv8-linux.S
+[587/1330] Compiling chacha-armv8-apple.S
+[588/1330] Compiling chacha-armv4-linux.S
+[590/1330] Compiling aes128gcmsiv-x86_64-linux.S
+[591/1330] Compiling aes128gcmsiv-x86_64-apple.S
+[592/1330] Compiling x86_64-mont5-linux.S
+[593/1330] Compiling x86_64-mont5-apple.S
+[594/1330] Compiling x86_64-mont-linux.S
+[595/1330] Compiling x86_64-mont-apple.S
+[596/1330] Compiling x86-mont-linux.S
+[597/1330] Wrapping AST for DiscordClient for debugging
+[598/1330] Compiling x86-mont-apple.S
+[599/1330] Compiling vpaes-x86_64-apple.S
+[599/1330] Compiling vpaes-x86_64-linux.S
+[601/1330] Compiling vpaes-x86-linux.S
+[602/1330] Compiling vpaes-x86-apple.S
+[603/1330] Compiling vpaes-armv8-win.S
+[604/1330] Compiling vpaes-armv8-linux.S
+[605/1330] Compiling vpaes-armv8-apple.S
+[606/1330] Compiling vpaes-armv7-linux.S
+[607/1330] Compiling sha512-x86_64-linux.S
+[608/1330] Compiling sha512-x86_64-apple.S
+[609/1330] Compiling sha512-armv8-win.S
+[610/1330] Compiling sha512-armv8-linux.S
+[611/1330] Compiling sha512-armv8-apple.S
+[612/1330] Compiling sha512-armv4-linux.S
+[613/1330] Compiling sha512-586-linux.S
+[614/1330] Compiling sha512-586-apple.S
+[615/1330] Compiling sha256-x86_64-linux.S
+[616/1330] Compiling sha256-x86_64-apple.S
+[617/1330] Compiling sha256-armv8-linux.S
+[618/1330] Compiling sha256-armv8-win.S
+[619/1330] Compiling sha256-armv8-apple.S
+[620/1330] Compiling sha256-armv4-linux.S
+[621/1330] Compiling sha256-586-linux.S
+[622/1330] Compiling sha256-586-apple.S
+[623/1330] Compiling sha1-x86_64-apple.S
+[624/1330] Compiling sha1-x86_64-linux.S
+[625/1330] Compiling sha1-armv8-win.S
+[626/1330] Compiling sha1-armv8-linux.S
+[627/1330] Compiling sha1-armv8-apple.S
+[628/1330] Compiling sha1-armv4-large-linux.S
+[629/1330] Compiling sha1-586-linux.S
+[630/1330] Compiling sha1-586-apple.S
+[631/1330] Compiling rsaz-avx2-linux.S
+[632/1330] Compiling rsaz-avx2-apple.S
+[633/1330] Compiling rdrand-x86_64-linux.S
+[634/1330] Compiling rdrand-x86_64-apple.S
+[635/1330] Compiling p256_beeu-x86_64-asm-apple.S
+[636/1330] Compiling p256_beeu-x86_64-asm-linux.S
+[637/1330] Compiling p256_beeu-armv8-asm-win.S
+[638/1330] Compiling p256_beeu-armv8-asm-linux.S
+[639/1330] Compiling p256_beeu-armv8-asm-apple.S
+[640/1330] Compiling p256-x86_64-asm-linux.S
+[641/1330] Compiling p256-x86_64-asm-apple.S
+[642/1330] Compiling p256-armv8-asm-win.S
+[643/1330] Compiling p256-armv8-asm-linux.S
+[644/1330] Compiling p256-armv8-asm-apple.S
+[645/1330] Compiling ghashv8-armv8-win.S
+[646/1330] Compiling ghashv8-armv8-linux.S
+[647/1330] Compiling ghashv8-armv8-apple.S
+[648/1330] Compiling ghashv8-armv7-linux.S
+[649/1330] Compiling ghash-x86_64-linux.S
+[650/1330] Compiling ghash-x86_64-apple.S
+[651/1330] Compiling ghash-x86-linux.S
+[652/1330] Compiling ghash-x86-apple.S
+[653/1330] Compiling ghash-ssse3-x86_64-linux.S
+[654/1330] Compiling ghash-ssse3-x86_64-apple.S
+[655/1330] Compiling ghash-ssse3-x86-apple.S
+[656/1330] Compiling ghash-ssse3-x86-linux.S
+[657/1330] Compiling ghash-neon-armv8-win.S
+[658/1330] Compiling ghash-neon-armv8-linux.S
+[659/1330] Compiling ghash-neon-armv8-apple.S
+[660/1330] Compiling ghash-armv4-linux.S
+[661/1330] Compiling co-586-linux.S
+[662/1330] Compiling co-586-apple.S
+[663/1330] Compiling bsaes-armv7-linux.S
+[664/1330] Compiling bn-armv8-win.S
+[665/1330] Compiling bn-armv8-linux.S
+[666/1330] Compiling bn-armv8-apple.S
+[667/1330] Compiling bn-586-apple.S
+[668/1330] Compiling bn-586-linux.S
+[669/1330] Compiling armv8-mont-win.S
+[670/1330] Compiling armv8-mont-linux.S
+[671/1330] Compiling armv8-mont-apple.S
+[672/1330] Compiling armv4-mont-linux.S
+[673/1330] Compiling aesv8-gcm-armv8-win.S
+[674/1330] Compiling aesv8-gcm-armv8-linux.S
+[675/1330] Compiling aesv8-gcm-armv8-apple.S
+[676/1330] Compiling aesv8-armv8-win.S
+[677/1330] Compiling aesv8-armv8-linux.S
+[678/1330] Compiling aesv8-armv8-apple.S
+[679/1330] Compiling aesv8-armv7-linux.S
+[680/1330] Compiling aesni-x86_64-linux.S
+[681/1330] Compiling aesni-x86_64-apple.S
+[682/1330] Compiling aesni-x86-linux.S
+[683/1330] Compiling aesni-x86-apple.S
+[684/1330] Compiling aesni-gcm-x86_64-linux.S
+[685/1330] Compiling aesni-gcm-x86_64-apple.S
+[686/1330] Compiling aes-gcm-avx2-x86_64-linux.S
+[687/1330] Compiling aes-gcm-avx2-x86_64-apple.S
+[688/1330] Compiling aes-gcm-avx10-x86_64-linux.S
+[689/1330] Compiling aes-gcm-avx10-x86_64-apple.S
+[690/1330] Compiling x_x509a.cc
+[691/1330] Compiling x_val.cc
+[692/1330] Compiling x_x509.cc
+[693/1330] Compiling x_spki.cc
+[694/1330] Compiling x_sig.cc
+[695/1330] Compiling x_req.cc
+[696/1330] Compiling x_pubkey.cc
+[697/1330] Compiling x_exten.cc
+[698/1330] Compiling x_name.cc
+[699/1330] Compiling x_attrib.cc
+[700/1330] Compiling x_crl.cc
+[701/1330] Compiling x_all.cc
+[702/1330] Compiling x_algor.cc
+[703/1330] Compiling x509spki.cc
+[704/1330] Compiling x509rset.cc
+[705/1330] Compiling x509name.cc
+[706/1330] Compiling x509cset.cc
+[707/1330] Compiling x509_vpm.cc
+[708/1330] Compiling x509_v3.cc
+[709/1330] Compiling x509_txt.cc
+[710/1330] Compiling x509_vfy.cc
+[711/1330] Compiling x509_set.cc
+[712/1330] Compiling x509_trs.cc
+[713/1330] Compiling x509_req.cc
+[714/1330] Compiling x509_obj.cc
+[715/1330] Compiling x509_ext.cc
+[716/1330] Compiling x509_lu.cc
+[717/1330] Compiling x509_def.cc
+[718/1330] Compiling x509_d2.cc
+[719/1330] Compiling x509_cmp.cc
+[720/1330] Compiling x509.cc
+[721/1330] Compiling x509_att.cc
+[722/1330] Compiling v3_utl.cc
+[723/1330] Compiling v3_skey.cc
+[724/1330] Compiling v3_purp.cc
+[725/1330] Compiling v3_prn.cc
+[726/1330] Compiling v3_pmaps.cc
+[727/1330] Compiling v3_pcons.cc
+[728/1330] Compiling v3_ocsp.cc
+[729/1330] Compiling v3_lib.cc
+[730/1330] Compiling v3_ncons.cc
+[731/1330] Compiling v3_int.cc
+[732/1330] Compiling v3_info.cc
+[733/1330] Compiling v3_ia5.cc
+[734/1330] Compiling v3_genn.cc
+[735/1330] Compiling v3_extku.cc
+[736/1330] Compiling v3_enum.cc
+[737/1330] Compiling v3_crld.cc
+[738/1330] Compiling v3_cpols.cc
+[739/1330] Compiling v3_conf.cc
+[740/1330] Compiling v3_bitst.cc
+[741/1330] Compiling v3_bcons.cc
+[742/1330] Compiling v3_alt.cc
+[743/1330] Compiling v3_akeya.cc
+[744/1330] Compiling v3_akey.cc
+[745/1330] Compiling t_x509a.cc
+[746/1330] Compiling t_x509.cc
+[747/1330] Compiling t_req.cc
+[748/1330] Compiling t_crl.cc
+[749/1330] Compiling rsa_pss.cc
+[750/1330] Compiling i2d_pr.cc
+[751/1330] Compiling policy.cc
+[752/1330] Compiling name_print.cc
+[753/1330] Compiling by_file.cc
+[754/1330] Compiling by_dir.cc
+[755/1330] Compiling asn1_gen.cc
+[756/1330] Compiling a_verify.cc
+[757/1330] Compiling algorithm.cc
+[758/1330] Compiling a_sign.cc
+[759/1330] Compiling a_digest.cc
+[760/1330] Compiling voprf.cc
+[761/1330] Compiling trust_token.cc
+[762/1330] Compiling thread_win.cc
+[763/1330] Compiling thread_none.cc
+[764/1330] Compiling thread_pthread.cc
+[765/1330] Compiling pmbtoken.cc
+[766/1330] Compiling thread.cc
+[767/1330] Compiling stack.cc
+[768/1330] Compiling slhdsa.cc
+[769/1330] Compiling siphash.cc
+[770/1330] Compiling sha512.cc
+[771/1330] Compiling spake2plus.cc
+[772/1330] Compiling sha256.cc
+[773/1330] Compiling sha1.cc
+[774/1330] Compiling rsa_extra.cc
+[775/1330] Compiling rsa_print.cc
+[776/1330] Compiling rsa_asn1.cc
+[777/1330] Compiling rsa_crypt.cc
+[778/1330] Compiling refcount.cc
+[779/1330] Compiling rc4.cc
+[780/1330] Compiling windows.cc
+[781/1330] Compiling trusty.cc
+[782/1330] Compiling urandom.cc
+[783/1330] Compiling passive.cc
+[784/1330] Compiling rand.cc
+[785/1330] Compiling ios.cc
+[786/1330] Compiling getentropy.cc
+[787/1330] Compiling deterministic.cc
+[788/1330] Compiling forkunsafe.cc
+[789/1330] Compiling poly1305_arm_asm.S
+[790/1330] Compiling fork_detect.cc
+[791/1330] Compiling pool.cc
+[792/1330] Compiling poly1305_vec.cc
+[793/1330] Compiling poly1305_arm.cc
+[794/1330] Compiling poly1305.cc
+[795/1330] Compiling pkcs8.cc
+[796/1330] Compiling pkcs8_x509.cc
+[797/1330] Compiling p5_pbev2.cc
+[798/1330] Compiling pkcs7_x509.cc
+[799/1330] Compiling pkcs7.cc
+[800/1330] Compiling pem_xaux.cc
+[801/1330] Compiling pem_x509.cc
+[802/1330] Compiling pem_pkey.cc
+[803/1330] Compiling pem_pk8.cc
+[804/1330] Compiling pem_oth.cc
+[805/1330] Compiling pem_lib.cc
+[806/1330] Compiling pem_info.cc
+[807/1330] Compiling obj_xref.cc
+[808/1330] Compiling mlkem.cc
+[809/1330] Compiling pem_all.cc
+[810/1330] Compiling obj.cc
+[811/1330] Compiling mldsa.cc
+[812/1330] Compiling mem.cc
+[813/1330] Compiling md5.cc
+[814/1330] Compiling md4.cc
+[815/1330] Compiling lhash.cc
+[816/1330] Compiling poly_rq_mul.S
+[817/1330] Compiling kyber.cc
+[818/1330] Compiling fips_shared_support.cc
+[819/1330] Compiling hrss.cc
+[820/1330] Compiling hpke.cc
+[821/1330] Compiling ex_data.cc
+[822/1330] Compiling sign.cc
+[823/1330] Compiling scrypt.cc
+[824/1330] Compiling print.cc
+[825/1330] Compiling pbkdf.cc
+[826/1330] Compiling p_x25519_asn1.cc
+[827/1330] Compiling p_x25519.cc
+[828/1330] Compiling p_rsa_asn1.cc
+[829/1330] Compiling p_rsa.cc
+[830/1330] Compiling bcm.cc
+[831/1330] Compiling p_hkdf.cc
+[832/1330] Compiling p_ed25519.cc
+[833/1330] Compiling p_ed25519_asn1.cc
+[834/1330] Compiling p_ec_asn1.cc
+[835/1330] Compiling p_ec.cc
+[836/1330] Compiling p_dsa_asn1.cc
+[837/1330] Compiling p_dh_asn1.cc
+[838/1330] Compiling p_dh.cc
+[839/1330] Compiling evp_ctx.cc
+[840/1330] Compiling evp_asn1.cc
+[841/1330] Compiling evp.cc
+[842/1330] Compiling err.cc
+[843/1330] Compiling engine.cc
+[844/1330] Compiling ecdh.cc
+[845/1330] Compiling ecdsa_asn1.cc
+[846/1330] Compiling hash_to_curve.cc
+[847/1330] Compiling ec_derive.cc
+[848/1330] Compiling ec_asn1.cc
+[849/1330] Compiling dsa_asn1.cc
+[850/1330] Compiling dsa.cc
+[851/1330] Compiling digest_extra.cc
+[852/1330] Compiling params.cc
+[853/1330] Compiling dh_asn1.cc
+[854/1330] Compiling des.cc
+[855/1330] Compiling x25519-asm-arm.S
+[856/1330] Compiling spake25519.cc
+[857/1330] Compiling curve25519.cc
+[858/1330] Compiling curve25519_64_adx.cc
+[859/1330] Compiling crypto.cc
+[860/1330] Compiling cpu_arm_linux.cc
+[861/1330] Compiling cpu_intel.cc
+[862/1330] Compiling cpu_arm_freebsd.cc
+[863/1330] Compiling cpu_aarch64_win.cc
+[864/1330] Compiling cpu_aarch64_sysreg.cc
+[865/1330] Compiling cpu_aarch64_openbsd.cc
+[866/1330] Compiling cpu_aarch64_linux.cc
+[867/1330] Compiling cpu_aarch64_apple.cc
+[868/1330] Compiling cpu_aarch64_fuchsia.cc
+[869/1330] Compiling conf.cc
+[870/1330] Compiling tls_cbc.cc
+[871/1330] Compiling get_cipher.cc
+[872/1330] Compiling e_tls.cc
+[873/1330] Compiling e_rc4.cc
+[874/1330] Compiling e_rc2.cc
+[875/1330] Compiling e_null.cc
+[876/1330] Compiling e_des.cc
+[877/1330] Compiling e_chacha20poly1305.cc
+[878/1330] Compiling e_aesgcmsiv.cc
+[879/1330] Compiling e_aesctrhmac.cc
+[880/1330] Compiling derive_key.cc
+[881/1330] Compiling chacha.cc
+[882/1330] Compiling unicode.cc
+[883/1330] Compiling cbs.cc
+[884/1330] Compiling ber.cc
+[885/1330] Compiling asn1_compat.cc
+[886/1330] Compiling cbb.cc
+[887/1330] Compiling buf.cc
+[888/1330] Compiling convert.cc
+[889/1330] Compiling bn_asn1.cc
+[890/1330] Compiling blake2.cc
+[891/1330] Compiling socket_helper.cc
+[892/1330] Compiling socket.cc
+[893/1330] Compiling printf.cc
+[894/1330] Compiling pair.cc
+[895/1330] Compiling hexdump.cc
+[896/1330] Compiling errno.cc
+[897/1330] Compiling file.cc
+[898/1330] Compiling fd.cc
+[899/1330] Compiling connect.cc
+[900/1330] Compiling bio_mem.cc
+[901/1330] Compiling bio.cc
+[902/1330] Compiling tasn_typ.cc
+[903/1330] Compiling base64.cc
+[904/1330] Compiling tasn_utl.cc
+[905/1330] Compiling tasn_new.cc
+[906/1330] Compiling tasn_fre.cc
+[907/1330] Compiling tasn_enc.cc
+[908/1330] Compiling posix_time.cc
+[909/1330] Compiling f_string.cc
+[910/1330] Compiling tasn_dec.cc
+[911/1330] Compiling f_int.cc
+[912/1330] Compiling asn_pack.cc
+[913/1330] Compiling asn1_par.cc
+[914/1330] Compiling asn1_lib.cc
+[914/1330] Compiling a_utctm.cc
+[916/1330] Compiling a_type.cc
+[917/1330] Compiling a_time.cc
+[918/1330] Compiling a_strnid.cc
+[919/1330] Compiling a_octet.cc
+[920/1330] Compiling a_strex.cc
+[921/1330] Compiling a_object.cc
+[922/1330] Compiling a_mbstr.cc
+[923/1330] Compiling a_i2d_fp.cc
+[924/1330] Compiling a_int.cc
+[925/1330] Compiling a_dup.cc
+[926/1330] Compiling a_gentm.cc
+[927/1330] Compiling a_d2i_fp.cc
+[928/1330] Compiling a_bool.cc
+[929/1330] Compiling fiat_p256_adx_sqr.S
+[930/1330] Compiling fiat_p256_adx_mul.S
+[931/1330] Compiling a_bitstr.cc
+[932/1330] Compiling fiat_curve25519_adx_square.S
+[933/1330] Compiling fiat_curve25519_adx_mul.S
+[934/1330] Compiling md5-x86_64-linux.S
+[935/1330] Compiling md5-x86_64-apple.S
+[936/1330] Compiling md5-586-linux.S
+[937/1330] Compiling c-nioatomics.c
+[938/1330] Compiling md5-586-apple.S
+[939/1330] Compiling chacha20_poly1305_x86_64-apple.S
+[940/1330] Compiling chacha20_poly1305_x86_64-linux.S
+[941/1330] Compiling chacha20_poly1305_armv8-win.S
+[942/1330] Compiling c-atomics.c
+[943/1330] Compiling err_data.cc
+[944/1330] Compiling chacha20_poly1305_armv8-linux.S
+[945/1330] Compiling chacha20_poly1305_armv8-apple.S
+[946/1330] Compiling chacha-x86_64-apple.S
+[947/1330] Compiling chacha-x86_64-linux.S
+[948/1336] Compiling chacha-x86-linux.S
+[949/1336] Compiling chacha-x86-apple.S
+[950/1336] Compiling chacha-armv8-apple.S
+[951/1336] Compiling chacha-armv8-linux.S
+[952/1336] Compiling chacha-armv8-win.S
+[953/1336] Compiling chacha-armv4-linux.S
+[954/1336] Compiling aes128gcmsiv-x86_64-linux.S
+[955/1336] Compiling x86_64-mont5-apple.S
+[956/1336] Compiling aes128gcmsiv-x86_64-apple.S
+[957/1336] Compiling x86_64-mont5-linux.S
+[958/1336] Compiling x86_64-mont-linux.S
+[959/1336] Compiling x86_64-mont-apple.S
+[960/1336] Compiling x86-mont-apple.S
+[961/1336] Compiling x86-mont-linux.S
+[962/1336] Compiling vpaes-x86_64-linux.S
+[963/1336] Compiling vpaes-x86_64-apple.S
+[964/1336] Compiling vpaes-x86-linux.S
+[965/1336] Compiling vpaes-armv8-linux.S
+[966/1336] Compiling vpaes-x86-apple.S
+[967/1336] Compiling vpaes-armv8-win.S
+[968/1336] Compiling vpaes-armv7-linux.S
+[969/1336] Compiling vpaes-armv8-apple.S
+[971/1336] Compiling NIOConcurrencyHelpers NIOThreadPoolWorkAvailable.swift
+[972/1336] Compiling NIOConcurrencyHelpers atomics.swift
+[973/1336] Emitting module NIOConcurrencyHelpers
+[974/1336] Compiling NIOConcurrencyHelpers NIOLockedValueBox.swift
+[975/1336] Compiling NIOConcurrencyHelpers NIOAtomic.swift
+[976/1336] Compiling NIOConcurrencyHelpers NIOLock.swift
+[976/1337] Compiling sha512-x86_64-apple.S
+[977/1337] Compiling sha512-x86_64-linux.S
+[978/1337] Compiling sha512-armv8-win.S
+[979/1337] Compiling sha512-armv8-linux.S
+[980/1337] Compiling sha512-armv8-apple.S
+[981/1337] Compiling sha512-armv4-linux.S
+[982/1337] Compiling sha512-586-linux.S
+[983/1337] Compiling sha512-586-apple.S
+[984/1337] Compiling sha256-x86_64-linux.S
+[985/1337] Compiling sha256-x86_64-apple.S
+[986/1337] Compiling sha256-armv8-linux.S
+[987/1337] Compiling sha256-armv8-win.S
+[988/1337] Compiling sha256-armv8-apple.S
+[989/1337] Compiling sha256-armv4-linux.S
+[990/1337] Compiling sha256-586-linux.S
+[991/1337] Compiling sha256-586-apple.S
+[992/1337] Compiling sha1-x86_64-linux.S
+[993/1337] Compiling sha1-x86_64-apple.S
+[994/1337] Compiling sha1-armv8-win.S
+[995/1337] Compiling sha1-armv8-linux.S
+[997/1337] Compiling NIOConcurrencyHelpers lock.swift
+[997/1338] Compiling sha1-armv8-apple.S
+[998/1338] Compiling sha1-armv4-large-linux.S
+[999/1338] Compiling sha1-586-linux.S
+[1001/1338] Compiling sha1-586-apple.S
+[1002/1338] Compiling rsaz-avx2-linux.S
+[1003/1338] Compiling rsaz-avx2-apple.S
+[1004/1338] Compiling rdrand-x86_64-linux.S
+[1005/1338] Compiling rdrand-x86_64-apple.S
+[1006/1338] Compiling p256_beeu-x86_64-asm-linux.S
+[1007/1338] Compiling p256_beeu-x86_64-asm-apple.S
+[1008/1338] Compiling p256_beeu-armv8-asm-win.S
+[1009/1338] Wrapping AST for NIOConcurrencyHelpers for debugging
+[1010/1338] Compiling p256_beeu-armv8-asm-linux.S
+[1011/1338] Compiling p256_beeu-armv8-asm-apple.S
+[1012/1338] Compiling p256-x86_64-asm-apple.S
+[1013/1338] Compiling p256-x86_64-asm-linux.S
+[1014/1338] Compiling p256-armv8-asm-win.S
+[1015/1338] Compiling p256-armv8-asm-linux.S
+[1016/1338] Compiling p256-armv8-asm-apple.S
+[1017/1338] Compiling ghashv8-armv8-win.S
+[1018/1338] Compiling ghashv8-armv8-apple.S
+[1019/1338] Compiling ghashv8-armv8-linux.S
+[1020/1338] Compiling ghashv8-armv7-linux.S
+[1021/1338] Compiling ghash-x86_64-linux.S
+[1022/1338] Compiling ghash-x86_64-apple.S
+[1023/1338] Compiling ghash-x86-linux.S
+[1024/1338] Compiling ghash-x86-apple.S
+[1025/1338] Compiling ghash-ssse3-x86_64-linux.S
+[1025/1338] Compiling ghash-ssse3-x86_64-apple.S
+[1027/1338] Compiling ghash-ssse3-x86-linux.S
+[1028/1338] Compiling ghash-ssse3-x86-apple.S
+[1029/1338] Compiling ghash-neon-armv8-win.S
+[1030/1338] Compiling ghash-neon-armv8-linux.S
+[1031/1338] Compiling ghash-neon-armv8-apple.S
+[1032/1338] Compiling ghash-armv4-linux.S
+[1033/1338] Compiling co-586-linux.S
+[1034/1338] Compiling bsaes-armv7-linux.S
+[1034/1338] Compiling co-586-apple.S
+[1036/1338] Compiling bn-armv8-win.S
+[1037/1338] Compiling bn-armv8-apple.S
+[1038/1338] Compiling bn-armv8-linux.S
+[1039/1338] Compiling bn-586-linux.S
+[1040/1338] Compiling bn-586-apple.S
+[1041/1338] Compiling armv8-mont-win.S
+[1042/1338] Compiling armv8-mont-linux.S
+[1043/1338] Compiling armv8-mont-apple.S
+[1044/1338] Compiling armv4-mont-linux.S
+[1045/1338] Compiling aesv8-gcm-armv8-win.S
+[1046/1338] Compiling aesv8-gcm-armv8-apple.S
+[1047/1338] Compiling aesv8-gcm-armv8-linux.S
+[1048/1338] Compiling aesv8-armv8-win.S
+[1049/1338] Compiling aesv8-armv8-linux.S
+[1050/1338] Compiling aesv8-armv8-apple.S
+[1051/1338] Compiling aesv8-armv7-linux.S
+[1052/1338] Compiling aesni-x86_64-apple.S
+[1053/1338] Compiling aesni-x86_64-linux.S
+[1054/1338] Compiling aesni-x86-linux.S
+[1055/1338] Compiling aesni-x86-apple.S
+[1056/1338] Compiling aesni-gcm-x86_64-linux.S
+[1057/1338] Compiling aesni-gcm-x86_64-apple.S
+[1058/1338] Compiling aes-gcm-avx512-x86_64-linux.S
+[1059/1338] Compiling aes-gcm-avx512-x86_64-apple.S
+[1060/1338] Compiling aes-gcm-avx2-x86_64-apple.S
+[1061/1338] Compiling aes-gcm-avx2-x86_64-linux.S
+[1062/1338] Compiling xwing.cc
+[1063/1338] Compiling x_x509a.cc
+[1064/1338] Compiling x_spki.cc
+[1065/1338] Compiling x_sig.cc
+[1066/1338] Compiling x_req.cc
+[1067/1338] Compiling x_x509.cc
+[1068/1338] Compiling x_pubkey.cc
+[1069/1338] Compiling x_exten.cc
+[1070/1338] Compiling x_name.cc
+[1071/1338] Compiling x_attrib.cc
+[1072/1338] Compiling x_crl.cc
+[1073/1338] Compiling x_all.cc
+[1074/1338] Compiling x_algor.cc
+[1075/1338] Compiling x509spki.cc
+[1076/1338] Compiling x509rset.cc
+[1077/1338] Compiling x509cset.cc
+[1078/1338] Compiling x509name.cc
+[1079/1338] Compiling x509_vpm.cc
+[1080/1338] Compiling x509_vfy.cc
+[1081/1338] Compiling x509_v3.cc
+[1082/1338] Compiling x509_txt.cc
+[1083/1338] Compiling x509_set.cc
+[1084/1338] Compiling x509_trs.cc
+[1085/1338] Compiling x509_req.cc
+[1086/1338] Compiling x509_obj.cc
+[1087/1338] Compiling x509_ext.cc
+[1088/1338] Compiling x509_def.cc
+[1089/1338] Compiling x509_d2.cc
+[1090/1338] Compiling x509_lu.cc
+[1091/1338] Compiling x509_cmp.cc
+[1092/1338] Compiling x509_att.cc
+[1093/1338] Compiling x509.cc
+[1094/1338] Compiling v3_skey.cc
+[1095/1338] Compiling v3_purp.cc
+[1096/1338] Compiling v3_utl.cc
+[1097/1338] Compiling v3_prn.cc
+[1098/1338] Compiling v3_pmaps.cc
+[1099/1338] Compiling v3_pcons.cc
+[1100/1338] Compiling v3_ocsp.cc
+[1101/1338] Compiling v3_lib.cc
+[1102/1338] Compiling v3_ncons.cc
+[1103/1338] Compiling v3_int.cc
+[1104/1338] Compiling v3_ia5.cc
+[1105/1338] Compiling v3_info.cc
+[1106/1338] Compiling v3_genn.cc
+[1107/1338] Compiling v3_extku.cc
+[1108/1338] Compiling v3_enum.cc
+[1109/1338] Compiling v3_crld.cc
+[1110/1338] Compiling v3_cpols.cc
+[1111/1338] Compiling v3_conf.cc
+[1112/1338] Compiling v3_bitst.cc
+[1113/1338] Compiling v3_bcons.cc
+[1114/1338] Compiling v3_alt.cc
+[1115/1338] Compiling v3_akeya.cc
+[1116/1338] Compiling v3_akey.cc
+[1117/1338] Compiling t_x509a.cc
+[1118/1338] Compiling t_x509.cc
+[1119/1338] Compiling t_req.cc
+[1120/1338] Compiling t_crl.cc
+[1121/1338] Compiling rsa_pss.cc
+[1122/1338] Compiling i2d_pr.cc
+[1123/1338] Compiling policy.cc
+[1124/1338] Compiling name_print.cc
+[1125/1338] Compiling by_file.cc
+[1126/1338] Compiling by_dir.cc
+[1127/1338] Compiling asn1_gen.cc
+[1128/1338] Compiling algorithm.cc
+[1129/1338] Compiling a_digest.cc
+[1130/1338] Compiling a_verify.cc
+[1131/1338] Compiling a_sign.cc
+[1132/1338] Compiling voprf.cc
+[1133/1338] Compiling trust_token.cc
+[1134/1338] Compiling thread_win.cc
+[1135/1338] Compiling thread_none.cc
+[1136/1338] Compiling thread_pthread.cc
+[1137/1338] Compiling thread.cc
+[1138/1338] Compiling pmbtoken.cc
+[1139/1338] Compiling stack.cc
+[1140/1338] Compiling slhdsa.cc
+[1141/1338] Compiling sha512.cc
+[1142/1338] Compiling sha256.cc
+[1143/1338] Compiling siphash.cc
+[1144/1338] Compiling spake2plus.cc
+[1145/1338] Compiling sha1.cc
+[1146/1338] Compiling rsa_extra.cc
+[1147/1338] Compiling rsa_print.cc
+[1148/1338] Compiling refcount.cc
+[1149/1338] Compiling rsa_crypt.cc
+[1150/1338] Compiling rc4.cc
+[1151/1338] Compiling rsa_asn1.cc
+[1152/1338] Compiling windows.cc
+[1153/1338] Compiling trusty.cc
+[1154/1338] Compiling urandom.cc
+[1155/1338] Compiling rand.cc
+[1156/1338] Compiling ios.cc
+[1157/1338] Compiling passive.cc
+[1158/1338] Compiling getentropy.cc
+[1159/1338] Compiling deterministic.cc
+[1160/1338] Compiling poly1305_arm_asm.S
+[1161/1338] Compiling forkunsafe.cc
+[1162/1338] Compiling fork_detect.cc
+[1163/1338] Compiling pool.cc
+[1164/1338] Compiling poly1305_vec.cc
+[1165/1338] Compiling poly1305_arm.cc
+[1166/1338] Compiling poly1305.cc
+[1167/1338] Compiling pkcs8.cc
+[1168/1338] Compiling pkcs8_x509.cc
+[1169/1338] Compiling p5_pbev2.cc
+[1170/1338] Compiling pkcs7.cc
+[1171/1338] Compiling pkcs7_x509.cc
+[1172/1338] Compiling pem_xaux.cc
+[1173/1338] Compiling pem_x509.cc
+[1174/1338] Compiling pem_pkey.cc
+[1175/1338] Compiling pem_pk8.cc
+[1176/1338] Compiling pem_oth.cc
+[1177/1338] Compiling pem_info.cc
+[1178/1338] Compiling pem_lib.cc
+[1179/1338] Compiling obj_xref.cc
+[1180/1338] Compiling pem_all.cc
+[1181/1338] Compiling mlkem.cc
+[1182/1338] Compiling mldsa.cc
+[1183/1338] Compiling obj.cc
+[1184/1338] Compiling mem.cc
+[1185/1338] Compiling md5.cc
+[1186/1338] Compiling poly_rq_mul.S
+[1187/1338] Compiling lhash.cc
+[1188/1338] Compiling md4.cc
+[1189/1338] Compiling fips_shared_support.cc
+[1190/1338] Compiling kyber.cc
+[1191/1338] Compiling fuzzer_mode.cc
+[1192/1338] Compiling hrss.cc
+[1193/1338] Compiling hpke.cc
+[1194/1338] Compiling ex_data.cc
+[1195/1338] Compiling sign.cc
+[1196/1338] Compiling scrypt.cc
+[1197/1338] Compiling print.cc
+[1198/1338] Compiling pbkdf.cc
+[1199/1338] Compiling p_x25519_asn1.cc
+[1200/1338] Compiling p_x25519.cc
+[1201/1338] Compiling p_rsa_asn1.cc
+[1202/1338] Compiling p_rsa.cc
+[1203/1338] Compiling p_hkdf.cc
+[1204/1338] Compiling p_ed25519_asn1.cc
+[1205/1338] Compiling p_ed25519.cc
+[1206/1338] Compiling p_ec_asn1.cc
+[1207/1338] Compiling p_ec.cc
+[1208/1338] Compiling p_dsa_asn1.cc
+[1209/1338] Compiling p_dh_asn1.cc
+[1210/1338] Compiling p_dh.cc
+[1211/1338] Compiling evp_ctx.cc
+[1212/1338] Compiling evp_asn1.cc
+[1213/1338] Compiling evp.cc
+[1214/1338] Compiling err.cc
+[1215/1338] Compiling engine.cc
+[1216/1338] Compiling ecdsa_p1363.cc
+[1217/1338] Compiling ecdh.cc
+[1218/1338] Compiling ecdsa_asn1.cc
+[1219/1338] Compiling hash_to_curve.cc
+[1220/1338] Compiling ec_derive.cc
+[1221/1338] Compiling bcm.cc
+[1222/1338] Compiling ec_asn1.cc
+[1223/1338] Compiling dsa_asn1.cc
+[1224/1338] Compiling dsa.cc
+[1225/1338] Compiling digest_extra.cc
+[1226/1338] Compiling params.cc
+[1227/1338] Compiling x25519-asm-arm.S
+[1228/1338] Compiling dh_asn1.cc
+[1229/1338] Compiling des.cc
+[1230/1338] Compiling spake25519.cc
+[1231/1338] Compiling curve25519.cc
+[1232/1338] Compiling curve25519_64_adx.cc
+[1233/1338] Compiling cpu_arm_linux.cc
+[1234/1338] Compiling crypto.cc
+[1235/1338] Compiling cpu_intel.cc
+[1236/1338] Compiling cpu_arm_freebsd.cc
+[1237/1338] Compiling cpu_aarch64_win.cc
+[1238/1338] Compiling cpu_aarch64_sysreg.cc
+[1239/1338] Compiling cpu_aarch64_openbsd.cc
+[1240/1338] Compiling cpu_aarch64_linux.cc
+[1241/1338] Compiling cpu_aarch64_fuchsia.cc
+[1242/1338] Compiling cpu_aarch64_apple.cc
+[1243/1338] Compiling conf.cc
+[1244/1338] Compiling get_cipher.cc
+[1245/1338] Compiling tls_cbc.cc
+[1246/1338] Compiling e_tls.cc
+[1247/1338] Compiling cms.cc
+[1248/1338] Compiling e_rc4.cc
+[1249/1338] Compiling e_rc2.cc
+[1250/1338] Compiling e_null.cc
+[1251/1338] Compiling e_des.cc
+[1252/1338] Compiling e_chacha20poly1305.cc
+[1253/1338] Compiling e_aesgcmsiv.cc
+[1254/1338] Compiling e_aeseax.cc
+[1255/1338] Compiling e_aesctrhmac.cc
+[1256/1338] Compiling derive_key.cc
+[1257/1338] Compiling chacha.cc
+[1258/1338] Compiling cbb.cc
+[1259/1338] Compiling cbs.cc
+[1260/1338] Compiling ber.cc
+[1261/1338] Compiling buf.cc
+[1262/1338] Compiling asn1_compat.cc
+[1263/1338] Compiling sqrt.cc
+[1264/1338] Compiling div.cc
+[1265/1338] Compiling exponentiation.cc
+[1266/1338] Compiling convert.cc
+[1267/1338] Compiling bn_asn1.cc
+[1268/1338] Compiling printf.cc
+[1269/1338] Compiling blake2.cc
+[1270/1338] Compiling pair.cc
+[1271/1338] Compiling hexdump.cc
+[1272/1338] Compiling file.cc
+[1273/1338] Compiling errno.cc
+[1274/1338] Compiling fd.cc
+[1275/1338] Compiling bio_mem.cc
+[1276/1338] Compiling bio.cc
+[1277/1338] Compiling base64.cc
+[1278/1338] Compiling tasn_utl.cc
+[1279/1338] Compiling tasn_typ.cc
+[1280/1338] Compiling tasn_new.cc
+[1281/1338] Compiling tasn_fre.cc
+[1282/1338] Compiling tasn_enc.cc
+[1283/1338] Compiling tasn_dec.cc
+[1284/1338] Compiling f_string.cc
+[1285/1338] Compiling posix_time.cc
+[1286/1338] Compiling f_int.cc
+[1287/1338] Compiling asn_pack.cc
+[1288/1338] Compiling asn1_par.cc
+[1289/1338] Compiling asn1_lib.cc
+[1290/1338] Compiling a_utctm.cc
+[1291/1338] Compiling a_type.cc
+[1292/1338] Compiling a_time.cc
+[1293/1338] Compiling a_strnid.cc
+[1294/1338] Compiling a_strex.cc
+[1295/1338] Compiling a_octet.cc
+[1296/1338] Write sources
+[1297/1338] Compiling a_dup.cc
+[1298/1338] Compiling a_object.cc
+[1299/1338] Compiling a_gentm.cc
+[1300/1355] Compiling a_bitstr.cc
+[1301/1355] Compiling aes.cc
+[1303/1363] Compiling Atomics OptionalRawRepresentable.swift
+[1304/1363] Compiling Atomics RawRepresentable.swift
+[1305/1363] Compiling Atomics AtomicBool.swift
+[1306/1363] Compiling Atomics IntegerConformances.swift
+[1307/1363] Compiling Atomics AtomicValue.swift
+[1308/1363] Compiling Atomics AtomicMemoryOrderings.swift
+[1309/1363] Compiling Atomics DoubleWord.swift
+[1310/1363] Compiling CryptoBoringWrapper CryptoKitErrors_boring.swift
+[1311/1363] Compiling Atomics AtomicReference.swift
+[1312/1363] Compiling Atomics AtomicStorage.swift
+[1313/1363] Compiling Atomics ManagedAtomic.swift
+[1314/1363] Compiling Atomics ManagedAtomicLazyReference.swift
+[1315/1363] Compiling Atomics UnsafeAtomic.swift
+[1316/1363] Compiling CryptoBoringWrapper EllipticCurve.swift
+[1317/1363] Compiling CryptoBoringWrapper EllipticCurvePoint.swift
+[1318/1363] Compiling CryptoBoringWrapper BoringSSLAEAD.swift
+[1319/1363] Emitting module Atomics
+[1322/1366] Compiling CryptoBoringWrapper FiniteFieldArithmeticContext.swift
+[1323/1366] Compiling CryptoBoringWrapper Data+Span.swift
+[1326/1366] Emitting module CryptoBoringWrapper
+[1327/1366] Compiling CryptoBoringWrapper ArbitraryPrecisionInteger.swift
+[1328/1367] Compiling Atomics UnsafeAtomicLazyReference.swift
+[1329/1367] Compiling Atomics IntegerOperations.swift
+[1330/1367] Compiling Atomics Unmanaged extensions.swift
+[1331/1368] Compiling CryptoBoringWrapper RandomBytes.swift
+[1333/1379] Wrapping AST for Atomics for debugging
+[1334/1432] Wrapping AST for CryptoBoringWrapper for debugging
+[1336/1512] Emitting module Crypto
+[1337/1528] Compiling Crypto X25519Keys_boring.swift
+[1338/1528] Compiling Crypto Curve25519.swift
+[1339/1528] Compiling Crypto Ed25519Keys.swift
+[1340/1528] Compiling Crypto NISTCurvesKeys.swift
+[1341/1528] Compiling Crypto X25519Keys.swift
+[1342/1528] Compiling Crypto SymmetricKeys.swift
+[1343/1528] Compiling Crypto HMAC.swift
+[1344/1528] Compiling Crypto MACFunctions.swift
+[1345/1528] Compiling Crypto MessageAuthenticationCode.swift
+[1346/1528] Compiling Crypto AES.swift
+[1347/1528] Compiling Crypto ECDSASignature_boring.swift
+[1348/1528] Compiling Crypto ECDSA_boring.swift
+[1349/1528] Compiling Crypto EdDSA_boring.swift
+[1350/1528] Compiling Crypto MLDSA_boring.swift
+[1351/1528] Compiling Crypto MLDSA_wrapper.swift
+[1352/1528] Compiling Crypto ECDSA.swift
+[1353/1528] Compiling Crypto ObjectIdentifier.swift
+[1354/1528] Compiling Crypto ECDSASignature.swift
+[1355/1528] Compiling Crypto PEMDocument.swift
+[1356/1528] Compiling Crypto PKCS8PrivateKey.swift
+[1357/1528] Compiling Crypto SEC1PrivateKey.swift
+[1358/1528] Compiling Crypto SubjectPublicKeyInfo.swift
+[1359/1528] Compiling Crypto CryptoError_boring.swift
+[1360/1528] Compiling Crypto CryptoKitErrors.swift
+[1361/1528] Compiling Crypto Digest_boring.swift
+[1362/1528] Compiling Crypto Digest.swift
+[1363/1528] Compiling Crypto Digests.swift
+[1364/1528] Compiling Crypto HashFunctions.swift
+[1365/1528] Compiling Crypto HashFunctions_SHA2.swift
+[1366/1528] Compiling Crypto HashFunctions_SHA3.swift
+[1367/1528] Compiling Crypto Digest_xkcp.swift
+[1368/1528] Compiling Crypto HPKE-AEAD.swift
+[1369/1528] Compiling Crypto AES-GCM.swift
+[1370/1528] Compiling Crypto AES-GCM_boring.swift
+[1371/1528] Compiling Crypto ChaChaPoly_boring.swift
+[1372/1528] Compiling Crypto ChaChaPoly.swift
+[1373/1528] Compiling Crypto Cipher.swift
+[1374/1528] Compiling Crypto Nonces.swift
+[1375/1528] Compiling Crypto ASN1.swift
+[1376/1528] Compiling Crypto ASN1Any.swift
+[1377/1528] Compiling Crypto ASN1BitString.swift
+[1378/1528] Compiling Crypto ASN1Boolean.swift
+[1379/1528] Compiling Crypto ASN1Identifier.swift
+[1380/1528] Compiling Crypto ASN1Integer.swift
+[1381/1528] Compiling Crypto ASN1Null.swift
+[1382/1528] Compiling Crypto ASN1OctetString.swift
+[1383/1528] Compiling Crypto ASN1Strings.swift
+[1384/1528] Compiling Crypto ArraySliceBigint.swift
+[1385/1528] Compiling Crypto GeneralizedTime.swift
+[1386/1528] Compiling Crypto MLKEM_boring.swift
+[1387/1528] Compiling Crypto MLKEM_wrapper.swift
+[1388/1528] Compiling Crypto XWing_boring.swift
+[1389/1528] Compiling Crypto KEM-Errors.swift
+[1390/1528] Compiling Crypto KEM.swift
+[1391/1528] Compiling Crypto MLKEM.swift
+[1392/1528] Compiling Crypto XWing.swift
+[1393/1528] Compiling Crypto ECDH_boring.swift
+[1394/1528] Compiling Crypto DH.swift
+[1395/1528] Compiling Crypto ECDH.swift
+[1396/1528] Compiling Crypto ANSIx963.swift
+[1397/1528] Compiling Crypto HKDF.swift
+[1398/1528] Compiling Crypto AESWrap.swift
+[1399/1528] Compiling Crypto AESWrap_boring.swift
+[1400/1528] Compiling Crypto Ed25519_boring.swift
+[1401/1528] Compiling Crypto NISTCurvesKeys_boring.swift
+[1402/1528] Compiling Crypto HPKE-Ciphersuite.swift
+[1403/1528] Compiling Crypto HPKE-KDF.swift
+[1404/1528] Compiling Crypto HPKE-KexKeyDerivation.swift
+[1405/1528] Compiling Crypto HPKE-LabeledExtract.swift
+[1406/1528] Compiling Crypto HPKE-Utils.swift
+[1407/1528] Compiling Crypto DHKEM.swift
+[1408/1528] Compiling Crypto HPKE-KEM-Curve25519.swift
+[1409/1528] Compiling Crypto HPKE-NIST-EC-KEMs.swift
+[1410/1528] Compiling Crypto HPKE-KEM.swift
+[1411/1528] Compiling Crypto HPKE-Errors.swift
+[1412/1528] Compiling Crypto HPKE.swift
+[1413/1528] Compiling Crypto HPKE-Context.swift
+[1414/1528] Compiling Crypto HPKE-KeySchedule.swift
+[1415/1528] Compiling Crypto HPKE-Modes.swift
+[1416/1528] Compiling Crypto Insecure.swift
+[1417/1528] Compiling Crypto Insecure_HashFunctions.swift
+[1430/1539] Compiling Crypto Ed25519.swift
+[1431/1539] Compiling Crypto MLDSA.swift
+[1432/1539] Compiling Crypto Signature.swift
+[1433/1539] Compiling Crypto ArraySpanHelpers.swift
+[1434/1539] Compiling Crypto CryptoKitErrors_boring.swift
+[1435/1539] Compiling Crypto InlineArray+withBytes_boring.swift
+[1436/1539] Compiling Crypto Optional+withUnsafeBytes_boring.swift
+[1437/1539] Compiling Crypto RNG_boring.swift
+[1438/1539] Compiling Crypto SafeCompare_boring.swift
+[1439/1539] Compiling Crypto Zeroization_boring.swift
+[1440/1539] Compiling Crypto _CryptoModuleAnchor.swift
+[1441/1539] Compiling Crypto Data+ArraySpan.swift
+[1442/1539] Compiling Crypto PrettyBytes.swift
+[1443/1539] Compiling Crypto SafeCompare.swift
+[1444/1539] Compiling Crypto SecureBytes.swift
+[1445/1539] Compiling Crypto Zeroization.swift
+[1447/1540] Emitting module NIOCore
+[1495/1614] Wrapping AST for Crypto for debugging
+[1497/1624] Compiling DiscordOAuth OAuthInstallationURL.swift
+[1498/1624] Emitting module DiscordOAuth
+[1499/1625] Compiling NIOCore NIOSplitLinesMessageDecoder.swift
+[1500/1625] Compiling NIOCore NIOTransportAccessibleChannelCore.swift
+[1501/1625] Compiling NIOCore RecvByteBufferAllocator.swift
+[1502/1625] Compiling NIOCore SingleStepByteToMessageDecoder.swift
+[1503/1625] Compiling NIOCore SocketAddresses.swift
+[1504/1625] Compiling NIOCore SocketOptionProvider.swift
+[1505/1625] Compiling NIOCore SystemCallHelpers.swift
+[1506/1625] Compiling NIOCore TimeAmount+Duration.swift
+[1507/1625] Compiling NIOCore TypeAssistedChannelHandler.swift
+[1508/1625] Compiling NIOCore UniversalBootstrapSupport.swift
+[1509/1625] Compiling NIOCore Utilities.swift
+[1511/1626] Compiling DiscordOAuth OAuthDeviceAuthorization.swift
+[1512/1626] Compiling DiscordOAuth AuthorizationFlow.swift
+[1513/1626] Compiling DiscordOAuth OAuthClient.swift
+[1514/1626] Compiling DiscordOAuth OAuthBrowserAdapter.swift
+[1515/1626] Compiling CryptoExtras SHA512256Digest.swift
+[1516/1626] Compiling CryptoExtras Curve25519+PEM.swift
+[1517/1626] Compiling CryptoExtras ObjectIdentifier.swift
+[1518/1626] Compiling CryptoExtras PKCS8DERRepresentation.swift
+[1519/1626] Compiling CryptoExtras PKCS8PrivateKey.swift
+[1520/1626] Compiling CryptoExtras RFC8410AlgorithmIdentifier.swift
+[1521/1626] Compiling CryptoExtras ECToolbox_boring.swift
+[1522/1626] Compiling CryptoExtras ECToolbox.swift
+[1523/1626] Compiling CryptoExtras HashToField.swift
+[1524/1626] Compiling CryptoExtras KDF.swift
+[1525/1626] Compiling CryptoExtras PBKDF2_boring.swift
+[1526/1626] Compiling CryptoExtras PBKDF2_commoncrypto.swift
+[1527/1689] Compiling NIOPosix BSDSocketAPICommon.swift
+[1528/1689] Compiling NIOPosix BSDSocketAPIPosix.swift
+[1529/1689] Compiling NIOPosix BSDSocketAPIWindows.swift
+[1530/1689] Compiling NIOPosix BaseSocket.swift
+[1531/1689] Compiling NIOPosix BaseSocketChannel+AccessibleTransport.swift
+[1532/1689] Compiling NIOPosix BaseSocketChannel+SocketOptionProvider.swift
+[1533/1689] Compiling NIOPosix BaseSocketChannel.swift
+[1534/1689] Compiling NIOPosix BaseStreamSocketChannel.swift
+[1535/1689] Compiling NIOPosix Bootstrap.swift
+[1536/1689] Compiling NIOPosix ControlMessage.swift
+[1537/1689] Compiling NIOPosix DatagramVectorReadManager.swift
+[1538/1689] Compiling NIOPosix Errors+Any.swift
+[1539/1689] Emitting module DiscordMLS
+[1548/1689] Compiling DiscordMLS MLSWelcome.swift
+[1549/1690] Compiling DiscordInteractions SignedRequestVerifier.swift
+[1552/1691] Emitting module DiscordInteractions
+[1555/1691] Compiling DiscordInteractions InteractionResponseSink.swift
+[1558/1691] Compiling CryptoExtras PBKDF2.swift
+[1559/1691] Compiling CryptoExtras Scrypt_boring.swift
+[1560/1691] Compiling CryptoExtras Scrypt.swift
+[1561/1691] Compiling CryptoExtras OPRF.swift
+[1562/1691] Compiling CryptoExtras OPRFClient.swift
+[1563/1691] Compiling CryptoExtras OPRFServer.swift
+[1564/1691] Compiling CryptoExtras VOPRF+API.swift
+[1565/1691] Compiling CryptoExtras VOPRFClient.swift
+[1566/1691] Compiling CryptoExtras VOPRFServer.swift
+[1567/1691] Compiling CryptoExtras BoringSSLPassphraseCallbackManager.swift
+[1568/1691] Compiling CryptoExtras RSA+BlindSigning.swift
+[1569/1691] Compiling NIOPosix FileDescriptor.swift
+[1570/1691] Compiling NIOPosix GetaddrinfoResolver.swift
+[1571/1691] Compiling NIOPosix HappyEyeballs.swift
+[1572/1691] Compiling NIOPosix IO.swift
+[1573/1691] Compiling NIOPosix IntegerBitPacking.swift
+[1574/1691] Compiling NIOPosix IntegerTypes.swift
+[1575/1691] Compiling NIOPosix Linux.swift
+[1576/1691] Compiling NIOPosix LinuxCPUSet.swift
+[1577/1691] Compiling NIOPosix PipePair.swift
+[1578/1691] Compiling NIOPosix Pool.swift
+[1579/1691] Compiling NIOPosix PosixSingletons+ConcurrencyTakeOver.swift
+[1580/1691] Emitting module CryptoExtras
+[1581/1691] Compiling NIOPosix PosixSingletons.swift
+[1582/1691] Compiling NIOPosix RawSocketBootstrap.swift
+[1583/1691] Compiling NIOPosix Resolver.swift
+[1584/1691] Compiling NIOPosix Selectable.swift
+[1585/1691] Compiling NIOPosix SelectableChannel.swift
+[1586/1691] Compiling NIOPosix SelectableEventLoop.swift
+[1587/1691] Compiling NIOPosix LinuxUring.swift
+[1588/1691] Compiling NIOPosix MultiThreadedEventLoopGroup.swift
+[1589/1691] Compiling NIOPosix NIOPosixSendableMetatype.swift
+[1590/1691] Compiling NIOPosix NIORandomizedDNSResolver.swift
+[1591/1691] Compiling NIOPosix NIOThreadPool.swift
+[1592/1691] Compiling NIOPosix NonBlockingFileIO.swift
+[1593/1691] Compiling DiscordOAuth TokenCoordinator.swift
+[1595/1692] Compiling DiscordInteractions WebhookEventProcessor.swift
+[1595/1692] Wrapping AST for NIOCore for debugging
+[1597/1693] Compiling NIOEmbedded Embedded.swift
+[1598/1693] Compiling DiscordMLS MLSWire.swift
+[1599/1694] Emitting module NIOEmbedded
+[1600/1694] Compiling NIOEmbedded AsyncTestingChannel.swift
+[1601/1694] Compiling NIOEmbedded AsyncTestingEventLoop.swift
+[1605/1698] Compiling CryptoExtras PEMDocument.swift
+[1606/1698] Compiling CryptoExtras PrettyBytes.swift
+[1607/1698] Compiling CryptoExtras SubjectPublicKeyInfo.swift
+[1608/1698] Compiling CryptoExtras ThreadOps.swift
+[1609/1698] Compiling CryptoExtras ThreadPosix.swift
+[1610/1698] Compiling CryptoExtras ThreadSpecific.swift
+[1611/1698] Compiling CryptoExtras ThreadWindows.swift
+[1612/1698] Compiling CryptoExtras DLEQ.swift
+[1613/1698] Compiling CryptoExtras Prover.swift
+[1614/1698] Compiling CryptoExtras Verifier.swift
+[1615/1698] Compiling CryptoExtras ZKPToolbox.swift
+[1625/1708] Wrapping AST for DiscordMLS for debugging
+[1626/1708] Wrapping AST for DiscordOAuth for debugging
+[1628/1712] Wrapping AST for DiscordInteractions for debugging
+[1629/1712] Wrapping AST for NIOEmbedded for debugging
+[1646/1716] Compiling NIOPosix PendingDatagramWritesManager.swift
+[1647/1716] Compiling NIOPosix PendingWritesManager.swift
+[1648/1716] Compiling NIOPosix PipeChannel.swift
+[1648/1716] Wrapping AST for CryptoExtras for debugging
+[1650/1716] Compiling NIOPosix SelectorEpoll.swift
+[1651/1716] Compiling NIOPosix SelectorGeneric.swift
+[1652/1716] Compiling NIOPosix SelectorKqueue.swift
+[1653/1716] Compiling NIOPosix SelectorUring.swift
+[1654/1716] Compiling NIOPosix SelectorWSAPoll.swift
+[1655/1716] Compiling NIOPosix ServerSocket.swift
+[1656/1716] Compiling NIOPosix Socket.swift
+[1657/1716] Compiling NIOPosix SocketChannel.swift
+[1658/1716] Compiling NIOPosix SocketProtocols.swift
+[1659/1716] Compiling DiscordGameServices GameConveniences.swift
+[1660/1716] Compiling DiscordGameServices PartnerAccounts.swift
+[1661/1716] Emitting module DiscordGameServices
+[1663/1717] Emitting module DiscordVoiceCrypto
+[1664/1717] Emitting module NIOPosix
+[1674/1727] Wrapping AST for DiscordGameServices for debugging
+[1676/1727] Compiling DiscordCommands CommandDefinition.swift
+[1677/1727] Emitting module DiscordCommands
+[1678/1727] Compiling DiscordCommands CommandReconciler.swift
+[1679/1727] Compiling DiscordCommands CommandRouter.swift
+[1680/1728] Compiling DiscordVoiceCrypto TruncatedAESGCM.swift
+[1681/1728] Compiling DiscordVoiceCrypto VoiceTransportCipher.swift
+[1682/1728] Compiling DiscordVoiceCrypto VoiceCrypto.swift
+[1685/1729] Compiling NIOPosix StructuredConcurrencyHelpers.swift
+[1686/1729] Compiling NIOPosix System.swift
+[1687/1729] Compiling NIOPosix Thread.swift
+[1688/1729] Compiling NIOPosix ThreadPosix.swift
+[1689/1729] Compiling NIOPosix ThreadWindows.swift
+[1690/1729] Compiling NIOPosix Utilities.swift
+[1691/1729] Compiling NIOPosix VsockAddress.swift
+[1692/1729] Compiling NIOPosix VsockChannelEvents.swift
+[1693/1729] Compiling NIOPosix Windows.swift
+[1693/1730] Wrapping AST for DiscordCommands for debugging
+[1695/1744] Wrapping AST for DiscordVoiceCrypto for debugging
+[1696/1756] Wrapping AST for NIOPosix for debugging
+[1698/1756] Emitting module NIO
+[1699/1756] Compiling NIO Exports.swift
+[1700/1757] Compiling DiscordVoice RTPPacket.swift
+[1701/1757] Compiling DiscordVoice VoiceDiscovery.swift
+[1702/1757] Compiling DiscordVoice JitterBuffer.swift
+[1703/1757] Compiling DiscordVoice OpusRTPPacketizer.swift
+[1704/1757] Compiling DiscordVoice VoiceMediaPipeline.swift
+[1705/1757] Compiling DiscordVoice VoiceRendezvous.swift
+[1706/1757] Compiling DiscordVoice VoiceGateway.swift
+[1707/1757] Compiling DiscordVoice VoiceManager.swift
+[1708/1757] Compiling DiscordSocial SocialRPCProvider.swift
+[1709/1757] Emitting module DiscordSocial
+[1713/1758] Emitting module DiscordCommandDSL
+[1717/1768] Wrapping AST for NIO for debugging
+[1719/1783] Emitting module NIOTLS
+[1720/1783] Compiling DiscordSocial SocialValueModels.swift
+[1721/1784] Compiling NIOTLS TLSEvents.swift
+[1722/1784] Compiling NIOHTTP1 ByteCollectionUtils.swift
+[1723/1784] Compiling NIOHTTP1 HTTPDecoder.swift
+[1724/1784] Compiling NIOHTTP1 HTTPEncoder.swift
+[1725/1784] Compiling NIOHTTP1 HTTPServerPipelineHandler.swift
+[1726/1784] Compiling NIOHTTP1 HTTPServerProtocolErrorHandler.swift
+[1727/1784] Compiling NIOHTTP1 HTTPTypedPipelineSetup.swift
+[1728/1784] Compiling NIOHTTP1 HTTPTypes.swift
+[1730/1784] Compiling NIOHTTP1 HTTPServerUpgradeHandler.swift
+[1731/1784] Emitting module DiscordVoice
+[1732/1784] Compiling NIOTLS NIOTypedApplicationProtocolNegotiationHandler.swift
+[1734/1784] Compiling NIOTLS ApplicationProtocolNegotiationHandler.swift
+[1735/1784] Compiling NIOTLS ProtocolNegotiationHandlerStateMachine.swift
+[1736/1784] Compiling DiscordVoice VoiceSession.swift
+[1737/1784] Compiling NIOHTTP1 HTTPHeaders+Validation.swift
+[1738/1784] Compiling NIOHTTP1 HTTPPipelineSetup.swift
+[1739/1784] Compiling NIOHTTP1 NIOHTTPClientUpgradeHandler.swift
+[1741/1784] Compiling NIOHTTP1 HTTPServerRequestMethodQueue.swift
+[1742/1784] Compiling NIOHTTP1 HTTPHeaderValidator.swift
+[1743/1784] Compiling NIOTLS SNIHandler.swift
+[1744/1785] Compiling DiscordVoice VoiceStateMachine.swift
+[1744/1786] Wrapping AST for DiscordSocial for debugging
+[1746/1786] Emitting module NIOHTTP1
+[1753/1789] Compiling NIOHTTP1 NIOHTTPObjectAggregator.swift
+[1754/1789] Compiling NIOHTTP1 NIOTypedHTTPClientUpgradeHandler.swift
+[1759/1799] Wrapping AST for NIOTLS for debugging
+[1760/1828] Wrapping AST for DiscordVoice for debugging
+[1762/1828] Compiling NIOSSL NIOSSLServerHandler.swift
+[1763/1828] Compiling NIOSSL ObjectIdentifier.swift
+[1764/1828] Compiling NIOSSL PosixPort.swift
+[1766/1828] Compiling NIOSSL NIOSSLClientHandler.swift
+[1767/1828] Compiling NIOSSL NIOSSLHandler+Configuration.swift
+[1768/1828] Compiling NIOSSL NIOSSLHandler.swift
+[1768/1828] Wrapping AST for DiscordCommandDSL for debugging
+[1770/1835] Compiling NIOSSL FreeBSDCABundle.swift
+[1771/1835] Compiling NIOSSL IdentityVerification.swift
+[1772/1835] Compiling NIOSSL LinuxCABundle.swift
+[1773/1836] Compiling DiscordDAVE DAVESignaling.swift
+[1774/1836] Compiling DiscordDAVE DAVEVerification.swift
+[1775/1837] Emitting module NIOSSL
+[1777/1842] Emitting module DiscordBotDSL
+[1778/1842] Compiling DiscordBotDSL BotApplication.swift
+[1779/1842] Compiling DiscordBotDSL BotFailureDiagnostic.swift
+[1780/1842] Compiling DiscordBotDSL BotServiceAdapter.swift
+[1781/1842] Compiling DiscordBotDSL GatewayEventHandler.swift
+[1781/1843] Wrapping AST for NIOHTTP1 for debugging
+[1783/1853] Compiling DiscordBotDSL EventCompilation.swift
+[1784/1853] Compiling DiscordBotDSL BotRuntime.swift
+[1785/1853] Compiling NIOSSL SSLErrors.swift
+[1786/1853] Compiling NIOSSL SSLInit.swift
+[1787/1853] Compiling NIOSSL SSLPKCS12Bundle.swift
+[1788/1853] Compiling NIOSSL SSLPrivateKey.swift
+[1789/1853] Compiling NIOSSL SSLPublicKey.swift
+[1790/1853] Compiling NIOSSL SecurityFrameworkCertificateVerification.swift
+[1791/1853] Compiling NIOSSL String+unsafeUninitializedCapacity.swift
+[1792/1853] Compiling NIOSSL SubjectAlternativeName.swift
+[1793/1853] Compiling NIOSSL NIOSSLSecureBytes.swift
+[1794/1853] Compiling NIOSSL RNG.swift
+[1795/1853] Compiling NIOWebSocket NIOWebSocketServerUpgrader.swift
+[1796/1853] Compiling NIOWebSocket SHA1.swift
+[1797/1853] Compiling NIOWebSocket WebSocketFrameDecoder.swift
+[1798/1853] Compiling NIOWebSocket WebSocketFrameEncoder.swift
+[1799/1853] Compiling NIOWebSocket NIOWebSocketClientUpgrader.swift
+[1800/1853] Compiling NIOWebSocket NIOWebSocketFrameAggregator.swift
+[1805/1853] Emitting module DiscordDAVE
+[1808/1853] Compiling NIOSSL AndroidCABundle.swift
+[1809/1853] Compiling NIOSSL ByteBufferBIO.swift
+[1810/1853] Compiling NIOSSL CustomPrivateKey.swift
+[1814/1853] Compiling NIOWebSocket WebSocketErrorCodes.swift
+[1815/1853] Compiling NIOWebSocket WebSocketFrame.swift
+[1816/1853] Compiling NIOSSL SSLCertificateExtensions.swift
+[1817/1853] Compiling NIOSSL SSLCertificateName.swift
+[1818/1853] Compiling NIOSSL SSLConnection.swift
+[1819/1853] Compiling NIOSSL SSLContext.swift
+[1820/1853] Compiling DiscordDAVE VoiceSessionDAVE.swift
+[1828/1854] Compiling NIOWebSocket WebSocketOpcode.swift
+[1829/1854] Emitting module NIOWebSocket
+[1830/1855] Compiling NIOSSL SafeCompare.swift
+[1831/1855] Compiling NIOSSL Zeroization.swift
+[1832/1855] Compiling NIOSSL TLSConfiguration.swift
+[1833/1855] Compiling NIOSSL UniversalBootstrapSupport.swift
+[1834/1855] Compiling NIOSSL UnsafeKeyAndChainTarget.swift
+[1834/1856] Wrapping AST for DiscordDAVE for debugging
+[1836/1856] Compiling DiscordBotDSL GatewayInteractionAdapter.swift
+[1840/1857] Wrapping AST for NIOSSL for debugging
+[1841/1857] Wrapping AST for DiscordBotDSL for debugging
+[1843/1857] Compiling NIOWebSocket WebSocketProtocolErrorHandler.swift
+[1844/1858] Wrapping AST for NIOWebSocket for debugging
+[1846/1864] Emitting module DiscordNIOTransport
+[1847/1864] Compiling DiscordNIOTransport TLSPolicy.swift
+[1848/1864] Compiling DiscordNIOTransport NIOWebSocketTransport.swift
+[1849/1864] Compiling DiscordNIOTransport NIOHTTPIngress.swift
+[1850/1864] Compiling DiscordNIOTransport NIODatagramTransport.swift
+[1851/1864] Compiling DiscordNIOTransport NIOHTTPTransport.swift
+[1852/1865] Wrapping AST for DiscordNIOTransport for debugging
+[1854/1901] Compiling DiscordKitLoadTests Phase8TimingCommand.swift
+[1855/1901] Compiling DiscordKitLoadTests Phase8TimingConfiguration.swift
+[1856/1901] Compiling DiscordKitLoadTests Phase9TimingCommand.swift
+[1857/1901] Compiling DiscordKitLoadTests Phase9TimingConfiguration.swift
+[1858/1901] Compiling DiscordKitLoadTests RESTTimingRunner.swift
+[1859/1901] Compiling DiscordKitLoadTests RPCActivitiesTimingRunner.swift
+[1860/1901] Compiling DiscordKitLoadTests RPCQueueTimingRunner.swift
+[1861/1901] Compiling DiscordKitLoadTests Phase5TimingCommand.swift
+[1862/1901] Compiling DiscordKitLoadTests Phase5TimingConfiguration.swift
+[1863/1901] Compiling DiscordKitLoadTests Phase6TimingCommand.swift
+[1864/1901] Compiling DiscordKitLoadTests Phase6TimingConfiguration.swift
+[1865/1901] Compiling DiscordKitLoadTests Phase7ClientTimingRunner.swift
+[1866/1901] Compiling DiscordKitLoadTests Phase7TimingCommand.swift
+[1867/1901] Compiling DiscordKitLoadTests Phase7TimingConfiguration.swift
+[1868/1901] Compiling DiscordKitLoadTests EventHubTimingCommand.swift
+[1869/1901] Compiling DiscordKitLoadTests EventHubTimingConfiguration.swift
+[1870/1901] Compiling DiscordKitLoadTests EventHubTimingRunner.swift
+[1871/1901] Compiling DiscordKitLoadTests GatewayLoadRunner.swift
+[1872/1901] Compiling DiscordKitLoadTests GatewayTimingRunner.swift
+[1873/1901] Compiling DiscordKitLoadTests HTTPPolicyRunner.swift
+[1874/1901] Compiling DiscordKitLoadTests InteractionTimingRunner.swift
+[1875/1901] Emitting module DiscordKitLoadTests
+[1876/1901] Compiling DiscordKitLoadTests LoadRunner.swift
+[1877/1901] Compiling DiscordKitLoadTests OAuthScalingTimingRunner.swift
+[1878/1901] Compiling DiscordKitLoadTests OAuthTimingRunner.swift
+[1879/1901] Compiling DiscordKitLoadTests OrderingHandoffTimingRunner.swift
+[1880/1901] Compiling DiscordKitLoadTests Phase10TimingCommand.swift
+[1881/1901] Compiling DiscordKitLoadTests Phase10TimingConfiguration.swift
+[1882/1901] Compiling DiscordKitLoadTests Phase10TimingRunner.swift
+[1883/1901] Compiling DiscordKitLoadTests ArrivalTimingRunner.swift
+[1884/1901] Compiling DiscordKitLoadTests CacheLoadRunner.swift
+[1885/1901] Compiling DiscordKitLoadTests CacheScalingTimingCommand.swift
+[1886/1901] Compiling DiscordKitLoadTests CacheScalingTimingConfiguration.swift
+[1887/1901] Compiling DiscordKitLoadTests CacheScalingTimingRunner.swift
+[1888/1901] Compiling DiscordKitLoadTests CacheTimingRunner.swift
+[1889/1901] Compiling DiscordKitLoadTests EventHubTimingAccounting.swift
+[1890/1907] Compiling DiscordKitLoadTests ServiceTimingRunner.swift
+[1891/1907] Compiling DiscordKitLoadTests SyntheticCommandTimingRunner.swift
+[1892/1907] Compiling DiscordKitLoadTests TransportTimingRunner.swift
+[1893/1907] Compiling DiscordKitLoadTests VoiceLifecycleTimingRunner.swift
+[1894/1907] Compiling DiscordKitLoadTests WorkloadProfile.swift
+[1895/1907] Compiling DiscordKitLoadTests main.swift
+[1896/1908] Wrapping AST for DiscordKitLoadTests for debugging
+[1897/1908] Write Objects.LinkFileList
+[1898/1908] Linking DiscordKitLoadTests
+[1900/1933] Emitting module DiscordKitLoadTestsTests
+[1901/1937] Compiling DiscordKitLoadTestsTests Phase10TimingTests.swift
+[1902/1937] Compiling DiscordKitLoadTestsTests Phase5TimingConfigurationTests.swift
+[1903/1937] Compiling DiscordKitLoadTestsTests Phase6TimingConfigurationTests.swift
+[1904/1937] Compiling DiscordKitLoadTestsTests Phase7TimingConfigurationTests.swift
+[1905/1937] Compiling DiscordKitLoadTestsTests Phase8TimingConfigurationTests.swift
+[1906/1937] Compiling DiscordKitLoadTestsTests Phase9TimingConfigurationTests.swift
+[1907/1937] Compiling DiscordKitLoadTestsTests RESTTimingRunnerTests.swift
+[1908/1937] Compiling DiscordKitLoadTestsTests RPCActivitiesTimingRunnerTests.swift
+[1909/1937] Compiling DiscordKitLoadTestsTests RPCQueueTimingRunnerTests.swift
+[1910/1937] Compiling DiscordKitLoadTestsTests EventHubTimingAccountingTests.swift
+[1911/1937] Compiling DiscordKitLoadTestsTests EventHubTimingTests.swift
+[1912/1937] Compiling DiscordKitLoadTestsTests GatewayLoadRunnerTests.swift
+[1913/1937] Compiling DiscordKitLoadTestsTests GatewayTimingRunnerTests.swift
+[1914/1937] Compiling DiscordKitLoadTestsTests HTTPPolicyRunnerTests.swift
+[1915/1937] Compiling DiscordKitLoadTestsTests InteractionTimingRunnerTests.swift
+[1916/1937] Compiling DiscordKitLoadTestsTests LoadRunnerTests.swift
+[1917/1937] Compiling DiscordKitLoadTestsTests OAuthTimingRunnerTests.swift
+[1918/1937] Compiling DiscordKitLoadTestsTests OptionalServiceScalingTimingTests.swift
+[1919/1937] Compiling DiscordKitLoadTestsTests OrderingHandoffTimingRunnerTests.swift
+[1920/1937] Compiling DiscordKitLoadTestsTests ArrivalTimingRunnerTests.swift
+[1921/1937] Compiling DiscordKitLoadTestsTests CacheLoadRunnerTests.swift
+[1922/1937] Compiling DiscordKitLoadTestsTests CacheScalingTimingTests.swift
+[1923/1937] Compiling DiscordKitLoadTestsTests CacheTimingRunnerTests.swift
+[1924/1937] Compiling DiscordKitLoadTestsTests ClientTimingRunnerTests.swift
+[1925/1937] Compiling DiscordKitLoadTestsTests ServiceTimingRunnerTests.swift
+[1926/1937] Compiling DiscordKitLoadTestsTests SyntheticCommandTimingRunnerTests.swift
+[1927/1937] Compiling DiscordKitLoadTestsTests TransportTimingRunnerTests.swift
+[1928/1937] Compiling DiscordKitLoadTestsTests VoiceLifecycleTimingTests.swift
+[1929/1938] /scratch/x86_64-unknown-linux-gnu/debug/DiscordKitLoadTestsPackageDiscoveredTests.derived/all-discovered-tests.swift
+[1930/1938] Write sources
+[1931/1941] Wrapping AST for DiscordKitLoadTestsTests for debugging
+[1933/1941] Compiling DiscordKitLoadTestsPackageDiscoveredTests DiscordKitLoadTestsTests.swift
+[1934/1941] Compiling DiscordKitLoadTestsPackageDiscoveredTests all-discovered-tests.swift
+[1935/1941] Emitting module DiscordKitLoadTestsPackageDiscoveredTests
+[1936/1942] /scratch/x86_64-unknown-linux-gnu/debug/DiscordKitLoadTestsPackageTests.derived/runner.swift
+[1937/1942] Write sources
+[1938/1944] Wrapping AST for DiscordKitLoadTestsPackageDiscoveredTests for debugging
+[1940/1944] Emitting module DiscordKitLoadTestsPackageTests
+[1941/1944] Compiling DiscordKitLoadTestsPackageTests runner.swift
+[1942/1945] Wrapping AST for DiscordKitLoadTestsPackageTests for debugging
+[1943/1945] Write Objects.LinkFileList
+[1944/1945] Linking DiscordKitLoadTestsPackageTests.xctest
+Build complete! (280.01s)
+warning: '--build-system native' has been deprecated and will be removed in a future release; please report an issue at https://github.com/swiftlang/swift-package-manager/issues if you are unable to adopt the default build system.

@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "name": "phase5-node-launcher",
+  "stage": "phase5",
+  "operation": "localHelperCheck",
+  "arguments": [
+    "node",
+    "--check",
+    ".github/actions/artifact-transfer/index.mjs"
+  ],
+  "start": "2026-11-12T14:30:41.741168+00:00",
+  "startMonotonic": 351849.118990958,
+  "deadlineMonotonic": 351909.118990958,
+  "executionLimitSeconds": 60,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "operation",
+  "paths": {
+    "output": "/Users/carsonrau/Developer/DiscordKit-ci-phase5/Docs/Tasks/ci-reliability/phase-5/node-launcher.log",
+    "stdout": null,
+    "diagnostics": "/Users/carsonrau/Developer/DiscordKit-ci-phase5/Docs/Tasks/ci-reliability/phase-5/node-launcher.diagnostics.jsonl",
+    "receipt": "/Users/carsonrau/Developer/DiscordKit-ci-phase5/Docs/Tasks/ci-reliability/phase-5/node-launcher.receipt.json"
+  },
+  "identity": {
+    "executionID": "5356f775-627e-4fcc-b6fe-6682d69cef46",
+    "supervisorPID": 85489,
+    "host": "Pokemon-GO-Plus",
+    "system": "Darwin",
+    "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase5"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 85490,
+  "group": 85490,
+  "cleanup": {
+    "status": "group-signalled",
+    "signals": [],
+    "parentReaped": true,
+    "allowanceSeconds": 8.0,
+    "seconds": 0.004,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "verificationMalformedRows": 0,
+    "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "/Users/carsonrau/Developer/DiscordKit-ci-phase5/Docs/Tasks/ci-reliability/phase-5/node-launcher.log",
+      "retainedBytes": 57,
+      "observedBytes": 57,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T14:30:41.771822+00:00",
+  "endMonotonic": 351849.149676916,
+  "elapsedSeconds": 0.031,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}

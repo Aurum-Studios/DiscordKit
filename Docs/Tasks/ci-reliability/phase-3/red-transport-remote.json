@@ -1,0 +1,1613 @@
+{
+  "schemaVersion": 1,
+  "capturedAtUTC": "2026-11-12T12:59:03.440726+00:00",
+  "qualification": "One exploratory emulated red diagnostic; test will be deliberately interrupted for stacks",
+  "arguments": [
+    "/scratch/x86_64-unknown-linux-gnu/debug/DiscordKitLoadTestsPackageTests.xctest",
+    "--testing-library",
+    "swift-testing",
+    "--no-parallel",
+    "--filter",
+    "DiscordKitLoadTestsTests.TransportTimingRunnerTests/nativeChunkControlsCloseOwnedResources"
+  ],
+  "runBeforeSnapshotSeconds": 10,
+  "overallLimitSeconds": 90,
+  "discoverySource": "baseline-discovery.stdout",
+  "snapshots": [
+    {
+      "seconds": 1.139,
+      "processes": [
+        {
+          "pid": 5709,
+          "name": "DiscordKitLoadT",
+          "state": "R",
+          "parentPID": 5703,
+          "processGroup": 5709,
+          "sessionID": 5709,
+          "startTicks": 7545103,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000000000",
+            "SigBlk": "0000000000000000",
+            "SigIgn": "0000000000000000",
+            "SigCgt": "0000000000000410",
+            "Threads": "1"
+          },
+          "rosettaDebugVariablePresent": true,
+          "renamedDiagnosticVariablePresent": false
+        },
+        {
+          "pid": 5710,
+          "name": "DiscordKitLoadT",
+          "state": "S",
+          "parentPID": 5709,
+          "processGroup": 5709,
+          "sessionID": 5709,
+          "startTicks": 7545103,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000000000",
+            "SigBlk": "0000000000000000",
+            "SigIgn": "0000000000000000",
+            "SigCgt": "0000000000000410",
+            "Threads": "1"
+          },
+          "rosettaDebugVariablePresent": true,
+          "renamedDiagnosticVariablePresent": false
+        }
+      ]
+    },
+    {
+      "seconds": 1.646,
+      "processes": [
+        {
+          "pid": 5709,
+          "name": "DiscordKitLoadT",
+          "state": "R",
+          "parentPID": 5703,
+          "processGroup": 5709,
+          "sessionID": 5709,
+          "startTicks": 7545103,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000000000",
+            "SigBlk": "0000000000000000",
+            "SigIgn": "0000000000000000",
+            "SigCgt": "0000000000000410",
+            "Threads": "1"
+          },
+          "rosettaDebugVariablePresent": true,
+          "renamedDiagnosticVariablePresent": false
+        },
+        {
+          "pid": 5710,
+          "name": "DiscordKitLoadT",
+          "state": "S",
+          "parentPID": 5709,
+          "processGroup": 5709,
+          "sessionID": 5709,
+          "startTicks": 7545103,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000000000",
+            "SigBlk": "0000000000000000",
+            "SigIgn": "0000000000000000",
+            "SigCgt": "0000000000000410",
+            "Threads": "1"
+          },
+          "rosettaDebugVariablePresent": true,
+          "renamedDiagnosticVariablePresent": false
+        }
+      ]
+    },
+    {
+      "seconds": 2.148,
+      "processes": [
+        {
+          "pid": 5709,
+          "name": "DiscordKitLoadT",
+          "state": "R",
+          "parentPID": 5703,
+          "processGroup": 5709,
+          "sessionID": 5709,
+          "startTicks": 7545103,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000000000",
+            "SigBlk": "0000000000000000",
+            "SigIgn": "0000000000000000",
+            "SigCgt": "0000000000000410",
+            "Threads": "1"
+          },
+          "rosettaDebugVariablePresent": true,
+          "renamedDiagnosticVariablePresent": false
+        },
+        {
+          "pid": 5710,
+          "name": "DiscordKitLoadT",
+          "state": "S",
+          "parentPID": 5709,
+          "processGroup": 5709,
+          "sessionID": 5709,
+          "startTicks": 7545103,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000000000",
+            "SigBlk": "0000000000000000",
+            "SigIgn": "0000000000000000",
+            "SigCgt": "0000000000000410",
+            "Threads": "1"
+          },
+          "rosettaDebugVariablePresent": true,
+          "renamedDiagnosticVariablePresent": false
+        }
+      ]
+    },
+    {
+      "seconds": 2.654,
+      "processes": [
+        {
+          "pid": 5709,
+          "name": "DiscordKitLoadT",
+          "state": "S",
+          "parentPID": 5703,
+          "processGroup": 5709,
+          "sessionID": 5709,
+          "startTicks": 7545103,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000000000",
+            "SigBlk": "0000000000000000",
+            "SigIgn": "0000000000000000",
+            "SigCgt": "0000000000000410",
+            "Threads": "1"
+          },
+          "rosettaDebugVariablePresent": true,
+          "renamedDiagnosticVariablePresent": false
+        },
+        {
+          "pid": 5710,
+          "name": "DiscordKitLoadT",
+          "state": "S",
+          "parentPID": 5709,
+          "processGroup": 5709,
+          "sessionID": 5709,
+          "startTicks": 7545103,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000000000",
+            "SigBlk": "0000000000010000",
+            "SigIgn": "0000000000000000",
+            "SigCgt": "0000000000000410",
+            "Threads": "1"
+          },
+          "rosettaDebugVariablePresent": true,
+          "renamedDiagnosticVariablePresent": false
+        }
+      ]
+    },
+    {
+      "seconds": 3.157,
+      "processes": [
+        {
+          "pid": 5709,
+          "name": "DiscordKitLoadT",
+          "state": "S",
+          "parentPID": 5703,
+          "processGroup": 5709,
+          "sessionID": 5709,
+          "startTicks": 7545103,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000000000",
+            "SigBlk": "0000000000000000",
+            "SigIgn": "0000000000001000",
+            "SigCgt": "00000001000004fc",
+            "Threads": "12"
+          },
+          "rosettaDebugVariablePresent": true,
+          "renamedDiagnosticVariablePresent": false
+        },
+        {
+          "pid": 5710,
+          "name": "DiscordKitLoadT",
+          "state": "S",
+          "parentPID": 5709,
+          "processGroup": 5709,
+          "sessionID": 5709,
+          "startTicks": 7545103,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000000000",
+            "SigBlk": "0000000000010000",
+            "SigIgn": "0000000000000000",
+            "SigCgt": "0000000000000410",
+            "Threads": "1"
+          },
+          "rosettaDebugVariablePresent": true,
+          "renamedDiagnosticVariablePresent": false
+        },
+        {
+          "pid": 5735,
+          "name": "python3",
+          "state": "S",
+          "parentPID": 5709,
+          "processGroup": 5735,
+          "sessionID": 5709,
+          "startTicks": 7545280,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000000000",
+            "SigBlk": "fffffffe3bfbea27",
+            "SigIgn": "0000000081001000",
+            "SigCgt": "0000000100004412",
+            "Threads": "2"
+          },
+          "rosettaDebugVariablePresent": false,
+          "renamedDiagnosticVariablePresent": true,
+          "peerTimingCase": "transport.body64KiBChunk257V1"
+        }
+      ]
+    },
+    {
+      "seconds": 3.659,
+      "processes": [
+        {
+          "pid": 5709,
+          "name": "DiscordKitLoadT",
+          "state": "S",
+          "parentPID": 5703,
+          "processGroup": 5709,
+          "sessionID": 5709,
+          "startTicks": 7545103,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000000000",
+            "SigBlk": "0000000000000000",
+            "SigIgn": "0000000000001000",
+            "SigCgt": "00000001000004fc",
+            "Threads": "11"
+          },
+          "rosettaDebugVariablePresent": true,
+          "renamedDiagnosticVariablePresent": false
+        },
+        {
+          "pid": 5710,
+          "name": "DiscordKitLoadT",
+          "state": "S",
+          "parentPID": 5709,
+          "processGroup": 5709,
+          "sessionID": 5709,
+          "startTicks": 7545103,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000000000",
+            "SigBlk": "0000000000010000",
+            "SigIgn": "0000000000000000",
+            "SigCgt": "0000000000000410",
+            "Threads": "1"
+          },
+          "rosettaDebugVariablePresent": true,
+          "renamedDiagnosticVariablePresent": false
+        },
+        {
+          "pid": 5735,
+          "name": "python3",
+          "state": "S",
+          "parentPID": 5709,
+          "processGroup": 5735,
+          "sessionID": 5709,
+          "startTicks": 7545280,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000004000",
+            "SigBlk": "fffffffe3bfbea27",
+            "SigIgn": "0000000081001000",
+            "SigCgt": "0000000100004412",
+            "Threads": "1"
+          },
+          "rosettaDebugVariablePresent": false,
+          "renamedDiagnosticVariablePresent": true,
+          "peerTimingCase": "transport.body64KiBChunk257V1"
+        }
+      ]
+    },
+    {
+      "seconds": 4.163,
+      "processes": [
+        {
+          "pid": 5709,
+          "name": "DiscordKitLoadT",
+          "state": "S",
+          "parentPID": 5703,
+          "processGroup": 5709,
+          "sessionID": 5709,
+          "startTicks": 7545103,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000000000",
+            "SigBlk": "0000000000000000",
+            "SigIgn": "0000000000001000",
+            "SigCgt": "00000001000004fc",
+            "Threads": "11"
+          },
+          "rosettaDebugVariablePresent": true,
+          "renamedDiagnosticVariablePresent": false
+        },
+        {
+          "pid": 5710,
+          "name": "DiscordKitLoadT",
+          "state": "S",
+          "parentPID": 5709,
+          "processGroup": 5709,
+          "sessionID": 5709,
+          "startTicks": 7545103,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000000000",
+            "SigBlk": "0000000000010000",
+            "SigIgn": "0000000000000000",
+            "SigCgt": "0000000000000410",
+            "Threads": "1"
+          },
+          "rosettaDebugVariablePresent": true,
+          "renamedDiagnosticVariablePresent": false
+        },
+        {
+          "pid": 5735,
+          "name": "python3",
+          "state": "S",
+          "parentPID": 5709,
+          "processGroup": 5735,
+          "sessionID": 5709,
+          "startTicks": 7545280,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000004000",
+            "SigBlk": "fffffffe3bfbea27",
+            "SigIgn": "0000000081001000",
+            "SigCgt": "0000000100004412",
+            "Threads": "1"
+          },
+          "rosettaDebugVariablePresent": false,
+          "renamedDiagnosticVariablePresent": true,
+          "peerTimingCase": "transport.body64KiBChunk257V1"
+        }
+      ]
+    },
+    {
+      "seconds": 4.67,
+      "processes": [
+        {
+          "pid": 5709,
+          "name": "DiscordKitLoadT",
+          "state": "S",
+          "parentPID": 5703,
+          "processGroup": 5709,
+          "sessionID": 5709,
+          "startTicks": 7545103,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000000000",
+            "SigBlk": "0000000000000000",
+            "SigIgn": "0000000000001000",
+            "SigCgt": "00000001000004fc",
+            "Threads": "11"
+          },
+          "rosettaDebugVariablePresent": true,
+          "renamedDiagnosticVariablePresent": false
+        },
+        {
+          "pid": 5710,
+          "name": "DiscordKitLoadT",
+          "state": "S",
+          "parentPID": 5709,
+          "processGroup": 5709,
+          "sessionID": 5709,
+          "startTicks": 7545103,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000000000",
+            "SigBlk": "0000000000010000",
+            "SigIgn": "0000000000000000",
+            "SigCgt": "0000000000000410",
+            "Threads": "1"
+          },
+          "rosettaDebugVariablePresent": true,
+          "renamedDiagnosticVariablePresent": false
+        },
+        {
+          "pid": 5735,
+          "name": "python3",
+          "state": "S",
+          "parentPID": 5709,
+          "processGroup": 5735,
+          "sessionID": 5709,
+          "startTicks": 7545280,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000004000",
+            "SigBlk": "fffffffe3bfbea27",
+            "SigIgn": "0000000081001000",
+            "SigCgt": "0000000100004412",
+            "Threads": "1"
+          },
+          "rosettaDebugVariablePresent": false,
+          "renamedDiagnosticVariablePresent": true,
+          "peerTimingCase": "transport.body64KiBChunk257V1"
+        }
+      ]
+    },
+    {
+      "seconds": 5.178,
+      "processes": [
+        {
+          "pid": 5709,
+          "name": "DiscordKitLoadT",
+          "state": "S",
+          "parentPID": 5703,
+          "processGroup": 5709,
+          "sessionID": 5709,
+          "startTicks": 7545103,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000000000",
+            "SigBlk": "0000000000000000",
+            "SigIgn": "0000000000001000",
+            "SigCgt": "00000001000004fc",
+            "Threads": "11"
+          },
+          "rosettaDebugVariablePresent": true,
+          "renamedDiagnosticVariablePresent": false
+        },
+        {
+          "pid": 5710,
+          "name": "DiscordKitLoadT",
+          "state": "S",
+          "parentPID": 5709,
+          "processGroup": 5709,
+          "sessionID": 5709,
+          "startTicks": 7545103,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000000000",
+            "SigBlk": "0000000000010000",
+            "SigIgn": "0000000000000000",
+            "SigCgt": "0000000000000410",
+            "Threads": "1"
+          },
+          "rosettaDebugVariablePresent": true,
+          "renamedDiagnosticVariablePresent": false
+        },
+        {
+          "pid": 5735,
+          "name": "python3",
+          "state": "S",
+          "parentPID": 5709,
+          "processGroup": 5735,
+          "sessionID": 5709,
+          "startTicks": 7545280,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000004000",
+            "SigBlk": "fffffffe3bfbea27",
+            "SigIgn": "0000000081001000",
+            "SigCgt": "0000000100004412",
+            "Threads": "1"
+          },
+          "rosettaDebugVariablePresent": false,
+          "renamedDiagnosticVariablePresent": true,
+          "peerTimingCase": "transport.body64KiBChunk257V1"
+        }
+      ]
+    },
+    {
+      "seconds": 5.683,
+      "processes": [
+        {
+          "pid": 5709,
+          "name": "DiscordKitLoadT",
+          "state": "S",
+          "parentPID": 5703,
+          "processGroup": 5709,
+          "sessionID": 5709,
+          "startTicks": 7545103,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000000000",
+            "SigBlk": "0000000000000000",
+            "SigIgn": "0000000000001000",
+            "SigCgt": "00000001000004fc",
+            "Threads": "11"
+          },
+          "rosettaDebugVariablePresent": true,
+          "renamedDiagnosticVariablePresent": false
+        },
+        {
+          "pid": 5710,
+          "name": "DiscordKitLoadT",
+          "state": "S",
+          "parentPID": 5709,
+          "processGroup": 5709,
+          "sessionID": 5709,
+          "startTicks": 7545103,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000000000",
+            "SigBlk": "0000000000010000",
+            "SigIgn": "0000000000000000",
+            "SigCgt": "0000000000000410",
+            "Threads": "1"
+          },
+          "rosettaDebugVariablePresent": true,
+          "renamedDiagnosticVariablePresent": false
+        },
+        {
+          "pid": 5735,
+          "name": "python3",
+          "state": "S",
+          "parentPID": 5709,
+          "processGroup": 5735,
+          "sessionID": 5709,
+          "startTicks": 7545280,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000004000",
+            "SigBlk": "fffffffe3bfbea27",
+            "SigIgn": "0000000081001000",
+            "SigCgt": "0000000100004412",
+            "Threads": "1"
+          },
+          "rosettaDebugVariablePresent": false,
+          "renamedDiagnosticVariablePresent": true,
+          "peerTimingCase": "transport.body64KiBChunk257V1"
+        }
+      ]
+    },
+    {
+      "seconds": 6.19,
+      "processes": [
+        {
+          "pid": 5709,
+          "name": "DiscordKitLoadT",
+          "state": "S",
+          "parentPID": 5703,
+          "processGroup": 5709,
+          "sessionID": 5709,
+          "startTicks": 7545103,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000000000",
+            "SigBlk": "0000000000000000",
+            "SigIgn": "0000000000001000",
+            "SigCgt": "00000001000004fc",
+            "Threads": "11"
+          },
+          "rosettaDebugVariablePresent": true,
+          "renamedDiagnosticVariablePresent": false
+        },
+        {
+          "pid": 5710,
+          "name": "DiscordKitLoadT",
+          "state": "S",
+          "parentPID": 5709,
+          "processGroup": 5709,
+          "sessionID": 5709,
+          "startTicks": 7545103,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000000000",
+            "SigBlk": "0000000000010000",
+            "SigIgn": "0000000000000000",
+            "SigCgt": "0000000000000410",
+            "Threads": "1"
+          },
+          "rosettaDebugVariablePresent": true,
+          "renamedDiagnosticVariablePresent": false
+        },
+        {
+          "pid": 5735,
+          "name": "python3",
+          "state": "S",
+          "parentPID": 5709,
+          "processGroup": 5735,
+          "sessionID": 5709,
+          "startTicks": 7545280,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000004000",
+            "SigBlk": "fffffffe3bfbea27",
+            "SigIgn": "0000000081001000",
+            "SigCgt": "0000000100004412",
+            "Threads": "1"
+          },
+          "rosettaDebugVariablePresent": false,
+          "renamedDiagnosticVariablePresent": true,
+          "peerTimingCase": "transport.body64KiBChunk257V1"
+        }
+      ]
+    },
+    {
+      "seconds": 6.696,
+      "processes": [
+        {
+          "pid": 5709,
+          "name": "DiscordKitLoadT",
+          "state": "S",
+          "parentPID": 5703,
+          "processGroup": 5709,
+          "sessionID": 5709,
+          "startTicks": 7545103,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000000000",
+            "SigBlk": "0000000000000000",
+            "SigIgn": "0000000000001000",
+            "SigCgt": "00000001000004fc",
+            "Threads": "11"
+          },
+          "rosettaDebugVariablePresent": true,
+          "renamedDiagnosticVariablePresent": false
+        },
+        {
+          "pid": 5710,
+          "name": "DiscordKitLoadT",
+          "state": "S",
+          "parentPID": 5709,
+          "processGroup": 5709,
+          "sessionID": 5709,
+          "startTicks": 7545103,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000000000",
+            "SigBlk": "0000000000010000",
+            "SigIgn": "0000000000000000",
+            "SigCgt": "0000000000000410",
+            "Threads": "1"
+          },
+          "rosettaDebugVariablePresent": true,
+          "renamedDiagnosticVariablePresent": false
+        },
+        {
+          "pid": 5735,
+          "name": "python3",
+          "state": "S",
+          "parentPID": 5709,
+          "processGroup": 5735,
+          "sessionID": 5709,
+          "startTicks": 7545280,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000004000",
+            "SigBlk": "fffffffe3bfbea27",
+            "SigIgn": "0000000081001000",
+            "SigCgt": "0000000100004412",
+            "Threads": "1"
+          },
+          "rosettaDebugVariablePresent": false,
+          "renamedDiagnosticVariablePresent": true,
+          "peerTimingCase": "transport.body64KiBChunk257V1"
+        }
+      ]
+    },
+    {
+      "seconds": 7.198,
+      "processes": [
+        {
+          "pid": 5709,
+          "name": "DiscordKitLoadT",
+          "state": "S",
+          "parentPID": 5703,
+          "processGroup": 5709,
+          "sessionID": 5709,
+          "startTicks": 7545103,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000000000",
+            "SigBlk": "0000000000000000",
+            "SigIgn": "0000000000001000",
+            "SigCgt": "00000001000004fc",
+            "Threads": "11"
+          },
+          "rosettaDebugVariablePresent": true,
+          "renamedDiagnosticVariablePresent": false
+        },
+        {
+          "pid": 5710,
+          "name": "DiscordKitLoadT",
+          "state": "S",
+          "parentPID": 5709,
+          "processGroup": 5709,
+          "sessionID": 5709,
+          "startTicks": 7545103,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000000000",
+            "SigBlk": "0000000000010000",
+            "SigIgn": "0000000000000000",
+            "SigCgt": "0000000000000410",
+            "Threads": "1"
+          },
+          "rosettaDebugVariablePresent": true,
+          "renamedDiagnosticVariablePresent": false
+        },
+        {
+          "pid": 5735,
+          "name": "python3",
+          "state": "S",
+          "parentPID": 5709,
+          "processGroup": 5735,
+          "sessionID": 5709,
+          "startTicks": 7545280,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000004000",
+            "SigBlk": "fffffffe3bfbea27",
+            "SigIgn": "0000000081001000",
+            "SigCgt": "0000000100004412",
+            "Threads": "1"
+          },
+          "rosettaDebugVariablePresent": false,
+          "renamedDiagnosticVariablePresent": true,
+          "peerTimingCase": "transport.body64KiBChunk257V1"
+        }
+      ]
+    },
+    {
+      "seconds": 7.702,
+      "processes": [
+        {
+          "pid": 5709,
+          "name": "DiscordKitLoadT",
+          "state": "S",
+          "parentPID": 5703,
+          "processGroup": 5709,
+          "sessionID": 5709,
+          "startTicks": 7545103,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000000000",
+            "SigBlk": "0000000000000000",
+            "SigIgn": "0000000000001000",
+            "SigCgt": "00000001000004fc",
+            "Threads": "11"
+          },
+          "rosettaDebugVariablePresent": true,
+          "renamedDiagnosticVariablePresent": false
+        },
+        {
+          "pid": 5710,
+          "name": "DiscordKitLoadT",
+          "state": "S",
+          "parentPID": 5709,
+          "processGroup": 5709,
+          "sessionID": 5709,
+          "startTicks": 7545103,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000000000",
+            "SigBlk": "0000000000010000",
+            "SigIgn": "0000000000000000",
+            "SigCgt": "0000000000000410",
+            "Threads": "1"
+          },
+          "rosettaDebugVariablePresent": true,
+          "renamedDiagnosticVariablePresent": false
+        },
+        {
+          "pid": 5735,
+          "name": "python3",
+          "state": "S",
+          "parentPID": 5709,
+          "processGroup": 5735,
+          "sessionID": 5709,
+          "startTicks": 7545280,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000004000",
+            "SigBlk": "fffffffe3bfbea27",
+            "SigIgn": "0000000081001000",
+            "SigCgt": "0000000100004412",
+            "Threads": "1"
+          },
+          "rosettaDebugVariablePresent": false,
+          "renamedDiagnosticVariablePresent": true,
+          "peerTimingCase": "transport.body64KiBChunk257V1"
+        }
+      ]
+    },
+    {
+      "seconds": 8.208,
+      "processes": [
+        {
+          "pid": 5709,
+          "name": "DiscordKitLoadT",
+          "state": "S",
+          "parentPID": 5703,
+          "processGroup": 5709,
+          "sessionID": 5709,
+          "startTicks": 7545103,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000000000",
+            "SigBlk": "0000000000000000",
+            "SigIgn": "0000000000001000",
+            "SigCgt": "00000001000004fc",
+            "Threads": "10"
+          },
+          "rosettaDebugVariablePresent": true,
+          "renamedDiagnosticVariablePresent": false
+        },
+        {
+          "pid": 5710,
+          "name": "DiscordKitLoadT",
+          "state": "S",
+          "parentPID": 5709,
+          "processGroup": 5709,
+          "sessionID": 5709,
+          "startTicks": 7545103,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000000000",
+            "SigBlk": "0000000000010000",
+            "SigIgn": "0000000000000000",
+            "SigCgt": "0000000000000410",
+            "Threads": "1"
+          },
+          "rosettaDebugVariablePresent": true,
+          "renamedDiagnosticVariablePresent": false
+        },
+        {
+          "pid": 5735,
+          "name": "python3",
+          "state": "S",
+          "parentPID": 5709,
+          "processGroup": 5735,
+          "sessionID": 5709,
+          "startTicks": 7545280,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000004000",
+            "SigBlk": "fffffffe3bfbea27",
+            "SigIgn": "0000000081001000",
+            "SigCgt": "0000000100004412",
+            "Threads": "1"
+          },
+          "rosettaDebugVariablePresent": false,
+          "renamedDiagnosticVariablePresent": true,
+          "peerTimingCase": "transport.body64KiBChunk257V1"
+        }
+      ]
+    },
+    {
+      "seconds": 8.715,
+      "processes": [
+        {
+          "pid": 5709,
+          "name": "DiscordKitLoadT",
+          "state": "S",
+          "parentPID": 5703,
+          "processGroup": 5709,
+          "sessionID": 5709,
+          "startTicks": 7545103,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000000000",
+            "SigBlk": "0000000000000000",
+            "SigIgn": "0000000000001000",
+            "SigCgt": "00000001000004fc",
+            "Threads": "5"
+          },
+          "rosettaDebugVariablePresent": true,
+          "renamedDiagnosticVariablePresent": false
+        },
+        {
+          "pid": 5710,
+          "name": "DiscordKitLoadT",
+          "state": "S",
+          "parentPID": 5709,
+          "processGroup": 5709,
+          "sessionID": 5709,
+          "startTicks": 7545103,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000000000",
+            "SigBlk": "0000000000010000",
+            "SigIgn": "0000000000000000",
+            "SigCgt": "0000000000000410",
+            "Threads": "1"
+          },
+          "rosettaDebugVariablePresent": true,
+          "renamedDiagnosticVariablePresent": false
+        },
+        {
+          "pid": 5735,
+          "name": "python3",
+          "state": "S",
+          "parentPID": 5709,
+          "processGroup": 5735,
+          "sessionID": 5709,
+          "startTicks": 7545280,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000004000",
+            "SigBlk": "fffffffe3bfbea27",
+            "SigIgn": "0000000081001000",
+            "SigCgt": "0000000100004412",
+            "Threads": "1"
+          },
+          "rosettaDebugVariablePresent": false,
+          "renamedDiagnosticVariablePresent": true,
+          "peerTimingCase": "transport.body64KiBChunk257V1"
+        }
+      ]
+    },
+    {
+      "seconds": 9.22,
+      "processes": [
+        {
+          "pid": 5709,
+          "name": "DiscordKitLoadT",
+          "state": "S",
+          "parentPID": 5703,
+          "processGroup": 5709,
+          "sessionID": 5709,
+          "startTicks": 7545103,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000000000",
+            "SigBlk": "0000000000000000",
+            "SigIgn": "0000000000001000",
+            "SigCgt": "00000001000004fc",
+            "Threads": "5"
+          },
+          "rosettaDebugVariablePresent": true,
+          "renamedDiagnosticVariablePresent": false
+        },
+        {
+          "pid": 5710,
+          "name": "DiscordKitLoadT",
+          "state": "S",
+          "parentPID": 5709,
+          "processGroup": 5709,
+          "sessionID": 5709,
+          "startTicks": 7545103,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000000000",
+            "SigBlk": "0000000000010000",
+            "SigIgn": "0000000000000000",
+            "SigCgt": "0000000000000410",
+            "Threads": "1"
+          },
+          "rosettaDebugVariablePresent": true,
+          "renamedDiagnosticVariablePresent": false
+        },
+        {
+          "pid": 5735,
+          "name": "python3",
+          "state": "S",
+          "parentPID": 5709,
+          "processGroup": 5735,
+          "sessionID": 5709,
+          "startTicks": 7545280,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000004000",
+            "SigBlk": "fffffffe3bfbea27",
+            "SigIgn": "0000000081001000",
+            "SigCgt": "0000000100004412",
+            "Threads": "1"
+          },
+          "rosettaDebugVariablePresent": false,
+          "renamedDiagnosticVariablePresent": true,
+          "peerTimingCase": "transport.body64KiBChunk257V1"
+        }
+      ]
+    },
+    {
+      "seconds": 9.724,
+      "processes": [
+        {
+          "pid": 5709,
+          "name": "DiscordKitLoadT",
+          "state": "S",
+          "parentPID": 5703,
+          "processGroup": 5709,
+          "sessionID": 5709,
+          "startTicks": 7545103,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000000000",
+            "SigBlk": "0000000000000000",
+            "SigIgn": "0000000000001000",
+            "SigCgt": "00000001000004fc",
+            "Threads": "5"
+          },
+          "rosettaDebugVariablePresent": true,
+          "renamedDiagnosticVariablePresent": false
+        },
+        {
+          "pid": 5710,
+          "name": "DiscordKitLoadT",
+          "state": "S",
+          "parentPID": 5709,
+          "processGroup": 5709,
+          "sessionID": 5709,
+          "startTicks": 7545103,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000000000",
+            "SigBlk": "0000000000010000",
+            "SigIgn": "0000000000000000",
+            "SigCgt": "0000000000000410",
+            "Threads": "1"
+          },
+          "rosettaDebugVariablePresent": true,
+          "renamedDiagnosticVariablePresent": false
+        },
+        {
+          "pid": 5735,
+          "name": "python3",
+          "state": "S",
+          "parentPID": 5709,
+          "processGroup": 5735,
+          "sessionID": 5709,
+          "startTicks": 7545280,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000004000",
+            "SigBlk": "fffffffe3bfbea27",
+            "SigIgn": "0000000081001000",
+            "SigCgt": "0000000100004412",
+            "Threads": "1"
+          },
+          "rosettaDebugVariablePresent": false,
+          "renamedDiagnosticVariablePresent": true,
+          "peerTimingCase": "transport.body64KiBChunk257V1"
+        }
+      ]
+    },
+    {
+      "seconds": 10.238,
+      "processes": [
+        {
+          "pid": 5709,
+          "name": "DiscordKitLoadT",
+          "state": "S",
+          "parentPID": 5703,
+          "processGroup": 5709,
+          "sessionID": 5709,
+          "startTicks": 7545103,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000000000",
+            "SigBlk": "0000000000000000",
+            "SigIgn": "0000000000001000",
+            "SigCgt": "00000001000004fc",
+            "Threads": "5"
+          },
+          "rosettaDebugVariablePresent": true,
+          "renamedDiagnosticVariablePresent": false
+        },
+        {
+          "pid": 5710,
+          "name": "DiscordKitLoadT",
+          "state": "S",
+          "parentPID": 5709,
+          "processGroup": 5709,
+          "sessionID": 5709,
+          "startTicks": 7545103,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000000000",
+            "SigBlk": "0000000000010000",
+            "SigIgn": "0000000000000000",
+            "SigCgt": "0000000000000410",
+            "Threads": "1"
+          },
+          "rosettaDebugVariablePresent": true,
+          "renamedDiagnosticVariablePresent": false
+        },
+        {
+          "pid": 5735,
+          "name": "python3",
+          "state": "S",
+          "parentPID": 5709,
+          "processGroup": 5735,
+          "sessionID": 5709,
+          "startTicks": 7545280,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000004000",
+            "SigBlk": "fffffffe3bfbea27",
+            "SigIgn": "0000000081001000",
+            "SigCgt": "0000000100004412",
+            "Threads": "1"
+          },
+          "rosettaDebugVariablePresent": false,
+          "renamedDiagnosticVariablePresent": true,
+          "peerTimingCase": "transport.body64KiBChunk257V1"
+        }
+      ]
+    },
+    {
+      "seconds": 10.741,
+      "processes": [
+        {
+          "pid": 5709,
+          "name": "DiscordKitLoadT",
+          "state": "S",
+          "parentPID": 5703,
+          "processGroup": 5709,
+          "sessionID": 5709,
+          "startTicks": 7545103,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000000000",
+            "SigBlk": "0000000000000000",
+            "SigIgn": "0000000000001000",
+            "SigCgt": "00000001000004fc",
+            "Threads": "5"
+          },
+          "rosettaDebugVariablePresent": true,
+          "renamedDiagnosticVariablePresent": false
+        },
+        {
+          "pid": 5710,
+          "name": "DiscordKitLoadT",
+          "state": "S",
+          "parentPID": 5709,
+          "processGroup": 5709,
+          "sessionID": 5709,
+          "startTicks": 7545103,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000000000",
+            "SigBlk": "0000000000010000",
+            "SigIgn": "0000000000000000",
+            "SigCgt": "0000000000000410",
+            "Threads": "1"
+          },
+          "rosettaDebugVariablePresent": true,
+          "renamedDiagnosticVariablePresent": false
+        },
+        {
+          "pid": 5735,
+          "name": "python3",
+          "state": "S",
+          "parentPID": 5709,
+          "processGroup": 5735,
+          "sessionID": 5709,
+          "startTicks": 7545280,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000004000",
+            "SigBlk": "fffffffe3bfbea27",
+            "SigIgn": "0000000081001000",
+            "SigCgt": "0000000100004412",
+            "Threads": "1"
+          },
+          "rosettaDebugVariablePresent": false,
+          "renamedDiagnosticVariablePresent": true,
+          "peerTimingCase": "transport.body64KiBChunk257V1"
+        }
+      ]
+    },
+    {
+      "seconds": 11.246,
+      "processes": [
+        {
+          "pid": 5709,
+          "name": "DiscordKitLoadT",
+          "state": "S",
+          "parentPID": 5703,
+          "processGroup": 5709,
+          "sessionID": 5709,
+          "startTicks": 7545103,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000000000",
+            "SigBlk": "0000000000000000",
+            "SigIgn": "0000000000001000",
+            "SigCgt": "00000001000004fc",
+            "Threads": "5"
+          },
+          "rosettaDebugVariablePresent": true,
+          "renamedDiagnosticVariablePresent": false
+        },
+        {
+          "pid": 5710,
+          "name": "DiscordKitLoadT",
+          "state": "S",
+          "parentPID": 5709,
+          "processGroup": 5709,
+          "sessionID": 5709,
+          "startTicks": 7545103,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000000000",
+            "SigBlk": "0000000000010000",
+            "SigIgn": "0000000000000000",
+            "SigCgt": "0000000000000410",
+            "Threads": "1"
+          },
+          "rosettaDebugVariablePresent": true,
+          "renamedDiagnosticVariablePresent": false
+        },
+        {
+          "pid": 5735,
+          "name": "python3",
+          "state": "S",
+          "parentPID": 5709,
+          "processGroup": 5735,
+          "sessionID": 5709,
+          "startTicks": 7545280,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000004000",
+            "SigBlk": "fffffffe3bfbea27",
+            "SigIgn": "0000000081001000",
+            "SigCgt": "0000000100004412",
+            "Threads": "1"
+          },
+          "rosettaDebugVariablePresent": false,
+          "renamedDiagnosticVariablePresent": true,
+          "peerTimingCase": "transport.body64KiBChunk257V1"
+        }
+      ]
+    },
+    {
+      "seconds": 11.749,
+      "processes": [
+        {
+          "pid": 5709,
+          "name": "DiscordKitLoadT",
+          "state": "S",
+          "parentPID": 5703,
+          "processGroup": 5709,
+          "sessionID": 5709,
+          "startTicks": 7545103,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000000000",
+            "SigBlk": "0000000000000000",
+            "SigIgn": "0000000000001000",
+            "SigCgt": "00000001000004fc",
+            "Threads": "5"
+          },
+          "rosettaDebugVariablePresent": true,
+          "renamedDiagnosticVariablePresent": false
+        },
+        {
+          "pid": 5710,
+          "name": "DiscordKitLoadT",
+          "state": "S",
+          "parentPID": 5709,
+          "processGroup": 5709,
+          "sessionID": 5709,
+          "startTicks": 7545103,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000000000",
+            "SigBlk": "0000000000010000",
+            "SigIgn": "0000000000000000",
+            "SigCgt": "0000000000000410",
+            "Threads": "1"
+          },
+          "rosettaDebugVariablePresent": true,
+          "renamedDiagnosticVariablePresent": false
+        },
+        {
+          "pid": 5735,
+          "name": "python3",
+          "state": "S",
+          "parentPID": 5709,
+          "processGroup": 5735,
+          "sessionID": 5709,
+          "startTicks": 7545280,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000004000",
+            "SigBlk": "fffffffe3bfbea27",
+            "SigIgn": "0000000081001000",
+            "SigCgt": "0000000100004412",
+            "Threads": "1"
+          },
+          "rosettaDebugVariablePresent": false,
+          "renamedDiagnosticVariablePresent": true,
+          "peerTimingCase": "transport.body64KiBChunk257V1"
+        }
+      ]
+    },
+    {
+      "seconds": 12.253,
+      "processes": [
+        {
+          "pid": 5709,
+          "name": "DiscordKitLoadT",
+          "state": "S",
+          "parentPID": 5703,
+          "processGroup": 5709,
+          "sessionID": 5709,
+          "startTicks": 7545103,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000000000",
+            "SigBlk": "0000000000000000",
+            "SigIgn": "0000000000001000",
+            "SigCgt": "00000001000004fc",
+            "Threads": "5"
+          },
+          "rosettaDebugVariablePresent": true,
+          "renamedDiagnosticVariablePresent": false
+        },
+        {
+          "pid": 5710,
+          "name": "DiscordKitLoadT",
+          "state": "S",
+          "parentPID": 5709,
+          "processGroup": 5709,
+          "sessionID": 5709,
+          "startTicks": 7545103,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000000000",
+            "SigBlk": "0000000000010000",
+            "SigIgn": "0000000000000000",
+            "SigCgt": "0000000000000410",
+            "Threads": "1"
+          },
+          "rosettaDebugVariablePresent": true,
+          "renamedDiagnosticVariablePresent": false
+        },
+        {
+          "pid": 5735,
+          "name": "python3",
+          "state": "S",
+          "parentPID": 5709,
+          "processGroup": 5735,
+          "sessionID": 5709,
+          "startTicks": 7545280,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000004000",
+            "SigBlk": "fffffffe3bfbea27",
+            "SigIgn": "0000000081001000",
+            "SigCgt": "0000000100004412",
+            "Threads": "1"
+          },
+          "rosettaDebugVariablePresent": false,
+          "renamedDiagnosticVariablePresent": true,
+          "peerTimingCase": "transport.body64KiBChunk257V1"
+        }
+      ]
+    },
+    {
+      "seconds": 12.756,
+      "processes": [
+        {
+          "pid": 5709,
+          "name": "DiscordKitLoadT",
+          "state": "t",
+          "parentPID": 5703,
+          "processGroup": 5709,
+          "sessionID": 5709,
+          "startTicks": 7545103,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000000000",
+            "SigBlk": "0000000000000000",
+            "SigIgn": "0000000000001000",
+            "SigCgt": "00000001000004fc",
+            "Threads": "5"
+          },
+          "rosettaDebugVariablePresent": true,
+          "renamedDiagnosticVariablePresent": false
+        },
+        {
+          "pid": 5710,
+          "name": "DiscordKitLoadT",
+          "state": "S",
+          "parentPID": 5709,
+          "processGroup": 5709,
+          "sessionID": 5709,
+          "startTicks": 7545103,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000000000",
+            "SigBlk": "0000000000010000",
+            "SigIgn": "0000000000000000",
+            "SigCgt": "0000000000000410",
+            "Threads": "1"
+          },
+          "rosettaDebugVariablePresent": true,
+          "renamedDiagnosticVariablePresent": false
+        },
+        {
+          "pid": 5735,
+          "name": "python3",
+          "state": "S",
+          "parentPID": 5709,
+          "processGroup": 5735,
+          "sessionID": 5709,
+          "startTicks": 7545280,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000004000",
+            "SigBlk": "fffffffe3bfbea27",
+            "SigIgn": "0000000081001000",
+            "SigCgt": "0000000100004412",
+            "Threads": "1"
+          },
+          "rosettaDebugVariablePresent": false,
+          "renamedDiagnosticVariablePresent": true,
+          "peerTimingCase": "transport.body64KiBChunk257V1"
+        }
+      ]
+    },
+    {
+      "seconds": 13.259,
+      "processes": [
+        {
+          "pid": 5709,
+          "name": "DiscordKitLoadT",
+          "state": "t",
+          "parentPID": 5703,
+          "processGroup": 5709,
+          "sessionID": 5709,
+          "startTicks": 7545103,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000000000",
+            "SigBlk": "0000000000000000",
+            "SigIgn": "0000000000001000",
+            "SigCgt": "00000001000004fc",
+            "Threads": "5"
+          },
+          "rosettaDebugVariablePresent": true,
+          "renamedDiagnosticVariablePresent": false
+        },
+        {
+          "pid": 5710,
+          "name": "DiscordKitLoadT",
+          "state": "S",
+          "parentPID": 5709,
+          "processGroup": 5709,
+          "sessionID": 5709,
+          "startTicks": 7545103,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000000000",
+            "SigBlk": "0000000000010000",
+            "SigIgn": "0000000000000000",
+            "SigCgt": "0000000000000410",
+            "Threads": "1"
+          },
+          "rosettaDebugVariablePresent": true,
+          "renamedDiagnosticVariablePresent": false
+        },
+        {
+          "pid": 5735,
+          "name": "python3",
+          "state": "S",
+          "parentPID": 5709,
+          "processGroup": 5735,
+          "sessionID": 5709,
+          "startTicks": 7545280,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000004000",
+            "SigBlk": "fffffffe3bfbea27",
+            "SigIgn": "0000000081001000",
+            "SigCgt": "0000000100004412",
+            "Threads": "1"
+          },
+          "rosettaDebugVariablePresent": false,
+          "renamedDiagnosticVariablePresent": true,
+          "peerTimingCase": "transport.body64KiBChunk257V1"
+        }
+      ]
+    },
+    {
+      "seconds": 13.557,
+      "processes": [
+        {
+          "pid": 5709,
+          "name": "DiscordKitLoadT",
+          "state": "Z",
+          "parentPID": 5703,
+          "processGroup": 5709,
+          "sessionID": 5709,
+          "startTicks": 7545103,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000000100",
+            "SigBlk": "0000000000000000",
+            "SigIgn": "0000000000001000",
+            "SigCgt": "00000001000004fc",
+            "Threads": "1"
+          }
+        }
+      ]
+    },
+    {
+      "seconds": 13.559,
+      "processes": [
+        {
+          "pid": 5709,
+          "name": "DiscordKitLoadT",
+          "state": "Z",
+          "parentPID": 5703,
+          "processGroup": 5709,
+          "sessionID": 5709,
+          "startTicks": 7545103,
+          "signalState": {
+            "SigPnd": "0000000000000000",
+            "ShdPnd": "0000000000000100",
+            "SigBlk": "0000000000000000",
+            "SigIgn": "0000000000001000",
+            "SigCgt": "00000001000004fc",
+            "Threads": "1"
+          }
+        }
+      ]
+    }
+  ],
+  "cleanup": {
+    "signals": [
+      {
+        "pid": 5735,
+        "startTicks": 7545280,
+        "signal": "SIGKILL"
+      }
+    ],
+    "testReaped": true,
+    "testExitCode": -9,
+    "adoptedChildrenReaped": [
+      {
+        "pid": 5710,
+        "waitStatus": 0
+      },
+      {
+        "pid": 5735,
+        "waitStatus": 9
+      }
+    ],
+    "remainingOwnedProcesses": []
+  },
+  "ownedPriorCore": {
+    "bytes": 412413952,
+    "mtimeUnix": 1794487900.0005372,
+    "sha256": "b7c4415cb4f03fc3b7dafcdb981455df206a12ab0dfa2639d746e0ade99eff05",
+    "elfHeaderHex": "7f454c460201010000000000000000000400b700",
+    "ownerEvidence": "Earlier unsupported unsetenv remote experiment; rosetta-remote-unsetenv-capability.json",
+    "removed": true
+  },
+  "childSubreaperEnabled": true,
+  "testPID": 5709,
+  "debugPort": 38621,
+  "debuggerArguments": [
+    "lldb",
+    "--batch",
+    "--no-lldbinit",
+    "-o",
+    "settings set frame-format 'frame #${frame.index}: ${frame.pc} ${module.file.basename} ${function.name-without-args}\\n'",
+    "-o",
+    "target create --arch x86_64 /scratch/x86_64-unknown-linux-gnu/debug/DiscordKitLoadTestsPackageTests.xctest",
+    "-o",
+    "gdb-remote 127.0.0.1:38621",
+    "-o",
+    "script exec(\"import lldb,struct\\nprocess=lldb.process\\nerror=lldb.SBError()\\nsp=process.GetSelectedThread().GetFrameAtIndex(0).FindRegister('rsp').GetValueAsUnsigned()\\ndef read_u64(address):\\n    data=process.ReadMemory(address,8,error)\\n    if error.Fail() or len(data)!=8:\\n        raise RuntimeError('initial stack pointer read failed')\\n    return struct.unpack('<Q',data)[0]\\nargc=read_u64(sp)\\nif argc>4096 or read_u64(sp+8*(argc+1))!=0:\\n    raise RuntimeError('unexpected initial x86 ELF stack layout')\\nenvp=sp+8*(argc+2)\\nfound=[]\\nprefix=b'ROSETTA_DEBUGSERVER_PORT='\\nfor index in range(1024):\\n    pointer=read_u64(envp+8*index)\\n    if pointer==0:\\n        break\\n    value=process.ReadMemory(pointer,len(prefix),error)\\n    if error.Fail():\\n        raise RuntimeError('diagnostic variable name read failed')\\n    if value==prefix:\\n        found.append(pointer)\\nelse:\\n    raise RuntimeError('initial environment exceeds diagnostic cap')\\nif len(found)!=1:\\n    raise RuntimeError('expected one diagnostic variable')\\nwritten=process.WriteMemory(found[0],b'_',error)\\nif error.Fail() or written!=1:\\n    raise RuntimeError('diagnostic variable name scrub failed')\\nprint('DIAGNOSTIC_VARIABLE_RENAMED',len(found),'MODIFIED_BYTES',written)\\n\\nimport time\\nlldb.debugger.SetAsync(True)\\nerror=lldb.process.Continue()\\nif error.Fail():\\n    raise RuntimeError('remote continue failed: '+str(error))\\nprint('DIAGNOSTIC_TEST_CONTINUED')\\nuntil=time.monotonic()+10\\nwhile time.monotonic()<until and lldb.process.GetState() not in (lldb.eStateExited,lldb.eStateDetached,lldb.eStateInvalid):\\n    time.sleep(0.05)\\nif lldb.process.GetState()==lldb.eStateRunning:\\n    error=lldb.process.Stop()\\n    if error.Fail():\\n        raise RuntimeError('remote stop failed: '+str(error))\\nuntil=time.monotonic()+2\\nwhile time.monotonic()<until and lldb.process.GetState()!=lldb.eStateStopped:\\n    time.sleep(0.01)\\nif lldb.process.GetState()!=lldb.eStateStopped:\\n    raise RuntimeError('diagnostic process did not remain stopped')\\nprint('DIAGNOSTIC_TEST_STOPPED')\\n\")",
+    "-o",
+    "script exec(\"import lldb,os,struct\\nmodules={}\\nfor line in open('/proc/%d/maps' % lldb.process.GetProcessID()):\\n    fields=line.split(None,5)\\n    if len(fields)!=6 or not fields[5].startswith('/'):\\n        continue\\n    path=fields[5].strip()\\n    if path.endswith(' (deleted)') or not os.path.isfile(path):\\n        continue\\n    with open(path,'rb') as source:\\n        header=source.read(20)\\n    if len(header)!=20 or header[:4]!=b'\\\\x7fELF' or header[4]!=2 or struct.unpack('<H',header[18:20])[0]!=62:\\n        continue\\n    elf_type=struct.unpack('<H',header[16:18])[0]\\n    if elf_type not in (2,3):\\n        continue\\n    start=int(fields[0].split('-')[0],16)\\n    bias=start-int(fields[2],16) if elf_type==3 else 0\\n    modules[path]=min(modules.get(path,bias),bias)\\nfor path,bias in sorted(modules.items()):\\n    module=lldb.target.FindModule(lldb.SBFileSpec(path))\\n    if not module.IsValid():\\n        module=lldb.target.AddModule(path,'x86_64-unknown-linux-gnu',None)\\n    if not module.IsValid():\\n        print('MODULE_INVALID',path)\\n        continue\\n    error=lldb.target.SetModuleLoadAddress(module,bias)\\n    print('MODULE_LOAD',path,hex(bias),error)\\n\")",
+    "-o",
+    "image list -o -f",
+    "-o",
+    "thread backtrace all --count 128",
+    "-o",
+    "process kill"
+  ],
+  "debuggerSupervisorResult": "exited-zero; inspect symbol stacks and diagnostic kill separately",
+  "seconds": 13.581
+}

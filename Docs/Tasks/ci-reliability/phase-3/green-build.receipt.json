@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "name": "green-build",
+  "stage": "phase3-green-build",
+  "operation": "coldCompileCommand",
+  "arguments": [
+    "swift",
+    "build",
+    "--package-path",
+    "Tools/DiscordKitLoadTests",
+    "--scratch-path",
+    "/scratch",
+    "--build-system",
+    "native",
+    "--jobs",
+    "6",
+    "--force-resolved-versions",
+    "--disable-experimental-prebuilts",
+    "--explicit-target-dependency-import-check",
+    "error",
+    "--build-tests"
+  ],
+  "start": "2026-11-12T12:59:54.495096+00:00",
+  "startMonotonic": 75500.953146005,
+  "deadlineMonotonic": 76700.953146005,
+  "executionLimitSeconds": 1200,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "operation",
+  "paths": {
+    "output": "/work/Docs/Tasks/ci-reliability/phase-3/green-build.log",
+    "stdout": null,
+    "diagnostics": "/work/Docs/Tasks/ci-reliability/phase-3/green-build.diagnostics.jsonl",
+    "receipt": "/work/Docs/Tasks/ci-reliability/phase-3/green-build.receipt.json"
+  },
+  "identity": {
+    "executionID": "dc1bce6d-a053-4dcf-9e9c-bb52fee96991",
+    "supervisorPID": 5740,
+    "host": "213b31596900",
+    "system": "Linux",
+    "repository": "/work"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 5746,
+  "group": 5746,
+  "cleanup": {
+    "status": "group-signalled",
+    "signals": [],
+    "parentReaped": true,
+    "allowanceSeconds": 8.0,
+    "seconds": 0.028,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "/work/Docs/Tasks/ci-reliability/phase-3/green-build.log",
+      "retainedBytes": 1850,
+      "observedBytes": 1850,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T13:00:10.804066+00:00",
+  "endMonotonic": 75517.262332559,
+  "elapsedSeconds": 16.309,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}

@@ -1,0 +1,87 @@
+{
+  "base": "9f26e10c00c6562f1fd51ce03e2067edcad971c9",
+  "branch": "ci/phase-4-compatibility",
+  "followupScope": "Documentation and commit receipt only; executable, test, build, workflow and pin inputs remain unchanged.",
+  "implementationCommit": "4590c5d76c1024d8eec5132a1be343220577cccf",
+  "implementationManifestSHA256": "2fab9eec163334e56d124f9300bbbe41d2e535f34702980ec11ca00fe134c343",
+  "method": "Read actual implementation Git blobs and compare every recorded input and artifact digest.",
+  "status": "passed",
+  "verifiedArtifacts": {
+    "IMPLEMENTATION.md": {
+      "SHA256": "f1bdc2b514ee99ad274905b05d2d804eb24151752e0d542bdcd334446c64a765",
+      "bytes": 7595
+    },
+    "exact-types-green.diagnostics.jsonl": {
+      "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "exact-types-green.log": {
+      "SHA256": "683dea25bcfbb23b94a2c9ca6cc963aeccd58d5afa0dfe7f3b6a06b884123b57",
+      "bytes": 387
+    },
+    "exact-types-green.receipt.json": {
+      "SHA256": "14fa75be6be0c0fec85730303a883e16bd9fed43a3f9938f6e4b15a23e47fc79",
+      "bytes": 2294
+    },
+    "exact-types-red.diagnostics.jsonl": {
+      "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "exact-types-red.log": {
+      "SHA256": "2009297776534520208af5a410b37bd08eb18f413f31d1d9c886216ecc5d0123",
+      "bytes": 1937
+    },
+    "exact-types-red.receipt.json": {
+      "SHA256": "1ad82557878843d86df10ee404836b342c0568b3fdbd7327d4d65f641d79a608",
+      "bytes": 2479
+    },
+    "helpers.diagnostics.jsonl": {
+      "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "helpers.log": {
+      "SHA256": "b9ec54ec43f54c91e9b5e96fd36fe815a4540c4ddff9511ea86cce7e240ac2eb",
+      "bytes": 1060
+    },
+    "helpers.receipt.json": {
+      "SHA256": "a96f6b6232c82203f7c237d38e0543285bcbb8f1ccb5848cf6c308acd46bff6c",
+      "bytes": 2081
+    },
+    "policy.diagnostics.jsonl": {
+      "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "policy.log": {
+      "SHA256": "df7c6707eb46038aea3c372065ff8204bf465e00e3248f4e01359e032e11d029",
+      "bytes": 325
+    },
+    "policy.receipt.json": {
+      "SHA256": "3628273a45c4dd5f72526103b870f1ff3664993c457f4f40b7793472bb79985b",
+      "bytes": 2031
+    },
+    "review.json": {
+      "SHA256": "54fa33861e66039aeca9330cbb2af784151e687eccfe40ca4e6d935382f0a0e8",
+      "bytes": 1603
+    },
+    "source-preflight.json": {
+      "SHA256": "24149e0876d880392350b8adabc098a44345175b3f2249ea44bde2f963d22888",
+      "bytes": 3808
+    },
+    "validate.py": {
+      "SHA256": "6add327f499669d8685f862837c1d30fae80b8e1e51cbd4aa0aef83796a9e6b8",
+      "bytes": 1313
+    },
+    "validation.json": {
+      "SHA256": "31931df6cc4f3230fb70ca027bd7b5e2629af0e55da6232422c7b72d0f7fba6c",
+      "bytes": 6247
+    }
+  },
+  "verifiedInputSHA256": {
+    "Tools/ci/native_jobs.py": "f2fb2285143a66484c3beb0617a10dc203c16f958be1330a1da7dcf9945feccf",
+    "Tools/ci/native_receipts.py": "ac7317e349a733f69426de5d7acc000c11ba0a7e91cf517b7bd05b3d89f83ec1",
+    "Tools/ci/platform_probe.py": "35ebf62859cc54bfa2376e03f6ea3398592aee96089545df780c07a507922f04",
+    "Tools/ci/test_native_jobs.py": "37a5021a3b85260933c4ba7de977aa1ff85db880122e61ac2aacaaa515d033ab",
+    "Tools/ci/test_native_receipts.py": "4258ddfc4c268808c39a9575dcb60ceca5134578d18c0afc91c3023c48e4a213",
+    "Tools/ci/test_platform_probe.py": "6669664184eeeb9a15c5378db2f946837a8b3f378d79e598f71c734c4e3221c9"
+  }
+}

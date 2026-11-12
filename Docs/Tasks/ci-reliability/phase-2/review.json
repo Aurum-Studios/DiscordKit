@@ -1,0 +1,224 @@
+{
+  "schemaVersion": 1,
+  "kind": "independent-phase-2-review",
+  "reviewer": "Codex /root/phase2_review",
+  "reviewedAt": "2026-11-12T05:19:27.246487+00:00",
+  "baseCommit": "7632bdd3494d8ec7a52edc798ad98e09b5a8c357",
+  "verdict": "passed",
+  "findings": [],
+  "reviewedInputs": [
+    {
+      "path": "Tools/DiscordKitLoadTests/Sources/DiscordKitLoadTests/EventHubTimingAccounting.swift",
+      "sha256": "26d708497cdce9534d5bccdcfe7a6c1d319924bb7bfc48dc816a75321f771496"
+    },
+    {
+      "path": "Tools/DiscordKitLoadTests/Sources/DiscordKitLoadTests/EventHubTimingCommand.swift",
+      "sha256": "e2ee700d26b176521c95118b9c470a2dfaa287ab49095dc92baafe830493e4c5"
+    },
+    {
+      "path": "Tools/DiscordKitLoadTests/Sources/DiscordKitLoadTests/EventHubTimingRunner.swift",
+      "sha256": "7d8a8b9496c31bb3de604872c608ad97c3feb24935ca7f1875d1437305aaf3c1"
+    },
+    {
+      "path": "Tools/DiscordKitLoadTests/Tests/DiscordKitLoadTestsTests/EventHubTimingAccountingTests.swift",
+      "sha256": "332dc2e9b2d18eeb30698232f548eba5d08bd29082df48dc3faafa8ee38b241e"
+    },
+    {
+      "path": "Tools/DiscordKitLoadTests/Tests/DiscordKitLoadTestsTests/EventHubTimingTests.swift",
+      "sha256": "d591ca493ca657e61dde30ef82838aee2cc99ef026452d49e5ced413151bb6aa"
+    },
+    {
+      "path": "Tests/DiscordGatewayTests/EventHubTests.swift",
+      "sha256": "39667afdc4d79a7b49b0b0fa22f8210105e7718f42e9cb2b300ebce23066f29f"
+    }
+  ],
+  "observations": [
+    "Queued accounting binds each actual residence success to the single sequential pull, then classifies acceptance or CancellationError at that pull boundary.",
+    "Retained eviction and cancellation come from actual residence failed/cancelled endpoints; setup and measured population identities are captured at residence begin.",
+    "Waiting direct handoffs require confirmed parked cohorts and publication admission; every pending result is retained and accepted or classified once, including interrupted driver aggregation.",
+    "The cleanup loop filters indices below pendingAggregated before awaiting result. Already aggregated owners are neither joined again nor classified again.",
+    "Unexpected residence endpoints, overlapping pulls, missing owner evidence, incomplete partitions and non-cancellation errors remain integrity failures even if the driver task is cancelled.",
+    "The bounded ledger has a fixed retained-copy ceiling and releases retained identities at terminal endpoints; histograms remain independent.",
+    "Native schema 2 rejects schema 1, and scheduler/instrumentation identities change to distinguish the new accounting overhead and incompatible reports.",
+    "Cancellation checkpoints execute in benchmark-owned code; the synchronous residence observer neither awaits nor reenters the hub authority.",
+    "Runtime regressions preserve the post-await cancellation rejection, actual residence success on dequeue, FIFO and unaffected subscription ownership."
+  ],
+  "staticChecks": {
+    "pendingGuardBeforeAwait": "passed",
+    "processedIndexAdvancedBeforeAcceptance": "passed",
+    "nonCancellationFailurePreserved": "passed",
+    "gitDiffCheck": "passed",
+    "publicRuntimeSourceEdits": [],
+    "publicRuntimeSourceEditsNote": "No tracked files under the public Sources tree changed; the production EventHub implementation and iterator semantics are unchanged."
+  },
+  "evidenceReviewed": {
+    "loadBuild": {
+      "receipt": "Docs/Tasks/ci-reliability/phase-2/green-build.receipt.json",
+      "receiptSHA256": "41c26bb1b05c43ca9b87b931572bf93a35c92918842f24ba8734c37f4af35909",
+      "log": "Docs/Tasks/ci-reliability/phase-2/green-build.log",
+      "logSHA256": "7e80b3e52dd48d7290b5bb7723a10a89cfc67185cca68a81a56d43f84d3bc63f",
+      "status": "passed",
+      "exitCode": 0,
+      "elapsedSeconds": 8.914,
+      "executionLimitSeconds": 1200,
+      "processGroupGone": true,
+      "remainingProcesses": 0,
+      "readerThreads": 0,
+      "outputsTruncated": false
+    },
+    "runtimeBuild": {
+      "receipt": "Docs/Tasks/ci-reliability/phase-2/runtime-build.receipt.json",
+      "receiptSHA256": "e265078404d20353e049ba5c06bec057063b96c1ea86f524de68c17b98bdef8e",
+      "log": "Docs/Tasks/ci-reliability/phase-2/runtime-build.log",
+      "logSHA256": "967a170ef9a62a6a6cce0d00b6940d792c1dd129f602c65f15cb3a865c6aab24",
+      "status": "passed",
+      "exitCode": 0,
+      "elapsedSeconds": 94.681,
+      "executionLimitSeconds": 1200,
+      "processGroupGone": true,
+      "remainingProcesses": 0,
+      "readerThreads": 0,
+      "outputsTruncated": false
+    },
+    "loadDiscovery": {
+      "receipt": "Docs/Tasks/ci-reliability/phase-2/green-discovery.receipt.json",
+      "receiptSHA256": "c19a34c760b98b9e9f67ae90a751d52a80a636cb58ac7acee49297dbcbf13d8e",
+      "log": "Docs/Tasks/ci-reliability/phase-2/green-discovery.log",
+      "logSHA256": "6097827a022b62288e99b1a800e8c67a9f2193d966ab97fd5c75732b2f20f1fb",
+      "status": "passed",
+      "exitCode": 0,
+      "elapsedSeconds": 3.085,
+      "executionLimitSeconds": 60,
+      "processGroupGone": true,
+      "remainingProcesses": 0,
+      "readerThreads": 0,
+      "outputsTruncated": false,
+      "matchingIdentifiers": 23,
+      "identifiers": [
+        "DiscordKitLoadTestsTests.EventHubTimingAccountingTests/acceptanceWithoutRemovalOrDuringCancellationFails(cancelled:)",
+        "DiscordKitLoadTestsTests.EventHubTimingAccountingTests/acceptedRemovalAndDirectHandoffHaveDistinctEvidence()",
+        "DiscordKitLoadTestsTests.EventHubTimingAccountingTests/cancellationAfterRemovalKeepsItsOriginalPopulation()",
+        "DiscordKitLoadTestsTests.EventHubTimingAccountingTests/cancellationBeforeRemovalLeavesResidenceAuthoritative()",
+        "DiscordKitLoadTestsTests.EventHubTimingAccountingTests/duplicateResidenceEndpointFails(begin:)",
+        "DiscordKitLoadTestsTests.EventHubTimingAccountingTests/outstandingOwnerFailsSnapshot(pull:)",
+        "DiscordKitLoadTestsTests.EventHubTimingAccountingTests/setupAndMeasuredRemainSeparate()",
+        "DiscordKitLoadTestsTests.EventHubTimingAccountingTests/unownedOrMultipleRemovalFails(activePull:)",
+        "DiscordKitLoadTestsTests.EventHubTimingAccountingTests/unrelatedIntervalsAreIgnored()",
+        "DiscordKitLoadTestsTests.EventHubTimingTests/cancellationAfterAcceptancePreservesPartialCohorts(backlog:)",
+        "DiscordKitLoadTestsTests.EventHubTimingTests/cancelledDriverStillReportsIntegrityFailure()",
+        "DiscordKitLoadTestsTests.EventHubTimingTests/commonReportIdentityAndWarmup()",
+        "DiscordKitLoadTestsTests.EventHubTimingTests/completedWaitingResultsSurviveInterruptedAggregation(afterFirstAcceptance:)",
+        "DiscordKitLoadTestsTests.EventHubTimingTests/dequeueCancellationDoesNotInventDiscard(backlog:)",
+        "DiscordKitLoadTestsTests.EventHubTimingTests/externalCancellationJoinsOwners(scenario:)",
+        "DiscordKitLoadTestsTests.EventHubTimingTests/finiteCaseInventory()",
+        "DiscordKitLoadTestsTests.EventHubTimingTests/finiteScenarios(scenario:policy:)",
+        "DiscordKitLoadTestsTests.EventHubTimingTests/overrideCannotBypassWorkBudget()",
+        "DiscordKitLoadTestsTests.EventHubTimingTests/parsesIndependentDimensions()",
+        "DiscordKitLoadTestsTests.EventHubTimingTests/rejectsInvalidDimensions(arguments:)",
+        "DiscordKitLoadTestsTests.EventHubTimingTests/waitingCancellationAtConsumerHandoffIsExplicit()",
+        "DiscordKitLoadTestsTests.EventHubTimingTests/wallCapHasJoinedPartialPopulation()",
+        "DiscordKitLoadTestsTests.EventHubTimingTests/zeroBacklogAndEmptyPayload()"
+      ]
+    },
+    "runtimeDiscovery": {
+      "receipt": "Docs/Tasks/ci-reliability/phase-2/runtime-discovery.receipt.json",
+      "receiptSHA256": "61e03a8f468e69d63a474a5be1573c52236b2644fe4a970aad47688b73d156e2",
+      "log": "Docs/Tasks/ci-reliability/phase-2/runtime-discovery.log",
+      "logSHA256": "c6b581c9fb254c81697f9267e025f7502e7c93c19df50af897099b6f136d4d3c",
+      "status": "passed",
+      "exitCode": 0,
+      "elapsedSeconds": 3.438,
+      "executionLimitSeconds": 60,
+      "processGroupGone": true,
+      "remainingProcesses": 0,
+      "readerThreads": 0,
+      "outputsTruncated": false,
+      "matchingIdentifiers": 21,
+      "identifiers": [
+        "DiscordGatewayTests.EventHubTests/admissionPrioritySurvivesRemovalAndReplacement()",
+        "DiscordGatewayTests.EventHubTests/aggregateBudgetsAndHubIsolation()",
+        "DiscordGatewayTests.EventHubTests/byteBoundedDropOldestEvictsMultipleWrappedCopies()",
+        "DiscordGatewayTests.EventHubTests/byteLimitsAndTerminalMetadataBound()",
+        "DiscordGatewayTests.EventHubTests/cancellationBeforeDequeuePreservesAcceptedValues(acceptFirst:)",
+        "DiscordGatewayTests.EventHubTests/cancellationBetweenDequeueAndPublicDelivery()",
+        "DiscordGatewayTests.EventHubTests/circularQueueWrapGrowthAndRepeatedDrain(_:)",
+        "DiscordGatewayTests.EventHubTests/configurationValidation()",
+        "DiscordGatewayTests.EventHubTests/dropOldestCannotReclaimAnotherHubsCapacity()",
+        "DiscordGatewayTests.EventHubTests/exactCountersAcrossSharedHubLifecycles()",
+        "DiscordGatewayTests.EventHubTests/explicitLossyPolicies(_:)",
+        "DiscordGatewayTests.EventHubTests/finishWakesParkedConsumer()",
+        "DiscordGatewayTests.EventHubTests/independentOrderedBroadcast()",
+        "DiscordGatewayTests.EventHubTests/localAggregateBytesAndLossySharedCapacity()",
+        "DiscordGatewayTests.EventHubTests/mainActorConsumerAndPreCancellation()",
+        "DiscordGatewayTests.EventHubTests/manyClientAggregateMetadataAndBytes()",
+        "DiscordGatewayTests.EventHubTests/overflowIsolationAndMetadataRelease()",
+        "DiscordGatewayTests.EventHubTests/overlappingIterationAndDirectDelivery()",
+        "DiscordGatewayTests.EventHubTests/oversizedLossyEvent(_:)",
+        "DiscordGatewayTests.EventHubTests/parkedCancellationAndFinish()",
+        "DiscordGatewayTests.EventHubTests/subscribeShutdownRace()"
+      ]
+    },
+    "loadFocusedTests": {
+      "receipt": "Docs/Tasks/ci-reliability/phase-2/green-tests.receipt.json",
+      "receiptSHA256": "a500b699278466231198c54c0ee59e896b80266c95ca5f71e3689ed9873fd14f",
+      "log": "Docs/Tasks/ci-reliability/phase-2/green-tests.log",
+      "logSHA256": "a92588ba822742f3a4ec6f8bc55931d08bdd69f2e75ddd2b0f38e92ecbb2a160",
+      "status": "passed",
+      "exitCode": 0,
+      "elapsedSeconds": 4.56,
+      "executionLimitSeconds": 90,
+      "processGroupGone": true,
+      "remainingProcesses": 0,
+      "readerThreads": 0,
+      "outputsTruncated": false,
+      "tests": 23,
+      "suites": 2,
+      "summary": "Test run with 23 tests in 2 suites passed after 2.212 seconds."
+    },
+    "runtimeFocusedTests": {
+      "receipt": "Docs/Tasks/ci-reliability/phase-2/runtime-tests.receipt.json",
+      "receiptSHA256": "2fef94a585b87eedf1ec1c6efdd2d8480fd656807602e599cc929a8eac591379",
+      "log": "Docs/Tasks/ci-reliability/phase-2/runtime-tests.log",
+      "logSHA256": "c39bc5cd246cdc791f680d07bd19c4d87515baf876cc62691c85545853fc7675",
+      "status": "passed",
+      "exitCode": 0,
+      "elapsedSeconds": 0.664,
+      "executionLimitSeconds": 90,
+      "processGroupGone": true,
+      "remainingProcesses": 0,
+      "readerThreads": 0,
+      "outputsTruncated": false,
+      "tests": 21,
+      "suites": 1,
+      "summary": "Test run with 21 tests in 1 suite passed after 0.008 seconds."
+    },
+    "redRegression": {
+      "receipt": "Docs/Tasks/ci-reliability/phase-2/red-tests.receipt.json",
+      "log": "Docs/Tasks/ci-reliability/phase-2/red-tests.log",
+      "status": "failed",
+      "exitCode": 1,
+      "tests": 2,
+      "suites": 1,
+      "issues": 4,
+      "observedFailures": [
+        "Dequeue cancellation reports one invented discarded admitted copy for each backlog 0 and 1 case.",
+        "Interrupted waiting aggregation loses four returned values: success is 0 and discarded admitted copies is 4."
+      ]
+    }
+  },
+  "coverageReviewed": [
+    "Cancellation before dequeue and between dequeue and iterator return.",
+    "Waiting results returned before aggregation and interruption after the first acceptance.",
+    "Explicit waiting handoff cancellation and cancellation after accepted queued copies.",
+    "Separate setup/measured populations, zero/nonzero backlog, partial cohorts and multiple hubs/subscribers.",
+    "All overflow policies, duplicate/unowned endpoints, contradictory acceptance, outstanding owners and unaffected runtime subscriptions.",
+    "Final empty owner snapshots and strict native schema compatibility."
+  ],
+  "limits": [
+    "This reviewer performed static review and read retained supervised build/discovery/test results; no builds or test reruns were launched by this reviewer.",
+    "Evidence is local macOS ARM64 only and does not qualify Linux, the pinned hosted Swift 6.4.1 toolchain, hosted CI, live Discord or production.",
+    "Controlled regressions establish both source-supported accounting windows; they do not establish the exact interleaving of the historical hosted assertion.",
+    "Whole-package native confirmation remains later-phase work.",
+    "Input hashes identify the exact files reviewed; the parent validation receipt separately binds the final executable inputs to the retained commands."
+  ]
+}

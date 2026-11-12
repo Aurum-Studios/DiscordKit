@@ -1,0 +1,47 @@
+node --test Browser/DiscordActivityBridge/ActivityBridge.test.mjs Browser/DiscordActivityBridge/ActivityHostExample.test.mjs Browser/DiscordActivityBridge/ActivityNetwork.test.mjs
+✔ host parameters preserve opaque IDs, unknown fields, missing and empty optional values (0.70875ms)
+✔ host parameters reject missing, duplicate, empty, oversized, and invalid platform values (0.500709ms)
+✔ construction is inert and explicitly trusted allowlisted origins are required (2.209083ms)
+✔ start sends exact v1 handshake and rejects wrong-source/origin and spoofed READY (0.877334ms)
+✔ READY validates optional user and CDN fields before completing startup (0.233667ms)
+✔ startup deadlines, cancellation, and teardown settle all waiters without remaining ownership (0.5805ms)
+✔ synchronous host responses cannot race pending command registration (0.297667ms)
+✔ nonce and command matching isolate out-of-order callers, stale replies, and repeated nonce factory output (0.27425ms)
+✔ request cancellation before/during work and timeout release accounting and ignore late replies (0.42825ms)
+✔ RPC errors require matching command/nonce and retain the host numeric error code (0.283375ms)
+✔ published permission BigInts normalize to exact decimal strings without losing high bits (0.157542ms)
+✔ pending count/byte/frame and JSON validation bounds reject admission without sending (0.313875ms)
+✔ standalone command JSON rejects unsafe integer-valued numbers before admission (0.20325ms)
+✔ teardown rejects concurrent commands, clears all resources, and remains idempotent (0.292917ms)
+✔ duplicate subscriptions canonicalize arguments and perform one upstream subscribe/final unsubscribe (0.283ms)
+✔ cancellation of one pending subscriber preserves another and no listeners leak (0.202459ms)
+✔ cancel final subscriber during SUBSCRIBE waits for ack and then sends exactly one UNSUBSCRIBE (0.167625ms)
+✔ subscribe during final UNSUBSCRIBE serializes a replacement without returning a stale active handle (0.197542ms)
+✔ never-ack subscribe expires, closes ambiguous remote state, and rejects every subscriber (0.112084ms)
+✔ subscription capacity, invalid callbacks, and already-aborted consumers reject without retention (0.217375ms)
+✔ listener exceptions are isolated; unknown events retain order and count/byte overflow closes (0.21475ms)
+✔ authenticated malformed/oversized frames terminate but unauthenticated malformed messages are ignored (0.233959ms)
+✔ transport installation/send failures settle startup and command cleanup deterministically (0.2155ms)
+✔ window transport installs only on listen, removes once, and posts to exact origins (0.138042ms)
+✔ raw Swift/browser transport stays inert until start and authenticates before delivering UTF-8 bytes (0.443916ms)
+✔ raw adapter bounds frames and informs the Swift read owner once on invalid authenticated input (0.178084ms)
+✔ raw transport accepts the exact UTF-8 byte limit and authenticates before inspecting over-limit data (0.200583ms)
+✔ raw owner callback failure terminates the authenticated boundary without a second delivery (0.092375ms)
+✔ real browser example imports bridge, becomes READY, exchanges authorization and loads participants (5.002167ms)
+✔ real browser example refuses missing/unknown configured origins and missing application IDs (1.122542ms)
+✔ real browser example surfaces backend rejection and does not authenticate with an unexchanged code (1.425084ms)
+✔ mapping preserves query, path, and trailing slash while using the Activity proxy origin (1.302541ms)
+✔ host and path matching require exact boundaries, escaped literals, and explicit mappings (0.441166ms)
+✔ unsafe schemes, credentials, fragments, encoded separators, and proxy escape attempts fail (0.231375ms)
+✔ route compilation rejects invalid origins, malformed routes, traversal, and unmatched variables (0.275875ms)
+✔ fetch URL input uses explicit adapters and preserves init without global mutation (9.904875ms)
+✔ fetch Request mapping preserves streaming body, method, headers, signal, and explicit overrides (4.4755ms)
+✔ network adapter failures propagate and WebSocket mapping preserves protocol lists lazily (0.577083ms)
+ℹ tests 38
+ℹ suites 0
+ℹ pass 38
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 61.025584

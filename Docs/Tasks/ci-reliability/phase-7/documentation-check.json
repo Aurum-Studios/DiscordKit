@@ -1,0 +1,8 @@
+{
+  "status": "passed",
+  "localLinksChecked": 215,
+  "documentationFiles": 6,
+  "syntax": "Changed Python and embedded workflow Python parsed successfully",
+  "diffCheck": "passed",
+  "testedInputsSHA256": "all matched before staging"
+}

@@ -1,0 +1,2 @@
+/Library/Frameworks/Python.framework/Versions/3.14/bin/python3 Docs/Tasks/ci-reliability/phase-10/checks/admission/run_fixtures.py
+{"syntheticFixture": true, "status": "passed", "jobCount": 14, "permittedAttempts": 2, "cumulativeReservationsUnchanged": true, "staleAndExhaustedRejected": true, "remainingCoverage": [], "observedFailedAttemptRetained": true, "hostedExecution": false}

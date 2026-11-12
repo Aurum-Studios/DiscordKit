@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "baseRevision": "a74d58a7",
+  "branch": "ci/phase-1-supervision",
+  "owner": "Codex /root",
+  "startedAt": "2026-11-12T05:00:24.016061+00:00",
+  "completedAt": "2026-11-12T05:00:36.074316+00:00",
+  "qualification": "local macOS Python helper tests and process fixtures only",
+  "inputsSHA256": {
+    "Tools/ci/linux_ci.py": "90b85a9f862b1e91d2a6f08686bc5780328d544940d6012b47e5fcd4973bbd1e",
+    "Tools/ci/native_jobs.py": "389d00c4d4906a60113c065df83fe0da677ebc1a9e5cc8319b778347f54457c2",
+    "Tools/ci/scheduling_policy.py": "505e28d651f7d8fc79e382b3635fa2c9bf82cd1165f42633382e54eaea1a9981",
+    "Tools/ci/scheduling-policy.v1.json": "b81920491d4acb7ae7bf061d200cbe95b59d86392211453e1465f162407661a4",
+    "Tools/ci/test_linux_ci.py": "c5f9e316c5c902ba18abc9bc1f382476426de51e0e0949c04d5f5c19ed23e8c9",
+    "Tools/ci/test_native_jobs.py": "ef6aad3496360762dec4e09117f7b7fe4b961a5f5e758f1ca73817da18bcb15b",
+    "Tools/ci/test_scheduling_policy.py": "06eeecf0bf357d150243136fa8856b6a017bb47f01aa110b3d7438638513c2f3"
+  },
+  "testCount": 231,
+  "commands": [
+    {
+      "argv": [
+        "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "Tools/ci",
+        "-p",
+        "test_*.py"
+      ],
+      "exit": 0,
+      "timeoutSeconds": 300,
+      "seconds": 12.054,
+      "status": "passed"
+    }
+  ],
+  "testLog": {
+    "path": "local-ci-helpers.log.gz",
+    "sha256Gzip": "3dd21d45a6acc299eeec92744523d54337863865d32f93f2ab3baa452f33c149",
+    "sha256Uncompressed": "b83f55715760bcc17241f1edcf0dc256f030ef645049796793eaa776051b391c"
+  },
+  "executionReceipt": "local-ci-helpers.receipt.json",
+  "paidExecution": {
+    "jobs": 0,
+    "minutes": 0,
+    "attempts": 0,
+    "usdAllowance": "0.00"
+  },
+  "nativeSwiftCompilations": 0,
+  "nativeSwiftTests": 0,
+  "staticValidation": "static-validation.json",
+  "independentReview": "Final read-only review found no material blocker and verified all seven tested input hashes."
+}

@@ -1,0 +1,122 @@
+{
+  "schemaVersion": 1,
+  "policyID": "ci-reliability-phase-0-v1",
+  "qualification": "local arithmetic check; no cold compile or transport capacity claim",
+  "workflowDefinitionsChanged": false,
+  "compileComponents": [
+    {
+      "component": "root",
+      "compileAggregateSeconds": 1200,
+      "inventoryAggregateSeconds": 60,
+      "setupDiagnosticCleanupUploadReserveSeconds": 840,
+      "packagingIdentityReserveSeconds": 600,
+      "maximumIncludingReservesSeconds": 2700,
+      "enclosingJobSeconds": 7200
+    },
+    {
+      "component": "macros",
+      "compileAggregateSeconds": 1200,
+      "inventoryAggregateSeconds": 60,
+      "setupDiagnosticCleanupUploadReserveSeconds": 840,
+      "packagingIdentityReserveSeconds": 600,
+      "maximumIncludingReservesSeconds": 2700,
+      "enclosingJobSeconds": 7200
+    },
+    {
+      "component": "extensions",
+      "compileAggregateSeconds": 1200,
+      "inventoryAggregateSeconds": 60,
+      "setupDiagnosticCleanupUploadReserveSeconds": 840,
+      "packagingIdentityReserveSeconds": 600,
+      "maximumIncludingReservesSeconds": 2700,
+      "enclosingJobSeconds": 7200
+    },
+    {
+      "component": "tooling",
+      "compileAggregateSeconds": 1200,
+      "inventoryAggregateSeconds": 60,
+      "setupDiagnosticCleanupUploadReserveSeconds": 840,
+      "packagingIdentityReserveSeconds": 600,
+      "maximumIncludingReservesSeconds": 2700,
+      "enclosingJobSeconds": 7200
+    },
+    {
+      "component": "load",
+      "compileAggregateSeconds": 2400,
+      "inventoryAggregateSeconds": 60,
+      "setupDiagnosticCleanupUploadReserveSeconds": 840,
+      "packagingIdentityReserveSeconds": 600,
+      "maximumIncludingReservesSeconds": 3900,
+      "enclosingJobSeconds": 7200
+    },
+    {
+      "component": "benchmarks",
+      "compileAggregateSeconds": 2400,
+      "inventoryAggregateSeconds": 60,
+      "setupDiagnosticCleanupUploadReserveSeconds": 840,
+      "packagingIdentityReserveSeconds": 600,
+      "maximumIncludingReservesSeconds": 3900,
+      "enclosingJobSeconds": 7200
+    },
+    {
+      "component": "timing-support",
+      "compileAggregateSeconds": 1200,
+      "inventoryAggregateSeconds": 60,
+      "setupDiagnosticCleanupUploadReserveSeconds": 840,
+      "packagingIdentityReserveSeconds": 600,
+      "maximumIncludingReservesSeconds": 2700,
+      "enclosingJobSeconds": 7200
+    },
+    {
+      "component": "timing",
+      "compileAggregateSeconds": 2400,
+      "inventoryAggregateSeconds": 60,
+      "setupDiagnosticCleanupUploadReserveSeconds": 840,
+      "packagingIdentityReserveSeconds": 600,
+      "maximumIncludingReservesSeconds": 3900,
+      "enclosingJobSeconds": 7200
+    },
+    {
+      "component": "foundation",
+      "compileAggregateSeconds": 2400,
+      "inventoryAggregateSeconds": 60,
+      "setupDiagnosticCleanupUploadReserveSeconds": 840,
+      "packagingIdentityReserveSeconds": 600,
+      "maximumIncludingReservesSeconds": 3900,
+      "enclosingJobSeconds": 7200
+    },
+    {
+      "component": "media",
+      "compileAggregateSeconds": 2400,
+      "inventoryAggregateSeconds": 60,
+      "setupDiagnosticCleanupUploadReserveSeconds": 840,
+      "packagingIdentityReserveSeconds": 600,
+      "maximumIncludingReservesSeconds": 3900,
+      "enclosingJobSeconds": 7200
+    },
+    {
+      "component": "consumers",
+      "compileAggregateSeconds": 5400,
+      "inventoryAggregateSeconds": 360,
+      "setupDiagnosticCleanupUploadReserveSeconds": 840,
+      "packagingIdentityReserveSeconds": 600,
+      "maximumIncludingReservesSeconds": 7200,
+      "enclosingJobSeconds": 7200
+    },
+    {
+      "component": "release",
+      "compileAggregateSeconds": 3600,
+      "inventoryAggregateSeconds": 0,
+      "setupDiagnosticCleanupUploadReserveSeconds": 840,
+      "packagingIdentityReserveSeconds": 600,
+      "maximumIncludingReservesSeconds": 5040,
+      "enclosingJobSeconds": 7200
+    }
+  ],
+  "audit": {
+    "aggregateSeconds": 300,
+    "maximumIncludingReservesSeconds": 1140,
+    "enclosingJobSeconds": 1800
+  },
+  "transportReserveLimit": "Upload reserve is unchanged historical placeholder; bounded420-second transport integration remains later-phase work."
+}

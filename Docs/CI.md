@@ -8,116 +8,193 @@ https://aurum-studios.com
 # Continuous validation and upstream review
 
 The repository defines six workflow entry points: offline CI validation,
-documentation publication, manual GitHub releases, weekly official upstream
+manual documentation requests, manual GitHub releases, weekly official upstream
 review, manual controlled timing comparisons and periodic offline stress/soak.
 CI also calls one reusable native-platform workflow, which has no push,
 pull-request, schedule or manual trigger of its own.
 A workflow definition does not establish that a hosted runner
 has executed. Review actual artifacts before changing support claims.
 
-The proposed [CI reliability and spending plan](Tasks/ci-reliability/PLAN.md)
+The [CI reliability and spending plan](Tasks/ci-reliability/PLAN.md)
 tracks cancellation repairs, bounded diagnostics, artifact recovery and staged
-validation. Its phase ledger describes future work; the pipeline below remains
-the current implementation until those changes are completed and qualified.
+validation. Phase 0 retains a baseline and local planning policy with a
+[zero-paid-execution sheet](Tasks/ci-reliability/BOOTSTRAP.md). The
+[Phase 1 implementation and acceptance](Tasks/ci-reliability/phase-1/IMPLEMENTATION.md)
+records local process-supervisor work. The
+[Phase 2 repair and acceptance](Tasks/ci-reliability/phase-2/IMPLEMENTATION.md)
+records event-hub benchmark accounting, deterministic cancellation regressions and
+local Swift checks. Linux diagnosis, later scheduling changes and hosted
+qualification remain tracked in the plan.
 
 ## Offline validation
 
-[Offline validation](../.github/workflows/ci.yml) runs on push, pull request and
-manual dispatch with read-only repository permissions and no Discord secrets.
-The workflow calls [the native-platform pipeline](../.github/workflows/native-platform.yml)
-through two explicit jobs: **Linux x64** and **macOS ARM64**.
-Windows CI is excluded because SwiftNIO does not support Windows.
-Separate callers give each platform its own group in GitHub's job viewer, with
-its own build, runtime-suite and compiler-fixture matrices. Each call owns its
-platform check, plan, builds, runtime suites, compiler fixtures, validation and
-source export. No platform waits for another platform's checks or builds:
+[Offline validation](../.github/workflows/ci.yml) retains default-branch push, pull-request and
+manual entry points with read-only permissions and no Discord secrets. The
+[Phase 6 implementation](Tasks/ci-reliability/phase-6/IMPLEMENTATION.md) introduces
+explicit `preflight`, `diagnostic` and `full` scope. The checked-in
+[rollout setting](../Tools/ci/rollout.v1.json) selects **preflight** automatically
+and keeps native expansion disabled for Phase 11 qualification. The
+[Phase 10 admission policy](../Tools/ci/admission.v1.json) separately retains zero
+allowances and unverified account pricing, so even helper fanout requires admission.
+Manual full/diagnostic requests fail closed under these settings. Repository
+variables or dispatch fields cannot grant paid execution. Documentation site preparation shares full CI inputs; Pages publication remains
+contained behind full certification and an explicit publication request.
+
+[Phase 11 qualification preparation](Tasks/ci-reliability/phase-11/IMPLEMENTATION.md)
+adds a fixed Linux `root` / `DiscordBitsTests` diagnostic fault after real passing
+tests, immutable selection retention and offline full/partial evidence verification.
+The fault is sealed into spend admission and fails only attempt one; a partial
+rerun must execute a fresh consumer while reusing valid producers. This source
+preparation leaves hosted execution and rollout activation pending authorization.
+Phase 11 completion still requires both native platforms and exact-final-revision
+full certification; local snapshot fixtures cannot establish those results.
+
+A source/policy/workflow job, four balanced Python/browser helper groups and the
+independent human upstream-maintenance freshness check precede native scheduling.
+Helpers use the process supervisor and a shared 300-second group deadline.
+Source checks validate the reviewed manifest bytes/inventory and displayed
+examples; actionlint verifies workflow syntax and expressions. Swift manifest
+evaluation remains a native compiler operation. Compiled inventory/generation/
+parity and documentation audits follow their own sufficient producer.
+
+The prepared native graph retains two explicit, independent **Linux x64** and
+**macOS ARM64** callers. Windows remains excluded. Its execution is contained;
+this diagram describes the gated implementation, not hosted qualification:
 
 ```mermaid
 flowchart LR
-    L[Linux check and builds] --> LT[Linux suites, fixtures and audits]
-    LT --> LP[Linux source export]
-    M[macOS check and builds] --> MT[macOS suites, fixtures, audits, API and Apple SDKs]
-    MT --> MP[macOS source export]
-    LP --> C[Complete certification]
-    MP --> C
-    H[Shared Python, browser and maintenance checks] --> C
+    H[Shared source, helpers and maintenance] --> L[Linux probe and native plan]
+    H --> M[macOS probe and native plan]
+    L --> LC[Load producer, immutable upload, fresh consumer and smokes]
+    M --> MC[Load producer, immutable upload, fresh consumer and smokes]
+    LC --> LB[Remaining Linux builds, suites, fixtures and audits]
+    MC --> MB[Remaining macOS builds, suites, fixtures, audits, API and Apple SDKs]
+    LB --> LP[Exact coverage, then Linux source export]
+    MB --> MP[Exact coverage, then macOS source export]
+    LP --> C[Fresh full coverage and producer barrier]
+    MP --> DS[Site from sealed strict DocC archives]
+    DS --> C
 ```
 
 | Target | Platform and runtime suite group | Build and compiler fixture group |
 | --- | --- | --- |
-| Linux x64 / Ubuntu 24.04 | `Linux-x64-8` | `Linux-x64-64` |
+| Linux x64 / Ubuntu 24.04 | `Linux-x64-8` | `Linux-x64-64`; tooling/timing-support use `Linux-x64-8` |
 | macOS ARM64 / macOS 26 | `MacOS-26-5` | `MacOS-26-5` |
 
-The `native-linux` and `native-macos` jobs each call one pipeline.
-Each starts with exactly one check of the actual native OS, architecture,
-Swift 6.4.1 compiler and target, then compiles, links and executes an offline
-Foundation JSON roundtrip. A platform check is never multiplied by build
-components, suites or runner sizes. Only that platform's check must pass before
-its builds start. A failed or unfinished platform leaves the other pipeline
-free to build, test, validate and export.
-The macOS ARM pool has five cores and serves both compilation and runtime work.
-Linux uses separate 64-core build and 8-core runtime pools.
+Each platform probes its actual OS, architecture, Swift 6.4.1 compiler/target and
+runtime, then evaluates the root manifest against the reviewed source inventory.
+Its load producer compiles tests and optimized smoke executables once, uploads
+immutable bytes with producer provenance, and a separate consumer job resolves,
+restores and compares complete nonempty discovery before running the entire load
+package and existing REST/loopback smokes. Native receipt, source/path, digest,
+discovery or timeout failure prevents only that platform's broader expansion.
 
-After its platform check, a small native job evaluates the root manifest and plans
-independent builds for the root, macros, extensions, tooling, load tools,
-DSL benchmarks, shared timing support, instrumentation/Foundation/media timing
-harnesses, consumers and optimized library products for that platform. Builds
-use `swift build --build-tests` where applicable and do not execute test suites.
-The DSL benchmark, load and timing harness builds also produce optimized smoke executables. Consumer
-examples keep separate build directories so one example's metadata cannot
-replace another example's test executable. Apple SDK module emissions run in
-this build phase after the macOS platform check.
+The valid load build and complete suite are canonical once. Remaining matrices
+exclude load; a diagnostic adds only its requested component/suite after the
+explicit load canary prerequisite. No diagnostic automatically expands to full.
+Root suites retain exact module filters and `--skip-build --no-parallel`;
+compiler-positive/negative fixtures and native audits retain their existing work.
+[Phase 7](Tasks/ci-reliability/phase-7/IMPLEMENTATION.md) replaces individual jobs
+with four deterministic root groups, one batched consumer group and separate
+package groups per platform (28 test groups total). Restore and discovery are
+shared within each group; every whole root module retains its own bounded process.
+Structured Swift Testing results must reconcile the selected producer leaves,
+including the single predeclared optional MLS++ exclusion. Dedicated immutable
+result artifacts are independently checked at each coverage barrier. XCTest
+inventory fails explicitly pending a supported serial structured adapter.
 
-Every build for a platform must pass before that platform's test phase starts.
-Apple SDK compilation does not gate runtime suites. Each root Swift test target
-gets its own job; macro, extension, tooling, load and benchmark packages and
-individual offline consumer examples have separate jobs. Runtime suites use
-`swift test --skip-build --no-parallel`, and executable smoke tests use
-`swift run --skip-build`. The helper compares restored test discovery with the
-producer's nonempty inventory before executing a suite, and anchors root filters
-to the exact module. Platform conditionals retain their existing behavior.
+The core producer wave unlocks root groups, tooling audits and API conversion
+before remaining builds finish. Compiler waves and runtime group waves each cap
+in-flight jobs at two. Compiler processes additionally obey policy, CPU affinity
+and observed memory bounds. Tooling/timing-support initially use the existing
+smaller Linux pool; their hosted capacity and measured savings remain pending.
+Runtime group jobs allow 105 minutes and audits 60 minutes including bounded
+restore/transfer reserves; per-suite process limits remain unchanged.
 
-No current runtime suite has evidence requiring a large runner. Compiler fixture
-suites are the exception: their positive and negative cases must invoke the
-compiler, so each authoring fixture suite runs as a separate job on the build
-pools. They still require the expected semantic diagnostics; infrastructure
-crashes do not count as successful negative tests. Python tooling, load,
-benchmark, shared timing support, Foundation timing and CI helpers and the browser bridge run as seven independent small
-Linux jobs without native-build dependencies. Source audits run separately on
-each platform and reuse its compiled tooling executable.
-Public API and DocC checks reuse public symbol graphs emitted during the macOS
-root and authoring builds, without recompiling stripped build artifacts.
-The upstream maintenance freshness check remains a separate required job without
-native-build dependencies. These shared checks gate overall certification;
-platform exports depend on their own native validation.
+The expected-coverage manifest lists every probe, plan, producer, suite, fixture,
+audit, API/Apple check and applicable export. Authenticated same-run API evidence
+must contain each expected job and required step exactly once with successful
+terminal results. Unexpected canonical build/test rows fail. A fresh full barrier
+checks both platforms and every shared helper row and resolves both complete
+producer indices again. Earlier successful same-run jobs may survive a partial
+failed-job rerun; a newer failed/cancelled replacement cannot fall back to an old
+success. Immutable producer attempts and selected job attempts stay recorded.
 
-The reusable workflow keeps all `needs` edges within one platform. The two
-caller jobs have no dependencies on each other, so a failed pipeline cannot
-cancel the other. Their internal matrices retain `fail-fast: false`.
-GitHub groups reusable jobs under their caller; see
-[reusable workflow navigation](https://github.blog/news-insights/product-news/improving-navigation-for-github-actions/)
-and [calling reusable workflows](https://docs.github.com/en/actions/how-tos/reuse-automations/reuse-workflows#calling-a-reusable-workflow).
+Only validated full scope creates **Offline certification passed**. Its required
+`Verify full scope and complete coverage` step checks the full source-bound
+manifest; release discovery requires that successful step too. Scoped runs use
+**Preflight scope passed** or **Diagnostic scope passed**, including failure or
+skip paths, and their scope-specific concurrency groups cannot supersede or
+cancel full certification. Full runs still cancel superseded full runs.
+Real GitHub context, branch-protection and fresh-runner/rerun acceptance remain
+Phase 11 work before rollout.
 
 [The shared setup action](../.github/actions/setup-native/action.yml) installs
-Swift 6.4.1, Python 3.12 and Node 24. Linux setup installs the Ubuntu prerequisites
-and imports the official [Swift signing-key bundle](https://www.swift.org/keys/all-keys.asc)
-with `curl --compressed` before invoking `setup-swift@v3`. It verifies the Swiftly
-fingerprint `E813C892820A6FA13755B268F167DF1ACF9CE069`; installer and toolchain
-signature verification remain enabled.
+Swift 6.4.1 and Python 3.12 with explicit `build` or `runtime` prerequisites.
+Both profiles retain the full compiler and SwiftPM manifest linker dependencies;
+only compiler/build jobs add the remaining development headers. Artifact and browser
+helpers provision Node 24 where needed. Every caller caps the whole setup step at
+ten minutes, including cache restore/save, with supervised prerequisite and installer
+commands sharing the same allowance.
+
+[Phase 8](Tasks/ci-reliability/phase-8/IMPLEMENTATION.md) caches only pinned official
+Swift distributions, keyed by their hash, platform, exact image/SDK and versioned
+installer policy. Every cold or hit path verifies SHA256 and the upstream signature
+before fresh installation at the same path. Linux imports the official
+[Swift signing-key bundle](https://www.swift.org/keys/all-keys.asc) with
+`curl --compressed`, checking the required fingerprints in an isolated keyring;
+macOS requires the exact Swift installer signer and trusted notarization.
+Only default-branch pushes/manual runs may save entries. Corrupt, stale or
+incompatible hits fail explicitly. Installed trees, credentials and build outputs
+are excluded. Cache provenance stays informational; active compiler, image and SDK
+must still satisfy the exact Phase 4 compatibility contract. Hosted cold/hit
+timings and savings remain unmeasured.
 Every consumer job installs its matching compiler/runtime prerequisites too.
 
 [The native job helper](../Tools/ci/native_jobs.py) transports each compilation in
 a tar archive, retaining executable permissions, resources, symlinks and filenames
-that cannot be uploaded individually. The archive receipt binds payload hashes,
-tracked source contents, exact commit, workflow run and attempt, native platform,
-compiler version/target, build engine and absolute checkout path. Consumers check
-the whole archive before extraction and refuse mismatches or existing build
-outputs. Compiled Swift tests embed absolute source paths, so each platform's
-small and large runner images must provide the same checkout path and compatible
-OS/SDK/runtime. A different path fails explicitly instead of silently rebuilding
-on the small runner. Artifacts are local to the same workflow attempt and expire
-after two days. Reruns must use **Re-run all jobs** so the new attempt produces
-matching compilation artifacts.
+that cannot be uploaded individually. The [version-2 receipt contract](Tasks/ci-reliability/phase-4/IMPLEMENTATION.md)
+separates exact build compatibility from producer and consumer execution provenance.
+Compatibility binds tracked source/commit, explicit pin digests, semantic build
+commands/configuration, platform/architecture, compiler/target, native build engine,
+canonical checkout path and exact OS/runtime/image/Xcode/SDK facts. Image release
+URLs and runner names are informational. Producer records retain workflow/run/job/
+attempt and trust scope, successful stages, inventory seal and timestamps. Consumers
+retain their own identity, selected producer, archive digest, artifact identity,
+discovery, selected suite and terminal results. Legacy v1 requires regeneration.
+
+Consumers validate the entire payload and safe members/links before extraction and
+refuse mismatches or existing build outputs. Compiled Swift tests embed absolute
+source paths, so each platform's runner images must provide the same checkout path
+and exact required OS/SDK/runtime inputs. A different path fails explicitly instead
+of silently rebuilding. The native certification workflow now resolves an explicit
+component index from successful producer jobs, immutable GitHub artifact IDs and
+API SHA256 digests. Every consumer resolves again in its current job and records
+its own attempt plus the selected producer attempt. An earlier successful attempt
+is admitted only within this run, source revision, workflow and trust scope, after
+exact compatibility, full archive and inventory checks. No matrix job output is
+used as a component-to-artifact map.
+
+**Re-run failed jobs** can reuse those successful producers without rebuilding.
+Compiled artifacts and their producer receipts expire after two days; the planned
+retry window is at most 48 hours and ends at actual API expiry. Missing/expired
+artifacts require an explicitly scheduled fresh producer. An invalid selection,
+changed image/path/compiler or corrupt archive fails closed. The latest platform
+barrier checks the full producer index again. Real hosted rerun qualification
+remains Phase 11 work; local helper evidence is recorded in the
+[Phase 5 handoff](Tasks/ci-reliability/phase-5/IMPLEMENTATION.md).
+
+[The transfer helper](../Tools/ci/artifact_transfer.py) retries classified transient
+transport errors at most three times, with 120 seconds per attempt and 420 seconds
+per aggregate operation. It uploads unchanged prepared bytes to immutable candidate
+names, verifies final API identity/digest and never invokes tests or compilation.
+Builds share one transfer budget for compiled payload plus producer sidecar, then
+retain diagnostics through a separate bounded upload. Evidence failure fails its
+owning job; it cannot be bypassed with `continue-on-error`. After runner disposal,
+lost files need explicit regeneration. Documentation/API directories remain tarred
+to preserve colon-containing names. Unix transport support covers the current
+Linux/macOS callers; it adds no Windows qualification. The separate documentation
+workflow now requests this same full CI graph manually, without separate builds.
 
 All compile/test/run commands enforce committed dependency pins and explicit
 positive job limits; the helper caps requests to CPUs visible to the process.
@@ -135,21 +212,36 @@ The release graph policy also declares `Dispatch` specifically for
 observed import audit failure. These changes need a fresh hosted run for proof
 on the pinned toolchain.
 
-Build and test commands have finite process timeouts and durable progress logs.
-POSIX execution terminates the child process group on failure or timeout. Each
-job retains its own diagnostics even after failure. The final
-**Offline certification passed** job runs with `always()` and requires both
-platform pipelines, shared helper
-suites and maintenance freshness to pass. Each pipeline has its own final gate
-that rejects failed, cancelled or skipped required jobs; only the explicitly
-macOS-only API/DocC and Apple SDK jobs may be skipped on Linux.
+Native commands consume the shared scheduling policy's operation deadlines:
+60 seconds for discovery, 300 for a compiled suite, 600 for whole load-package
+confirmation, 120 for finite offline smokes and 1,200 per cold compilation
+command. Serial compilation commands, symbol emission and package inventories
+also have aggregate elapsed limits. Consumer compilation is capped at 5,400
+seconds so discovery, archive/identity work and setup/diagnostic/cleanup/upload
+reserves fit the existing two-hour build job. These caps do not establish
+cold-build capacity. Archive/hash filesystem work remains subject to the
+enclosing job timeout and explicit elapsed checks.
 
-Each successful platform exports the clean source revision on push or manual
-dispatch, even if another platform or a shared certification check fails. The
+The POSIX supervisor owns the command process group and inherited output pipes.
+It retains command receipts separately from machine-readable discovery stdout,
+and cleans the group on failure or timeout. Bounded heartbeat, resource, process
+and stack diagnostics record unavailable or denied probes explicitly. Diagnostic
+work shares the execution deadline; silence is diagnostic evidence rather than
+a deadlock verdict. Windows cleanup retains its best-effort helper coverage and
+has no Windows qualification claim. Each job retains diagnostics even after
+failure. The final
+**Offline certification passed** job is available only for validated full scope.
+It runs its fresh barrier with `always()`, requires both platform groups and all
+shared checks, and rechecks the exact expected job/step coverage and producer
+indices. Scoped runs create their own check context and cannot qualify a release.
+
+In full mode, each successful platform exports the clean source revision on push
+or manual dispatch, even if the other platform fails. Shared preflight must pass
+before native scheduling. The
 export waits for that platform's builds, runtime suites, compiler fixtures and
 source audits; macOS also requires its API/DocC and Apple SDK checks. Pull requests
 run the same validation without creating source bundles. Artifacts are named
-`DiscordKit-<platform>-source-<revision>-<run>-<attempt>` and contain a SwiftPM
+`DiscordKit-<platform>-source-<revision>-<run>-<attempt>-t<transfer-attempt>` and contain a SwiftPM
 source archive, checksum and native compiler/host provenance. A platform export
 records that platform's validation; release publication still requires complete
 certification across all platforms and shared checks.
@@ -330,58 +422,65 @@ recorded as a passed compile.
 
 ## Documentation website
 
-The independent [Documentation workflow](../.github/workflows/documentation.yml)
-runs on every push, pull request and manual dispatch, independently of offline
-certification. A macOS ARM64 platform probe checks the host, compiler, linker and
-runtime before three independent root, macro and extension compilation jobs.
-Those jobs use the shared native setup and compile helper on `MacOS-26-5`, with
-Swift 6.4.1, committed dependency pins, the native build engine, source-built
-macro dependencies and a five-job limit capped at the available CPUs. They emit
-normalized public symbol graphs and retain the same sealed compilation receipts
-as offline certification. Compilation includes test executables and discovery;
-the documentation workflow does not execute Swift test suites.
+[Full CI](../.github/workflows/ci.yml) prepares the website from the same macOS
+root, macro and extension producers used for API qualification. Each component
+compiles and emits graphs in its existing producer; the public API job restores
+those exact artifacts, preserves every API comparison, and performs strict
+curation, tutorial checks and DocC conversion once. The
+[Phase 9 implementation](Tasks/ci-reliability/phase-9/IMPLEMENTATION.md) records
+local acceptance and its remaining hosted gates.
 
-After all three builds pass, Python helper tests run on `Linux-x64-8` with
-Python 3.12 while a macOS conversion job restores the three packages from this
-workflow's exact commit, run and attempt. Restore checks source and payload
-hashes, checkout path, platform and toolchain before accepting the artifacts.
-The conversion job checks curation and tutorial snapshots, then converts the
-root, macro and extension catalogs without emitting graphs or recompiling.
-It uses the same strict DocC helper as offline certification. The workflow
-retains platform, build, helper and conversion diagnostics for 14 days; compiled
-packages expire after two days. Use **Re-run all jobs** for a fresh attempt.
+[Sealed conversion inputs](../Tools/ci/documentation_inputs.py) bind the exact
+commit, tracked content, dependency pins, workflow/event/run/attempt, component,
+strict conversion report, module inventory and every payload file hash. All three
+inputs are uploaded together through bounded immutable transport. The read-only
+site job authenticates the original successful producer by API and immutable
+artifact ID/digest, verifies safe complete payloads, then merges and transforms
+those archives without compiling, emitting graphs, curating or converting again.
+An earlier successful same-run conversion may survive a partial rerun after fresh
+selection; a newer failed replacement prevents fallback. Inputs expire after two
+days and diagnostics after 14 days. Missing inputs require explicit regeneration.
 
-[The site builder](../Tools/ci/build_documentation_site.py) merges those public
-modules into one library navigator and exports static routes with the
-repository name as the hosting base path. The root URL redirects to the merged
-documentation landing page. The site is uploaded using GitHub's Pages artifact
-action, which preserves DocC filenames containing colons inside a tar archive.
-Generated website files remain build outputs and are not committed. The site
-builder's `--skip-symbol-graphs` mode consumes the verified restored graphs and
-fails if any public module is missing or malformed.
+The [site builder](../Tools/ci/build_documentation_site.py) preserves the combined
+library navigator, repository hosting base path, static routes, root redirect and
+hidden Pages marker. Site preparation is required by the fresh full certification
+barrier. It uploads a seven-day immutable site archive using read-only repository
+permissions; it has no Pages permission. The
+[Documentation workflow](../.github/workflows/documentation.yml) has only a manual
+trigger and requests the ordinary full CI workflow at the selected ref. It has no
+separate compiler/conversion graph. Its own current-attempt spend guard precedes
+dispatch; the checked-in zero allowance keeps requests contained.
 
-Only successful conversion and helper checks on the default branch can publish
-[the website](https://aurum-studios.github.io/DiscordKit/). Pull requests and
-other branches build an artifact without replacing the published site. The
-deployment job alone receives `pages: write` and `id-token: write`, and uses the
-`github-pages` environment. Deployments are serialized independently of CI;
-default-branch runs are not canceled while publishing. A failed documentation
-build leaves the previously deployed site available.
+Pages upload and deployment run in a separate job only when a manual request sets
+`publish-documentation=true` (or selects `publish` in Documentation). The job
+requires successful full certification, the trusted upstream default branch and
+an exact current-attempt site. Its
+[publication guard](../Tools/ci/documentation_publication.py) independently checks
+the live repository/fork identity, default-branch tip, original CI workflow/event,
+source revision, run attempt, successful exact full gate and site job/steps, and
+immutable site artifact. PRs, diagnostics, stale/failed/incomplete runs and changed
+artifacts cannot publish. Safe extraction admits only regular site files before
+Pages upload. A deploy-only partial rerun requires a fresh site preparation and
+full barrier for that attempt; old site outputs fail closed.
 
-In the repository's **Settings > Pages**, the publishing source must be
-**GitHub Actions**. No personal access token or additional repository secret is
-required by the workflow. For a local build, run:
+Only the publication job receives `pages: write` and `id-token: write`, preserves
+the `github-pages` environment and serialized Pages concurrency, and can replace
+[the website](https://aurum-studios.github.io/DiscordKit/). No `workflow_run`
+publication path executes PR code with write privileges. Repository Pages settings
+still require **GitHub Actions** as the publishing source. No deployment or setting
+change occurred during Phase 9 implementation; hosted qualification remains Phase 11.
+
+Local fresh documentation generation remains available:
 
 ```sh
 python3 Tools/ci/build_documentation_site.py --jobs 5 --hosting-base-path /DiscordKit
 ```
 
-The output is `.build/documentation-site`. Change the base path for a different
-repository name or use an empty base path when serving at a domain root. A
-custom domain also requires updating `DOCUMENTATION_BASE_PATH` in the workflow.
-Local builds refresh graphs with the native symbol-graph helper by default,
-using the same pins, build engine and bounded compiler jobs. Documentation
-success does not establish that independent build/test certification has passed.
+A local consumer can instead repeat `--sealed-input` for the three sealed
+component archives; CI additionally supplies a current immutable `--input-selection`.
+The output remains `.build/documentation-site`. An empty base path serves a domain
+root. Standalone local generation refreshes graphs and converts catalogs explicitly;
+its success does not establish full certification or authorize publication.
 
 ## Manual GitHub releases
 
@@ -430,3 +529,32 @@ Automation does not satisfy that human review by itself. The release maintenance
 validator rejects overdue reviews; before publishing, refresh affected source rows
 and resolve unclassified entries. Preserve the original frozen discovery pins so
 the review artifact remains reproducible and useful over time.
+
+## Spend admission and usage
+
+[Phase 10](Tasks/ci-reliability/phase-10/IMPLEMENTATION.md) expands the same platform
+execution partitions used by CI and reads actual workflow deadlines, rather than
+maintaining an approximate second build/test list. Each runner job and permitted
+attempt reserves its whole outer envelope, including startup, provisioning,
+commands, recovery, diagnostics, cleanup and uploads. Independent platform
+reservations add to one workflow allowance. Rate/mapping uncertainty, stale dates,
+unknown storage/transfer liability, excess cost or exhausted attempts reject work.
+
+Every job checks current source, policy, scope, runner group and attempt after
+minimal checkout and before provisioning. Partial consumer reruns cannot reuse a
+successful earlier admission output or reset their allowance. The native rollout
+remains closed independently. Pushes validate only the maintained default branch
+`main`; PR and explicit manual runs remain, avoiding branch-push/PR duplicates.
+
+The bootstrap and aggregation expose JSON and step summaries for planned maxima,
+per-SKU rounded observed minutes, queue/setup/transfer evidence, command outcomes,
+remaining coverage and admission reasons. Each native job retains its guard/local
+summary with diagnostics. Unavailable billing mappings or unfinished jobs stay
+unknown. Estimates are neither invoices nor exact provider-enforced dollar caps.
+Checkout occurs before refusal, and the source guard cannot cap arbitrarily many
+separately started rejected jobs or share allowance across workflow run IDs.
+
+The [operator checklist](Tasks/ci-reliability/phase-10/OPERATOR-BUDGET.md) prepares a
+concrete USD 50/month repository Actions backstop proposal with stop usage and
+75/90/100 alerts. It awaits operator selection, explicit authorization and complete
+read-back. No billing configuration or paid execution is claimed.

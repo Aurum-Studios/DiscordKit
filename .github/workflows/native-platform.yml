@@ -8,7 +8,29 @@ name: Native platform validation
 # Called by CI once per platform; this adds no independently triggered run.
 on:
   workflow_call:
+    outputs:
+      documentation-inputs:
+        description: Immutable sealed macOS conversion inputs for the same-run site consumer
+        value: ${{ jobs.public-api.outputs.documentation-inputs }}
+      coverage:
+        description: Exact platform coverage observed by the fresh barrier
+        value: ${{ jobs.complete.outputs.coverage }}
     inputs:
+      publication:
+        type: boolean
+        default: false
+      qualification-fault:
+        type: boolean
+        default: false
+      mode:
+        required: true
+        type: string
+      component:
+        type: string
+        default: ''
+      suite:
+        type: string
+        default: ''
       platform:
         required: true
         type: string
@@ -30,185 +52,23 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 # Caller workflow env does not propagate into a reusable workflow.
 env:
   SWIFTNIO_STRICT: '1'
   PYTHONUNBUFFERED: '1'
+  ADMISSION_MODE: ${{ inputs.mode }}
+  ADMISSION_PLATFORM: ${{ inputs.mode == 'diagnostic' && inputs.platform || '' }}
+  ADMISSION_COMPONENT: ${{ inputs.component }}
+  ADMISSION_SUITE: ${{ inputs.suite }}
+  ADMISSION_PUBLICATION: ${{ inputs.publication }}
+  ADMISSION_QUALIFICATION_FAULT: ${{ inputs.qualification-fault }}
+  ADMISSION_DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
 
 jobs:
   platform:
     name: Platform check
-    runs-on:
-      group: ${{ inputs.runner-group }}
-    timeout-minutes: 20
-    defaults:
-      run:
-        shell: ${{ inputs.shell }}
-    steps:
-      - name: Enable Windows checkout long paths
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: git config --system core.longpaths true
-      - uses: actions/checkout@v6
-        with:
-          persist-credentials: false
-      - uses: ./.github/actions/setup-native
-      - name: Check native host, compiler, linker and runtime
-        run: >-
-          python Tools/ci/platform_probe.py --platform ${{ inputs.platform }}
-          --output .build/platform-ci/${{ inputs.platform }}
-      - name: Retain platform check evidence
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: platform-${{ inputs.platform }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
-          path: .build/platform-ci/${{ inputs.platform }}
-          if-no-files-found: error
-          include-hidden-files: true
-          retention-days: 14
-
-  plan:
-    name: Plan platform builds and suites
-    needs: platform
-    runs-on:
-      group: ${{ inputs.runner-group }}
-    timeout-minutes: 15
-    outputs:
-      builds: ${{ steps.plan.outputs.builds }}
-      tests: ${{ steps.plan.outputs.tests }}
-    defaults:
-      run:
-        shell: ${{ inputs.shell }}
-    steps:
-      - name: Enable Windows checkout long paths
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: git config --system core.longpaths true
-      - uses: actions/checkout@v6
-        with:
-          persist-credentials: false
-      - uses: ./.github/actions/setup-native
-      - name: Discover owned test targets and assign runner sizes
-        id: plan
-        shell: python
-        env:
-          NATIVE_PLATFORM: ${{ inputs.platform }}
-        run: |
-          import json, os, subprocess, sys
-          from pathlib import Path
-          subprocess.run([sys.executable, 'Tools/ci/native_jobs.py', 'plan',
-                          '--platform', os.environ['NATIVE_PLATFORM'],
-                          '--output', '.build/ci-plan'], check=True)
-          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
-              for key, filename in [('builds', 'build-matrix.json'), ('tests', 'test-matrix.json')]:
-                  matrix = json.loads((Path('.build/ci-plan') / filename).read_text())
-                  output.write(key + '=' + json.dumps(matrix, separators=(',', ':')) + '\n')
-      - uses: actions/upload-artifact@v7
-        with:
-          name: ci-plan-${{ inputs.platform }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
-          path: .build/ci-plan
-          if-no-files-found: error
-          include-hidden-files: true
-          retention-days: 14
-
-  build:
-    name: Builds / ${{ matrix.component }}
-    needs: plan
-    runs-on:
-      group: ${{ matrix.group }}
-    timeout-minutes: 120
-    defaults:
-      run:
-        shell: ${{ matrix.shell }}
-    strategy:
-      fail-fast: false
-      matrix: ${{ fromJSON(needs.plan.outputs.builds) }}
-    steps:
-      - name: Enable Windows checkout long paths
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: git config --system core.longpaths true
-      - uses: actions/checkout@v6
-        with:
-          persist-credentials: false
-      - uses: ./.github/actions/setup-native
-      - name: Compile selected products and tests without running suites
-        run: >-
-          python Tools/ci/native_jobs.py compile --component ${{ matrix.component }}
-          --platform ${{ matrix.platform }} --jobs ${{ matrix.jobs }}
-          --output .build/build-ci/${{ matrix.platform }}-${{ matrix.component }}
-          --archive "${{ runner.temp }}/compiled/${{ matrix.platform }}-${{ matrix.component }}.tar.gz"
-      - name: Verify generated source and dependency pins remain unchanged
-        run: git diff --exit-code
-      - name: Share compiled products with independent test jobs
-        uses: actions/upload-artifact@v7
-        with:
-          name: compiled-${{ matrix.platform }}-${{ matrix.component }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
-          path: ${{ runner.temp }}/compiled/${{ matrix.platform }}-${{ matrix.component }}.tar.gz
-          if-no-files-found: error
-          compression-level: 0
-          retention-days: 2
-      - name: Retain build diagnostics
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: build-evidence-${{ matrix.platform }}-${{ matrix.component }}-${{ github.run_id }}-${{ github.run_attempt }}
-          path: .build/build-ci/${{ matrix.platform }}-${{ matrix.component }}
-          if-no-files-found: warn
-          include-hidden-files: true
-          retention-days: 14
-
-  tests:
-    name: Tests / ${{ matrix.suite }}
-    needs: [plan, build]
-    runs-on:
-      group: ${{ matrix.group }}
-    timeout-minutes: 60
-    defaults:
-      run:
-        shell: ${{ matrix.shell }}
-    strategy:
-      fail-fast: false
-      matrix: ${{ fromJSON(needs.plan.outputs.tests) }}
-    steps:
-      - name: Enable Windows checkout long paths
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: git config --system core.longpaths true
-      - uses: actions/checkout@v6
-        with:
-          persist-credentials: false
-      - uses: ./.github/actions/setup-native
-      - name: Download this run's compiled package
-        uses: actions/download-artifact@v8
-        with:
-          name: compiled-${{ matrix.platform }}-${{ matrix.component }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
-          path: ${{ runner.temp }}/compiled
-      - name: Run only the selected suite without rebuilding
-        run: >-
-          python Tools/ci/native_jobs.py test --component ${{ matrix.component }}
-          --suite ${{ matrix.suite }} --platform ${{ matrix.platform }} --jobs ${{ matrix.jobs }}
-          --archive "${{ runner.temp }}/compiled/${{ matrix.platform }}-${{ matrix.component }}.tar.gz"
-          --output .build/test-ci/${{ matrix.platform }}-${{ matrix.suite }}
-      - name: Verify generated source and dependency pins remain unchanged
-        run: git diff --exit-code
-      - name: Retain selected suite evidence
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: test-evidence-${{ matrix.platform }}-${{ matrix.suite }}-${{ github.run_id }}-${{ github.run_attempt }}
-          path: |
-            .build/test-ci/${{ matrix.platform }}-${{ matrix.suite }}
-            .build/dsl-measurements/runtime-smoke.json
-            .build/timing-smoke/${{ matrix.component }}
-          if-no-files-found: warn
-          include-hidden-files: true
-          retention-days: 14
-
-  audit:
-    name: Documentation, inventory, generation and release audits
-    needs: build
     runs-on:
       group: ${{ inputs.runner-group }}
     timeout-minutes: 30
@@ -223,41 +83,679 @@ jobs:
       - uses: actions/checkout@v6
         with:
           persist-credentials: false
+      - name: Check current-attempt spend reservation
+        id: admission
+        env:
+          ADMISSION_JOB: ${{ inputs.platform }}/platform
+          ADMISSION_GROUP: ${{ inputs.runner-group }}
+        run: >-
+          python3 Tools/ci/spend_admission.py guard --job "$ADMISSION_JOB" --group "$ADMISSION_GROUP"
+          --output .build/spend/guard.json
       - uses: ./.github/actions/setup-native
-      - uses: actions/download-artifact@v8
+        timeout-minutes: 10
         with:
-          name: compiled-${{ inputs.platform }}-tooling-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
-          path: ${{ runner.temp }}/compiled
+          profile: build
+      - name: Check native host, compiler, linker and runtime
+        run: >-
+          python Tools/ci/platform_probe.py --platform ${{ inputs.platform }}
+          --output .build/platform-ci/${{ inputs.platform }}
+      - name: Summarize local command and transfer receipts
+        if: always() && steps.admission.outcome == 'success'
+        run: >-
+          python3 Tools/ci/usage_report.py --plan .build/spend/guard.json
+          --receipts .build --receipts "$RUNNER_TEMP" --output .build/spend/usage.json
+
+      - name: Retain platform check evidence
+        if: always() && steps.admission.outcome == 'success'
+        uses: ./.github/actions/upload-evidence
+        with:
+          name: platform-${{ inputs.platform }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          paths: |
+            .build/platform-ci/${{ inputs.platform }}
+            .build/spend
+          retention-days: 14
+          receipt: ${{ runner.temp }}/transfer-${{ github.job }}-${{ strategy.job-index }}.json
+
+  plan:
+    name: Plan platform builds and suites
+    needs: platform
+    runs-on:
+      group: ${{ inputs.runner-group }}
+    timeout-minutes: 25
+    outputs:
+      build-concurrency: ${{ steps.plan.outputs.build-concurrency }}
+      runtime-concurrency: ${{ steps.plan.outputs.runtime-concurrency }}
+      core-builds: ${{ steps.plan.outputs.core-builds }}
+      root-tests: ${{ steps.plan.outputs.root-tests }}
+      has-core-builds: ${{ steps.plan.outputs.has-core-builds }}
+      has-root-tests: ${{ steps.plan.outputs.has-root-tests }}
+      builds: ${{ steps.plan.outputs.builds }}
+      tests: ${{ steps.plan.outputs.tests }}
+      all-builds: ${{ steps.plan.outputs.all-builds }}
+      coverage: ${{ steps.plan.outputs.coverage }}
+      has-builds: ${{ steps.plan.outputs.has-builds }}
+      has-tests: ${{ steps.plan.outputs.has-tests }}
+    defaults:
+      run:
+        shell: ${{ inputs.shell }}
+    steps:
+      - name: Enable Windows checkout long paths
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: git config --system core.longpaths true
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Check current-attempt spend reservation
+        id: admission
+        env:
+          ADMISSION_JOB: ${{ inputs.platform }}/plan
+          ADMISSION_GROUP: ${{ inputs.runner-group }}
+        run: >-
+          python3 Tools/ci/spend_admission.py guard --job "$ADMISSION_JOB" --group "$ADMISSION_GROUP"
+          --output .build/spend/guard.json
+      - uses: ./.github/actions/setup-native
+        timeout-minutes: 10
+        with:
+          profile: build
+      - name: Discover owned test targets and assign runner sizes
+        id: plan
+        shell: python
+        env:
+          NATIVE_PLATFORM: ${{ inputs.platform }}
+          NATIVE_MODE: ${{ inputs.mode }}
+          NATIVE_COMPONENT: ${{ inputs.component }}
+          NATIVE_SUITE: ${{ inputs.suite }}
+        run: |
+          import json, os, subprocess, sys
+          from pathlib import Path
+          subprocess.run([sys.executable, 'Tools/ci/native_jobs.py', 'plan',
+                          '--platform', os.environ['NATIVE_PLATFORM'],
+                          '--mode', os.environ['NATIVE_MODE'],
+                          *(['--component', os.environ['NATIVE_COMPONENT']] if os.environ['NATIVE_COMPONENT'] else []),
+                          *(['--suite', os.environ['NATIVE_SUITE']] if os.environ['NATIVE_SUITE'] else []),
+                          '--output', '.build/ci-plan'], check=True)
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              scoped = json.loads(Path('.build/ci-plan/scope-plan.json').read_text())
+              for key, value in scoped.items():
+                  output.write(key + '=' + json.dumps(value, separators=(',', ':')) + '\n')
+      - name: Summarize local command and transfer receipts
+        if: always() && steps.admission.outcome == 'success'
+        run: >-
+          python3 Tools/ci/usage_report.py --plan .build/spend/guard.json
+          --receipts .build --receipts "$RUNNER_TEMP" --output .build/spend/usage.json
+
+      - uses: ./.github/actions/upload-evidence
+        with:
+          name: ci-plan-${{ inputs.platform }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          paths: |
+            .build/ci-plan
+            .build/spend
+          retention-days: 14
+          receipt: ${{ runner.temp }}/transfer-${{ github.job }}-${{ strategy.job-index }}.json
+
+  build:
+    name: Builds / ${{ matrix.platform }} / ${{ matrix.component }}
+    needs: [platform, plan]
+    runs-on:
+      group: ${{ matrix.group }}
+    timeout-minutes: 150
+    defaults:
+      run:
+        shell: ${{ matrix.shell }}
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        include:
+          - platform: ${{ inputs.platform }}
+            component: load
+            group: ${{ inputs.build-group }}
+            jobs: ${{ inputs.build-jobs }}
+            shell: ${{ inputs.shell }}
+    steps:
+      - name: Enable Windows checkout long paths
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: git config --system core.longpaths true
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Check current-attempt spend reservation
+        id: admission
+        env:
+          ADMISSION_JOB: ${{ inputs.platform }}/build/${{ matrix.component }}
+          ADMISSION_GROUP: ${{ matrix.group }}
+        run: >-
+          python3 Tools/ci/spend_admission.py guard --job "$ADMISSION_JOB" --group "$ADMISSION_GROUP"
+          --output .build/spend/guard.json
+      - uses: ./.github/actions/setup-native
+        timeout-minutes: 10
+        with:
+          profile: build
+      - name: Compile selected products and tests without running suites
+        run: >-
+          python Tools/ci/native_jobs.py compile --component ${{ matrix.component }}
+          --platform ${{ matrix.platform }} --jobs ${{ matrix.jobs }}
+          --output .build/build-ci/${{ matrix.platform }}-${{ matrix.component }}
+          --archive "${{ runner.temp }}/compiled/${{ matrix.platform }}-${{ matrix.component }}.tar.gz"
+      - name: Verify generated source and dependency pins remain unchanged
+        run: git diff --exit-code
+      - name: Share compiled products with independent test jobs
+        uses: ./.github/actions/upload-evidence
+        with:
+          name: compiled-${{ matrix.platform }}-${{ matrix.component }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          paths: ${{ runner.temp }}/compiled/${{ matrix.platform }}-${{ matrix.component }}.tar.gz
+          retention-days: 2
+          receipt: ${{ runner.temp }}/compiled-transfer.json
+          producer-metadata: .build/build-ci/${{ matrix.platform }}-${{ matrix.component }}/compilation.json
+          producer-receipt-name: compiled-receipt-${{ matrix.platform }}-${{ matrix.component }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+      - name: Summarize local command and transfer receipts
+        if: always() && steps.admission.outcome == 'success'
+        run: >-
+          python3 Tools/ci/usage_report.py --plan .build/spend/guard.json
+          --receipts .build --receipts "$RUNNER_TEMP" --output .build/spend/usage.json
+
+      - name: Retain build diagnostics
+        if: always() && steps.admission.outcome == 'success'
+        uses: ./.github/actions/upload-evidence
+        with:
+          name: build-evidence-${{ matrix.platform }}-${{ matrix.component }}-${{ github.run_id }}-${{ github.run_attempt }}
+          paths: |
+            .build/build-ci/${{ matrix.platform }}-${{ matrix.component }}
+            .build/spend
+          retention-days: 14
+          receipt: ${{ runner.temp }}/transfer-${{ github.job }}-${{ strategy.job-index }}.json
+
+  canary:
+    name: Canary / load tests and smokes
+    needs: [plan, build]
+    runs-on:
+      group: ${{ inputs.runner-group }}
+    timeout-minutes: 75
+    defaults:
+      run:
+        shell: ${{ inputs.shell }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Check current-attempt spend reservation
+        id: admission
+        env:
+          ADMISSION_JOB: ${{ inputs.platform }}/canary
+          ADMISSION_GROUP: ${{ inputs.runner-group }}
+        run: >-
+          python3 Tools/ci/spend_admission.py guard --job "$ADMISSION_JOB" --group "$ADMISSION_GROUP"
+          --output .build/spend/guard.json
+      - uses: ./.github/actions/setup-native
+        timeout-minutes: 10
+        with:
+          profile: runtime
+      - uses: ./.github/actions/consume-native
+        with:
+          platform: ${{ inputs.platform }}
+          components-json: '["load"]'
+          destination: ${{ runner.temp }}/compiled
+      - name: Run complete load suite and existing smokes
+        run: >-
+          python Tools/ci/native_jobs.py test --component load --suite load
+          --platform ${{ inputs.platform }} --jobs ${{ inputs.jobs }}
+          --archive "${{ runner.temp }}/compiled/${{ inputs.platform }}-load.tar.gz"
+          --selection .build/artifact-index.json --output .build/canary-ci
+      - name: Verify generated source and dependency pins remain unchanged
+        run: git diff --exit-code
+      - name: Summarize local command and transfer receipts
+        if: always() && steps.admission.outcome == 'success'
+        run: >-
+          python3 Tools/ci/usage_report.py --plan .build/spend/guard.json
+          --receipts .build --receipts "$RUNNER_TEMP" --output .build/spend/usage.json
+
+      - name: Retain canary receipt and failure diagnostics
+        if: always() && steps.admission.outcome == 'success'
+        uses: ./.github/actions/upload-evidence
+        with:
+          name: canary-${{ inputs.platform }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          paths: |
+            .build/spend
+            .build/canary-ci
+            .build/artifact-index.json
+            .build/timing-smoke/load
+          retention-days: 14
+          receipt: ${{ runner.temp }}/canary-transfer.json
+      - name: Retain canary executed leaf coverage
+        if: always() && steps.admission.outcome == 'success'
+        uses: ./.github/actions/upload-evidence
+        with:
+          name: test-coverage-${{ inputs.platform }}-load-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          paths: .build/canary-ci/group-coverage.json
+          retention-days: 14
+          receipt: ${{ runner.temp }}/canary-coverage-transfer.json
+
+  build-core:
+    name: ${{ matrix.component && format('Builds / {0} / {1}', matrix.platform, matrix.component) || 'No remaining builds' }}
+    needs: [plan, canary]
+    if: needs.plan.outputs.has-core-builds == 'true'
+    runs-on:
+      group: ${{ matrix.group }}
+    timeout-minutes: 150
+    defaults:
+      run:
+        shell: ${{ matrix.shell }}
+    strategy:
+      fail-fast: false
+      max-parallel: ${{ fromJSON(needs.plan.outputs.build-concurrency) }}
+      matrix: ${{ fromJSON(needs.plan.outputs.core-builds) }}
+    steps:
+      - name: Enable Windows checkout long paths
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: git config --system core.longpaths true
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Check current-attempt spend reservation
+        id: admission
+        env:
+          ADMISSION_JOB: ${{ inputs.platform }}/build/${{ matrix.component }}
+          ADMISSION_GROUP: ${{ matrix.group }}
+        run: >-
+          python3 Tools/ci/spend_admission.py guard --job "$ADMISSION_JOB" --group "$ADMISSION_GROUP"
+          --output .build/spend/guard.json
+      - uses: ./.github/actions/setup-native
+        timeout-minutes: 10
+        with:
+          profile: build
+      - name: Compile selected products and tests without running suites
+        run: >-
+          python Tools/ci/native_jobs.py compile --component ${{ matrix.component }}
+          --platform ${{ matrix.platform }} --jobs ${{ matrix.jobs }}
+          --output .build/build-ci/${{ matrix.platform }}-${{ matrix.component }}
+          --archive "${{ runner.temp }}/compiled/${{ matrix.platform }}-${{ matrix.component }}.tar.gz"
+      - name: Verify generated source and dependency pins remain unchanged
+        run: git diff --exit-code
+      - name: Share compiled products with independent test jobs
+        uses: ./.github/actions/upload-evidence
+        with:
+          name: compiled-${{ matrix.platform }}-${{ matrix.component }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          paths: ${{ runner.temp }}/compiled/${{ matrix.platform }}-${{ matrix.component }}.tar.gz
+          retention-days: 2
+          receipt: ${{ runner.temp }}/compiled-transfer.json
+          producer-metadata: .build/build-ci/${{ matrix.platform }}-${{ matrix.component }}/compilation.json
+          producer-receipt-name: compiled-receipt-${{ matrix.platform }}-${{ matrix.component }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+      - name: Summarize local command and transfer receipts
+        if: always() && steps.admission.outcome == 'success'
+        run: >-
+          python3 Tools/ci/usage_report.py --plan .build/spend/guard.json
+          --receipts .build --receipts "$RUNNER_TEMP" --output .build/spend/usage.json
+
+      - name: Retain build diagnostics
+        if: always() && steps.admission.outcome == 'success'
+        uses: ./.github/actions/upload-evidence
+        with:
+          name: build-evidence-${{ matrix.platform }}-${{ matrix.component }}-${{ github.run_id }}-${{ github.run_attempt }}
+          paths: |
+            .build/build-ci/${{ matrix.platform }}-${{ matrix.component }}
+            .build/spend
+          retention-days: 14
+          receipt: ${{ runner.temp }}/transfer-${{ github.job }}-${{ strategy.job-index }}.json
+
+  build-remaining:
+    name: ${{ matrix.component && format('Builds / {0} / {1}', matrix.platform, matrix.component) || 'No remaining builds' }}
+    needs: [plan, canary, build-core]
+    if: always() && needs.canary.result == 'success' && (needs.build-core.result == 'success' || needs.build-core.result == 'skipped') && needs.plan.outputs.has-builds == 'true'
+    runs-on:
+      group: ${{ matrix.group }}
+    timeout-minutes: 150
+    defaults:
+      run:
+        shell: ${{ matrix.shell }}
+    strategy:
+      fail-fast: false
+      max-parallel: ${{ fromJSON(needs.plan.outputs.build-concurrency) }}
+      matrix: ${{ fromJSON(needs.plan.outputs.builds) }}
+    steps:
+      - name: Enable Windows checkout long paths
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: git config --system core.longpaths true
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Check current-attempt spend reservation
+        id: admission
+        env:
+          ADMISSION_JOB: ${{ inputs.platform }}/build/${{ matrix.component }}
+          ADMISSION_GROUP: ${{ matrix.group }}
+        run: >-
+          python3 Tools/ci/spend_admission.py guard --job "$ADMISSION_JOB" --group "$ADMISSION_GROUP"
+          --output .build/spend/guard.json
+      - uses: ./.github/actions/setup-native
+        timeout-minutes: 10
+        with:
+          profile: build
+      - name: Compile selected products and tests without running suites
+        run: >-
+          python Tools/ci/native_jobs.py compile --component ${{ matrix.component }}
+          --platform ${{ matrix.platform }} --jobs ${{ matrix.jobs }}
+          --output .build/build-ci/${{ matrix.platform }}-${{ matrix.component }}
+          --archive "${{ runner.temp }}/compiled/${{ matrix.platform }}-${{ matrix.component }}.tar.gz"
+      - name: Verify generated source and dependency pins remain unchanged
+        run: git diff --exit-code
+      - name: Share compiled products with independent test jobs
+        uses: ./.github/actions/upload-evidence
+        with:
+          name: compiled-${{ matrix.platform }}-${{ matrix.component }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          paths: ${{ runner.temp }}/compiled/${{ matrix.platform }}-${{ matrix.component }}.tar.gz
+          retention-days: 2
+          receipt: ${{ runner.temp }}/compiled-transfer.json
+          producer-metadata: .build/build-ci/${{ matrix.platform }}-${{ matrix.component }}/compilation.json
+          producer-receipt-name: compiled-receipt-${{ matrix.platform }}-${{ matrix.component }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+      - name: Summarize local command and transfer receipts
+        if: always() && steps.admission.outcome == 'success'
+        run: >-
+          python3 Tools/ci/usage_report.py --plan .build/spend/guard.json
+          --receipts .build --receipts "$RUNNER_TEMP" --output .build/spend/usage.json
+
+      - name: Retain build diagnostics
+        if: always() && steps.admission.outcome == 'success'
+        uses: ./.github/actions/upload-evidence
+        with:
+          name: build-evidence-${{ matrix.platform }}-${{ matrix.component }}-${{ github.run_id }}-${{ github.run_attempt }}
+          paths: |
+            .build/build-ci/${{ matrix.platform }}-${{ matrix.component }}
+            .build/spend
+          retention-days: 14
+          receipt: ${{ runner.temp }}/transfer-${{ github.job }}-${{ strategy.job-index }}.json
+
+  resolve:
+    name: Resolve immutable producers
+    needs: [plan, build, build-core, build-remaining, canary]
+    if: always() && needs.canary.result == 'success' && (needs.build-core.result == 'success' || needs.build-core.result == 'skipped') && (needs.build-remaining.result == 'success' || needs.build-remaining.result == 'skipped') && (needs.plan.outputs.has-core-builds == 'true' || needs.plan.outputs.has-builds == 'true')
+    runs-on:
+      group: ${{ inputs.runner-group }}
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Check current-attempt spend reservation
+        id: admission
+        env:
+          ADMISSION_JOB: ${{ inputs.platform }}/resolve
+          ADMISSION_GROUP: ${{ inputs.runner-group }}
+        run: >-
+          python3 Tools/ci/spend_admission.py guard --job "$ADMISSION_JOB" --group "$ADMISSION_GROUP"
+          --output .build/spend/guard.json
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Reconcile every expected component without matrix outputs
+        shell: python
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NATIVE_PLATFORM: ${{ inputs.platform }}
+          EXPECTED_BUILDS: ${{ needs.plan.outputs.all-builds }}
+        run: |
+          import os, subprocess, sys
+          subprocess.run([sys.executable, 'Tools/ci/artifact_index.py', 'resolve',
+                          '--platform', os.environ['NATIVE_PLATFORM'],
+                          '--components-json', os.environ['EXPECTED_BUILDS'],
+                          '--output', '.build/resolved-producers.json'], check=True)
+
+      - name: Summarize local command and transfer receipts
+        if: always() && steps.admission.outcome == 'success'
+        run: >-
+          python3 Tools/ci/usage_report.py --plan .build/spend/guard.json
+          --receipts .build --receipts "$RUNNER_TEMP" --output .build/spend/usage.json
+
+      - name: Retain local spend reservation and usage
+        if: always() && steps.admission.outcome == 'success'
+        uses: ./.github/actions/upload-evidence
+        with:
+          name: spend-${{ inputs.platform }}-${{ github.job }}-${{ strategy.job-index }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          paths: .build/spend
+          retention-days: 14
+          receipt: ${{ runner.temp }}/spend-transfer.json
+
+  tests-root:
+    name: ${{ matrix.suite && format('Tests / {0}', matrix.suite) || 'No remaining suites' }}
+    needs: [plan, canary, build-core]
+    if: needs.plan.outputs.has-root-tests == 'true'
+    runs-on:
+      group: ${{ matrix.group }}
+    timeout-minutes: 105
+    defaults:
+      run:
+        shell: ${{ matrix.shell }}
+    strategy:
+      fail-fast: false
+      max-parallel: ${{ fromJSON(needs.plan.outputs.runtime-concurrency) }}
+      matrix: ${{ fromJSON(needs.plan.outputs.root-tests) }}
+    steps:
+      - name: Enable Windows checkout long paths
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: git config --system core.longpaths true
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Check current-attempt spend reservation
+        id: admission
+        env:
+          ADMISSION_JOB: ${{ inputs.platform }}/suite/${{ matrix.component }}/${{ matrix.suite }}
+          ADMISSION_GROUP: ${{ matrix.group }}
+        run: >-
+          python3 Tools/ci/spend_admission.py guard --job "$ADMISSION_JOB" --group "$ADMISSION_GROUP"
+          --output .build/spend/guard.json
+      - uses: ./.github/actions/setup-native
+        timeout-minutes: 10
+        with:
+          profile: runtime
+      - uses: ./.github/actions/consume-native
+        with:
+          platform: ${{ matrix.platform }}
+          components-json: '["${{ matrix.component }}"]'
+          destination: ${{ runner.temp }}/compiled
+      - name: Run selected complete suites without rebuilding
+        env:
+          NATIVE_SUITES: ${{ toJSON(matrix.suites) }}
+        run: >-
+          python Tools/ci/native_jobs.py test --component ${{ matrix.component }}
+          --suite ${{ matrix.suite }} --suites-json "$NATIVE_SUITES" --platform ${{ matrix.platform }} --jobs ${{ matrix.jobs }}
+          --archive "${{ runner.temp }}/compiled/${{ matrix.platform }}-${{ matrix.component }}.tar.gz"
+          --selection .build/artifact-index.json
+          --output .build/test-ci/${{ matrix.platform }}-${{ matrix.suite }}
+      - name: Inject first-attempt diagnostic consumer failure
+        if: inputs.qualification-fault
+        run: >-
+          python3 Tools/ci/qualification_fault.py
+          --consumer .build/test-ci/${{ matrix.platform }}-${{ matrix.suite }}
+          --output .build/test-ci/${{ matrix.platform }}-${{ matrix.suite }}/qualification-fault.json
+      - name: Verify generated source and dependency pins remain unchanged
+        run: git diff --exit-code
+      - name: Summarize local command and transfer receipts
+        if: always() && steps.admission.outcome == 'success'
+        run: >-
+          python3 Tools/ci/usage_report.py --plan .build/spend/guard.json
+          --receipts .build --receipts "$RUNNER_TEMP" --output .build/spend/usage.json
+
+      - name: Retain selected suite evidence
+        if: always() && steps.admission.outcome == 'success'
+        uses: ./.github/actions/upload-evidence
+        with:
+          name: test-evidence-${{ matrix.platform }}-${{ matrix.suite }}-${{ github.run_id }}-${{ github.run_attempt }}
+          paths: |
+            .build/spend
+            .build/test-ci/${{ matrix.platform }}-${{ matrix.suite }}
+            .build/artifact-index.json
+            .build/dsl-measurements/runtime-smoke.json
+            .build/timing-smoke/${{ matrix.component }}
+          retention-days: 14
+          receipt: ${{ runner.temp }}/transfer-${{ github.job }}-${{ strategy.job-index }}.json
+      - name: Retain exact executed leaf coverage
+        if: always() && steps.admission.outcome == 'success'
+        uses: ./.github/actions/upload-evidence
+        with:
+          name: test-coverage-${{ matrix.platform }}-${{ matrix.suite }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          paths: .build/test-ci/${{ matrix.platform }}-${{ matrix.suite }}/group-coverage.json
+          retention-days: 14
+          receipt: ${{ runner.temp }}/test-coverage-transfer.json
+
+
+  tests:
+    name: ${{ matrix.suite && format('Tests / {0}', matrix.suite) || 'No remaining suites' }}
+    needs: [plan, canary, build-core, build-remaining, tests-root]
+    if: always() && needs.canary.result == 'success' && (needs.build-core.result == 'success' || needs.build-core.result == 'skipped') && (needs.build-remaining.result == 'success' || needs.build-remaining.result == 'skipped') && (needs.tests-root.result == 'success' || needs.tests-root.result == 'skipped') && needs.plan.outputs.has-tests == 'true'
+    runs-on:
+      group: ${{ matrix.group }}
+    timeout-minutes: 105
+    defaults:
+      run:
+        shell: ${{ matrix.shell }}
+    strategy:
+      fail-fast: false
+      max-parallel: ${{ fromJSON(needs.plan.outputs.runtime-concurrency) }}
+      matrix: ${{ fromJSON(needs.plan.outputs.tests) }}
+    steps:
+      - name: Enable Windows checkout long paths
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: git config --system core.longpaths true
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Check current-attempt spend reservation
+        id: admission
+        env:
+          ADMISSION_JOB: ${{ inputs.platform }}/suite/${{ matrix.component }}/${{ matrix.suite }}
+          ADMISSION_GROUP: ${{ matrix.group }}
+        run: >-
+          python3 Tools/ci/spend_admission.py guard --job "$ADMISSION_JOB" --group "$ADMISSION_GROUP"
+          --output .build/spend/guard.json
+      - uses: ./.github/actions/setup-native
+        timeout-minutes: 10
+        with:
+          profile: runtime
+      - uses: ./.github/actions/consume-native
+        with:
+          platform: ${{ matrix.platform }}
+          components-json: '["${{ matrix.component }}"]'
+          destination: ${{ runner.temp }}/compiled
+      - name: Run selected complete suites without rebuilding
+        env:
+          NATIVE_SUITES: ${{ toJSON(matrix.suites) }}
+        run: >-
+          python Tools/ci/native_jobs.py test --component ${{ matrix.component }}
+          --suite ${{ matrix.suite }} --suites-json "$NATIVE_SUITES" --platform ${{ matrix.platform }} --jobs ${{ matrix.jobs }}
+          --archive "${{ runner.temp }}/compiled/${{ matrix.platform }}-${{ matrix.component }}.tar.gz"
+          --selection .build/artifact-index.json
+          --output .build/test-ci/${{ matrix.platform }}-${{ matrix.suite }}
+      - name: Verify generated source and dependency pins remain unchanged
+        run: git diff --exit-code
+      - name: Summarize local command and transfer receipts
+        if: always() && steps.admission.outcome == 'success'
+        run: >-
+          python3 Tools/ci/usage_report.py --plan .build/spend/guard.json
+          --receipts .build --receipts "$RUNNER_TEMP" --output .build/spend/usage.json
+
+      - name: Retain selected suite evidence
+        if: always() && steps.admission.outcome == 'success'
+        uses: ./.github/actions/upload-evidence
+        with:
+          name: test-evidence-${{ matrix.platform }}-${{ matrix.suite }}-${{ github.run_id }}-${{ github.run_attempt }}
+          paths: |
+            .build/spend
+            .build/test-ci/${{ matrix.platform }}-${{ matrix.suite }}
+            .build/artifact-index.json
+            .build/dsl-measurements/runtime-smoke.json
+            .build/timing-smoke/${{ matrix.component }}
+          retention-days: 14
+          receipt: ${{ runner.temp }}/transfer-${{ github.job }}-${{ strategy.job-index }}.json
+      - name: Retain exact executed leaf coverage
+        if: always() && steps.admission.outcome == 'success'
+        uses: ./.github/actions/upload-evidence
+        with:
+          name: test-coverage-${{ matrix.platform }}-${{ matrix.suite }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          paths: .build/test-ci/${{ matrix.platform }}-${{ matrix.suite }}/group-coverage.json
+          retention-days: 14
+          receipt: ${{ runner.temp }}/test-coverage-transfer.json
+
+
+  audit:
+    name: Documentation, inventory, generation and release audits
+    needs: [canary, build-core]
+    if: inputs.mode == 'full'
+    runs-on:
+      group: ${{ inputs.runner-group }}
+    timeout-minutes: 60
+    defaults:
+      run:
+        shell: ${{ inputs.shell }}
+    steps:
+      - name: Enable Windows checkout long paths
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: git config --system core.longpaths true
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Check current-attempt spend reservation
+        id: admission
+        env:
+          ADMISSION_JOB: ${{ inputs.platform }}/audit
+          ADMISSION_GROUP: ${{ inputs.runner-group }}
+        run: >-
+          python3 Tools/ci/spend_admission.py guard --job "$ADMISSION_JOB" --group "$ADMISSION_GROUP"
+          --output .build/spend/guard.json
+      - uses: ./.github/actions/setup-native
+        timeout-minutes: 10
+        with:
+          profile: runtime
+      - uses: ./.github/actions/consume-native
+        with:
+          platform: ${{ inputs.platform }}
+          components-json: '["tooling"]'
+          destination: ${{ runner.temp }}/compiled
       - name: Run audits using the compiled tooling executable
         run: >-
           python Tools/ci/native_jobs.py test --component tooling --suite audit
           --platform ${{ inputs.platform }} --jobs ${{ inputs.jobs }} --archive "${{ runner.temp }}/compiled/${{ inputs.platform }}-tooling.tar.gz"
-          --output .build/audit-ci
+          --selection .build/artifact-index.json --output .build/audit-ci
       - name: Verify generated source and dependency pins remain unchanged
         run: git diff --exit-code
+      - name: Summarize local command and transfer receipts
+        if: always() && steps.admission.outcome == 'success'
+        run: >-
+          python3 Tools/ci/usage_report.py --plan .build/spend/guard.json
+          --receipts .build --receipts "$RUNNER_TEMP" --output .build/spend/usage.json
+
       - name: Retain audit diagnostics
-        if: always()
-        uses: actions/upload-artifact@v7
+        if: always() && steps.admission.outcome == 'success'
+        uses: ./.github/actions/upload-evidence
         with:
           name: audit-evidence-${{ inputs.platform }}-${{ github.run_id }}-${{ github.run_attempt }}
-          path: .build/audit-ci
-          if-no-files-found: warn
-          include-hidden-files: true
+          paths: |
+            .build/audit-ci
+            .build/spend
           retention-days: 14
+          receipt: ${{ runner.temp }}/transfer-${{ github.job }}-${{ strategy.job-index }}.json
 
   fixtures:
     name: Compiler fixtures / ${{ matrix.suite }}
-    needs: build
+    needs: [plan, canary, build-core, build-remaining]
+    if: inputs.mode == 'full'
     # These suites compile positive and intentionally invalid consumers.
     # Keep their compiler work on the large pools rather than the runtime pool.
     runs-on:
       group: ${{ inputs.build-group }}
-    timeout-minutes: 90
+    timeout-minutes: 100
     defaults:
       run:
         shell: ${{ inputs.shell }}
     strategy:
       fail-fast: false
+      max-parallel: ${{ fromJSON(needs.plan.outputs.build-concurrency) }}
       matrix:
         suite: [dsl_compile_fixtures, dsl_extension_fixtures]
     steps:
@@ -268,21 +766,62 @@ jobs:
       - uses: actions/checkout@v6
         with:
           persist-credentials: false
-      - uses: ./.github/actions/setup-native
-      - name: Require positive builds and exact negative compiler diagnostics
+      - name: Check current-attempt spend reservation
+        id: admission
+        env:
+          ADMISSION_JOB: ${{ inputs.platform }}/fixture/${{ matrix.suite }}
+          ADMISSION_GROUP: ${{ inputs.build-group }}
         run: >-
-          python Tools/ci/${{ matrix.suite }}.py --repository .
-          --jobs ${{ inputs.build-jobs }} --timeout 1200
+          python3 Tools/ci/spend_admission.py guard --job "$ADMISSION_JOB" --group "$ADMISSION_GROUP"
+          --output .build/spend/guard.json
+      - uses: ./.github/actions/setup-native
+        timeout-minutes: 10
+        with:
+          profile: build
+      - name: Require positive builds and exact negative compiler diagnostics
+        shell: python
+        env:
+          FIXTURE_SUITE: ${{ matrix.suite }}
+          COMPILER_JOBS: ${{ inputs.build-jobs }}
+        run: |
+          import json, os, subprocess, sys
+          from pathlib import Path
+          sys.path.insert(0, 'Tools/ci')
+          import native_resources, scheduling_policy
+          admission = native_resources.compiler_admission(int(os.environ['COMPILER_JOBS']),
+              policy_cap=scheduling_policy.load_policy()['concurrency']['compilerJobsPerProcess'])
+          Path('.build').mkdir(exist_ok=True)
+          Path('.build/fixture-resources.json').write_text(json.dumps(admission, indent=2) + '\n')
+          print(json.dumps({'compilerAdmission': admission}, sort_keys=True), flush=True)
+          subprocess.run([sys.executable, 'Tools/ci/' + os.environ['FIXTURE_SUITE'] + '.py',
+                          '--repository', '.', '--jobs', str(admission['jobs']), '--timeout', '1200'], check=True)
       - name: Verify generated source and dependency pins remain unchanged
         run: git diff --exit-code
 
+      - name: Summarize local command and transfer receipts
+        if: always() && steps.admission.outcome == 'success'
+        run: >-
+          python3 Tools/ci/usage_report.py --plan .build/spend/guard.json
+          --receipts .build --receipts "$RUNNER_TEMP" --output .build/spend/usage.json
+
+      - name: Retain local spend reservation and usage
+        if: always() && steps.admission.outcome == 'success'
+        uses: ./.github/actions/upload-evidence
+        with:
+          name: spend-${{ inputs.platform }}-${{ github.job }}-${{ strategy.job-index }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          paths: .build/spend
+          retention-days: 14
+          receipt: ${{ runner.temp }}/spend-transfer.json
+
   public-api:
+    outputs:
+      documentation-inputs: ${{ steps.documentation.outputs.artifact }}
     name: Public API and DocC / macOS ARM
-    if: inputs.platform == 'macos-arm64'
-    needs: build
+    if: inputs.mode == 'full' && inputs.platform == 'macos-arm64'
+    needs: [canary, build-core]
     runs-on:
       group: MacOS-26-5
-    timeout-minutes: 120
+    timeout-minutes: 165
     defaults:
       run:
         shell: bash
@@ -290,32 +829,32 @@ jobs:
       - uses: actions/checkout@v6
         with:
           persist-credentials: false
+      - name: Check current-attempt spend reservation
+        id: admission
+        env:
+          ADMISSION_JOB: ${{ inputs.platform }}/public-api
+          ADMISSION_GROUP: MacOS-26-5
+        run: >-
+          python3 Tools/ci/spend_admission.py guard --job "$ADMISSION_JOB" --group "$ADMISSION_GROUP"
+          --output .build/spend/guard.json
       - uses: ./.github/actions/setup-native
-      - name: Download compiled macOS root
-        uses: actions/download-artifact@v8
+        timeout-minutes: 10
         with:
-          name: compiled-macos-arm64-root-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
-          path: ${{ runner.temp }}/compiled
-      - name: Download compiled macOS macros
-        uses: actions/download-artifact@v8
+          profile: build
+      - uses: ./.github/actions/consume-native
         with:
-          name: compiled-macos-arm64-macros-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
-          path: ${{ runner.temp }}/compiled
-      - name: Download compiled macOS extensions
-        uses: actions/download-artifact@v8
-        with:
-          name: compiled-macos-arm64-extensions-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
-          path: ${{ runner.temp }}/compiled
+          platform: macos-arm64
+          components-json: '["root","macros","extensions"]'
+          destination: ${{ runner.temp }}/compiled
       - name: Restore compiled root and authoring packages
         run: |
           for component in root macros extensions; do
             python Tools/ci/native_jobs.py restore --component "$component" --platform macos-arm64 \
-              --archive "$RUNNER_TEMP/compiled/macos-arm64-$component.tar.gz" --output .build/api-ci
+              --archive "$RUNNER_TEMP/compiled/macos-arm64-$component.tar.gz" \
+              --selection .build/artifact-index.json --output .build/api-ci
           done
       - name: Compare scoped public API and convert all public DocC modules
         run: |
-          python3 Tools/ci/curate_docc.py --check
-          python3 Tools/ci/documentation_examples.py
           python3 Tools/DiscordKitTools/scripts/api_baseline.py snapshot --repository . --symbolgraphs .build/out/symbolgraph --version 0.20.0 --output .build/current-api.json
           python3 Tools/DiscordKitTools/scripts/api_baseline.py check --baseline Docs/Release/api-baseline.json --candidate .build/current-api.json --version 0.20.0 --output .build/api-comparison-runtime-original.json
           python3 Tools/DiscordKitTools/scripts/api_baseline.py check --baseline Docs/Release/api-baseline-0.15.0.json --candidate .build/current-api.json --version 0.20.0 --output .build/api-comparison-0.15.0.json
@@ -323,28 +862,46 @@ jobs:
           python3 Tools/DiscordKitTools/scripts/api_baseline.py check --baseline Docs/Release/api-baseline-0.17.0.json --candidate .build/current-api.json --version 0.20.0 --output .build/api-comparison-0.17.0.json
           python3 Tools/DiscordKitTools/scripts/api_baseline.py check --baseline Docs/Release/api-baseline-0.18.0.json --candidate .build/current-api.json --version 0.20.0 --output .build/api-comparison-0.18.0.json
           python3 Tools/DiscordKitTools/scripts/api_baseline.py check --baseline Docs/Release/api-baseline-0.19.0.json --candidate .build/current-api.json --version 0.20.0 --output .build/api-comparison-0.19.0.json
-          python3 Tools/ci/build_docc.py
-          python3 Tools/ci/curate_docc.py --repository Packages/DiscordDSLMacros --symbolgraphs Packages/DiscordDSLMacros/.build/out/symbolgraph --check
-          python3 Tools/ci/build_docc.py --repository Packages/DiscordDSLMacros --symbolgraphs Packages/DiscordDSLMacros/.build/out/symbolgraph --output .build/documentation-macros
+          python3 Tools/ci/documentation_inputs.py prepare --component root --output .build/documentation --archive "$RUNNER_TEMP/documentation-inputs/root.tar.gz" --receipt .build/api-ci/documentation-root.json
+          python3 Tools/ci/documentation_inputs.py prepare --component macros --output .build/documentation-macros --archive "$RUNNER_TEMP/documentation-inputs/macros.tar.gz" --receipt .build/api-ci/documentation-macros.json
           python3 Tools/DiscordKitTools/scripts/api_baseline.py snapshot --repository . --authoring-package Packages/DiscordDSLMacros --symbolgraphs Packages/DiscordDSLMacros/.build/out/symbolgraph --version 0.15.0 --output .build/current-macros-api.json
           python3 Tools/DiscordKitTools/scripts/api_baseline.py check --baseline Docs/Release/api-baseline-macros-0.15.0.json --candidate .build/current-macros-api.json --version 0.15.0 --output .build/api-comparison-macros-0.15.0.json
-          python3 Tools/ci/curate_docc.py --repository Packages/DiscordDSLExtensions --symbolgraphs Packages/DiscordDSLExtensions/.build/out/symbolgraph --check
-          python3 Tools/ci/build_docc.py --repository Packages/DiscordDSLExtensions --symbolgraphs Packages/DiscordDSLExtensions/.build/out/symbolgraph --output .build/documentation-extensions
+          python3 Tools/ci/documentation_inputs.py prepare --component extensions --output .build/documentation-extensions --archive "$RUNNER_TEMP/documentation-inputs/extensions.tar.gz" --receipt .build/api-ci/documentation-extensions.json
           python3 Tools/DiscordKitTools/scripts/api_baseline.py snapshot --repository . --authoring-package Packages/DiscordDSLExtensions --symbolgraphs Packages/DiscordDSLExtensions/.build/out/symbolgraph --version 0.15.0 --output .build/current-extensions-api.json
           python3 Tools/DiscordKitTools/scripts/api_baseline.py check --baseline Docs/Release/api-baseline-extensions-0.15.0.json --candidate .build/current-extensions-api.json --version 0.15.0 --output .build/api-comparison-extensions-0.15.0.json
+      - name: Share strict conversion inputs without rebuilding or reconverting
+        uses: ./.github/actions/upload-evidence
+        with:
+          name: documentation-inputs-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          paths: ${{ runner.temp }}/documentation-inputs/*.tar.gz
+          retention-days: 2
+          receipt: ${{ runner.temp }}/documentation-inputs-transfer.json
+      - name: Expose this nonmatrix immutable conversion identity
+        id: documentation
+        run: python3 Tools/ci/documentation_workflow.py artifact-output --receipt "$RUNNER_TEMP/documentation-inputs-transfer.json"
+      - name: Summarize local command and transfer receipts
+        if: always() && steps.admission.outcome == 'success'
+        run: >-
+          python3 Tools/ci/usage_report.py --plan .build/spend/guard.json
+          --receipts .build --receipts "$RUNNER_TEMP" --output .build/spend/usage.json
+
       - name: Retain API comparison diagnostics even on failure
-        if: always()
-        uses: actions/upload-artifact@v7
+        if: always() && steps.admission.outcome == 'success'
+        uses: ./.github/actions/upload-evidence
         with:
           name: api-diagnostics-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
-          path: |
+          paths: |
+            .build/spend
             .build/current-api.json
             .build/current-macros-api.json
             .build/current-extensions-api.json
             .build/api-comparison-*.json
-          if-no-files-found: warn
-          include-hidden-files: true
+            .build/api-ci/documentation-*.json
+            .build/documentation-preparation
+            .build/documentation-macros-preparation
+            .build/documentation-extensions-preparation
           retention-days: 14
+          receipt: ${{ runner.temp }}/transfer-${{ github.job }}-${{ strategy.job-index }}.json
       - name: Package DocC archives and API evidence
         run: |
           # DocC symbol filenames contain colons, which upload-artifact rejects.
@@ -354,30 +911,38 @@ jobs:
             documentation-macros current-macros-api.json \
             documentation-extensions current-extensions-api.json
       - name: Upload DocC archives and API evidence
-        uses: actions/upload-artifact@v7
+        uses: ./.github/actions/upload-evidence
         with:
-          name: public-documentation-and-api
-          path: ${{ runner.temp }}/public-documentation-and-api.tar.gz
-          compression-level: 0
-          if-no-files-found: error
-          include-hidden-files: true
+          name: public-documentation-and-api-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          paths: ${{ runner.temp }}/public-documentation-and-api.tar.gz
+          retention-days: 14
+          receipt: ${{ runner.temp }}/documentation-transfer.json
       - name: Verify tracked generated source and dependency pins remain unchanged
         run: git diff --exit-code
 
   apple-compilation:
     name: Build Apple minima / device and simulator modules
-    if: inputs.platform == 'macos-arm64'
-    needs: platform
+    if: inputs.mode == 'full' && inputs.platform == 'macos-arm64'
+    needs: [canary, build-core, build-remaining, fixtures]
     runs-on:
       group: MacOS-26-5
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v6
         with:
           persist-credentials: false
-      - uses: swift-actions/setup-swift@v3
+      - name: Check current-attempt spend reservation
+        id: admission
+        env:
+          ADMISSION_JOB: ${{ inputs.platform }}/apple
+          ADMISSION_GROUP: MacOS-26-5
+        run: >-
+          python3 Tools/ci/spend_admission.py guard --job "$ADMISSION_JOB" --group "$ADMISSION_GROUP"
+          --output .build/spend/guard.json
+      - uses: ./.github/actions/setup-native
+        timeout-minutes: 10
         with:
-          swift-version: '6.4.1'
+          profile: build
       - name: Record compiler and Xcode
         run: |
           swift --version
@@ -385,27 +950,82 @@ jobs:
           xcodebuild -version
       - name: Emit selected modules with installed Xcode SDKs
         run: python3 Tools/ci/compile_apple.py
-      - uses: actions/upload-artifact@v7
+      - name: Summarize local command and transfer receipts
+        if: always() && steps.admission.outcome == 'success'
+        run: >-
+          python3 Tools/ci/usage_report.py --plan .build/spend/guard.json
+          --receipts .build --receipts "$RUNNER_TEMP" --output .build/spend/usage.json
+
+      - uses: ./.github/actions/upload-evidence
         with:
-          name: apple-selected-module-compilation
-          path: .build/apple-compile.json
-          if-no-files-found: error
-          include-hidden-files: true
+          name: apple-selected-module-compilation-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          paths: |
+            .build/apple-compile.json
+            .build/spend
+          retention-days: 14
+          receipt: ${{ runner.temp }}/apple-transfer.json
+
+  coverage:
+    name: Verify platform coverage before source export
+    if: always()
+    needs: [platform, plan, build, canary, build-core, build-remaining, resolve, tests-root, tests, audit, fixtures, public-api, apple-compilation]
+    runs-on:
+      group: ${{ inputs.runner-group }}
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Check current-attempt spend reservation
+        id: admission
+        env:
+          ADMISSION_JOB: ${{ inputs.platform }}/coverage
+          ADMISSION_GROUP: ${{ inputs.runner-group }}
+        run: >-
+          python3 Tools/ci/spend_admission.py guard --job "$ADMISSION_JOB" --group "$ADMISSION_GROUP"
+          --output .build/spend/guard.json
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Verify every expected pre-export job and immutable producer
+        env:
+          MANIFEST: ${{ needs.plan.outputs.coverage }}
+          EXPECTED_BUILDS: ${{ needs.plan.outputs.all-builds }}
+          GH_TOKEN: ${{ github.token }}
+        shell: python
+        run: |
+          import json, os, subprocess, sys
+          manifest = json.loads(os.environ['MANIFEST'])
+          manifest['runAttempt'] = os.environ['GITHUB_RUN_ATTEMPT']
+          manifest['entries'] = [row for row in manifest['entries'] if not row['id'].startswith('export')]
+          subprocess.run([sys.executable, 'Tools/ci/workflow_coverage.py', 'certify',
+                          '--manifest-json', json.dumps(manifest), '--output', '.build/pre-export-coverage.json'], check=True)
+          subprocess.run([sys.executable, 'Tools/ci/artifact_index.py', 'resolve',
+                          '--platform', manifest['platform'], '--components-json', os.environ['EXPECTED_BUILDS'],
+                          '--output', '.build/pre-export-producers.json'], check=True)
+
+      - name: Summarize local command and transfer receipts
+        if: always() && steps.admission.outcome == 'success'
+        run: >-
+          python3 Tools/ci/usage_report.py --plan .build/spend/guard.json
+          --receipts .build --receipts "$RUNNER_TEMP" --output .build/spend/usage.json
+
+      - name: Retain local spend reservation and usage
+        if: always() && steps.admission.outcome == 'success'
+        uses: ./.github/actions/upload-evidence
+        with:
+          name: spend-${{ inputs.platform }}-${{ github.job }}-${{ strategy.job-index }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          paths: .build/spend
+          retention-days: 14
+          receipt: ${{ runner.temp }}/spend-transfer.json
 
   package:
     name: Export validated platform source
-    needs: [build, tests, audit, fixtures, public-api, apple-compilation]
-    # Non-Apple pipelines intentionally skip the two macOS-only checks.
-    # Override implicit success() so those skips do not suppress their export.
-    if: >-
-      ${{ !cancelled() && needs.build.result == 'success' &&
-          needs.tests.result == 'success' && needs.audit.result == 'success' &&
-          needs.fixtures.result == 'success' &&
-          (inputs.platform != 'macos-arm64' ||
-           (needs.public-api.result == 'success' && needs.apple-compilation.result == 'success')) }}
+    needs: coverage
+    if: inputs.mode == 'full'
     runs-on:
       group: ${{ inputs.runner-group }}
-    timeout-minutes: 15
+    timeout-minutes: 35
     defaults:
       run:
         shell: ${{ inputs.shell }}
@@ -417,7 +1037,27 @@ jobs:
       - uses: actions/checkout@v6
         with:
           persist-credentials: false
+      - name: Check current-attempt spend reservation
+        id: admission
+        env:
+          ADMISSION_JOB: ${{ inputs.platform }}/export
+          ADMISSION_GROUP: ${{ inputs.runner-group }}
+        run: >-
+          python3 Tools/ci/spend_admission.py guard --job "$ADMISSION_JOB" --group "$ADMISSION_GROUP"
+          --output .build/spend/guard.json
       - uses: ./.github/actions/setup-native
+        timeout-minutes: 10
+        with:
+          profile: runtime
+      - name: Require full scope before source export
+        env:
+          CERTIFICATION_MODE: ${{ inputs.mode }}
+          COVERAGE_RESULT: ${{ needs.coverage.result }}
+        shell: python
+        run: |
+          import os
+          if os.environ['CERTIFICATION_MODE'] != 'full' or os.environ['COVERAGE_RESULT'] != 'success':
+              raise SystemExit('Source export requires complete full platform coverage')
       - name: Package the clean source revision validated on this platform
         if: github.event_name != 'pull_request'
         run: >-
@@ -425,36 +1065,86 @@ jobs:
           --output .build/packages
       - name: Upload platform SwiftPM source bundle
         if: github.event_name != 'pull_request'
-        uses: actions/upload-artifact@v7
+        uses: ./.github/actions/upload-evidence
         with:
           name: DiscordKit-${{ inputs.platform }}-source-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
-          path: .build/packages/*
-          if-no-files-found: error
-          include-hidden-files: true
-          compression-level: 0
+          paths: .build/packages/*
           retention-days: 14
+          receipt: ${{ runner.temp }}/transfer-${{ github.job }}-${{ strategy.job-index }}.json
+
+      - name: Summarize local command and transfer receipts
+        if: always() && steps.admission.outcome == 'success'
+        run: >-
+          python3 Tools/ci/usage_report.py --plan .build/spend/guard.json
+          --receipts .build --receipts "$RUNNER_TEMP" --output .build/spend/usage.json
+
+      - name: Retain local spend reservation and usage
+        if: always() && steps.admission.outcome == 'success'
+        uses: ./.github/actions/upload-evidence
+        with:
+          name: spend-${{ inputs.platform }}-${{ github.job }}-${{ strategy.job-index }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          paths: .build/spend
+          retention-days: 14
+          receipt: ${{ runner.temp }}/spend-transfer.json
 
   complete:
     name: Platform validation passed
     if: always()
-    needs: [platform, plan, build, tests, audit, fixtures, public-api, apple-compilation, package]
+    needs: [platform, plan, build, canary, build-core, build-remaining, resolve, tests-root, tests, audit, fixtures, public-api, apple-compilation, coverage, package]
     runs-on:
       group: ${{ inputs.runner-group }}
-    timeout-minutes: 5
+    timeout-minutes: 35
+    outputs:
+      coverage: ${{ steps.coverage.outputs.coverage }}
     steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Check current-attempt spend reservation
+        id: admission
+        env:
+          ADMISSION_JOB: ${{ inputs.platform }}/complete
+          ADMISSION_GROUP: ${{ inputs.runner-group }}
+        run: >-
+          python3 Tools/ci/spend_admission.py guard --job "$ADMISSION_JOB" --group "$ADMISSION_GROUP"
+          --output .build/spend/guard.json
       - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
-      - name: Require every applicable platform gate to pass
+      - name: Verify complete platform coverage in this barrier attempt
+        id: coverage
         shell: python
         env:
+          GH_TOKEN: ${{ github.token }}
+          MANIFEST: ${{ needs.plan.outputs.coverage }}
           RESULTS: ${{ toJSON(needs) }}
-          NATIVE_PLATFORM: ${{ inputs.platform }}
+          EXPECTED_BUILDS: ${{ needs.plan.outputs.all-builds }}
         run: |
-          import json, os
+          import json, os, subprocess, sys
           results = json.loads(os.environ['RESULTS'])
-          optional = {'public-api', 'apple-compilation'} if os.environ['NATIVE_PLATFORM'] != 'macos-arm64' else set()
-          failed = {name: value['result'] for name, value in results.items()
-                    if value['result'] != 'success' and not (name in optional and value['result'] == 'skipped')}
-          if failed:
-              raise SystemExit('Platform validation incomplete: ' + json.dumps(failed, sort_keys=True))
+          if results['coverage']['result'] != 'success':
+              raise SystemExit('Pre-export coverage did not pass')
+          manifest = json.loads(os.environ['MANIFEST'])
+          manifest['runAttempt'] = os.environ['GITHUB_RUN_ATTEMPT']
+          subprocess.run([sys.executable, 'Tools/ci/artifact_index.py', 'resolve',
+                          '--platform', manifest['platform'], '--components-json', os.environ['EXPECTED_BUILDS'],
+                          '--output', '.build/barrier-producers.json'], check=True)
+          subprocess.run([sys.executable, 'Tools/ci/workflow_coverage.py', 'certify',
+                          '--manifest-json', json.dumps(manifest), '--output', '.build/platform-coverage.json',
+                          '--github-output'], check=True)
+      - name: Summarize local command and transfer receipts
+        if: always() && steps.admission.outcome == 'success'
+        run: >-
+          python3 Tools/ci/usage_report.py --plan .build/spend/guard.json
+          --receipts .build --receipts "$RUNNER_TEMP" --output .build/spend/usage.json
+
+      - name: Retain final platform coverage and producer selection
+        uses: ./.github/actions/upload-evidence
+        with:
+          name: coverage-${{ inputs.platform }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          paths: |
+            .build/spend
+            .build/platform-coverage.json
+            .build/barrier-producers.json
+          retention-days: 14
+          receipt: ${{ runner.temp }}/coverage-transfer.json

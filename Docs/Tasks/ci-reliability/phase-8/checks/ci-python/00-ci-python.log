@@ -1,0 +1,13 @@
+/Library/Frameworks/Python.framework/Versions/3.14/bin/python3 -m unittest discover -s Tools/ci -p 'test_*.py'
+..artifact resolution failed: GitHub workflow run repository, workflow, event or source provenance differs
+......................................................................................................Built 4 public-module archives into /var/folders/3j/5mxmxjxn1z98m1c1y32z64zh0000gn/T/documentation test u03set6i/.build/site export
+.Built 4 public-module archives into /var/folders/3j/5mxmxjxn1z98m1c1y32z64zh0000gn/T/tmplb4a0gmv/site
+..Built 4 public-module archives into /var/folders/3j/5mxmxjxn1z98m1c1y32z64zh0000gn/T/tmp950bqa_0/site
+...Built 4 public-module archives into /var/folders/3j/5mxmxjxn1z98m1c1y32z64zh0000gn/T/tmpl2psuaoo/site
+.....................................................Published v1.2.37 from abcdef0123abcdef0123abcdef0123abcdef0123
+.Published v1.2.37 from abcdef0123abcdef0123abcdef0123abcdef0123
+.................................sssss.....................s...................................................................................................................................................................................................................................................................
+----------------------------------------------------------------------
+Ran 483 tests in 17.302s
+
+OK (skipped=6)

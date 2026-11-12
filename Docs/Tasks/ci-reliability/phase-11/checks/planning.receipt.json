@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "name": "pure-planning",
+  "stage": "phase11-planning",
+  "operation": "localHelperCheck",
+  "arguments": [
+    "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+    "Docs/Tasks/ci-reliability/phase-11/checks/prepare_plans.py",
+    "--output",
+    "Docs/Tasks/ci-reliability/phase-11/checks/planning"
+  ],
+  "start": "2026-11-12T16:49:02.745949+00:00",
+  "startMonotonic": 360150.057175375,
+  "deadlineMonotonic": 360330.057175375,
+  "executionLimitSeconds": 180,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "operation",
+  "paths": {
+    "output": "Docs/Tasks/ci-reliability/phase-11/checks/planning.log",
+    "stdout": null,
+    "diagnostics": "Docs/Tasks/ci-reliability/phase-11/checks/planning.diagnostics.jsonl",
+    "receipt": "Docs/Tasks/ci-reliability/phase-11/checks/planning.receipt.json"
+  },
+  "identity": {
+    "executionID": "0a9705c6-7eea-4526-8cc7-b2e82d4915d1",
+    "supervisorPID": 73882,
+    "host": "Pokemon-GO-Plus",
+    "system": "Darwin",
+    "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase11"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 73892,
+  "group": 73892,
+  "cleanup": {
+    "status": "group-signalled",
+    "signals": [],
+    "parentReaped": true,
+    "allowanceSeconds": 8.0,
+    "seconds": 0.003,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "verificationMalformedRows": 0,
+    "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "Docs/Tasks/ci-reliability/phase-11/checks/planning.log",
+      "retainedBytes": 720,
+      "observedBytes": 720,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T16:49:03.120689+00:00",
+  "endMonotonic": 360150.431956583,
+  "elapsedSeconds": 0.375,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}

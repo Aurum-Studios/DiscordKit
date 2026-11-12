@@ -4,6 +4,7 @@
 // https://aurum-studios.com
 
 import DiscordCore
+import DiscordLogging
 import DiscordTransport
 import Foundation
 import Testing
@@ -383,6 +384,77 @@ struct EventHubTests {
         #expect(await hub.snapshot().subscriptions == 0)
     }
 
+    /// Cancellation at the residence endpoint rejects the dequeued value without relabelling its success.
+    @Test func cancellationBetweenDequeueAndPublicDelivery() async throws {
+        let recorder = EventHubCancellationRecorder(cancelFirstSuccessfulResidence: true)
+        let intervals = DiscordIntervalTiming(clockDomain: 6_401, sink: recorder.record, now: { .zero })
+        let configuration = try GatewayEventHubConfiguration()
+        let authority = GatewayEventHubAuthority(configuration: configuration)
+        let hub = GatewayEventHub(configuration: configuration, authority: authority, intervals: intervals)
+        let cancelled = try await hub.subscribe(), healthy = try await hub.subscribe()
+        let events = try (1...3).map { try makeDeliveryEvent(Int64($0)) }
+        for event in events { #expect(await hub.publish(event).delivered == 2) }
+        let consumer = Task {
+            var iterator = cancelled.makeAsyncIterator()
+            return try await iterator.next()
+        }
+        await #expect(throws: CancellationError.self) { try await consumer.value }
+        let cancelledResidence = recorder.snapshot().filter { $0.kind == .ended }
+        #expect(cancelledResidence.map(\.outcome) == [.succeeded, .cancelled, .cancelled])
+        let retained = await authority.snapshot()
+        #expect(retained.subscriptions == 1 && retained.waitingConsumers == 0)
+        #expect(retained.bufferedEvents == events.count)
+        #expect(retained.bufferedBytes == events.reduce(0) { $0 + $1.retainedByteCount })
+        var unaffected = healthy.makeAsyncIterator()
+        for event in events { #expect(try await unaffected.next()?.sequence == event.sequence) }
+        #expect(!Task.isCancelled)
+        await healthy.cancel()
+        let observed = recorder.snapshot(), terminals = observed.filter { $0.kind == .ended }
+        let beginnings = observed.filter { $0.kind == .began }
+        #expect(beginnings.count == 6 && terminals.count == 6)
+        for beginning in beginnings {
+            #expect(terminals.filter { $0.context.operationID == beginning.context.operationID }.count == 1)
+        }
+        #expect(terminals.filter { $0.outcome == .succeeded }.count == 4)
+        #expect(terminals.filter { $0.outcome == .cancelled }.count == 2)
+        let local = await hub.snapshot(), shared = await authority.snapshot()
+        #expect(local.subscriptions == 0 && local.bufferedEvents == 0 && local.bufferedBytes == 0 && local.waitingConsumers == 0)
+        #expect(shared.subscriptions == 0 && shared.bufferedEvents == 0 && shared.bufferedBytes == 0 && shared.waitingConsumers == 0)
+    }
+
+    /// Pre-dequeue cancellation releases queued copies, including after a prior value was accepted publicly.
+    /// - Parameter acceptFirst: Whether one value returns successfully before cancelling the same consumer.
+    @Test(arguments: [false, true]) func cancellationBeforeDequeuePreservesAcceptedValues(acceptFirst: Bool) async throws {
+        let recorder = EventHubCancellationRecorder()
+        let intervals = DiscordIntervalTiming(clockDomain: 6_402, sink: recorder.record, now: { .zero })
+        let configuration = try GatewayEventHubConfiguration()
+        let authority = GatewayEventHubAuthority(configuration: configuration)
+        let hub = GatewayEventHub(configuration: configuration, authority: authority, intervals: intervals)
+        let cancelled = try await hub.subscribe(), healthy = try await hub.subscribe()
+        for sequence in 1...2 { #expect(await hub.publish(try makeDeliveryEvent(Int64(sequence))).delivered == 2) }
+        let consumer = Task {
+            var iterator = cancelled.makeAsyncIterator()
+            if acceptFirst { #expect(try await iterator.next()?.sequence == 1) }
+            withUnsafeCurrentTask { $0?.cancel() }
+            return try await iterator.next()
+        }
+        await #expect(throws: CancellationError.self) { try await consumer.value }
+        let cancelledResidence = recorder.snapshot().filter { $0.kind == .ended }
+        #expect(cancelledResidence.map(\.outcome) == (acceptFirst ? [.succeeded, .cancelled] : [.cancelled, .cancelled]))
+        #expect(await authority.snapshot().subscriptions == 1)
+        #expect(await authority.snapshot().bufferedEvents == 2)
+        var unaffected = healthy.makeAsyncIterator()
+        #expect(try await unaffected.next()?.sequence == 1)
+        #expect(try await unaffected.next()?.sequence == 2)
+        #expect(!Task.isCancelled)
+        await healthy.cancel()
+        let observed = recorder.snapshot(), terminals = observed.filter { $0.kind == .ended }
+        #expect(observed.filter { $0.kind == .began }.count == 4 && terminals.count == 4)
+        let local = await hub.snapshot(), shared = await authority.snapshot()
+        #expect(local.subscriptions == 0 && local.bufferedEvents == 0 && local.bufferedBytes == 0 && local.waitingConsumers == 0)
+        #expect(shared.subscriptions == 0 && shared.bufferedEvents == 0 && shared.bufferedBytes == 0 && shared.waitingConsumers == 0)
+    }
+
     /// Concurrent iteration is observable; direct delivery wakes only the original parked consumer.
     @Test func overlappingIterationAndDirectDelivery() async throws {
         let hub = GatewayEventHub(configuration: try .init())
@@ -444,6 +516,33 @@ struct EventHubTests {
         }
         #expect(await hub.snapshot().subscriptions == 0)
     }
+}
+
+/// Records a finite fixture's residence endpoints and optionally cancels the first dequeuing consumer inline.
+private final class EventHubCancellationRecorder: @unchecked Sendable {
+    private let lock = NSLock()
+    private var events: [DiscordIntervalEvent] = []
+    private var cancelFirstSuccessfulResidence: Bool
+
+    /// Configures a one-shot cancellation probe, disabled when only observing ordinary cancellation.
+    init(cancelFirstSuccessfulResidence: Bool = false) {
+        self.cancelFirstSuccessfulResidence = cancelFirstSuccessfulResidence
+    }
+
+    /// Captures queue endpoints and cancels only the selected task at its actual dequeue success boundary.
+    func record(_ event: DiscordIntervalEvent) {
+        guard event.stage == .hubResidence else { return }
+        let shouldCancel = lock.withLock {
+            events.append(event)
+            guard cancelFirstSuccessfulResidence, event.kind == .ended, event.outcome == .succeeded else { return false }
+            cancelFirstSuccessfulResidence = false
+            return true
+        }
+        if shouldCancel { withUnsafeCurrentTask { $0?.cancel() } }
+    }
+
+    /// Copies the fixture's residence observations atomically after consumer cleanup joins.
+    func snapshot() -> [DiscordIntervalEvent] { lock.withLock { events } }
 }
 
 /// Constructs deterministic bounded future dispatches for hub and handler tests.

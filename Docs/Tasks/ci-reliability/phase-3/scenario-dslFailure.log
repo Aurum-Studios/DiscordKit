@@ -1,0 +1,8 @@
+/scratch/x86_64-unknown-linux-gnu/debug/DiscordKitLoadTests command-timing --case synthetic.dslFailure --requests 7 --concurrency 3 --warmup-requests 0 --delay-microseconds 0 --duration-seconds 3 --warmup-seconds 0 --profile smoke --seed 1 --output /work/Docs/Tasks/ci-reliability/phase-3/scenario-dslFailure.json --common-report /work/Docs/Tasks/ci-reliability/phase-3/scenario-dslFailure-common.json
+2026-11-12T13:03:37+0000 error discordkit.commands.router: dk.event=commands.route.failed dk.module=commands dk.subsystem=commands.router [DiscordCommands] Command handler failed
+2026-11-12T13:03:37+0000 error discordkit.commands.router: dk.event=commands.route.failed dk.module=commands dk.subsystem=commands.router [DiscordCommands] Command handler failed
+2026-11-12T13:03:37+0000 error discordkit.commands.router: dk.event=commands.route.failed dk.module=commands dk.subsystem=commands.router [DiscordCommands] Command handler failed
+2026-11-12T13:03:37+0000 error discordkit.commands.router: dk.event=commands.route.failed dk.module=commands dk.subsystem=commands.router [DiscordCommands] Command handler failed
+2026-11-12T13:03:37+0000 error discordkit.commands.router: dk.event=commands.route.failed dk.module=commands dk.subsystem=commands.router [DiscordCommands] Command handler failed
+2026-11-12T13:03:37+0000 error discordkit.commands.router: dk.event=commands.route.failed dk.module=commands dk.subsystem=commands.router [DiscordCommands] Command handler failed
+2026-11-12T13:03:37+0000 error discordkit.commands.router: dk.event=commands.route.failed dk.module=commands dk.subsystem=commands.router [DiscordCommands] Command handler failed

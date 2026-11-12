@@ -1,0 +1,222 @@
+{
+  "schemaVersion": 1,
+  "assessedAtUTC": "2026-11-12T13:03:02.384477+00:00",
+  "classification": "Exploratory emulated Linux x86_64 red diagnostic; not native Linux x64 qualification or a passing test",
+  "finding": {
+    "owner": "Transport loopback peer teardown",
+    "waitOwnerPID": 5709,
+    "waitOwnerLLDBThreadIndex": 3,
+    "waitSite": "LocalPeer.stop() -> Foundation.Process.waitUntilExit()",
+    "cause": "The Python peer inherited a signal mask blocking SIGTERM. The owner requested SIGTERM; the signal remained pending and blocked, so waitUntilExit did not finish.",
+    "syntheticCommandAttribution": "This focused reproduction selects the transport chunk-control test, and its blocked stack belongs to transport peer teardown. It does not demonstrate a synthetic command handler, router, responder, or statistics hang."
+  },
+  "scope": {
+    "arguments": [
+      "/scratch/x86_64-unknown-linux-gnu/debug/DiscordKitLoadTestsPackageTests.xctest",
+      "--testing-library",
+      "swift-testing",
+      "--no-parallel",
+      "--filter",
+      "DiscordKitLoadTestsTests.TransportTimingRunnerTests/nativeChunkControlsCloseOwnedResources"
+    ],
+    "baselineExecutable": "Already-compiled baseline executable; source tests modified by root were not rebuilt for this diagnostic",
+    "selectedFirstCase": "transport.body64KiBChunk257V1",
+    "driverStartUTC": "2026-11-12T12:59:03.440726+00:00",
+    "driverElapsedSeconds": 13.581,
+    "driverLimitSeconds": 90,
+    "asyncRunBeforeInterruptSeconds": 10,
+    "deliberatelyInterrupted": true,
+    "testExitCode": -9,
+    "debuggerExitCode": 0,
+    "debuggerReceiptStatusMeaning": "The debugger command returned zero. The deliberately killed test did not pass.",
+    "debuggerStartUTC": "2026-11-12T12:59:04.586801+00:00",
+    "debuggerEndUTC": "2026-11-12T12:59:16.995727+00:00",
+    "debuggerElapsedSeconds": 12.409,
+    "focusedExploratoryTestAttemptsInThisDriver": 1
+  },
+  "peerIdentity": {
+    "pid": 5735,
+    "name": "python3",
+    "parentPID": 5709,
+    "processGroup": 5735,
+    "sessionID": 5709,
+    "startTicks": 7545280
+  },
+  "signalEvidence": {
+    "signal": "SIGTERM",
+    "signalNumber": 15,
+    "signalMaskBitHex": "0x4000",
+    "SigBlk": "fffffffe3bfbea27",
+    "SIGTERMBlockedInEveryPeerObservation": true,
+    "peerObservationCount": 21,
+    "firstPeerObservation": {
+      "secondsAfterDriverStart": 3.157,
+      "approximateUTC": "2026-11-12T12:59:06.597726+00:00",
+      "signalState": {
+        "SigPnd": "0000000000000000",
+        "ShdPnd": "0000000000000000",
+        "SigBlk": "fffffffe3bfbea27",
+        "SigIgn": "0000000081001000",
+        "SigCgt": "0000000100004412",
+        "Threads": "2"
+      }
+    },
+    "firstPendingSIGTERMObservation": {
+      "secondsAfterDriverStart": 3.659,
+      "approximateUTC": "2026-11-12T12:59:07.099726+00:00",
+      "signalState": {
+        "SigPnd": "0000000000000000",
+        "ShdPnd": "0000000000004000",
+        "SigBlk": "fffffffe3bfbea27",
+        "SigIgn": "0000000081001000",
+        "SigCgt": "0000000100004412",
+        "Threads": "1"
+      }
+    },
+    "lastPeerObservation": {
+      "secondsAfterDriverStart": 13.259,
+      "approximateUTC": "2026-11-12T12:59:16.699726+00:00",
+      "signalState": {
+        "SigPnd": "0000000000000000",
+        "ShdPnd": "0000000000004000",
+        "SigBlk": "fffffffe3bfbea27",
+        "SigIgn": "0000000081001000",
+        "SigCgt": "0000000100004412",
+        "Threads": "1"
+      }
+    },
+    "observedPendingAndBlockedDurationSeconds": 9.6,
+    "interpretation": "Linux /proc signal masks use bit signalNumber-1. Both SigBlk and ShdPnd contain 0x4000, while SigPnd is zero. SIGTERM is pending at process level and blocked for delivery.",
+    "timestampPrecision": "UTC observation times are derived from the driver wall-clock start plus rounded monotonic offsets; snapshot offsets are authoritative."
+  },
+  "swiftStack": {
+    "artifact": "red-transport-debugger.log",
+    "firstNonblankStackLineOneIndexed": 159,
+    "frames": [
+      {
+        "frame": 5,
+        "module": "libFoundation.so",
+        "symbol": "partial apply forwarder for closure #2 () -> () in Foundation.Process.waitUntilExit() -> ()"
+      },
+      {
+        "frame": 6,
+        "module": "libFoundation.so",
+        "symbol": "waitUntilExit"
+      },
+      {
+        "frame": 7,
+        "module": "DiscordKitLoadTestsPackageTests.xctest",
+        "symbol": "LocalPeer.stop()"
+      },
+      {
+        "frame": 8,
+        "module": "DiscordKitLoadTestsPackageTests.xctest",
+        "symbol": "TimingLocalPeer.stop()"
+      },
+      {
+        "frame": 9,
+        "module": "DiscordKitLoadTestsPackageTests.xctest",
+        "symbol": "TransportTimingNativeSuite.run(adapter:scenario:requests:concurrency:warmupRequests:connectionMode:tls:maxWarmupDuration:maxMeasuredDuration:)"
+      },
+      {
+        "frame": 10,
+        "module": "DiscordKitLoadTestsPackageTests.xctest",
+        "symbol": "TransportTimingRunnerTests.nativeChunkControlsCloseOwnedResources(scenario:)"
+      }
+    ],
+    "allThreadBacktracesRetained": true,
+    "meaningfulSwiftFrames": true,
+    "otherThreads": "libdispatch signal/event loop; Foundation Process setup run loop; CF socket manager"
+  },
+  "diagnosticIsolation": {
+    "remoteDebugEnvironment": "ROSETTA_DEBUGSERVER_PORT applied only to the final test executable. At its initial ELF stop, one byte of that environment key was renamed to _OSETTA_DEBUGSERVER_PORT; envp/auxv pointers stayed unchanged and no inferior function was evaluated.",
+    "peerOriginalRemoteDebugVariablePresentInAnyObservation": false,
+    "peerRenamedDiagnosticVariablePresentInEveryObservation": true,
+    "stackModuleAddresses": "x86_64 ELF module paths and load addresses loaded from the owned test process maps before backtrace",
+    "limitations": "Rosetta remote debugging and module reconstruction are exploratory. Ordinary ptrace probes produced unusable register stacks. No hosted or native x64 validation is implied."
+  },
+  "cleanup": {
+    "testAndAdoptedChildren": {
+      "signals": [
+        {
+          "pid": 5735,
+          "startTicks": 7545280,
+          "signal": "SIGKILL"
+        }
+      ],
+      "testReaped": true,
+      "testExitCode": -9,
+      "adoptedChildrenReaped": [
+        {
+          "pid": 5710,
+          "waitStatus": 0
+        },
+        {
+          "pid": 5735,
+          "waitStatus": 9
+        }
+      ],
+      "remainingOwnedProcesses": []
+    },
+    "debugger": {
+      "pid": 5712,
+      "group": 5712,
+      "parentReaped": true,
+      "groupState": "gone",
+      "remainingProcesses": [],
+      "readerThreads": 0
+    },
+    "ownership": "Signals were limited to the admitted test/debugger ownership and the observed peer PID plus start identity. A child subreaper reaped the adopted Rosetta/peer children.",
+    "remainingOwnedRunProcesses": [],
+    "priorCapabilityZombieCaveat": "An earlier sacrificial capability probe left killed zombie PID 5283 under container PID 1, recorded in rosetta-remote-capability.json. It is outside this focused run; container removal clears it."
+  },
+  "ownedPriorCore": {
+    "bytes": 412413952,
+    "mtimeUnix": 1794487900.0005372,
+    "sha256": "b7c4415cb4f03fc3b7dafcdb981455df206a12ab0dfa2639d746e0ade99eff05",
+    "elfHeaderHex": "7f454c460201010000000000000000000400b700",
+    "ownerEvidence": "Earlier unsupported unsetenv remote experiment; rosetta-remote-unsetenv-capability.json",
+    "removed": true,
+    "mtimeUTC": "2026-11-12T12:51:40.000537+00:00",
+    "classification": "Owned debugger-capability failure during unsupported unsetenv expression evaluation; not a product-test crash",
+    "postRemovalHostRootCoreMatches": []
+  },
+  "originalPeer": {
+    "path": "Tools/DiscordKitLoadTests/scripts/local_peer.py",
+    "baseCommit": "07cdea35d6f9ad384bfb42a3005940ca69e76922",
+    "gitBlob": "d5a50bbdccf7530dc43680534bae0f639106effa",
+    "sha256": "9d979f6c264adcfee8008a1dfbc24c1190da7696957d6dbb33fc158f8bfac6cd",
+    "hashProvenance": "Original source bytes reconstructed from the unchanged phase-2 base revision after the diagnostic; root applied the four-line repair only after completion."
+  },
+  "repairReadOnlyReview": {
+    "reviewedAtUTC": "2026-11-12T13:03:02.395808+00:00",
+    "path": "Tools/DiscordKitLoadTests/scripts/local_peer.py",
+    "reviewedSha256": "455490eaa14245035b0f72cf9398a4d650e78430e156e07c5467651d9cecdefa",
+    "finding": "No blocking findings",
+    "ordering": "Installs the existing SIGTERM handler, conditionally unblocks only SIGTERM via pthread_sigmask, then publishes readiness. Other inherited masks stay unchanged.",
+    "regressionScope": "Masked and unmasked single-threaded exec launchers; bounded startup/read/termination; exact 65536-byte payload and final metrics; graceful exit before forced cleanup; child reaping and listener closure.",
+    "validationBoundary": "This is a code review. Root owns the subsequent green build/test attempt; this subagent ran no further native tests."
+  },
+  "artifacts": {
+    "red-transport-remote.json": {
+      "bytes": 52201,
+      "sha256": "0681960836a622ba6fd2793c7cde59550e99071947cd84ca2914aa1ac61e4ed2"
+    },
+    "red-transport-debugger.log": {
+      "bytes": 29917,
+      "sha256": "5cce5153d94b833d754d12adafdce2df080b32682eec844b2d8df2cf0f23469e"
+    },
+    "red-transport-debugger.receipt.json": {
+      "bytes": 5582,
+      "sha256": "5f55d27125ab95234d41663a16c2a3adac355e82729b8db77a2549fc58f481b0"
+    },
+    "red-transport-test.log": {
+      "bytes": 526,
+      "sha256": "20c59c40d27db877321ad1cd900432647e558ecccfb487b1fe61f8644e184885"
+    },
+    "remote_transport_diagnosis.py": {
+      "bytes": 10392,
+      "sha256": "d9b76a06256059b776cb9596b496b56d2c62d85969faa865d2e2c7063f0276ac"
+    }
+  }
+}

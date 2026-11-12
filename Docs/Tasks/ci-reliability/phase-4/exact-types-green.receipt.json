@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "name": "phase4-exact-types-green",
+  "stage": "phase4",
+  "operation": "localHelperCheck",
+  "arguments": [
+    "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+    "-m",
+    "unittest",
+    "test_native_jobs.NativeArtifactTests.test_final_compatibility_change_fails_after_successful_restored_tests",
+    "test_native_jobs.NativeArtifactTests.test_compilation_rejects_required_runtime_type_drift_before_sealing"
+  ],
+  "start": "2026-11-12T13:56:06.812503+00:00",
+  "startMonotonic": 349774.206823458,
+  "deadlineMonotonic": 349834.206823458,
+  "executionLimitSeconds": 60,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "operation",
+  "paths": {
+    "output": "/Users/carsonrau/Developer/DiscordKit-ci-phase4/Docs/Tasks/ci-reliability/phase-4/exact-types-green.log",
+    "stdout": null,
+    "diagnostics": "/Users/carsonrau/Developer/DiscordKit-ci-phase4/Docs/Tasks/ci-reliability/phase-4/exact-types-green.diagnostics.jsonl",
+    "receipt": "/Users/carsonrau/Developer/DiscordKit-ci-phase4/Docs/Tasks/ci-reliability/phase-4/exact-types-green.receipt.json"
+  },
+  "identity": {
+    "executionID": "6298d31c-b649-4393-8076-79a6b9c4dda2",
+    "supervisorPID": 62704,
+    "host": "Pokemon-GO-Plus",
+    "system": "Darwin",
+    "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase4/Tools/ci"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 62715,
+  "group": 62715,
+  "cleanup": {
+    "status": "group-signalled",
+    "signals": [],
+    "parentReaped": true,
+    "allowanceSeconds": 8.0,
+    "seconds": 0.004,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "verificationMalformedRows": 0,
+    "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "/Users/carsonrau/Developer/DiscordKit-ci-phase4/Docs/Tasks/ci-reliability/phase-4/exact-types-green.log",
+      "retainedBytes": 387,
+      "observedBytes": 387,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T13:56:06.937537+00:00",
+  "endMonotonic": 349774.331896833,
+  "elapsedSeconds": 0.125,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}

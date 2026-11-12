@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "status": "failed",
+  "name": "term-ignoring",
+  "stage": "phase-1-fault-injection",
+  "operation": "fixture",
+  "arguments": [
+    "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+    "-c",
+    "import signal,time; signal.signal(signal.SIGTERM, signal.SIG_IGN); print('ready',flush=True); time.sleep(60)"
+  ],
+  "start": "2026-11-12T04:57:23.399376+00:00",
+  "startMonotonic": 317450.911774375,
+  "deadlineMonotonic": 317451.611774375,
+  "executionLimitSeconds": 0.7,
+  "cleanupAllowanceSeconds": 8.0,
+  "paths": {
+    "output": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/Docs/Tasks/ci-reliability/phase-1/faults/term-ignoring.log",
+    "stdout": null,
+    "diagnostics": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/Docs/Tasks/ci-reliability/phase-1/faults/term-ignoring.diagnostics.jsonl",
+    "receipt": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/Docs/Tasks/ci-reliability/phase-1/faults/term-ignoring.receipt.json"
+  },
+  "identity": {
+    "executionID": "d7d88b98-e6a1-4ea8-924d-c9912f0fe1a7",
+    "supervisorPID": 54297,
+    "host": "Pokemon-GO-Plus",
+    "system": "Darwin",
+    "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase1"
+  },
+  "exitCode": -9,
+  "signal": 9,
+  "timeoutCategory": "execution",
+  "pid": 54368,
+  "group": 54368,
+  "error": "Command '('/Library/Frameworks/Python.framework/Versions/3.14/bin/python3', '-c', \"import signal,time; signal.signal(signal.SIGTERM, signal.SIG_IGN); print('ready',flush=True); time.sleep(60)\")' timed out after 0.7 seconds",
+  "errorType": "TimeoutExpired",
+  "cleanup": {
+    "status": "group-signalled",
+    "signals": [
+      "SIGTERM",
+      "SIGKILL"
+    ],
+    "parentReaped": true,
+    "allowanceSeconds": 8.0,
+    "seconds": 5.005,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/Docs/Tasks/ci-reliability/phase-1/faults/term-ignoring.log",
+      "retainedBytes": 191,
+      "observedBytes": 191,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T04:57:29.105678+00:00",
+  "endMonotonic": 317456.61806775,
+  "elapsedSeconds": 5.706,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}

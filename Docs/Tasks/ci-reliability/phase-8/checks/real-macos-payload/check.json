@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "functions": [
+    "native_provisioning.prepare",
+    "native_provisioning.verify_distribution"
+  ],
+  "fixture": {
+    "ImageOS": "local-macos-verification",
+    "ImageVersion": "20261112",
+    "purpose": "Explicit local fixture values permit cache-key construction without impersonating a hosted image. Xcode and SDK commands query the real local host."
+  },
+  "payload": {
+    "url": "https://download.swift.org/swift-6.4.1-release/xcode/swift-6.4.1-RELEASE/swift-6.4.1-RELEASE-osx.pkg",
+    "sha256": "c34e7e5fb0be4bcd61decfd40db1766434d8952d68e37aed90bcff4e8547951c",
+    "bytes": 1590804750,
+    "staging": "A hard link placed the complete authenticated upstream package into the exact strict cache-file layout; no hosted cache service was contacted."
+  },
+  "sourceSHA256": {
+    "Tools/ci/native_provisioning.py": "69fa1f7c7da8b753bcb9d61f494a5b1140bfa7801bd1aad3ad04001bf06c1e89",
+    "Tools/ci/linux_ci.py": "b7fa3276af21b2083629c612bedc07b75a2b06e722cfcd9fb6bce474de1a6fe1",
+    "Tools/ci/provisioning-policy.v1.json": "8406fdf84def5a1bd8c3cb225dba2d5c1321eff676acf81956fa546126c6ffff"
+  },
+  "result": {
+    "method": "apple-package",
+    "signer": "Developer ID Installer: Swift Open Source (V9AUD2URP3)",
+    "signatureVerified": true,
+    "sha256": "c34e7e5fb0be4bcd61decfd40db1766434d8952d68e37aed90bcff4e8547951c"
+  },
+  "elapsedSeconds": 1.562,
+  "scope": [
+    "No compiler installation or installed compiler execution occurred.",
+    "No hosted cache restore, save, or timing was qualified.",
+    "All subprocess calls used the production bounded command supervisor."
+  ],
+  "retainedEvidence": "command-logs"
+}

@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "status": "verified-implementation-git-blobs",
+  "implementationCommit": "d9e006de6a2dbcdf507cec852f51e2dece343937",
+  "phase": 11,
+  "phaseCompletion": "pending-hosted-acceptance",
+  "testedInputCount": 14,
+  "inputSHA256": {
+    ".github/workflows/ci.yml": "825270015a01637eb85cb45ed6bfdc66a43bf5b5174389edc4bf1350dde08257",
+    ".github/workflows/native-platform.yml": "6ec081519c86f75296ef53acbcf09e3b4bda8af7a4bb64370613a68a03bf5af8",
+    "Tools/ci/qualification_evidence.py": "1eba578d5ae19a6b1a54a8c982db5f9b92a2b834de4e02cd591df7ea1320cbc9",
+    "Tools/ci/qualification_fault.py": "be9a6a5151df1361f18b4941e521fa670c52578eabdcbcb2e2812a6fe90b487b",
+    "Tools/ci/spend_admission.py": "85ca922d879c44162a92ce580836d1948bc664e10746a2e4aec4caa886c7f1a4",
+    "Tools/ci/test_artifact_workflows.py": "14329a45cf712920b8cea5b198299ca4987f5d795714a72f52ccb31c3f618bb2",
+    "Tools/ci/test_qualification_evidence.py": "50bb4a1d4f634d38a077eba0029dddafa0744e2febf5894d01299ae478f3a9f6",
+    "Tools/ci/test_qualification_fault.py": "4517e77dbee69d780b72bf6e01bc9defa1b8e5b6e2c5214ed8a1b14f542db191",
+    "Tools/ci/test_spend_admission.py": "a07cc65fe1a09da2e2c8d3ce67476e4f77cfa776fa9d357534ddb3b5843a8fd6",
+    "Tools/ci/test_workflow_scope.py": "5d2b76288fbe1c32ddb309447870009b17576377e6aa3f0c2b9a8f7e7f27002f",
+    "Tools/ci/workflow_scope.py": "0505084b7da8a574b69f2b9e5c72de9cd13ad22f5f08bc1e500a6e04eb2f66ef",
+    "Tools/ci/admission.v1.json": "fc9d35b18677b8b81039dbd436e4c0330c5686f29913e53ae5e50a6c577d23e3",
+    "Tools/ci/rollout.v1.json": "52c0ec7d503d8dc5602e97be6e082347f586ceb0e07df3a1c3c5a384acf70fe2",
+    "Docs/Tasks/ci-reliability/phase-11/checks/prepare_plans.py": "d245cca64f70c2788b4611d7f148b6acf8e6aae9738211a5ed74aa6200d7a6d8"
+  },
+  "manifestArtifactCount": 71,
+  "manifestSHA256": "ddb302ad5bc77b55900e7acf280e5ba5a74802c0f54f1824e83f7be1609e3a3a",
+  "allManifestGitBlobsVerified": true,
+  "workingInputBytesUnchanged": true,
+  "completionFollowup": "Documentation and this commit receipt only; no executable/test/workflow input changed.",
+  "nativeQualificationEstablished": false,
+  "hostedQualificationEstablished": false
+}

@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "name": "documentation-final",
+  "stage": "phase9",
+  "operation": "localHelperCheck",
+  "arguments": [
+    "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "Tools/ci",
+    "-p",
+    "test_documentation*.py"
+  ],
+  "start": "2026-11-12T15:54:30.500231+00:00",
+  "startMonotonic": 356877.835118083,
+  "deadlineMonotonic": 357177.835118083,
+  "executionLimitSeconds": 300,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "operation",
+  "paths": {
+    "output": "Docs/Tasks/ci-reliability/phase-9/checks/documentation-final.log",
+    "stdout": null,
+    "diagnostics": "Docs/Tasks/ci-reliability/phase-9/checks/documentation-final.diagnostics.jsonl",
+    "receipt": "Docs/Tasks/ci-reliability/phase-9/checks/documentation-final.receipt.json"
+  },
+  "identity": {
+    "executionID": "55f27711-8151-4451-a502-c0845a6271f9",
+    "supervisorPID": 54889,
+    "host": "Pokemon-GO-Plus",
+    "system": "Darwin",
+    "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase9"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 54905,
+  "group": 54905,
+  "cleanup": {
+    "status": "group-signalled",
+    "signals": [],
+    "parentReaped": true,
+    "allowanceSeconds": 8.0,
+    "seconds": 0.004,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "verificationMalformedRows": 0,
+    "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "Docs/Tasks/ci-reliability/phase-9/checks/documentation-final.log",
+      "retainedBytes": 1571,
+      "observedBytes": 1571,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T15:54:31.035540+00:00",
+  "endMonotonic": 356878.370458416,
+  "elapsedSeconds": 0.535,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}

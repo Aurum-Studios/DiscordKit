@@ -1,0 +1,240 @@
+{
+  "schema_version": 1,
+  "source_revision": "85eac6f3c1d3b17e53596c49e7438efee366c1b3",
+  "scope": "Hosted observations; the runner's pre-setup default Swift is distinct from installed validation Swift.",
+  "observed": {
+    "linux": {
+      "runner_group": "linux-x64-8",
+      "image": "ubuntu-24.04",
+      "architecture": "x86_64",
+      "validation_swift": "6.4.1",
+      "pre_setup_swift": "6.4.2",
+      "target": "x86_64-unknown-linux-gnu"
+    },
+    "macos": {
+      "runner_group": "macos-26-5",
+      "image": "macos-26-arm64",
+      "architecture": "arm64",
+      "validation_swift": "6.4.1",
+      "pre_setup_swift": "6.3.3",
+      "target": "arm64-apple-macosx26.0"
+    }
+  },
+  "evidence_lines": [
+    {
+      "job_id": 130951994277,
+      "line_1_based": 19,
+      "text": "2026-11-12T03:33:05.5352350Z Image: macos-26-arm64"
+    },
+    {
+      "job_id": 130951994277,
+      "line_1_based": 22,
+      "text": "2026-11-12T03:33:05.5354390Z Image Release: https://github.com/actions/runner-images/releases/tag/macos-26-arm64%2F20261102.0473"
+    },
+    {
+      "job_id": 130951994277,
+      "line_1_based": 204,
+      "text": "2026-11-12T03:33:11.6387210Z   skip-verify-signature: false"
+    },
+    {
+      "job_id": 130951994277,
+      "line_1_based": 215,
+      "text": "2026-11-12T03:33:13.5794780Z swift-driver version: 1.148.6 Apple Swift version 6.3.3 (swiftlang-6.3.3.1.3 clang-2100.1.1.101)"
+    },
+    {
+      "job_id": 130951994277,
+      "line_1_based": 216,
+      "text": "2026-11-12T03:33:13.5795190Z Target: arm64-apple-macosx26.0"
+    },
+    {
+      "job_id": 130951994277,
+      "line_1_based": 355,
+      "text": "2026-11-12T03:34:14.5403810Z Apple Swift version 6.4.1 (swift-6.4.1-RELEASE)"
+    },
+    {
+      "job_id": 130951994277,
+      "line_1_based": 356,
+      "text": "2026-11-12T03:34:14.5404190Z Target: arm64-apple-macosx26.0"
+    },
+    {
+      "job_id": 130951994277,
+      "line_1_based": 365,
+      "text": "2026-11-12T03:34:14.5579100Z   node-version: 24"
+    },
+    {
+      "job_id": 130951994277,
+      "line_1_based": 542,
+      "text": "2026-11-12T03:36:36.6746730Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: swift-actions/setup-swift@v3. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/"
+    },
+    {
+      "job_id": 130952646908,
+      "line_1_based": 19,
+      "text": "2026-11-12T03:32:21.0694216Z Image: ubuntu-24.04"
+    },
+    {
+      "job_id": 130952646908,
+      "line_1_based": 22,
+      "text": "2026-11-12T03:32:21.0698270Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261101.360"
+    },
+    {
+      "job_id": 130952646908,
+      "line_1_based": 244,
+      "text": "2026-11-12T03:32:32.1710682Z binutils is already the newest version (2.42-4ubuntu2.10)."
+    },
+    {
+      "job_id": 130952646908,
+      "line_1_based": 245,
+      "text": "2026-11-12T03:32:32.1711183Z curl is already the newest version (8.5.0-2ubuntu10.16)."
+    },
+    {
+      "job_id": 130952646908,
+      "line_1_based": 246,
+      "text": "2026-11-12T03:32:32.1711607Z git is already the newest version (1:2.56.0-0ppa1~ubuntu24.04.2)."
+    },
+    {
+      "job_id": 130952646908,
+      "line_1_based": 248,
+      "text": "2026-11-12T03:32:32.1712311Z gnupg2 is already the newest version (2.4.4-2ubuntu17.6)."
+    },
+    {
+      "job_id": 130952646908,
+      "line_1_based": 249,
+      "text": "2026-11-12T03:32:32.1712745Z libc6-dev is already the newest version (2.39-0ubuntu8.9)."
+    },
+    {
+      "job_id": 130952646908,
+      "line_1_based": 251,
+      "text": "2026-11-12T03:32:32.1713457Z libedit2 is already the newest version (3.1-20230828-1build1)."
+    },
+    {
+      "job_id": 130952646908,
+      "line_1_based": 253,
+      "text": "2026-11-12T03:32:32.1714183Z libgcc-13-dev is already the newest version (13.3.0-6ubuntu2~24.04.1)."
+    },
+    {
+      "job_id": 130952646908,
+      "line_1_based": 255,
+      "text": "2026-11-12T03:32:32.1714948Z libncurses-dev is already the newest version (6.4+20240113-1ubuntu2.2)."
+    },
+    {
+      "job_id": 130952646908,
+      "line_1_based": 257,
+      "text": "2026-11-12T03:32:32.1716466Z libpython3-dev is already the newest version (3.12.3-0ubuntu2.1)."
+    },
+    {
+      "job_id": 130952646908,
+      "line_1_based": 259,
+      "text": "2026-11-12T03:32:32.1717200Z libstdc++-13-dev is already the newest version (13.3.0-6ubuntu2~24.04.1)."
+    },
+    {
+      "job_id": 130952646908,
+      "line_1_based": 261,
+      "text": "2026-11-12T03:32:32.1717986Z libxml2-dev is already the newest version (2.9.14+dfsg-1.3ubuntu3.10)."
+    },
+    {
+      "job_id": 130952646908,
+      "line_1_based": 263,
+      "text": "2026-11-12T03:32:32.1718684Z libz3-dev is already the newest version (4.8.12-3.1build1)."
+    },
+    {
+      "job_id": 130952646908,
+      "line_1_based": 265,
+      "text": "2026-11-12T03:32:32.1719346Z pkg-config is already the newest version (1.8.1-2build1)."
+    },
+    {
+      "job_id": 130952646908,
+      "line_1_based": 266,
+      "text": "2026-11-12T03:32:32.1719728Z python3 is already the newest version (3.12.3-0ubuntu2.1)."
+    },
+    {
+      "job_id": 130952646908,
+      "line_1_based": 267,
+      "text": "2026-11-12T03:32:32.1720120Z tzdata is already the newest version (2026e-0ubuntu0.24.04.1)."
+    },
+    {
+      "job_id": 130952646908,
+      "line_1_based": 268,
+      "text": "2026-11-12T03:32:32.1720508Z unzip is already the newest version (6.0-28ubuntu4.1)."
+    },
+    {
+      "job_id": 130952646908,
+      "line_1_based": 269,
+      "text": "2026-11-12T03:32:32.1720922Z zlib1g-dev is already the newest version (1:1.3.dfsg-3.1ubuntu2.3)."
+    },
+    {
+      "job_id": 130952646908,
+      "line_1_based": 327,
+      "text": "2026-11-12T03:32:36.1267770Z Setting up libsqlite3-0:amd64 (3.45.1-1ubuntu2.9) ..."
+    },
+    {
+      "job_id": 130952646908,
+      "line_1_based": 328,
+      "text": "2026-11-12T03:32:36.1286231Z Setting up ca-certificates (20260816ubuntu0.24.04.2) ..."
+    },
+    {
+      "job_id": 130952646908,
+      "line_1_based": 334,
+      "text": "2026-11-12T03:32:38.3561731Z Setting up libsqlite3-dev:amd64 (3.45.1-1ubuntu2.9) ..."
+    },
+    {
+      "job_id": 130952646908,
+      "line_1_based": 335,
+      "text": "2026-11-12T03:32:38.3576558Z Setting up libcurl4-openssl-dev:amd64 (8.5.0-2ubuntu10.16) ..."
+    },
+    {
+      "job_id": 130952646908,
+      "line_1_based": 336,
+      "text": "2026-11-12T03:32:38.3591581Z Setting up clang (1:18.0-59~exp2) ..."
+    },
+    {
+      "job_id": 130952646908,
+      "line_1_based": 337,
+      "text": "2026-11-12T03:32:38.3826247Z Setting up sqlite3 (3.45.1-1ubuntu2.9) ..."
+    },
+    {
+      "job_id": 130952646908,
+      "line_1_based": 401,
+      "text": "2026-11-12T03:32:40.5716844Z   skip-verify-signature: false"
+    },
+    {
+      "job_id": 130952646908,
+      "line_1_based": 413,
+      "text": "2026-11-12T03:32:48.5079479Z Swift version 6.4.2 (swift-6.4.2-RELEASE)"
+    },
+    {
+      "job_id": 130952646908,
+      "line_1_based": 414,
+      "text": "2026-11-12T03:32:48.5079930Z Target: x86_64-unknown-linux-gnu"
+    },
+    {
+      "job_id": 130952646908,
+      "line_1_based": 427,
+      "text": "2026-11-12T03:32:50.8757042Z libcurl4-openssl-dev is already the newest version (8.5.0-2ubuntu10.16)."
+    },
+    {
+      "job_id": 130952646908,
+      "line_1_based": 488,
+      "text": "2026-11-12T03:33:12.8958508Z Swift version 6.4.1 (swift-6.4.1-RELEASE)"
+    },
+    {
+      "job_id": 130952646908,
+      "line_1_based": 489,
+      "text": "2026-11-12T03:33:12.8959028Z Target: x86_64-unknown-linux-gnu"
+    },
+    {
+      "job_id": 130952646908,
+      "line_1_based": 498,
+      "text": "2026-11-12T03:33:12.9174472Z   node-version: 24"
+    },
+    {
+      "job_id": 130952646908,
+      "line_1_based": 3374,
+      "text": "2026-11-12T03:59:23.2601703Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: swift-actions/setup-swift@v3. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/"
+    }
+  ],
+  "gaps": [
+    "These logs are not a complete dpkg inventory or SDK fingerprint.",
+    "Committed dependency pins are captured independently in source-facts.json; no package resolution was performed.",
+    "No local environment is presented as native Linux x64 acceptance."
+  ]
+}

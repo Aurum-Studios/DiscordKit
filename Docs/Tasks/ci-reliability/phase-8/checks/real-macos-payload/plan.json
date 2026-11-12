@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "platform": "macos-arm64",
+  "root": "/private/var/folders/3j/5mxmxjxn1z98m1c1y32z64zh0000gn/T/discordkit-phase8-authenticated-payload-5c1523ev/state",
+  "receiptPath": "/private/var/folders/3j/5mxmxjxn1z98m1c1y32z64zh0000gn/T/discordkit-phase8-authenticated-payload-5c1523ev/state/evidence/provisioning.json",
+  "startedEpoch": 1794497776.857192,
+  "startedAt": "2026-11-12T15:36:16.857195+00:00",
+  "allowanceSeconds": 600,
+  "policySHA256": "5784eb1937723ddb710a64b3d06cf6f4fbd9b7fa13cd800123ed690ee7c05186",
+  "cachePath": "/private/var/folders/3j/5mxmxjxn1z98m1c1y32z64zh0000gn/T/discordkit-phase8-authenticated-payload-5c1523ev/state/distribution",
+  "cacheEnabled": true,
+  "cacheSaveAllowed": false,
+  "image": {
+    "system": "Darwin",
+    "architecture": "arm64",
+    "release": "27.0.0",
+    "version": "Darwin Kernel Version 27.0.0: Tue Aug 11 21:05:42 PDT 2026; root:xnu-13432.1.9~1/RELEASE_ARM64_T6031",
+    "imageOS": "local-macos-verification",
+    "imageVersion": "20261112",
+    "xcode": {
+      "developerDirectory": "/Applications/Xcode.app/Contents/Developer",
+      "version": "Xcode 27.1\nBuild version 27A9275",
+      "sdkPath": "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX27.0.sdk",
+      "sdkVersion": "27.0",
+      "sdkBuildVersion": "26A425",
+      "sdkRootOverride": null,
+      "developerDirectoryOverride": null
+    }
+  },
+  "cacheKey": "discordkit-swift-v1-macos-arm64-92a17a071db86f91f9e0c6226045b9ac83d9b68c4ca731ffa6cb0281b38ad6e2"
+}

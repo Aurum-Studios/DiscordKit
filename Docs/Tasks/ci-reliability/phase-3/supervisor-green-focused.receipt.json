@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "name": "supervisor-separate-pgid-green",
+  "stage": "phase-3-supervisor-regression",
+  "operation": "localHelperCheck",
+  "arguments": [
+    "/usr/bin/python3",
+    "-m",
+    "unittest",
+    "test_linux_ci.LinuxSessionTests"
+  ],
+  "start": "2026-11-12T13:00:55.883325+00:00",
+  "startMonotonic": 75562.341347247,
+  "deadlineMonotonic": 75592.341347247,
+  "executionLimitSeconds": 30,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "operation",
+  "paths": {
+    "output": "/work/Docs/Tasks/ci-reliability/phase-3/supervisor-green-focused.log",
+    "stdout": null,
+    "diagnostics": "/work/Docs/Tasks/ci-reliability/phase-3/supervisor-green-focused.diagnostics.jsonl",
+    "receipt": "/work/Docs/Tasks/ci-reliability/phase-3/supervisor-green-focused.receipt.json"
+  },
+  "identity": {
+    "executionID": "4407039a-3e2b-4ffc-9669-e966ff387107",
+    "supervisorPID": 5979,
+    "host": "213b31596900",
+    "system": "Linux",
+    "repository": "/work"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 5985,
+  "group": 5985,
+  "cleanup": {
+    "status": "session-signalled",
+    "signals": [],
+    "groupSignals": [],
+    "parentReaped": true,
+    "session": 5985,
+    "allowanceSeconds": 8.0,
+    "discovery": {
+      "status": "available",
+      "truncated": false
+    },
+    "groups": [
+      5985
+    ],
+    "seconds": 0.082,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "boundary": "admitted Linux session; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "/work/Docs/Tasks/ci-reliability/phase-3/supervisor-green-focused.log",
+      "retainedBytes": 163,
+      "observedBytes": 163,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T13:01:00.041857+00:00",
+  "endMonotonic": 75566.500066484,
+  "elapsedSeconds": 4.159,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}

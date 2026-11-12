@@ -5,9 +5,18 @@
 
 """Deterministic HTTP framing and validation checks for the local load peer."""
 import http.client
+import errno
+import json
+import os
 from pathlib import Path
+import selectors
+import signal
+import socket
 import ssl
+import subprocess
+import sys
 import threading
+import time
 import unittest
 from local_peer import make_server
 
@@ -136,6 +145,89 @@ class LocalPeerTests(unittest.TestCase):
             make_server(256, "unknown")
         with self.assertRaises(ValueError):
             make_server(256, tls_cert="certificate-only")
+
+
+@unittest.skipUnless(os.name == "posix" and hasattr(signal, "pthread_sigmask"),
+                     "signal-mask inheritance requires POSIX pthread_sigmask")
+class LocalPeerShutdownTests(unittest.TestCase):
+    """The CLI owns graceful SIGTERM shutdown even when its parent masks that signal."""
+
+    def test_cli_sigterm_shutdown(self):
+        """Ordinary startup returns one exact metrics receipt and closes its listener."""
+        self.assert_cli_shutdown(blocked_sigterm=False)
+
+    def test_cli_sigterm_shutdown_with_inherited_blocked_signal(self):
+        """A masked parent cannot leave the peer alive after the harness requests shutdown."""
+        self.assert_cli_shutdown(blocked_sigterm=True)
+
+    def assert_cli_shutdown(self, *, blocked_sigterm):
+        """Exec through a single-threaded launcher; never alter the test runner's signal mask."""
+        launcher = (
+            "import os, signal, sys\n"
+            "mask = {signal.SIGTERM} if sys.argv[1] == 'blocked' else set()\n"
+            "signal.pthread_sigmask(signal.SIG_SETMASK, mask)\n"
+            "os.execv(sys.executable, [sys.executable, *sys.argv[2:]])\n"
+        )
+        arguments = [sys.executable, "-c", launcher, "blocked" if blocked_sigterm else "unblocked",
+                     str(Path(__file__).with_name("local_peer.py")), "--payload-bytes", "65536",
+                     "--timing-case", "transport.body64KiBChunk257V1"]
+        peer = subprocess.Popen(arguments, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
+        port = None
+        forced_kill = False
+        terminated_before_cleanup = False
+        try:
+            # Read the startup line with a real deadline rather than a blocking readline.
+            announcement = b""
+            deadline = time.monotonic() + 5
+            with selectors.DefaultSelector() as selector:
+                selector.register(peer.stdout, selectors.EVENT_READ)
+                while b"\n" not in announcement:
+                    self.assertTrue(selector.select(max(0, deadline - time.monotonic())),
+                                    "peer did not announce its port within five seconds")
+                    chunk = os.read(peer.stdout.fileno(), 64)
+                    self.assertTrue(chunk, "peer exited before announcing its port")
+                    announcement += chunk
+                    self.assertLessEqual(len(announcement), 64, "unexpected startup output")
+            self.assertEqual(len(announcement.splitlines()), 1)
+            port = int(announcement.strip())
+            self.assertTrue(1 <= port <= 65535)
+
+            connection = http.client.HTTPConnection("127.0.0.1", port, timeout=3)
+            try:
+                connection.request("GET", "/payload", headers={"Connection": "close"})
+                response = connection.getresponse()
+                self.assertEqual(response.status, 200)
+                self.assertEqual(response.read(), b"x" * 65536)
+            finally:
+                connection.close()
+
+            peer.terminate()
+            try:
+                output, errors = peer.communicate(timeout=3)
+                terminated_before_cleanup = True
+            except subprocess.TimeoutExpired:
+                self.fail("peer remained alive three seconds after SIGTERM")
+            self.assertEqual(peer.returncode, 0)
+            self.assertEqual(errors, b"")
+            self.assertEqual(json.loads(output), dict(acceptedConnections=1, activeConnections=0,
+                                                     peakConnections=1))
+        finally:
+            if peer.poll() is None:
+                forced_kill = True
+                peer.kill()
+            peer.communicate(timeout=5)
+            self.assertIsNotNone(peer.returncode, "peer cleanup did not reap its child")
+            port_closed = None
+            if port is not None:
+                with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as probe:
+                    probe.settimeout(1)
+                    port_closed = probe.connect_ex(("127.0.0.1", port)) == errno.ECONNREFUSED
+                self.assertTrue(port_closed, "peer listener remained open after process cleanup")
+            print(json.dumps(dict(fixture="local-peer-sigterm", blockedSIGTERM=blocked_sigterm,
+                                  terminatedBeforeCleanup=terminated_before_cleanup,
+                                  forcedKill=forced_kill, exitCode=peer.returncode,
+                                  reaped=peer.returncode is not None, portClosed=port_closed)), flush=True)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,3 @@
+swift test --package-path Tools/DiscordKitLoadTests --scratch-path /scratch --build-system native --jobs 6 --force-resolved-versions --disable-experimental-prebuilts --explicit-target-dependency-import-check error --skip-build list
+[0/1] Planning build
+warning: '--build-system native' has been deprecated and will be removed in a future release; please report an issue at https://github.com/swiftlang/swift-package-manager/issues if you are unable to adopt the default build system.

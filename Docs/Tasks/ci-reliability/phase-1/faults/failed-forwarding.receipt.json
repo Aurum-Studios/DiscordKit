@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "status": "failed",
+  "name": "failed-forwarding",
+  "stage": "phase-1-fault-injection",
+  "operation": "fixture",
+  "arguments": [
+    "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+    "-c",
+    "print('output retained before failed forwarding', flush=True)"
+  ],
+  "start": "2026-11-12T04:57:30.717744+00:00",
+  "startMonotonic": 317458.230088041,
+  "deadlineMonotonic": 317460.230088041,
+  "executionLimitSeconds": 2,
+  "cleanupAllowanceSeconds": 8.0,
+  "paths": {
+    "output": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/Docs/Tasks/ci-reliability/phase-1/faults/failed-forwarding.log",
+    "stdout": null,
+    "diagnostics": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/Docs/Tasks/ci-reliability/phase-1/faults/failed-forwarding.diagnostics.jsonl",
+    "receipt": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/Docs/Tasks/ci-reliability/phase-1/faults/failed-forwarding.receipt.json"
+  },
+  "identity": {
+    "executionID": "3bb22efc-456d-4e39-97f8-913bc0638583",
+    "supervisorPID": 54297,
+    "host": "Pokemon-GO-Plus",
+    "system": "Darwin",
+    "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase1"
+  },
+  "exitCode": -15,
+  "signal": 15,
+  "timeoutCategory": null,
+  "pid": 54613,
+  "group": 54613,
+  "error": "injected failed forwarding",
+  "errorType": "BrokenPipeError",
+  "cleanup": {
+    "status": "group-signalled",
+    "signals": [
+      "SIGTERM"
+    ],
+    "parentReaped": true,
+    "allowanceSeconds": 8.0,
+    "seconds": 0.005,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/Docs/Tasks/ci-reliability/phase-1/faults/failed-forwarding.log",
+      "retainedBytes": 179,
+      "observedBytes": 179,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T04:57:30.740554+00:00",
+  "endMonotonic": 317458.252938208,
+  "elapsedSeconds": 0.023,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}

@@ -1,0 +1,559 @@
+{
+  "commandResults": [],
+  "coverage": [
+    {
+      "covered": true,
+      "jobID": "scope",
+      "latestAttempt": 1,
+      "latestJobID": 1,
+      "reason": null
+    },
+    {
+      "covered": true,
+      "jobID": "source",
+      "latestAttempt": 1,
+      "latestJobID": 2,
+      "reason": null
+    },
+    {
+      "covered": true,
+      "jobID": "maintenance",
+      "latestAttempt": 1,
+      "latestJobID": 3,
+      "reason": null
+    },
+    {
+      "covered": true,
+      "jobID": "complete",
+      "latestAttempt": 1,
+      "latestJobID": 4,
+      "reason": null
+    },
+    {
+      "covered": true,
+      "jobID": "helpers/ci-python",
+      "latestAttempt": 1,
+      "latestJobID": 5,
+      "reason": null
+    },
+    {
+      "covered": true,
+      "jobID": "helpers/tooling-python",
+      "latestAttempt": 1,
+      "latestJobID": 6,
+      "reason": null
+    },
+    {
+      "covered": true,
+      "jobID": "helpers/benchmark-python",
+      "latestAttempt": 1,
+      "latestJobID": 7,
+      "reason": null
+    },
+    {
+      "covered": true,
+      "jobID": "helpers/browser",
+      "latestAttempt": 1,
+      "latestJobID": 8,
+      "reason": null
+    },
+    {
+      "covered": true,
+      "jobID": "linux-x64/platform",
+      "latestAttempt": 1,
+      "latestJobID": 9,
+      "reason": null
+    },
+    {
+      "covered": true,
+      "jobID": "linux-x64/plan",
+      "latestAttempt": 1,
+      "latestJobID": 10,
+      "reason": null
+    },
+    {
+      "covered": true,
+      "jobID": "linux-x64/build/load",
+      "latestAttempt": 1,
+      "latestJobID": 11,
+      "reason": null
+    },
+    {
+      "covered": true,
+      "jobID": "linux-x64/canary",
+      "latestAttempt": 2,
+      "latestJobID": 1000,
+      "reason": null
+    },
+    {
+      "covered": true,
+      "jobID": "linux-x64/coverage",
+      "latestAttempt": 1,
+      "latestJobID": 13,
+      "reason": null
+    },
+    {
+      "covered": true,
+      "jobID": "linux-x64/complete",
+      "latestAttempt": 1,
+      "latestJobID": 14,
+      "reason": null
+    }
+  ],
+  "failedJobIDsAllAttempts": [
+    12
+  ],
+  "guard": null,
+  "identity": {
+    "baseRef": "",
+    "defaultBranch": "main",
+    "event": "workflow_dispatch",
+    "headRef": "",
+    "ref": "refs/heads/main",
+    "repository": "Aurum-Studios/DiscordKit",
+    "repositoryID": "1",
+    "runAttempt": "2",
+    "runID": "100",
+    "workflowRef": "Aurum-Studios/DiscordKit/.github/workflows/ci.yml@refs/heads/main",
+    "workflowSHA": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  "invoiceReconciled": false,
+  "jobs": [
+    {
+      "attempt": 1,
+      "classification": "success",
+      "conclusion": "success",
+      "dependencyAndQueueSecondsUpperBound": 10.0,
+      "id": 1,
+      "name": "Validate scope and contained rollout",
+      "observedRoundedMinutes": 2,
+      "observedRunnerGroup": "ubuntu-24.04",
+      "planJobID": "scope",
+      "policyRunnerGroup": "ubuntu-24.04",
+      "queueSeconds": null,
+      "runnerSeconds": 61.0,
+      "sku": "standard_linux_x64",
+      "stageSeconds": {
+        "archiveTransferSeconds": 25.0,
+        "provisioningSeconds": 30.0,
+        "setupSeconds": 5.0,
+        "startupSeconds": null
+      },
+      "status": "completed",
+      "unknownReasons": []
+    },
+    {
+      "attempt": 1,
+      "classification": "success",
+      "conclusion": "success",
+      "dependencyAndQueueSecondsUpperBound": 10.0,
+      "id": 2,
+      "name": "Source policy and workflow syntax",
+      "observedRoundedMinutes": 2,
+      "observedRunnerGroup": "ubuntu-24.04",
+      "planJobID": "source",
+      "policyRunnerGroup": "ubuntu-24.04",
+      "queueSeconds": null,
+      "runnerSeconds": 61.0,
+      "sku": "standard_linux_x64",
+      "stageSeconds": {
+        "archiveTransferSeconds": 25.0,
+        "provisioningSeconds": 30.0,
+        "setupSeconds": 5.0,
+        "startupSeconds": null
+      },
+      "status": "completed",
+      "unknownReasons": []
+    },
+    {
+      "attempt": 1,
+      "classification": "success",
+      "conclusion": "success",
+      "dependencyAndQueueSecondsUpperBound": 10.0,
+      "id": 3,
+      "name": "Upstream maintenance review freshness",
+      "observedRoundedMinutes": 2,
+      "observedRunnerGroup": "ubuntu-24.04",
+      "planJobID": "maintenance",
+      "policyRunnerGroup": "ubuntu-24.04",
+      "queueSeconds": null,
+      "runnerSeconds": 61.0,
+      "sku": "standard_linux_x64",
+      "stageSeconds": {
+        "archiveTransferSeconds": 25.0,
+        "provisioningSeconds": 30.0,
+        "setupSeconds": 5.0,
+        "startupSeconds": null
+      },
+      "status": "completed",
+      "unknownReasons": []
+    },
+    {
+      "attempt": 1,
+      "classification": "success",
+      "conclusion": "success",
+      "dependencyAndQueueSecondsUpperBound": 10.0,
+      "id": 4,
+      "name": "Diagnostic scope passed",
+      "observedRoundedMinutes": 2,
+      "observedRunnerGroup": "ubuntu-24.04",
+      "planJobID": "complete",
+      "policyRunnerGroup": "ubuntu-24.04",
+      "queueSeconds": null,
+      "runnerSeconds": 61.0,
+      "sku": "standard_linux_x64",
+      "stageSeconds": {
+        "archiveTransferSeconds": 25.0,
+        "provisioningSeconds": 30.0,
+        "setupSeconds": 5.0,
+        "startupSeconds": null
+      },
+      "status": "completed",
+      "unknownReasons": []
+    },
+    {
+      "attempt": 1,
+      "classification": "success",
+      "conclusion": "success",
+      "dependencyAndQueueSecondsUpperBound": 10.0,
+      "id": 5,
+      "name": "Helper suites / ci-python",
+      "observedRoundedMinutes": 2,
+      "observedRunnerGroup": "ubuntu-24.04",
+      "planJobID": "helpers/ci-python",
+      "policyRunnerGroup": "ubuntu-24.04",
+      "queueSeconds": null,
+      "runnerSeconds": 61.0,
+      "sku": "standard_linux_x64",
+      "stageSeconds": {
+        "archiveTransferSeconds": 25.0,
+        "provisioningSeconds": 30.0,
+        "setupSeconds": 5.0,
+        "startupSeconds": null
+      },
+      "status": "completed",
+      "unknownReasons": []
+    },
+    {
+      "attempt": 1,
+      "classification": "success",
+      "conclusion": "success",
+      "dependencyAndQueueSecondsUpperBound": 10.0,
+      "id": 6,
+      "name": "Helper suites / tooling-python",
+      "observedRoundedMinutes": 2,
+      "observedRunnerGroup": "ubuntu-24.04",
+      "planJobID": "helpers/tooling-python",
+      "policyRunnerGroup": "ubuntu-24.04",
+      "queueSeconds": null,
+      "runnerSeconds": 61.0,
+      "sku": "standard_linux_x64",
+      "stageSeconds": {
+        "archiveTransferSeconds": 25.0,
+        "provisioningSeconds": 30.0,
+        "setupSeconds": 5.0,
+        "startupSeconds": null
+      },
+      "status": "completed",
+      "unknownReasons": []
+    },
+    {
+      "attempt": 1,
+      "classification": "success",
+      "conclusion": "success",
+      "dependencyAndQueueSecondsUpperBound": 10.0,
+      "id": 7,
+      "name": "Helper suites / benchmark-python",
+      "observedRoundedMinutes": 2,
+      "observedRunnerGroup": "ubuntu-24.04",
+      "planJobID": "helpers/benchmark-python",
+      "policyRunnerGroup": "ubuntu-24.04",
+      "queueSeconds": null,
+      "runnerSeconds": 61.0,
+      "sku": "standard_linux_x64",
+      "stageSeconds": {
+        "archiveTransferSeconds": 25.0,
+        "provisioningSeconds": 30.0,
+        "setupSeconds": 5.0,
+        "startupSeconds": null
+      },
+      "status": "completed",
+      "unknownReasons": []
+    },
+    {
+      "attempt": 1,
+      "classification": "success",
+      "conclusion": "success",
+      "dependencyAndQueueSecondsUpperBound": 10.0,
+      "id": 8,
+      "name": "Helper suites / browser",
+      "observedRoundedMinutes": 2,
+      "observedRunnerGroup": "ubuntu-24.04",
+      "planJobID": "helpers/browser",
+      "policyRunnerGroup": "ubuntu-24.04",
+      "queueSeconds": null,
+      "runnerSeconds": 61.0,
+      "sku": "standard_linux_x64",
+      "stageSeconds": {
+        "archiveTransferSeconds": 25.0,
+        "provisioningSeconds": 30.0,
+        "setupSeconds": 5.0,
+        "startupSeconds": null
+      },
+      "status": "completed",
+      "unknownReasons": []
+    },
+    {
+      "attempt": 1,
+      "classification": "success",
+      "conclusion": "success",
+      "dependencyAndQueueSecondsUpperBound": 10.0,
+      "id": 9,
+      "name": "Linux x64 / Platform check",
+      "observedRoundedMinutes": 2,
+      "observedRunnerGroup": "Linux-x64-8",
+      "planJobID": "linux-x64/platform",
+      "policyRunnerGroup": "Linux-x64-8",
+      "queueSeconds": null,
+      "runnerSeconds": 61.0,
+      "sku": "linux_8_core",
+      "stageSeconds": {
+        "archiveTransferSeconds": 25.0,
+        "provisioningSeconds": 30.0,
+        "setupSeconds": 5.0,
+        "startupSeconds": null
+      },
+      "status": "completed",
+      "unknownReasons": []
+    },
+    {
+      "attempt": 1,
+      "classification": "success",
+      "conclusion": "success",
+      "dependencyAndQueueSecondsUpperBound": 10.0,
+      "id": 10,
+      "name": "Linux x64 / Plan platform builds and suites",
+      "observedRoundedMinutes": 2,
+      "observedRunnerGroup": "Linux-x64-8",
+      "planJobID": "linux-x64/plan",
+      "policyRunnerGroup": "Linux-x64-8",
+      "queueSeconds": null,
+      "runnerSeconds": 61.0,
+      "sku": "linux_8_core",
+      "stageSeconds": {
+        "archiveTransferSeconds": 25.0,
+        "provisioningSeconds": 30.0,
+        "setupSeconds": 5.0,
+        "startupSeconds": null
+      },
+      "status": "completed",
+      "unknownReasons": []
+    },
+    {
+      "attempt": 1,
+      "classification": "success",
+      "conclusion": "success",
+      "dependencyAndQueueSecondsUpperBound": 10.0,
+      "id": 11,
+      "name": "Linux x64 / Builds / linux-x64 / load",
+      "observedRoundedMinutes": 2,
+      "observedRunnerGroup": "Linux-x64-64",
+      "planJobID": "linux-x64/build/load",
+      "policyRunnerGroup": "Linux-x64-64",
+      "queueSeconds": null,
+      "runnerSeconds": 61.0,
+      "sku": "linux_64_core",
+      "stageSeconds": {
+        "archiveTransferSeconds": 25.0,
+        "provisioningSeconds": 30.0,
+        "setupSeconds": 5.0,
+        "startupSeconds": null
+      },
+      "status": "completed",
+      "unknownReasons": []
+    },
+    {
+      "attempt": 1,
+      "classification": "failure",
+      "conclusion": "failure",
+      "dependencyAndQueueSecondsUpperBound": 10.0,
+      "id": 12,
+      "name": "Linux x64 / Canary / load tests and smokes",
+      "observedRoundedMinutes": 2,
+      "observedRunnerGroup": "Linux-x64-8",
+      "planJobID": "linux-x64/canary",
+      "policyRunnerGroup": "Linux-x64-8",
+      "queueSeconds": null,
+      "runnerSeconds": 61.0,
+      "sku": "linux_8_core",
+      "stageSeconds": {
+        "archiveTransferSeconds": 25.0,
+        "provisioningSeconds": 30.0,
+        "setupSeconds": 5.0,
+        "startupSeconds": null
+      },
+      "status": "completed",
+      "unknownReasons": []
+    },
+    {
+      "attempt": 1,
+      "classification": "success",
+      "conclusion": "success",
+      "dependencyAndQueueSecondsUpperBound": 10.0,
+      "id": 13,
+      "name": "Linux x64 / Verify platform coverage before source export",
+      "observedRoundedMinutes": 2,
+      "observedRunnerGroup": "Linux-x64-8",
+      "planJobID": "linux-x64/coverage",
+      "policyRunnerGroup": "Linux-x64-8",
+      "queueSeconds": null,
+      "runnerSeconds": 61.0,
+      "sku": "linux_8_core",
+      "stageSeconds": {
+        "archiveTransferSeconds": 25.0,
+        "provisioningSeconds": 30.0,
+        "setupSeconds": 5.0,
+        "startupSeconds": null
+      },
+      "status": "completed",
+      "unknownReasons": []
+    },
+    {
+      "attempt": 1,
+      "classification": "success",
+      "conclusion": "success",
+      "dependencyAndQueueSecondsUpperBound": 10.0,
+      "id": 14,
+      "name": "Linux x64 / Platform validation passed",
+      "observedRoundedMinutes": 2,
+      "observedRunnerGroup": "Linux-x64-8",
+      "planJobID": "linux-x64/complete",
+      "policyRunnerGroup": "Linux-x64-8",
+      "queueSeconds": null,
+      "runnerSeconds": 61.0,
+      "sku": "linux_8_core",
+      "stageSeconds": {
+        "archiveTransferSeconds": 25.0,
+        "provisioningSeconds": 30.0,
+        "setupSeconds": 5.0,
+        "startupSeconds": null
+      },
+      "status": "completed",
+      "unknownReasons": []
+    },
+    {
+      "attempt": 2,
+      "classification": "success",
+      "conclusion": "success",
+      "dependencyAndQueueSecondsUpperBound": 10.0,
+      "id": 1000,
+      "name": "Linux x64 / Canary / load tests and smokes",
+      "observedRoundedMinutes": 2,
+      "observedRunnerGroup": "Linux-x64-8",
+      "planJobID": "linux-x64/canary",
+      "policyRunnerGroup": "Linux-x64-8",
+      "queueSeconds": null,
+      "runnerSeconds": 61.0,
+      "sku": "linux_8_core",
+      "stageSeconds": {
+        "archiveTransferSeconds": 25.0,
+        "provisioningSeconds": 30.0,
+        "setupSeconds": 5.0,
+        "startupSeconds": null
+      },
+      "status": "completed",
+      "unknownReasons": []
+    }
+  ],
+  "kind": "execution-usage-reconciliation",
+  "limitations": [
+    "Runner minutes are rounded per observed job, including failed attempts; no invoice is reconciled.",
+    "Queue time is unavailable; created-to-started includes dependency wait and is only an upper bound.",
+    "API stage durations cover whole named steps; local command and transfer receipts may overlap them.",
+    "Missing, skipped, running, failed, unknown and unreserved work cannot establish remaining coverage.",
+    "The reporting job can observe itself still running; this snapshot is not final workflow certification."
+  ],
+  "planAdmitted": true,
+  "planReasons": [],
+  "planStatus": "admitted",
+  "planTotals": {
+    "allowanceUSD": "10000",
+    "includedEntryReserveUSD": "9.70",
+    "maximumAttempts": 2,
+    "maximumJobs": 28,
+    "maximumMinutes": 970,
+    "maximumUSD": "11.20",
+    "remainingUSD": "9988.80",
+    "runnerUSD": "9.70",
+    "safetyUSD": "1.50",
+    "storageUSD": "0",
+    "transferUSD": "0"
+  },
+  "providerEnforcedDollarCap": false,
+  "remainingCoverage": [],
+  "reservationAccounting": {
+    "allowanceUSD": "10000",
+    "attemptedCumulativeMaximumMinutes": 970,
+    "attemptedCumulativeReservationUSD": "9.70",
+    "currentAttempt": 2,
+    "method": "Fixed disjoint reservations through the current attempt, including unobserved partial rerun work.",
+    "preparedMaximumUSD": "11.20",
+    "preparedRemainingAllowanceUSD": "9988.80",
+    "remainingAllowanceAfterAttemptReservationsUSD": "9988.80",
+    "reservedAttempts": [
+      1,
+      2
+    ],
+    "safetyUSD": "1.50"
+  },
+  "runnerSKUs": {
+    "linux_64_core": {
+      "billingMappingVerified": true,
+      "maximumMinutesPerAttempt": 150,
+      "observedJobCount": 1,
+      "observedRoundedMinutesKnown": 2,
+      "observedUnknownMinutesJobIDs": [],
+      "reservedMaximumMinutes": 300,
+      "runnerGroups": [
+        "Linux-x64-64"
+      ],
+      "sku": "linux_64_core",
+      "usdPerMinute": "0.01"
+    },
+    "linux_8_core": {
+      "billingMappingVerified": true,
+      "maximumMinutesPerAttempt": 200,
+      "observedJobCount": 6,
+      "observedRoundedMinutesKnown": 12,
+      "observedUnknownMinutesJobIDs": [],
+      "reservedMaximumMinutes": 400,
+      "runnerGroups": [
+        "Linux-x64-8"
+      ],
+      "sku": "linux_8_core",
+      "usdPerMinute": "0.01"
+    },
+    "standard_linux_x64": {
+      "billingMappingVerified": true,
+      "maximumMinutesPerAttempt": 135,
+      "observedJobCount": 8,
+      "observedRoundedMinutesKnown": 16,
+      "observedUnknownMinutesJobIDs": [],
+      "reservedMaximumMinutes": 270,
+      "runnerGroups": [
+        "ubuntu-24.04"
+      ],
+      "sku": "standard_linux_x64",
+      "usdPerMinute": "0.01"
+    }
+  },
+  "schemaVersion": 1,
+  "source": {
+    "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "dependencyPinsSHA256": {},
+    "sourceSHA256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  },
+  "status": "complete",
+  "unattributedReceiptCount": 0,
+  "unknownJobIDs": []
+}

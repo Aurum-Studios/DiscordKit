@@ -1,0 +1,9 @@
+/Library/Frameworks/Python.framework/Versions/3.14/bin/python3 -m unittest discover -s Tools/DiscordKitLoadTests/scripts -p 'test_*.py'
+....................{"status": "failed", "format": "DiscordKitLoadTests.integration-matrix", "acceptedProcesses": 0}
+..{"fixture": "local-peer-sigterm", "blockedSIGTERM": false, "terminatedBeforeCleanup": true, "forcedKill": false, "exitCode": 0, "reaped": true, "portClosed": true}
+.{"fixture": "local-peer-sigterm", "blockedSIGTERM": true, "terminatedBeforeCleanup": true, "forcedKill": false, "exitCode": 0, "reaped": true, "portClosed": true}
+.................................
+----------------------------------------------------------------------
+Ran 56 tests in 8.076s
+
+OK

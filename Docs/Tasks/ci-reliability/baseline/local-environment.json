@@ -1,0 +1,116 @@
+{
+  "capturedAt": "2026-11-12T04:31:26.834040+00:00",
+  "coordinatorFiles": [],
+  "host": {
+    "argv": [
+      "uname",
+      "-a"
+    ],
+    "exit": 0,
+    "output": "Darwin Pokemon-GO-Plus 27.0.0 Darwin Kernel Version 27.0.0: Tue Aug 11 21:05:42 PDT 2026; root:xnu-13432.1.9~1/RELEASE_ARM64_T6031 arm64\n"
+  },
+  "localLinux": {
+    "colima": {
+      "argv": [
+        "colima",
+        "list",
+        "--json"
+      ],
+      "exit": 0,
+      "output": "{\"name\":\"minicarson\",\"status\":\"Running\",\"arch\":\"aarch64\",\"cpus\":6,\"memory\":17179869184,\"disk\":34359738368,\"runtime\":\"docker\"}\n"
+    },
+    "dockerContexts": {
+      "argv": [
+        "docker",
+        "context",
+        "ls",
+        "--format",
+        "{{json .}}"
+      ],
+      "exit": 0,
+      "output": "{\"Current\":true,\"Description\":\"colima [profile=minicarson]\",\"DockerEndpoint\":\"unix:///Users/carsonrau/.colima/minicarson/docker.sock\",\"Error\":\"\",\"Name\":\"colima-minicarson\"}\n{\"Current\":false,\"Description\":\"Current DOCKER_HOST based configuration\",\"DockerEndpoint\":\"unix:///var/run/docker.sock\",\"Error\":\"\",\"Name\":\"default\"}\n"
+    },
+    "dockerServer": {
+      "argv": [
+        "docker",
+        "info",
+        "--format",
+        "{{json .ServerVersion}} {{json .Architecture}} {{json .OperatingSystem}}"
+      ],
+      "exit": 0,
+      "output": "\"29.5.2\" \"aarch64\" \"Ubuntu 24.04.4 LTS\"\n"
+    }
+  },
+  "localQualification": "helper/source checks only; system Swift 6.4 is not pinned Swift 6.4.1",
+  "os": {
+    "argv": [
+      "sw_vers"
+    ],
+    "exit": 0,
+    "output": "ProductName:\t\tmacOS\nProductVersion:\t\t27.0.1\nBuildVersion:\t\t26A434\n"
+  },
+  "pins": {
+    "Examples/ActivityHost/Package.resolved": "f119349c61a00ef8f90807e9d92fe745aa5a27b57d3bf0784b5e13f71d02cfeb",
+    "Examples/CommandsApp/Package.resolved": "153e11716602f8c4e220d9b6e0d0aeb3f8b1ee7d592671d7c41f8d807d15051c",
+    "Examples/DSLBot/Package.resolved": "74cd15ee9c7cead29c5e380ab4cbdf16e3d9170711db65c502d52f41b85fd3fb",
+    "Examples/DSLCommands/Package.resolved": "090387496b42083a5c83d559fb6f67190e087e1ca3811891254ae00b9c76cdb6",
+    "Examples/DSLEvents/Package.resolved": "2ae301b70929845d3d378fad230be4f70469a1df1c08b33854ea2bb9d361786f",
+    "Examples/GatewayBot/Package.resolved": "c0d7fb3fde8bd9ebabd18800ddeadb2eee916a4b42d1e73dde8663a6bbd21673",
+    "Examples/HTTPApp/Package.resolved": "138b346afefcbc0405153811694d115b2e36672adac04363d68f918755020f78",
+    "Examples/LoggingApp/Package.resolved": "c876309dae29d04a6454e752f15a2503635c5c748256c48e4714ff1af7cdc183",
+    "Examples/OAuthApp/Package.resolved": "a2ac3bdd08614cba4560b870987d466b4689e898a14862d8543c5fb908602890",
+    "Examples/RESTOnly/Package.resolved": "84cb72a16d16999f0791882aaab29cffd961ecdd87596afe15ac44a196661a6e",
+    "Examples/RPCApp/Package.resolved": "f0c2bf97d6d7b7573fa40c3c791e0f8765240bf5c051ef9c83be2ec14cef262c",
+    "Examples/SocialApp/Package.resolved": "e0b4d8ea7255d7bdde18593a5646ccd7d158eea3f3c49c80057f6c6fb0830ac8",
+    "Examples/VoiceBot/Package.resolved": "3b8c729fb2c9058a965b4e2287b82dcfb537770e457f46ac23a06f89ed541f6c",
+    "Package.resolved": "dd6c86faf979e3b991553d84ae0b378105629a3a010d71f842ed84dda9bf263c",
+    "Packages/DiscordDSLExtensions/Package.resolved": "986690f3984eee93d7f14bd31cfed0aeebc86d83811a1d1958bd703382ed04d1",
+    "Packages/DiscordDSLMacros/Package.resolved": "eaf49525b5ff7142dfeb4af84fc68eebe15983e3f9046cffa2042e0f03e4ba00",
+    "Tests/Fixtures/DSLCompile/Package.resolved": "5b780d900da9a50bc004cc7dfe008530add5cb6fd866f36313227d83f1e04cd7",
+    "Tests/Fixtures/DSLExtensionsCompile/Package.resolved": "45eb0e9663f4810d8e754e0cd55ea911228bcbb478e2c1ee7d9c47a5a7a48c1d",
+    "Tests/Fixtures/PlatformProbe/Package.resolved": "903d2b9d4694a8767f98483e7524dd61c7cd977a6029bb32c1da5dadce3bb258",
+    "Tests/Fixtures/VoiceProbe/Package.resolved": "2b6df77006549add09e3f82105502a445e7eb2f292f52b79897c2fbacffa4b9f",
+    "Tools/AppleAudioQualification/Package.resolved": "ece1a17a96da2ff095f0353e9619c719bbd83a5a5efd9429de21334c11125f01",
+    "Tools/DiscordDSLBenchmarks/Package.resolved": "875da4a883f64f08c3c366b43307850428fbbd27a6a81c584429e21da50b9519",
+    "Tools/DiscordFoundationBenchmarks/Package.resolved": "7762e99b7078119f49f843d4f0ba2295c65ebdcad13992cddb42a85c6b61b1cd",
+    "Tools/DiscordKitLoadTests/Package.resolved": "447bf3ccefdc65c7cbe44f1c8b610f5616e971394c8e971956a3f1e9159cdb52",
+    "Tools/DiscordKitTools/Package.resolved": "5a0b4820b8689eb8b865d10d34c94ce77e8b333e0744be24940afb2a77b1f53d",
+    "Tools/DiscordMediaBenchmarks/Package.resolved": "faf34927be6ade9ffe97b6eb347ebe1c45e802fd140a64c0de180a1a3d0af553",
+    "Tools/DiscordTimingBenchmarks/Package.resolved": "dd6c86faf979e3b991553d84ae0b378105629a3a010d71f842ed84dda9bf263c",
+    "Tools/VoiceSessionQualification/Package.resolved": "e76c3b60a2aa0ce68513d1ddd323d13737e23dfdf966d002253fbb8aa3e6136e"
+  },
+  "python": {
+    "argv": [
+      "python3",
+      "--version"
+    ],
+    "exit": 0,
+    "output": "Python 3.14.0\n"
+  },
+  "swift": {
+    "argv": [
+      "swift",
+      "--version"
+    ],
+    "exit": 0,
+    "output": "swift-driver version: 1.168.6 Apple Swift version 6.4 (swiftlang-6.4.0.34.1 clang-2100.3.34.1)\nTarget: arm64-apple-macosx27.0.0\n"
+  },
+  "tools": {
+    "actionlint": null,
+    "colima": "/opt/homebrew/bin/colima",
+    "docker": "/opt/homebrew/bin/docker",
+    "gh": null,
+    "podman": null,
+    "python3": "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+    "swift": "/usr/bin/swift"
+  },
+  "workflowInputs": {
+    ".github/actions/setup-native/action.yml": "c5c0bdb40fcda17a7f0f5d1bc205da39ee321dd5c657aa083cf28bbb26c6d734",
+    ".github/workflows/ci.yml": "c8929ddddf656c68f6d61f3641e1c79e910ab88738b90fe91a28e265aa357b1d",
+    ".github/workflows/documentation.yml": "ce42464ebeb323e93b33f0cea11eb30c0b786b4755fccdae9730ed37868ecec2",
+    ".github/workflows/native-platform.yml": "fbf8f92dea13f3ee6b1a61e2583527d3aaa5ef7ef52325feb6932810a274e363",
+    "Package.swift": "d6822bdd8a38ecf262d0f22625f8c57699c4f720f77c8aa4f531d9d895f6e23e",
+    "Tools/ci/linux_ci.py": "b6cc4d131f94fbdda7e17a912210dab42027a9707ac2f50758e2cb955ffded87",
+    "Tools/ci/native_jobs.py": "e35d56dcff812dd0531f5d42dab0f2aa027189370a3587b05fd3b15fa6887e27"
+  }
+}

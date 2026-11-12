@@ -1,0 +1,48 @@
+{
+  "status": "passed",
+  "localOnly": true,
+  "commands": [
+    {
+      "command": [
+        "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+        "Tools/ci/spend_admission.py",
+        "plan",
+        "--mode",
+        "preflight",
+        "--output",
+        "Docs/Tasks/ci-reliability/phase-10/checks/cli/plan.json"
+      ],
+      "exit": 0,
+      "expectedExit": 0
+    },
+    {
+      "command": [
+        "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+        "Tools/ci/spend_admission.py",
+        "guard",
+        "--mode",
+        "preflight",
+        "--job",
+        "source",
+        "--group",
+        "ubuntu-24.04",
+        "--output",
+        "Docs/Tasks/ci-reliability/phase-10/checks/cli/guard.json"
+      ],
+      "exit": 1,
+      "expectedExit": 1
+    },
+    {
+      "command": [
+        "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+        "Tools/ci/usage_report.py",
+        "--plan",
+        "Docs/Tasks/ci-reliability/phase-10/checks/cli/plan.json",
+        "--output",
+        "Docs/Tasks/ci-reliability/phase-10/checks/cli/usage.json"
+      ],
+      "exit": 0,
+      "expectedExit": 0
+    }
+  ]
+}

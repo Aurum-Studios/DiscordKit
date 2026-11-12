@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "name": "baseline-synthetic",
+  "stage": "phase3-baseline-synthetic",
+  "operation": "focusedTest",
+  "arguments": [
+    "swift",
+    "test",
+    "--package-path",
+    "Tools/DiscordKitLoadTests",
+    "--scratch-path",
+    "/scratch",
+    "--build-system",
+    "native",
+    "--jobs",
+    "6",
+    "--force-resolved-versions",
+    "--disable-experimental-prebuilts",
+    "--explicit-target-dependency-import-check",
+    "error",
+    "--skip-build",
+    "--no-parallel",
+    "--filter",
+    "SyntheticCommandTimingRunnerTests"
+  ],
+  "start": "2026-11-12T12:44:58.159267+00:00",
+  "startMonotonic": 74604.617300027,
+  "deadlineMonotonic": 74694.617300027,
+  "executionLimitSeconds": 90,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "operation",
+  "paths": {
+    "output": "/work/Docs/Tasks/ci-reliability/phase-3/baseline-synthetic.log",
+    "stdout": null,
+    "diagnostics": "/work/Docs/Tasks/ci-reliability/phase-3/baseline-synthetic.diagnostics.jsonl",
+    "receipt": "/work/Docs/Tasks/ci-reliability/phase-3/baseline-synthetic.receipt.json"
+  },
+  "identity": {
+    "executionID": "280b3934-cadb-4448-a090-99aafc8c23c7",
+    "supervisorPID": 5288,
+    "host": "213b31596900",
+    "system": "Linux",
+    "repository": "/work"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 5294,
+  "group": 5294,
+  "cleanup": {
+    "status": "group-signalled",
+    "signals": [],
+    "parentReaped": true,
+    "allowanceSeconds": 8.0,
+    "seconds": 0.032,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "/work/Docs/Tasks/ci-reliability/phase-3/baseline-synthetic.log",
+      "retainedBytes": 4635,
+      "observedBytes": 4635,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T12:45:00.157447+00:00",
+  "endMonotonic": 74606.615748481,
+  "elapsedSeconds": 1.998,
+  "lastObservedTest": "run",
+  "readerThreads": 0
+}

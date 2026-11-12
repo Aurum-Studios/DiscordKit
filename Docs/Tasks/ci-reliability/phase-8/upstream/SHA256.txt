@@ -1,0 +1,2 @@
+c34e7e5fb0be4bcd61decfd40db1766434d8952d68e37aed90bcff4e8547951c  swift-6.4.1-RELEASE-osx.pkg
+7d246c7114077ad01dba4ad897628446ada4c489d6c7dbcf39ae3f25cbe17e8b  swift-6.4.1-RELEASE-ubuntu24.04.tar.gz

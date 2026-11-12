@@ -1,0 +1,173 @@
+{
+  "schemaVersion": 1,
+  "phase": 9,
+  "status": "passed-local-acceptance",
+  "base": "e37ad2bc1271a9f063afe02f49943af1373427ee",
+  "branch": "ci/phase-9-documentation",
+  "owner": "Codex /root",
+  "host": {
+    "system": "Darwin",
+    "architecture": "arm64",
+    "python": "3.14.0"
+  },
+  "inputSHA256": {
+    ".github/workflows/ci.yml": "5b4ca516b76767191f364704f6e1932a1a2e2a2466600f05e672e9cd6110ad2e",
+    ".github/workflows/documentation.yml": "e3d79ee8cb318ded151c5f4d94f71f6a907d33433b1a090fd2d84d63ed2bb3c2",
+    ".github/workflows/native-platform.yml": "5b4d9458433fdce081358b439649c96f23cf6dc8a82565ada87df7814cf1e3d5",
+    "Tools/ci/build_documentation_site.py": "9c02069357ac09cf017f8764cd8ec83804c7c4c61008bb2a6ad8d5c69dcedb34",
+    "Tools/ci/documentation_inputs.py": "a19df48b184e25eb11b3e690f26b3ccba2d61d54b4d97ee84a2c2e1e971824c5",
+    "Tools/ci/documentation_publication.py": "67772582728f7e1696ea786fbc08fadcf476fb5b77d1f13a90ffe4143b6b065d",
+    "Tools/ci/documentation_workflow.py": "921e1dba0a2cf8579d3c96635cc47cd353c501b91a673fd9df03782aa421add5",
+    "Tools/ci/test_documentation_inputs.py": "50b5ececac295f00a99efac1661247a16048af0c1a85483bacc0aa41c4080c68",
+    "Tools/ci/test_documentation_publication.py": "fa1a31dd9d2474008cca91eb33dcf54902a00eba4d5c3cb8d8fab0a86a15c974",
+    "Tools/ci/test_documentation_site.py": "6fbbf5fab49d857764f52c9b206650fdddee71423755e8fba52ae6083f3a5c5a",
+    "Tools/ci/test_documentation_workflow.py": "138629025657829a839ff51a74542db12474121a88d9683a6603b73799e53f45",
+    "Tools/ci/test_workflow_scope.py": "5fad6aa745bafa7caa71dde631d2e44a06ed3704682fd1cf459053fdfe9dd58a",
+    "Tools/ci/workflow_scope.py": "027f0ca7def876628d1bbf07b8806db40f711b86b43e2184513a9e5e26e5fe4d"
+  },
+  "checks": [
+    {
+      "group": "ci-python",
+      "discovered": 531,
+      "passed": 525,
+      "skipped": 6,
+      "evidence": "checks/ci-python/commands.json"
+    },
+    {
+      "group": "tooling-python",
+      "passed": 236,
+      "evidence": "checks/tooling-python/commands.json"
+    },
+    {
+      "group": "load-python",
+      "passed": 56,
+      "evidence": "checks/tooling-python/commands.json"
+    },
+    {
+      "group": "benchmarks-python",
+      "passed": 33,
+      "evidence": "checks/benchmark-python/commands.json"
+    },
+    {
+      "group": "timing-support-python",
+      "passed": 47,
+      "evidence": "checks/benchmark-python/commands.json"
+    },
+    {
+      "group": "foundation-timing-python",
+      "passed": 3,
+      "evidence": "checks/benchmark-python/commands.json"
+    },
+    {
+      "group": "browser",
+      "passed": 38,
+      "evidence": "checks/browser/commands.json"
+    }
+  ],
+  "totals": {
+    "passed": 938,
+    "skipped": 6,
+    "discovered": 944
+  },
+  "focusedFinalDocumentationTests": 56,
+  "realDocc": "checks/real-docc/results.json",
+  "supervisedRealDocc": "checks/real-docc-final.receipt.json",
+  "actionlint": {
+    "status": "passed",
+    "version": "1.7.12",
+    "allWorkflowCount": 7,
+    "shellcheckAvailable": false,
+    "evidence": "checks/workflow-final/commands.json"
+  },
+  "sourceChecks": {
+    "status": "passed",
+    "displayedExamples": 32,
+    "evidence": "checks/source/commands.json"
+  },
+  "boundaries": {
+    "paidJobs": 0,
+    "paidMinutes": 0,
+    "paidAttempts": 0,
+    "nativeCompilations": 0,
+    "nativeTests": 0,
+    "remoteWrites": 0,
+    "published": false
+  },
+  "remaining": [
+    "Phase 10 spend admission and contained rollout",
+    "Phase 3 native x64 acceptance",
+    "Phase 11 hosted native production documentation/site and partial rerun qualification",
+    "Measured runner/transport savings",
+    "Separately requested Pages publication"
+  ],
+  "review": "review.json",
+  "staticChecks": "checks/static.receipt.json",
+  "testedInputSHA256": "15d57a8fde4a87c267ce88088079f2060d7f7f606b3e53c8e0aa50b3af6aec2d",
+  "artifactSHA256": {
+    "Docs/Tasks/ci-reliability/phase-9/IMPLEMENTATION.md": "a1cbbe126e30ec15654f516abebb0dd0fd0adf1c73dc701484cc688d94d6e4f5",
+    "Docs/Tasks/ci-reliability/phase-9/checks/artifact-sdk-install.diagnostics.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "Docs/Tasks/ci-reliability/phase-9/checks/artifact-sdk-install.log": "8a666740fdca7e9829e68036911384f1e6783e499cacdd92e93977b4f364b97a",
+    "Docs/Tasks/ci-reliability/phase-9/checks/artifact-sdk-install.receipt.json": "571902929e8ad8f64b2c8133039b2ea7ee1fcc66bfe8269b048c008d69c256c1",
+    "Docs/Tasks/ci-reliability/phase-9/checks/benchmark-python/00-benchmarks-python.diagnostics.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "Docs/Tasks/ci-reliability/phase-9/checks/benchmark-python/00-benchmarks-python.log": "be3fa6bc028da514b1e87d7f8bdef9ab611ccbd55d8f728c38f29fea5855234a",
+    "Docs/Tasks/ci-reliability/phase-9/checks/benchmark-python/00-benchmarks-python.receipt.json": "2014e930f6d982cb7b75dd9523256a10cc74a77270d2261c8bd34261b8f420fc",
+    "Docs/Tasks/ci-reliability/phase-9/checks/benchmark-python/01-timing-support-python.diagnostics.jsonl": "156be10304606610518dcf0c2a1487128abe6c83e5ee266d08fc5edba75b7c0e",
+    "Docs/Tasks/ci-reliability/phase-9/checks/benchmark-python/01-timing-support-python.log": "fe00effe0b111ce2bb768edc8479b12a406b2def6ac43a02fc80e420e7f6aafd",
+    "Docs/Tasks/ci-reliability/phase-9/checks/benchmark-python/01-timing-support-python.receipt.json": "9ebaf39aa0ebbcfba77d86832c4895a7e430a34f401600d6c8562441fa761717",
+    "Docs/Tasks/ci-reliability/phase-9/checks/benchmark-python/02-foundation-timing-python.diagnostics.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "Docs/Tasks/ci-reliability/phase-9/checks/benchmark-python/02-foundation-timing-python.log": "b75253d4ff95d3a61e82be1e9d8c466620d64d8def4fd4d7968687e643cd2d34",
+    "Docs/Tasks/ci-reliability/phase-9/checks/benchmark-python/02-foundation-timing-python.receipt.json": "8bd23c1edecb7b8baeae16415203d6438d13e6312f2f24187dc1b5218f70dbfe",
+    "Docs/Tasks/ci-reliability/phase-9/checks/benchmark-python/commands.json": "183a08f08ebde3a43e32dde1a75d17721f753fc23b6c1b6f02871fac5dc3e7f9",
+    "Docs/Tasks/ci-reliability/phase-9/checks/browser/00-browser.diagnostics.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "Docs/Tasks/ci-reliability/phase-9/checks/browser/00-browser.log": "712a6e1cff614d9113433f3c40a23e4ff6d49210884002c5f403375f60a35a57",
+    "Docs/Tasks/ci-reliability/phase-9/checks/browser/00-browser.receipt.json": "7229d191cff20c6a174f78d11cd6ebe2f6ece245e5a77a0946b35af41550b6ec",
+    "Docs/Tasks/ci-reliability/phase-9/checks/browser/commands.json": "e9e3dcaead259b11c4be50c7df36fe0d58f3c32ca47488862ba943e550f502e7",
+    "Docs/Tasks/ci-reliability/phase-9/checks/ci-python/00-ci-python.diagnostics.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "Docs/Tasks/ci-reliability/phase-9/checks/ci-python/00-ci-python.log": "198bda7a924a03c010731e75bc4c2ac397bea5eb0547244b33c9604d65d750b7",
+    "Docs/Tasks/ci-reliability/phase-9/checks/ci-python/00-ci-python.receipt.json": "29e816c1a0f935a14db3d7e51b42eb3d98aa178963728f6aa982f4d91bb3aabb",
+    "Docs/Tasks/ci-reliability/phase-9/checks/ci-python/commands.json": "19ad4cdebd290cadce4b05081782e930592ca100d6b2b732df71fef7fea5c1a7",
+    "Docs/Tasks/ci-reliability/phase-9/checks/documentation-final.diagnostics.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "Docs/Tasks/ci-reliability/phase-9/checks/documentation-final.log": "decc95fb060e5975eefff4ef93d927dfc8df3ca220869711d091d9b4ffac412b",
+    "Docs/Tasks/ci-reliability/phase-9/checks/documentation-final.receipt.json": "608968c3305a559462fcbce7b66ccdc6b8108997613db6729ec56446939c50ea",
+    "Docs/Tasks/ci-reliability/phase-9/checks/focused.diagnostics.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "Docs/Tasks/ci-reliability/phase-9/checks/focused.log": "cbf2ddc70bf8ba9e29ca9b4dc3d8025555832beb1b602117f685239ed7b16bb6",
+    "Docs/Tasks/ci-reliability/phase-9/checks/focused.receipt.json": "b870f36da948f6a098f8a8998098eae030a7914289c74ad7bd7bae075dcdf96e",
+    "Docs/Tasks/ci-reliability/phase-9/checks/real-docc/replay.py": "f03999a6800f6bf468668c9fbf5f018503ef7aa222a6ce3ec360e1a2a7d4c4b4",
+    "Docs/Tasks/ci-reliability/phase-9/checks/real-docc/results.json": "7a310ead5c44cb3484ff9cd75ea9724c8be993948c71e3cc4870612ff3d1ecbc",
+    "Docs/Tasks/ci-reliability/phase-9/checks/real-docc/run.log": "098eede7abc38bc6af6cbe1cb19a24201c0aa365ed715809d2a88b83432295a4",
+    "Docs/Tasks/ci-reliability/phase-9/checks/real-docc-final.diagnostics.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "Docs/Tasks/ci-reliability/phase-9/checks/real-docc-final.log": "c1252188f4a9347ecf88dddbedf54ed685ef6ceca86e229f7b37046591b54cba",
+    "Docs/Tasks/ci-reliability/phase-9/checks/real-docc-final.receipt.json": "27aaa37beb63d4ba2188874dd2c5f6e17b454c3d7291efa36d9448ee7df8a6b7",
+    "Docs/Tasks/ci-reliability/phase-9/checks/real-docc-supervised.diagnostics.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "Docs/Tasks/ci-reliability/phase-9/checks/real-docc-supervised.log": "e6ac5dbb448dd0d7561c2c31009aa37825ec2de8c58f2749d7a9ee53d09db1f0",
+    "Docs/Tasks/ci-reliability/phase-9/checks/real-docc-supervised.receipt.json": "b556067009270f50f138533864877b749a30637ad093a469d7a0bcec8c536691",
+    "Docs/Tasks/ci-reliability/phase-9/checks/source/00-policy-source-inventory.diagnostics.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "Docs/Tasks/ci-reliability/phase-9/checks/source/00-policy-source-inventory.log": "845be902141aff1be270904d695755fe46efb61c1968896cfeac24310c7080d3",
+    "Docs/Tasks/ci-reliability/phase-9/checks/source/00-policy-source-inventory.receipt.json": "369162ea0292415f79c60ed65ec5ce1d1cac993b6065f3469d3c43a659201a30",
+    "Docs/Tasks/ci-reliability/phase-9/checks/source/01-documentation-example-snapshots.diagnostics.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "Docs/Tasks/ci-reliability/phase-9/checks/source/01-documentation-example-snapshots.log": "773b5994b23487af1905f3d53261723e84ef866e5fb580daf2ff8d03f2d53150",
+    "Docs/Tasks/ci-reliability/phase-9/checks/source/01-documentation-example-snapshots.receipt.json": "4ce90a289c2c1b9c1276b822957e13de2b353477a913080e8891a74359d4eb69",
+    "Docs/Tasks/ci-reliability/phase-9/checks/source/commands.json": "c31396de0ffc13b69d2b9209eabe751db4c3460fe4ce65820798ac31d1d8f265",
+    "Docs/Tasks/ci-reliability/phase-9/checks/static.diagnostics.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "Docs/Tasks/ci-reliability/phase-9/checks/static.log": "d8d304f7b04b7013521e1f92f4ecbdc198b8346dd9db8e3f687819b693ad37c8",
+    "Docs/Tasks/ci-reliability/phase-9/checks/static.receipt.json": "abe0f97d964e723c3183e34480e7be162be00b095a0fc2c9126d70e3fab3ba7e",
+    "Docs/Tasks/ci-reliability/phase-9/checks/tooling-python/00-tooling-python.diagnostics.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "Docs/Tasks/ci-reliability/phase-9/checks/tooling-python/00-tooling-python.log": "a35fe3ce02d6aab094bcd9295638ef039d2055b3121bc4ba001a1a841c259118",
+    "Docs/Tasks/ci-reliability/phase-9/checks/tooling-python/00-tooling-python.receipt.json": "5fdd338503e5a996e42ecfa08c1009189150285ddee83fb9609dc443298859f3",
+    "Docs/Tasks/ci-reliability/phase-9/checks/tooling-python/01-load-python.diagnostics.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "Docs/Tasks/ci-reliability/phase-9/checks/tooling-python/01-load-python.log": "eef5dadc55e63ac9d82cb8fc9bf676ae38d2fd3b57e8f8aca6ba7daaffb23187",
+    "Docs/Tasks/ci-reliability/phase-9/checks/tooling-python/01-load-python.receipt.json": "11ae74b455e2040a66055c208ef88cf0edcb5d6cd3f6477a1c7b450e5a42dfee",
+    "Docs/Tasks/ci-reliability/phase-9/checks/tooling-python/commands.json": "24c882b03787e942f56e13ff45de9219b859d97a313035e31ea6471eefe4118d",
+    "Docs/Tasks/ci-reliability/phase-9/checks/verify_local.py": "952e6329a3be7440e1efb7fb7a6cb71820044086c8a673d555b99c03dbe483a7",
+    "Docs/Tasks/ci-reliability/phase-9/checks/workflow/00-actionlint.diagnostics.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "Docs/Tasks/ci-reliability/phase-9/checks/workflow/00-actionlint.log": "978927452b46c021c9ab9730835458b9dfe00045b9d00e9d937150997cf47c89",
+    "Docs/Tasks/ci-reliability/phase-9/checks/workflow/00-actionlint.receipt.json": "363edb496712d9edd10e1f6ccd663ed17bcde830e96f841a7cb3b8a9d2ec0115",
+    "Docs/Tasks/ci-reliability/phase-9/checks/workflow/commands.json": "661382c47a6eceac1d02869393095c55fc8c0fbf65d00428e22dcf99d0c86e87",
+    "Docs/Tasks/ci-reliability/phase-9/checks/workflow-final/00-actionlint.diagnostics.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "Docs/Tasks/ci-reliability/phase-9/checks/workflow-final/00-actionlint.log": "978927452b46c021c9ab9730835458b9dfe00045b9d00e9d937150997cf47c89",
+    "Docs/Tasks/ci-reliability/phase-9/checks/workflow-final/00-actionlint.receipt.json": "e3f7891aa95469f9892f3cf025d46a09bd130fcf975e2e7c156c02d1170424f7",
+    "Docs/Tasks/ci-reliability/phase-9/checks/workflow-final/commands.json": "040aee2b7aff0cea5b325a59082d51c6201f6dc8072bba82a33d743d3bbb988d",
+    "Docs/Tasks/ci-reliability/phase-9/review.json": "aa60640acaa22efeb189740851185d990abd83ad4fd8ac41ce62857b6ee6bb51",
+    "Docs/Tasks/ci-reliability/phase-9/source-preflight.json": "3041f9606ebe31ce495350922d7b8f51f67e01d4b71c2a829e413705d09a33b5"
+  }
+}

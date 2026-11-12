@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "name": "runtime-discovery",
+  "stage": "runtime-discovery",
+  "operation": "phase2-local",
+  "arguments": [
+    "swift",
+    "test",
+    "--scratch-path",
+    ".build/ci-phase2-runtime",
+    "--build-system",
+    "native",
+    "--jobs",
+    "6",
+    "--force-resolved-versions",
+    "--disable-experimental-prebuilts",
+    "--skip-build",
+    "list"
+  ],
+  "start": "2026-11-12T05:18:09.866274+00:00",
+  "startMonotonic": 318697.370964083,
+  "deadlineMonotonic": 318757.370964083,
+  "executionLimitSeconds": 60,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "operation",
+  "paths": {
+    "output": "/Users/carsonrau/Developer/DiscordKit-ci-phase2/Docs/Tasks/ci-reliability/phase-2/runtime-discovery.log",
+    "stdout": null,
+    "diagnostics": "/Users/carsonrau/Developer/DiscordKit-ci-phase2/Docs/Tasks/ci-reliability/phase-2/runtime-discovery.diagnostics.jsonl",
+    "receipt": "/Users/carsonrau/Developer/DiscordKit-ci-phase2/Docs/Tasks/ci-reliability/phase-2/runtime-discovery.receipt.json"
+  },
+  "identity": {
+    "executionID": "eab41e20-8e57-40fc-8276-519eb2642bff",
+    "supervisorPID": 79014,
+    "host": "Pokemon-GO-Plus",
+    "system": "Darwin",
+    "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase2"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 79024,
+  "group": 79024,
+  "cleanup": {
+    "status": "group-signalled",
+    "signals": [],
+    "parentReaped": true,
+    "allowanceSeconds": 8.0,
+    "seconds": 0.003,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "/Users/carsonrau/Developer/DiscordKit-ci-phase2/Docs/Tasks/ci-reliability/phase-2/runtime-discovery.log",
+      "retainedBytes": 203353,
+      "observedBytes": 203353,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T05:18:13.304298+00:00",
+  "endMonotonic": 318700.808993166,
+  "elapsedSeconds": 3.438,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}

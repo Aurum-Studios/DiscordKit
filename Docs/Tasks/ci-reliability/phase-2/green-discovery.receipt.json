@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "name": "green-discovery",
+  "stage": "green-discovery",
+  "operation": "phase2-local",
+  "arguments": [
+    "swift",
+    "test",
+    "--package-path",
+    "Tools/DiscordKitLoadTests",
+    "--scratch-path",
+    ".build/ci-phase2-load",
+    "--build-system",
+    "native",
+    "--jobs",
+    "6",
+    "--force-resolved-versions",
+    "--disable-experimental-prebuilts",
+    "--skip-build",
+    "list"
+  ],
+  "start": "2026-11-12T05:16:56.616226+00:00",
+  "startMonotonic": 318624.12139,
+  "deadlineMonotonic": 318684.12139,
+  "executionLimitSeconds": 60,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "operation",
+  "paths": {
+    "output": "/Users/carsonrau/Developer/DiscordKit-ci-phase2/Docs/Tasks/ci-reliability/phase-2/green-discovery.log",
+    "stdout": null,
+    "diagnostics": "/Users/carsonrau/Developer/DiscordKit-ci-phase2/Docs/Tasks/ci-reliability/phase-2/green-discovery.diagnostics.jsonl",
+    "receipt": "/Users/carsonrau/Developer/DiscordKit-ci-phase2/Docs/Tasks/ci-reliability/phase-2/green-discovery.receipt.json"
+  },
+  "identity": {
+    "executionID": "f21bfd95-a636-4523-a435-116d64dddc33",
+    "supervisorPID": 78074,
+    "host": "Pokemon-GO-Plus",
+    "system": "Darwin",
+    "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase2"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 78084,
+  "group": 78084,
+  "cleanup": {
+    "status": "group-signalled",
+    "signals": [],
+    "parentReaped": true,
+    "allowanceSeconds": 8.0,
+    "seconds": 0.006,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "/Users/carsonrau/Developer/DiscordKit-ci-phase2/Docs/Tasks/ci-reliability/phase-2/green-discovery.log",
+      "retainedBytes": 14047,
+      "observedBytes": 14047,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T05:16:59.700987+00:00",
+  "endMonotonic": 318627.206176833,
+  "elapsedSeconds": 3.085,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}

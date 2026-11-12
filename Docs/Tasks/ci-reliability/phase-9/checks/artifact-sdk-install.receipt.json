@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "name": "artifact-sdk-install",
+  "stage": "artifact-sdk-install",
+  "operation": "metadata",
+  "arguments": [
+    "npm",
+    "ci",
+    "--ignore-scripts",
+    "--fetch-retries=0",
+    "--fetch-timeout=120000",
+    "--prefix",
+    "Tools/ci/artifact-sdk"
+  ],
+  "start": "2026-11-12T15:52:25.730896+00:00",
+  "startMonotonic": 356753.066719208,
+  "deadlineMonotonic": 356933.066719208,
+  "executionLimitSeconds": 180,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "operation",
+  "paths": {
+    "output": "Docs/Tasks/ci-reliability/phase-9/checks/artifact-sdk-install.log",
+    "stdout": null,
+    "diagnostics": "Docs/Tasks/ci-reliability/phase-9/checks/artifact-sdk-install.diagnostics.jsonl",
+    "receipt": "Docs/Tasks/ci-reliability/phase-9/checks/artifact-sdk-install.receipt.json"
+  },
+  "identity": {
+    "executionID": "dd6d87a2-7ca7-44b5-9d1a-6befb4a0ee7e",
+    "supervisorPID": 50509,
+    "host": "Pokemon-GO-Plus",
+    "system": "Darwin",
+    "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase9"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 50552,
+  "group": 50552,
+  "cleanup": {
+    "status": "group-signalled",
+    "signals": [],
+    "parentReaped": true,
+    "allowanceSeconds": 8.0,
+    "seconds": 0.003,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "verificationMalformedRows": 0,
+    "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "Docs/Tasks/ci-reliability/phase-9/checks/artifact-sdk-install.log",
+      "retainedBytes": 712,
+      "observedBytes": 712,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T15:52:27.275265+00:00",
+  "endMonotonic": 356754.611127958,
+  "elapsedSeconds": 1.544,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}

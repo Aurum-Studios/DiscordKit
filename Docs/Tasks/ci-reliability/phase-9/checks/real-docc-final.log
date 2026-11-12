@@ -1,0 +1,113 @@
+/Library/Frameworks/Python.framework/Versions/3.14/bin/python3 /Users/carsonrau/Developer/DiscordKit-ci-phase9/Docs/Tasks/ci-reliability/phase-9/checks/real-docc/replay.py --output .build/phase9-real-docc-final
+::group::identity-query
+git rev-parse HEAD
+0e70c39da4125f2e6aa440bddec68e8a43455dd4
+::endgroup::
+::group::identity-query
+/Library/Frameworks/Python.framework/Versions/3.14/bin/python3 -c 'import base64,subprocess,sys; result=subprocess.run(sys.argv[1:], stdout=subprocess.PIPE); sys.stdout.buffer.write(base64.b64encode(result.stdout)); sys.stdout.flush(); raise SystemExit(result.returncode)' git ls-files -z
+LmdpdGlnbm9yZQBQYWNrYWdlcy9EaXNjb3JkRFNMRXh0ZW5zaW9ucy9Tb3VyY2VzL0Rpc2NvcmREU0xFeHRlbnNpb25zL0Rpc2NvcmREU0xFeHRlbnNpb25zLmRvY2MvRGlzY29yZERTTEV4dGVuc2lvbnMubWQAUGFja2FnZXMvRGlzY29yZERTTE1hY3Jvcy9Tb3VyY2VzL0Rpc2NvcmREU0xNYWNyb3MvRGlzY29yZERTTE1hY3Jvcy5kb2NjL0Rpc2NvcmREU0xNYWNyb3MubWQAU291cmNlcy9EaXNjb3JkS2l0L0Rpc2NvcmRLaXQuZG9jYy9EaXNjb3JkS2l0Lm1kAA==::endgroup::
+::group::identity-query
+git rev-parse HEAD
+0e70c39da4125f2e6aa440bddec68e8a43455dd4
+::endgroup::
+::group::identity-query
+/Library/Frameworks/Python.framework/Versions/3.14/bin/python3 -c 'import base64,subprocess,sys; result=subprocess.run(sys.argv[1:], stdout=subprocess.PIPE); sys.stdout.buffer.write(base64.b64encode(result.stdout)); sys.stdout.flush(); raise SystemExit(result.returncode)' git ls-files -z
+LmdpdGlnbm9yZQBQYWNrYWdlcy9EaXNjb3JkRFNMRXh0ZW5zaW9ucy9Tb3VyY2VzL0Rpc2NvcmREU0xFeHRlbnNpb25zL0Rpc2NvcmREU0xFeHRlbnNpb25zLmRvY2MvRGlzY29yZERTTEV4dGVuc2lvbnMubWQAUGFja2FnZXMvRGlzY29yZERTTE1hY3Jvcy9Tb3VyY2VzL0Rpc2NvcmREU0xNYWNyb3MvRGlzY29yZERTTE1hY3Jvcy5kb2NjL0Rpc2NvcmREU0xNYWNyb3MubWQAU291cmNlcy9EaXNjb3JkS2l0L0Rpc2NvcmRLaXQuZG9jYy9EaXNjb3JkS2l0Lm1kAA==::endgroup::
+::group::identity-query
+git rev-parse HEAD
+0e70c39da4125f2e6aa440bddec68e8a43455dd4
+::endgroup::
+::group::identity-query
+/Library/Frameworks/Python.framework/Versions/3.14/bin/python3 -c 'import base64,subprocess,sys; result=subprocess.run(sys.argv[1:], stdout=subprocess.PIPE); sys.stdout.buffer.write(base64.b64encode(result.stdout)); sys.stdout.flush(); raise SystemExit(result.returncode)' git ls-files -z
+LmdpdGlnbm9yZQBQYWNrYWdlcy9EaXNjb3JkRFNMRXh0ZW5zaW9ucy9Tb3VyY2VzL0Rpc2NvcmREU0xFeHRlbnNpb25zL0Rpc2NvcmREU0xFeHRlbnNpb25zLmRvY2MvRGlzY29yZERTTEV4dGVuc2lvbnMubWQAUGFja2FnZXMvRGlzY29yZERTTE1hY3Jvcy9Tb3VyY2VzL0Rpc2NvcmREU0xNYWNyb3MvRGlzY29yZERTTE1hY3Jvcy5kb2NjL0Rpc2NvcmREU0xNYWNyb3MubWQAU291cmNlcy9EaXNjb3JkS2l0L0Rpc2NvcmRLaXQuZG9jYy9EaXNjb3JkS2l0Lm1kAA==::endgroup::
+::group::identity-query
+git rev-parse HEAD
+0e70c39da4125f2e6aa440bddec68e8a43455dd4
+::endgroup::
+::group::identity-query
+/Library/Frameworks/Python.framework/Versions/3.14/bin/python3 -c 'import base64,subprocess,sys; result=subprocess.run(sys.argv[1:], stdout=subprocess.PIPE); sys.stdout.buffer.write(base64.b64encode(result.stdout)); sys.stdout.flush(); raise SystemExit(result.returncode)' git ls-files -z
+LmdpdGlnbm9yZQBQYWNrYWdlcy9EaXNjb3JkRFNMRXh0ZW5zaW9ucy9Tb3VyY2VzL0Rpc2NvcmREU0xFeHRlbnNpb25zL0Rpc2NvcmREU0xFeHRlbnNpb25zLmRvY2MvRGlzY29yZERTTEV4dGVuc2lvbnMubWQAUGFja2FnZXMvRGlzY29yZERTTE1hY3Jvcy9Tb3VyY2VzL0Rpc2NvcmREU0xNYWNyb3MvRGlzY29yZERTTE1hY3Jvcy5kb2NjL0Rpc2NvcmREU0xNYWNyb3MubWQAU291cmNlcy9EaXNjb3JkS2l0L0Rpc2NvcmRLaXQuZG9jYy9EaXNjb3JkS2l0Lm1kAA==::endgroup::
+::group::identity-query
+git rev-parse HEAD
+0e70c39da4125f2e6aa440bddec68e8a43455dd4
+::endgroup::
+::group::identity-query
+/Library/Frameworks/Python.framework/Versions/3.14/bin/python3 -c 'import base64,subprocess,sys; result=subprocess.run(sys.argv[1:], stdout=subprocess.PIPE); sys.stdout.buffer.write(base64.b64encode(result.stdout)); sys.stdout.flush(); raise SystemExit(result.returncode)' git ls-files -z
+LmdpdGlnbm9yZQBQYWNrYWdlcy9EaXNjb3JkRFNMRXh0ZW5zaW9ucy9Tb3VyY2VzL0Rpc2NvcmREU0xFeHRlbnNpb25zL0Rpc2NvcmREU0xFeHRlbnNpb25zLmRvY2MvRGlzY29yZERTTEV4dGVuc2lvbnMubWQAUGFja2FnZXMvRGlzY29yZERTTE1hY3Jvcy9Tb3VyY2VzL0Rpc2NvcmREU0xNYWNyb3MvRGlzY29yZERTTE1hY3Jvcy5kb2NjL0Rpc2NvcmREU0xNYWNyb3MubWQAU291cmNlcy9EaXNjb3JkS2l0L0Rpc2NvcmRLaXQuZG9jYy9EaXNjb3JkS2l0Lm1kAA==::endgroup::
+::group::identity-query
+git rev-parse HEAD
+0e70c39da4125f2e6aa440bddec68e8a43455dd4
+::endgroup::
+::group::identity-query
+/Library/Frameworks/Python.framework/Versions/3.14/bin/python3 -c 'import base64,subprocess,sys; result=subprocess.run(sys.argv[1:], stdout=subprocess.PIPE); sys.stdout.buffer.write(base64.b64encode(result.stdout)); sys.stdout.flush(); raise SystemExit(result.returncode)' git ls-files -z
+LmdpdGlnbm9yZQBQYWNrYWdlcy9EaXNjb3JkRFNMRXh0ZW5zaW9ucy9Tb3VyY2VzL0Rpc2NvcmREU0xFeHRlbnNpb25zL0Rpc2NvcmREU0xFeHRlbnNpb25zLmRvY2MvRGlzY29yZERTTEV4dGVuc2lvbnMubWQAUGFja2FnZXMvRGlzY29yZERTTE1hY3Jvcy9Tb3VyY2VzL0Rpc2NvcmREU0xNYWNyb3MvRGlzY29yZERTTE1hY3Jvcy5kb2NjL0Rpc2NvcmREU0xNYWNyb3MubWQAU291cmNlcy9EaXNjb3JkS2l0L0Rpc2NvcmRLaXQuZG9jYy9EaXNjb3JkS2l0Lm1kAA==::endgroup::
+::group::identity-query
+git rev-parse HEAD
+0e70c39da4125f2e6aa440bddec68e8a43455dd4
+::endgroup::
+::group::identity-query
+/Library/Frameworks/Python.framework/Versions/3.14/bin/python3 -c 'import base64,subprocess,sys; result=subprocess.run(sys.argv[1:], stdout=subprocess.PIPE); sys.stdout.buffer.write(base64.b64encode(result.stdout)); sys.stdout.flush(); raise SystemExit(result.returncode)' git ls-files -z
+LmdpdGlnbm9yZQBQYWNrYWdlcy9EaXNjb3JkRFNMRXh0ZW5zaW9ucy9Tb3VyY2VzL0Rpc2NvcmREU0xFeHRlbnNpb25zL0Rpc2NvcmREU0xFeHRlbnNpb25zLmRvY2MvRGlzY29yZERTTEV4dGVuc2lvbnMubWQAUGFja2FnZXMvRGlzY29yZERTTE1hY3Jvcy9Tb3VyY2VzL0Rpc2NvcmREU0xNYWNyb3MvRGlzY29yZERTTE1hY3Jvcy5kb2NjL0Rpc2NvcmREU0xNYWNyb3MubWQAU291cmNlcy9EaXNjb3JkS2l0L0Rpc2NvcmRLaXQuZG9jYy9EaXNjb3JkS2l0Lm1kAA==::endgroup::
+::group::identity-query
+git rev-parse HEAD
+0e70c39da4125f2e6aa440bddec68e8a43455dd4
+::endgroup::
+::group::identity-query
+/Library/Frameworks/Python.framework/Versions/3.14/bin/python3 -c 'import base64,subprocess,sys; result=subprocess.run(sys.argv[1:], stdout=subprocess.PIPE); sys.stdout.buffer.write(base64.b64encode(result.stdout)); sys.stdout.flush(); raise SystemExit(result.returncode)' git ls-files -z
+LmdpdGlnbm9yZQBQYWNrYWdlcy9EaXNjb3JkRFNMRXh0ZW5zaW9ucy9Tb3VyY2VzL0Rpc2NvcmREU0xFeHRlbnNpb25zL0Rpc2NvcmREU0xFeHRlbnNpb25zLmRvY2MvRGlzY29yZERTTEV4dGVuc2lvbnMubWQAUGFja2FnZXMvRGlzY29yZERTTE1hY3Jvcy9Tb3VyY2VzL0Rpc2NvcmREU0xNYWNyb3MvRGlzY29yZERTTE1hY3Jvcy5kb2NjL0Rpc2NvcmREU0xNYWNyb3MubWQAU291cmNlcy9EaXNjb3JkS2l0L0Rpc2NvcmRLaXQuZG9jYy9EaXNjb3JkS2l0Lm1kAA==::endgroup::
+::group::identity-query
+git rev-parse HEAD
+0e70c39da4125f2e6aa440bddec68e8a43455dd4
+::endgroup::
+::group::identity-query
+/Library/Frameworks/Python.framework/Versions/3.14/bin/python3 -c 'import base64,subprocess,sys; result=subprocess.run(sys.argv[1:], stdout=subprocess.PIPE); sys.stdout.buffer.write(base64.b64encode(result.stdout)); sys.stdout.flush(); raise SystemExit(result.returncode)' git ls-files -z
+LmdpdGlnbm9yZQBQYWNrYWdlcy9EaXNjb3JkRFNMRXh0ZW5zaW9ucy9Tb3VyY2VzL0Rpc2NvcmREU0xFeHRlbnNpb25zL0Rpc2NvcmREU0xFeHRlbnNpb25zLmRvY2MvRGlzY29yZERTTEV4dGVuc2lvbnMubWQAUGFja2FnZXMvRGlzY29yZERTTE1hY3Jvcy9Tb3VyY2VzL0Rpc2NvcmREU0xNYWNyb3MvRGlzY29yZERTTE1hY3Jvcy5kb2NjL0Rpc2NvcmREU0xNYWNyb3MubWQAU291cmNlcy9EaXNjb3JkS2l0L0Rpc2NvcmRLaXQuZG9jYy9EaXNjb3JkS2l0Lm1kAA==::endgroup::
+Built 3 public-module archives into /Users/carsonrau/Developer/DiscordKit-ci-phase9/.build/phase9-real-docc-final/site
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "xcodeVersion": "Xcode 27.1\nBuild version 27A9275",
+  "doccSHA256": "a570f408e327fa647603cb7c9cb1e301abd89d1303dffefc66a4e54b24b827e1",
+  "qualification": "Local synthetic DocC transport and rendered static routes only",
+  "nativeCompilationCount": 0,
+  "symbolGraphEmissionCount": 0,
+  "syntheticGraphFixtureCount": 3,
+  "strictModuleConversionCount": 3,
+  "packageMergeCount": 3,
+  "consumerCommandCount": 2,
+  "consumerMergeCount": 1,
+  "consumerStaticTransformCount": 1,
+  "consumerCompilationCount": 0,
+  "consumerGraphEmissionCount": 0,
+  "consumerConversionCount": 0,
+  "hostingBasePath": "/Phase9Fixture",
+  "routes": [
+    "documentation/index.html",
+    "documentation/discordkit/index.html",
+    "documentation/discorddslmacros/index.html",
+    "documentation/discorddslextensions/index.html"
+  ],
+  "checkedDocumentationLinks": [
+    "/documentation/discorddslextensions",
+    "/documentation/discorddslmacros",
+    "/documentation/discordkit"
+  ],
+  "checkedAssetLinks": [
+    "/Phase9Fixture/css/index.63be42cf.css",
+    "/Phase9Fixture/favicon.ico",
+    "/Phase9Fixture/favicon.svg",
+    "/Phase9Fixture/js/chunk-vendors.88e02fc3.js",
+    "/Phase9Fixture/js/index.f7bc5188.js"
+  ],
+  "rootRedirectChecked": true,
+  "sourceIdentityAndSealedHashesChecked": true,
+  "testedInputs": {
+    "Tools/ci/build_docc.py": "23da2166bcecbcbce2bf29fce24afe33cd45a1baef98907b4cb0185e6d1466ac",
+    "Tools/ci/build_documentation_site.py": "9c02069357ac09cf017f8764cd8ec83804c7c4c61008bb2a6ad8d5c69dcedb34",
+    "Tools/ci/documentation_inputs.py": "a19df48b184e25eb11b3e690f26b3ccba2d61d54b4d97ee84a2c2e1e971824c5",
+    "Tools/ci/native_jobs.py": "b1cb5c3ea75348fb2089d25f65cef2a4ced77887706b16882d15cb1b4a5f6e96",
+    "Tools/ci/native_receipts.py": "4444c21bb7b8a6b3dac4bf6b943c97c2d50b18fdd04fa845832606de0413f9c0",
+    "Tools/ci/artifact_index.py": "170901937a7c65865f27a1d1a1a193870883ad662ca1aa0d1a73decfb4278e44",
+    "Tools/ci/artifact_transfer.py": "ec764bad1d985bbda2ada3b5dd3903b12029d76092eb07ae6e3e908c2d407022"
+  }
+}

@@ -1,0 +1,46 @@
+swift build --package-path Tools/DiscordKitLoadTests --scratch-path .build/ci-phase2-load --build-system native --jobs 6 --force-resolved-versions --disable-experimental-prebuilts --build-tests
+[0/1] Planning build
+Building for debugging...
+[0/8] Write sources
+[2/8] Write swift-version--58304C5D6DBC2206.txt
+[4/12] Compiling DiscordKitLoadTests EventHubTimingCommand.swift
+[5/12] Compiling DiscordKitLoadTests EventHubTimingAccounting.swift
+[6/12] Compiling DiscordKitLoadTests EventHubTimingRunner.swift
+[7/12] Emitting module DiscordKitLoadTests
+[8/13] Compiling DiscordKitLoadTests main.swift
+[8/13] Write Objects.LinkFileList
+[9/13] Linking DiscordKitLoadTests
+[10/13] Applying DiscordKitLoadTests
+[12/38] Compiling DiscordKitLoadTestsTests Phase10TimingTests.swift
+[13/38] Compiling DiscordKitLoadTestsTests Phase5TimingConfigurationTests.swift
+[14/38] Compiling DiscordKitLoadTestsTests Phase6TimingConfigurationTests.swift
+[15/38] Compiling DiscordKitLoadTestsTests Phase7TimingConfigurationTests.swift
+[16/38] Compiling DiscordKitLoadTestsTests Phase8TimingConfigurationTests.swift
+[17/38] Compiling DiscordKitLoadTestsTests Phase9TimingConfigurationTests.swift
+[18/38] Compiling DiscordKitLoadTestsTests RESTTimingRunnerTests.swift
+[19/38] Compiling DiscordKitLoadTestsTests RPCActivitiesTimingRunnerTests.swift
+[20/38] Compiling DiscordKitLoadTestsTests RPCQueueTimingRunnerTests.swift
+[21/42] Compiling DiscordKitLoadTestsTests InteractionTimingRunnerTests.swift
+[22/42] Compiling DiscordKitLoadTestsTests LoadRunnerTests.swift
+[23/42] Compiling DiscordKitLoadTestsTests OAuthTimingRunnerTests.swift
+[24/42] Compiling DiscordKitLoadTestsTests OptionalServiceScalingTimingTests.swift
+[25/42] Compiling DiscordKitLoadTestsTests OrderingHandoffTimingRunnerTests.swift
+[26/42] Emitting module DiscordKitLoadTestsTests
+[27/42] Compiling DiscordKitLoadTestsTests EventHubTimingAccountingTests.swift
+[28/42] Compiling DiscordKitLoadTestsTests EventHubTimingTests.swift
+[29/42] Compiling DiscordKitLoadTestsTests GatewayLoadRunnerTests.swift
+[30/42] Compiling DiscordKitLoadTestsTests GatewayTimingRunnerTests.swift
+[31/42] Compiling DiscordKitLoadTestsTests HTTPPolicyRunnerTests.swift
+[32/42] Compiling DiscordKitLoadTestsTests ArrivalTimingRunnerTests.swift
+[33/42] Compiling DiscordKitLoadTestsTests CacheLoadRunnerTests.swift
+[34/42] Compiling DiscordKitLoadTestsTests CacheScalingTimingTests.swift
+[35/42] Compiling DiscordKitLoadTestsTests CacheTimingRunnerTests.swift
+[36/42] Compiling DiscordKitLoadTestsTests ClientTimingRunnerTests.swift
+[37/42] Compiling DiscordKitLoadTestsTests ServiceTimingRunnerTests.swift
+[38/42] Compiling DiscordKitLoadTestsTests SyntheticCommandTimingRunnerTests.swift
+[39/42] Compiling DiscordKitLoadTestsTests TransportTimingRunnerTests.swift
+[40/42] Compiling DiscordKitLoadTestsTests VoiceLifecycleTimingTests.swift
+[40/42] Write Objects.LinkFileList
+[41/42] Linking DiscordKitLoadTestsPackageTests
+Build complete! (11.51s)
+warning: '--build-system native' has been deprecated and will be removed in a future release; please report an issue at https://github.com/swiftlang/swift-package-manager/issues if you are unable to adopt the default build system.

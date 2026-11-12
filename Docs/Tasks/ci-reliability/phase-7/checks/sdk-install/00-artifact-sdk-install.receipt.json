@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "name": "artifact-sdk-install",
+  "stage": "artifact-sdk-install",
+  "operation": "localHelperCheck",
+  "arguments": [
+    "npm",
+    "ci",
+    "--prefix",
+    "Tools/ci/artifact-sdk",
+    "--ignore-scripts",
+    "--no-audit",
+    "--no-fund"
+  ],
+  "start": "2026-11-12T15:12:40.124327+00:00",
+  "startMonotonic": 354367.47860375,
+  "deadlineMonotonic": 354667.478294416,
+  "executionLimitSeconds": 300,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "aggregate",
+  "paths": {
+    "output": "Docs/Tasks/ci-reliability/phase-7/checks/sdk-install/00-artifact-sdk-install.log",
+    "stdout": null,
+    "diagnostics": "Docs/Tasks/ci-reliability/phase-7/checks/sdk-install/00-artifact-sdk-install.diagnostics.jsonl",
+    "receipt": "Docs/Tasks/ci-reliability/phase-7/checks/sdk-install/00-artifact-sdk-install.receipt.json"
+  },
+  "identity": {
+    "executionID": "43087379-3240-48f1-8ce7-854cea5e9d07",
+    "supervisorPID": 20026,
+    "host": "Pokemon-GO-Plus",
+    "system": "Darwin",
+    "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase7"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 20036,
+  "group": 20036,
+  "cleanup": {
+    "status": "group-signalled",
+    "signals": [],
+    "parentReaped": true,
+    "allowanceSeconds": 8.0,
+    "seconds": 0.004,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "verificationMalformedRows": 0,
+    "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "Docs/Tasks/ci-reliability/phase-7/checks/sdk-install/00-artifact-sdk-install.log",
+      "retainedBytes": 379,
+      "observedBytes": 379,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T15:12:41.687989+00:00",
+  "endMonotonic": 354369.042278,
+  "elapsedSeconds": 1.564,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}

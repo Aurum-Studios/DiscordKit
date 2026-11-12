@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "name": "benchmarks-python",
+  "stage": "preflight-benchmark-python",
+  "operation": "localHelperCheck",
+  "arguments": [
+    "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "Tools/DiscordDSLBenchmarks/scripts",
+    "-p",
+    "test_*.py"
+  ],
+  "start": "2026-11-12T15:52:25.742798+00:00",
+  "startMonotonic": 356753.078651708,
+  "deadlineMonotonic": 357053.078325041,
+  "executionLimitSeconds": 300,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "aggregate",
+  "paths": {
+    "output": "/Users/carsonrau/Developer/DiscordKit-ci-phase9/Docs/Tasks/ci-reliability/phase-9/checks/benchmark-python/00-benchmarks-python.log",
+    "stdout": null,
+    "diagnostics": "/Users/carsonrau/Developer/DiscordKit-ci-phase9/Docs/Tasks/ci-reliability/phase-9/checks/benchmark-python/00-benchmarks-python.diagnostics.jsonl",
+    "receipt": "/Users/carsonrau/Developer/DiscordKit-ci-phase9/Docs/Tasks/ci-reliability/phase-9/checks/benchmark-python/00-benchmarks-python.receipt.json"
+  },
+  "identity": {
+    "executionID": "c018a8a9-0aae-4448-a874-e0c79abc5ccc",
+    "supervisorPID": 50510,
+    "host": "Pokemon-GO-Plus",
+    "system": "Darwin",
+    "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase9"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 50555,
+  "group": 50555,
+  "cleanup": {
+    "status": "group-signalled",
+    "signals": [],
+    "parentReaped": true,
+    "allowanceSeconds": 8.0,
+    "seconds": 0.004,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "verificationMalformedRows": 0,
+    "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "/Users/carsonrau/Developer/DiscordKit-ci-phase9/Docs/Tasks/ci-reliability/phase-9/checks/benchmark-python/00-benchmarks-python.log",
+      "retainedBytes": 390,
+      "observedBytes": 390,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T15:52:26.143013+00:00",
+  "endMonotonic": 356753.478878333,
+  "elapsedSeconds": 0.4,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}

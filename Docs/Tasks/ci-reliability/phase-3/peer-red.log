@@ -1,0 +1,38 @@
+python3 -m unittest discover -s Tools/DiscordKitLoadTests/scripts -p test_local_peer.py -k LocalPeerShutdownTests -v
+test_cli_sigterm_shutdown (test_local_peer.LocalPeerShutdownTests.test_cli_sigterm_shutdown)
+Ordinary startup returns one exact metrics receipt and closes its listener. ... {"fixture": "local-peer-sigterm", "blockedSIGTERM": false, "terminatedBeforeCleanup": true, "forcedKill": false, "exitCode": 0, "reaped": true, "portClosed": true}
+ok
+test_cli_sigterm_shutdown_with_inherited_blocked_signal (test_local_peer.LocalPeerShutdownTests.test_cli_sigterm_shutdown_with_inherited_blocked_signal)
+A masked parent cannot leave the peer alive after the harness requests shutdown. ... {"fixture": "local-peer-sigterm", "blockedSIGTERM": true, "terminatedBeforeCleanup": false, "forcedKill": true, "exitCode": -9, "reaped": true, "portClosed": true}
+FAIL
+
+======================================================================
+FAIL: test_cli_sigterm_shutdown_with_inherited_blocked_signal (test_local_peer.LocalPeerShutdownTests.test_cli_sigterm_shutdown_with_inherited_blocked_signal)
+A masked parent cannot leave the peer alive after the harness requests shutdown.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/work/Tools/DiscordKitLoadTests/scripts/test_local_peer.py", line 207, in assert_cli_shutdown
+    output, errors = peer.communicate(timeout=3)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 1209, in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 2116, in _communicate
+    self._check_timeout(endtime, orig_timeout, stdout, stderr)
+  File "/usr/lib/python3.12/subprocess.py", line 1253, in _check_timeout
+    raise TimeoutExpired(
+subprocess.TimeoutExpired: Command '['/usr/bin/python3', '-c', "import os, signal, sys\nmask = {signal.SIGTERM} if sys.argv[1] == 'blocked' else set()\nsignal.pthread_sigmask(signal.SIG_SETMASK, mask)\nos.execv(sys.executable, [sys.executable, *sys.argv[2:]])\n", 'blocked', '/work/Tools/DiscordKitLoadTests/scripts/local_peer.py', '--payload-bytes', '65536', '--timing-case', 'transport.body64KiBChunk257V1']' timed out after 3 seconds
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/work/Tools/DiscordKitLoadTests/scripts/test_local_peer.py", line 161, in test_cli_sigterm_shutdown_with_inherited_blocked_signal
+    self.assert_cli_shutdown(blocked_sigterm=True)
+  File "/work/Tools/DiscordKitLoadTests/scripts/test_local_peer.py", line 210, in assert_cli_shutdown
+    self.fail("peer remained alive three seconds after SIGTERM")
+AssertionError: peer remained alive three seconds after SIGTERM
+
+----------------------------------------------------------------------
+Ran 2 tests in 3.595s
+
+FAILED (failures=1)

@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "name": "actionlint",
+  "stage": "preflight-workflow",
+  "operation": "localHelperCheck",
+  "arguments": [
+    "actionlint",
+    ".github/workflows/ci.yml",
+    ".github/workflows/documentation.yml",
+    ".github/workflows/native-platform.yml",
+    ".github/workflows/release.yml",
+    ".github/workflows/timing-comparison.yml",
+    ".github/workflows/timing-periodic.yml",
+    ".github/workflows/upstream-review.yml"
+  ],
+  "start": "2026-11-12T15:18:22.751263+00:00",
+  "startMonotonic": 354710.102987791,
+  "deadlineMonotonic": 355010.102716166,
+  "executionLimitSeconds": 300,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "aggregate",
+  "paths": {
+    "output": "/Users/carsonrau/Developer/DiscordKit-ci-phase7/Docs/Tasks/ci-reliability/phase-7/checks/workflow/00-actionlint.log",
+    "stdout": null,
+    "diagnostics": "/Users/carsonrau/Developer/DiscordKit-ci-phase7/Docs/Tasks/ci-reliability/phase-7/checks/workflow/00-actionlint.diagnostics.jsonl",
+    "receipt": "/Users/carsonrau/Developer/DiscordKit-ci-phase7/Docs/Tasks/ci-reliability/phase-7/checks/workflow/00-actionlint.receipt.json"
+  },
+  "identity": {
+    "executionID": "d1615dda-0237-47cb-82fe-b93ae736173c",
+    "supervisorPID": 26836,
+    "host": "Pokemon-GO-Plus",
+    "system": "Darwin",
+    "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase7"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 26854,
+  "group": 26854,
+  "cleanup": {
+    "status": "group-signalled",
+    "signals": [],
+    "parentReaped": true,
+    "allowanceSeconds": 8.0,
+    "seconds": 0.004,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "verificationMalformedRows": 0,
+    "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "/Users/carsonrau/Developer/DiscordKit-ci-phase7/Docs/Tasks/ci-reliability/phase-7/checks/workflow/00-actionlint.log",
+      "retainedBytes": 256,
+      "observedBytes": 256,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T15:18:22.764734+00:00",
+  "endMonotonic": 354710.116472375,
+  "elapsedSeconds": 0.013,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}

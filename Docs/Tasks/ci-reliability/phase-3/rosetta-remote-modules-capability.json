@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "capturedAtUTC": "2026-11-12T12:49:40.318719+00:00",
+  "scope": "One sacrificial sleep child only; no compiler/test/Swift process attached",
+  "debuggerLimitSeconds": 5,
+  "overallLimitSeconds": 15,
+  "fixturePID": 5529,
+  "port": 34057,
+  "childSubreaperEnabled": true,
+  "moduleLoadCode": "import lldb,os,struct\nmodules={}\nfor line in open('/proc/%d/maps' % lldb.process.GetProcessID()):\n    fields=line.split(None,5)\n    if len(fields)!=6 or not fields[5].startswith('/'):\n        continue\n    path=fields[5].strip()\n    if path.endswith(' (deleted)') or not os.path.isfile(path):\n        continue\n    with open(path,'rb') as source:\n        header=source.read(20)\n    if len(header)!=20 or header[:4]!=b'\\x7fELF' or header[4]!=2 or struct.unpack('<H',header[18:20])[0]!=62:\n        continue\n    elf_type=struct.unpack('<H',header[16:18])[0]\n    if elf_type not in (2,3):\n        continue\n    start=int(fields[0].split('-')[0],16)\n    bias=start-int(fields[2],16) if elf_type==3 else 0\n    modules[path]=min(modules.get(path,bias),bias)\nfor path,bias in sorted(modules.items()):\n    module=lldb.target.AddModule(path,'x86_64-unknown-linux-gnu',None)\n    if not module.IsValid():\n        print('MODULE_INVALID',path)\n        continue\n    error=lldb.target.SetModuleLoadAddress(module,bias)\n    print('MODULE_LOAD',path,hex(bias),error)\n",
+  "probe": {
+    "arguments": [
+      "lldb",
+      "--batch",
+      "--no-lldbinit",
+      "-o",
+      "settings set frame-format 'frame #${frame.index}: ${frame.pc} ${module.file.basename} ${function.name-without-args}'",
+      "-o",
+      "target create --arch x86_64 /usr/bin/sleep",
+      "-o",
+      "gdb-remote 127.0.0.1:34057",
+      "-o",
+      "script import lldb,time; lldb.debugger.SetAsync(True); print(\"CONTINUE\",lldb.process.Continue()); time.sleep(0.25); print(\"STOP\",lldb.process.Stop()); time.sleep(0.1); print(\"STATE\",lldb.process.GetState())",
+      "-o",
+      "script exec(\"import lldb,os,struct\\nmodules={}\\nfor line in open('/proc/%d/maps' % lldb.process.GetProcessID()):\\n    fields=line.split(None,5)\\n    if len(fields)!=6 or not fields[5].startswith('/'):\\n        continue\\n    path=fields[5].strip()\\n    if path.endswith(' (deleted)') or not os.path.isfile(path):\\n        continue\\n    with open(path,'rb') as source:\\n        header=source.read(20)\\n    if len(header)!=20 or header[:4]!=b'\\\\x7fELF' or header[4]!=2 or struct.unpack('<H',header[18:20])[0]!=62:\\n        continue\\n    elf_type=struct.unpack('<H',header[16:18])[0]\\n    if elf_type not in (2,3):\\n        continue\\n    start=int(fields[0].split('-')[0],16)\\n    bias=start-int(fields[2],16) if elf_type==3 else 0\\n    modules[path]=min(modules.get(path,bias),bias)\\nfor path,bias in sorted(modules.items()):\\n    module=lldb.target.AddModule(path,'x86_64-unknown-linux-gnu',None)\\n    if not module.IsValid():\\n        print('MODULE_INVALID',path)\\n        continue\\n    error=lldb.target.SetModuleLoadAddress(module,bias)\\n    print('MODULE_LOAD',path,hex(bias),error)\\n\")",
+      "-o",
+      "image list -o -f",
+      "-o",
+      "thread backtrace all",
+      "-o",
+      "process kill"
+    ],
+    "status": "available",
+    "output": "(lldb) settings set frame-format 'frame #${frame.index}: ${frame.pc} ${module.file.basename} ${function.name-without-args}'\n(lldb) target create --arch x86_64 /usr/bin/sleep\nCurrent executable set to '/usr/bin/sleep' (x86_64).\n(lldb) gdb-remote 127.0.0.1:34057\nProcess 5529 stopped\n* thread #1, stop reason = signal SIGTRAP\n    frame #0: 0x00007ffffffe5540 0x00007ffffffe5540\n->  0x7ffffffe5540: movq   %rsp, %rdi\n    0x7ffffffe5543: callq  0x7ffffffe61d0\n    0x7ffffffe5548: movq   %rax, %r12\n    0x7ffffffe554b: movq   %rsp, %r13\nTarget 0: (sleep) stopped.\n(lldb) script import lldb,time; lldb.debugger.SetAsync(True); print(\"CONTINUE\",lldb.process.Continue()); time.sleep(0.25); print(\"STOP\",lldb.process.Stop()); time.sleep(0.1); print(\"STATE\",lldb.process.GetState())\nProcess 5529 stopped\n* thread #1, stop reason = signal SIGINT\n    frame #0: 0x00007fffff69ab78 0x00007fffff69ab78\n->  0x7fffff69ab78: syscall \n    0x7fffff69ab7a: movq   %rax, %rbx\n    0x7fffff69ab7d: movl   %ebx, %eax\n    0x7fffff69ab7f: cmpl   $-0x16, %ebx\nTarget 0: (sleep) stopped.\nCONTINUE success\nSTOP success\nSTATE 5\n(lldb) script exec(\"import lldb,os,struct\\nmodules={}\\nfor line in open('/proc/%d/maps' % lldb.process.GetProcessID()):\\n    fields=line.split(None,5)\\n    if len(fields)!=6 or not fields[5].startswith('/'):\\n        continue\\n    path=fields[5].strip()\\n    if path.endswith(' (deleted)') or not os.path.isfile(path):\\n        continue\\n    with open(path,'rb') as source:\\n        header=source.read(20)\\n    if len(header)!=20 or header[:4]!=b'\\\\x7fELF' or header[4]!=2 or struct.unpack('<H',header[18:20])[0]!=62:\\n        continue\\n    elf_type=struct.unpack('<H',header[16:18])[0]\\n    if elf_type not in (2,3):\\n        continue\\n    start=int(fields[0].split('-')[0],16)\\n    bias=start-int(fields[2],16) if elf_type==3 else 0\\n    modules[path]=min(modules.get(path,bias),bias)\\nfor path,bias in sorted(modules.items()):\\n    module=lldb.target.AddModule(path,'x86_64-unknown-linux-gnu',None)\\n    if not module.IsValid():\\n        print('MODULE_INVALID',path)\\n        continue\\n    error=lldb.target.SetModuleLoadAddress(module,bias)\\n    print('MODULE_LOAD',path,hex(bias),error)\\n\")\nMODULE_LOAD /usr/bin/sleep 0x555555554000 error: <NULL>\nMODULE_LOAD /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2 0x7ffffffc6000 error: <NULL>\nMODULE_LOAD /usr/lib/x86_64-linux-gnu/libc.so.6 0x7fffff5ae000 error: <NULL>\n(lldb) image list -o -f\n[  0] 0x0000555555554000 /usr/bin/sleep\n[  1] 0x0000555555554000 /usr/bin/sleep\n[  2] 0x00007ffffffc6000 /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2\n[  3] 0x00007fffff5ae000 /usr/lib/x86_64-linux-gnu/libc.so.6\n(lldb) thread backtrace all\n* thread #1, stop reason = signal SIGINT\n  * frame #0: 0x00007fffff69ab78 libc.so.6 clock_nanosleep    frame #1: 0x00007fffff6a7b27 libc.so.6 __nanosleep    frame #2: 0x0000555555556a7f sleep ___lldb_unnamed_symbol_25d0    frame #3: 0x00007fffff5d81ca libc.so.6 ___lldb_unnamed_symbol_2a150    frame #4: 0x00007fffff5d828b libc.so.6 __libc_start_main    frame #5: 0x0000555555556ba5 sleep ___lldb_unnamed_symbol_2b80\n(lldb) process kill\nProcess 5529 exited with status = 6 (0x00000006) unexpected response to k packet: OK\n",
+    "exitCode": 0,
+    "truncated": false,
+    "seconds": 1.181
+  },
+  "fixtureReaped": true,
+  "fixtureExitCode": -9,
+  "fixtureOutput": "",
+  "adoptedChildrenReaped": [
+    {
+      "pid": 5530,
+      "waitStatus": 0
+    }
+  ],
+  "fixtureProcessGroupGone": true,
+  "seconds": 1.192
+}

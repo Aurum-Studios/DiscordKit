@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "name": "compiled-binary-identity",
+  "stage": "phase3-final",
+  "operation": "artifactIdentity",
+  "arguments": [
+    "docker",
+    "run",
+    "--rm",
+    "--name",
+    "discordkit-ci-phase3-artifact-identity",
+    "--platform",
+    "linux/amd64",
+    "--cpus",
+    "1",
+    "--memory",
+    "512m",
+    "--network",
+    "none",
+    "--mount",
+    "type=volume,source=discordkit-ci-phase3-amd64-scratch,target=/scratch,readonly",
+    "swift@sha256:1a784fc9de712a985020336bbc447c21050777cbe3b76f915eb352fd21b50f3d",
+    "sha256sum",
+    "/scratch/x86_64-unknown-linux-gnu/debug/DiscordKitLoadTests",
+    "/scratch/x86_64-unknown-linux-gnu/debug/DiscordKitLoadTestsPackageTests.xctest"
+  ],
+  "start": "2026-11-12T13:15:45.943674+00:00",
+  "startMonotonic": 347353.353398208,
+  "deadlineMonotonic": 347383.353398208,
+  "executionLimitSeconds": 30,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "operation",
+  "paths": {
+    "output": "Docs/Tasks/ci-reliability/phase-3/compiled-binary-identity.log",
+    "stdout": "Docs/Tasks/ci-reliability/phase-3/compiled-binary-identity.stdout",
+    "diagnostics": "Docs/Tasks/ci-reliability/phase-3/compiled-binary-identity.diagnostics.jsonl",
+    "receipt": "Docs/Tasks/ci-reliability/phase-3/compiled-binary-identity.receipt.json"
+  },
+  "identity": {
+    "executionID": "7dc84cbf-0298-45bb-afc5-2c9a9c5f02fe",
+    "supervisorPID": 32828,
+    "host": "Pokemon-GO-Plus",
+    "system": "Darwin",
+    "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase3"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 32838,
+  "group": 32838,
+  "cleanup": {
+    "status": "group-signalled",
+    "signals": [],
+    "parentReaped": true,
+    "allowanceSeconds": 8.0,
+    "seconds": 0.004,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "verificationMalformedRows": 0,
+    "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "Docs/Tasks/ci-reliability/phase-3/compiled-binary-identity.log",
+      "retainedBytes": 437,
+      "observedBytes": 437,
+      "truncated": false
+    },
+    {
+      "path": "Docs/Tasks/ci-reliability/phase-3/compiled-binary-identity.stdout",
+      "retainedBytes": 271,
+      "observedBytes": 271,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T13:15:46.684489+00:00",
+  "endMonotonic": 347354.094243416,
+  "elapsedSeconds": 0.741,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}

@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "name": "smoke-loopback",
+  "stage": "phase3-smoke-loopback",
+  "operation": "timingSmoke",
+  "arguments": [
+    "/scratch/x86_64-unknown-linux-gnu/debug/DiscordKitLoadTests",
+    "timing",
+    "--case",
+    "transport.smallBody",
+    "--adapter",
+    "nio",
+    "--requests",
+    "16",
+    "--warmup-requests",
+    "2",
+    "--concurrency",
+    "2",
+    "--profile",
+    "smoke",
+    "--seed",
+    "1",
+    "--duration-seconds",
+    "3",
+    "--warmup-seconds",
+    "1",
+    "--output",
+    "/work/Docs/Tasks/ci-reliability/phase-3/smoke-loopback.json",
+    "--common-report",
+    "/work/Docs/Tasks/ci-reliability/phase-3/smoke-loopback-common.json"
+  ],
+  "start": "2026-11-12T13:03:38.770619+00:00",
+  "startMonotonic": 75725.228776011,
+  "deadlineMonotonic": 75845.228776011,
+  "executionLimitSeconds": 120,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "operation",
+  "paths": {
+    "output": "/work/Docs/Tasks/ci-reliability/phase-3/smoke-loopback.log",
+    "stdout": null,
+    "diagnostics": "/work/Docs/Tasks/ci-reliability/phase-3/smoke-loopback.diagnostics.jsonl",
+    "receipt": "/work/Docs/Tasks/ci-reliability/phase-3/smoke-loopback.receipt.json"
+  },
+  "identity": {
+    "executionID": "c64c204b-8f66-420f-a2f9-cf691dbbb9b0",
+    "supervisorPID": 6656,
+    "host": "213b31596900",
+    "system": "Linux",
+    "repository": "/work"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 6760,
+  "group": 6760,
+  "cleanup": {
+    "status": "session-signalled",
+    "signals": [],
+    "groupSignals": [],
+    "parentReaped": true,
+    "session": 6760,
+    "allowanceSeconds": 8.0,
+    "discovery": {
+      "status": "available",
+      "truncated": false
+    },
+    "groups": [
+      6760
+    ],
+    "seconds": 0.081,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "boundary": "admitted Linux session; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "/work/Docs/Tasks/ci-reliability/phase-3/smoke-loopback.log",
+      "retainedBytes": 535,
+      "observedBytes": 535,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T13:03:39.684289+00:00",
+  "endMonotonic": 75726.142499072,
+  "elapsedSeconds": 0.914,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}

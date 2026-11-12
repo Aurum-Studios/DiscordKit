@@ -1,0 +1,102 @@
+{
+  "schema_version": 1,
+  "captured_at": "2026-11-12T04:32:25Z",
+  "repository": "Aurum-Studios/DiscordKit",
+  "source_revision": "85eac6f3c1d3b17e53596c49e7438efee366c1b3",
+  "source": "Authenticated read-only GitHub MCP Actions tools; API payload JSON is retained without response headers.",
+  "read_only_methods": [
+    "actions_get.get_workflow_run",
+    "actions_list.list_workflow_jobs (filter=all, perPage=100)",
+    "actions_list.list_workflow_run_artifacts (perPage=100)",
+    "get_job_logs (return_content=true, tail_lines=20000)"
+  ],
+  "runs": [
+    {
+      "run_id": 43146954720,
+      "jobs": {
+        "reported": 152,
+        "retained": 152,
+        "page_lengths": [
+          100,
+          52
+        ],
+        "conclusions": {
+          "success": 142,
+          "failure": 5,
+          "cancelled": 2,
+          "skipped": 3
+        }
+      },
+      "artifacts": {
+        "reported": 157,
+        "retained": 157,
+        "page_lengths": [
+          100,
+          57
+        ],
+        "metadata_size_bytes": 10743621569,
+        "missing_digests": 0,
+        "expired_at_capture": 0,
+        "earliest_expiry": "2026-11-14T03:18:57Z"
+      }
+    },
+    {
+      "run_id": 43146954594,
+      "jobs": {
+        "reported": 7,
+        "retained": 7,
+        "page_lengths": [
+          7
+        ],
+        "conclusions": {
+          "success": 7
+        }
+      },
+      "artifacts": {
+        "reported": 10,
+        "retained": 10,
+        "page_lengths": [
+          10
+        ],
+        "metadata_size_bytes": 775922078,
+        "missing_digests": 0,
+        "expired_at_capture": 0,
+        "earliest_expiry": "2026-11-14T03:19:17Z"
+      }
+    }
+  ],
+  "log_coverage": {
+    "requested_jobs": 17,
+    "available": 16,
+    "complete_by_reported_line_count": 11,
+    "success_tail_excerpts": 5,
+    "failed_or_cancelled_jobs": 7,
+    "failed_or_cancelled_logs_complete": 6,
+    "unavailable_jobs": [
+      {
+        "job_id": 130962476496,
+        "error": "HTTP 404",
+        "classification": "Cancelled source-export job with no runner or step fields in API inventory."
+      }
+    ],
+    "details": "log-index.json"
+  },
+  "capture_limits": {
+    "requested_log_tail_lines": 20000,
+    "observed_connector_log_line_cap": 5000,
+    "artifact_archive_download_limit_bytes": 0,
+    "artifact_archives_downloaded": 0,
+    "artifact_archive_bytes_downloaded": 0,
+    "compiled_archive_contents": "Not downloaded; preserve IDs, names, sizes, digests and expiry only.",
+    "public_metadata_urls": "Ordinary GitHub/API URLs retained; signed query URLs and credentials must not be persisted."
+  },
+  "gaps": [
+    "No billing invoice, account spend or purchased-capacity reconciliation is included in these API captures.",
+    "The available connector truncates requested logs to at most 5000 lines. Five successful-job logs are explicitly retained as tail excerpts; all six available failed/cancelled-job logs are complete by reported line count.",
+    "Cancelled source-export job 130962476496 returns HTTP 404 for logs; inventory has no runner/step fields and a completed_at value one second before started_at. Do not derive a negative elapsed/billed duration.",
+    "The 167 artifact archives themselves are not downloaded or independently digest-verified. Metadata digests are GitHub-reported; SHA256SUMS verifies the retained local evidence files only.",
+    "GitHub tool output omits HTTP headers and may project REST fields. These captures do not prove byte-for-byte raw HTTP response preservation.",
+    "A complete native dependency/SDK fingerprint is absent. native-facts.json retains observed versions and source-facts.json retains committed dependency pins plus setup policy.",
+    "No hosted workflow is dispatched, rerun, cancelled or modified by this capture. Existing documentation deployment is historical run evidence only."
+  ]
+}

@@ -1,0 +1,87 @@
+{
+  "schemaVersion": 1,
+  "policyID": "ci-spend-admission-v1",
+  "status": "Phase 10 local admission implemented; account mappings, non-runner charges and hosted execution remain unverified and unauthorized",
+  "authorization": {
+    "enabled": false,
+    "repository": "Aurum-Studios/DiscordKit",
+    "maximumRunAttempts": 1
+  },
+  "billing": {
+    "currency": "USD",
+    "rounding": "ceil-each-job-minute",
+    "rateMaxAgeDays": 30
+  },
+  "entryReserveSeconds": 60,
+  "runnerRates": {
+    "ubuntu-24.04": {
+      "sku": "standard_linux_x64",
+      "usdPerMinute": null,
+      "verifiedOn": null,
+      "sourceURL": "https://docs.github.com/en/billing/reference/actions-runner-pricing",
+      "billingMappingVerified": false,
+      "mappingAssurance": "Public-repository standard-runner exemption and account mapping are not verified. The bootstrap runner is not assumed free."
+    },
+    "Linux-x64-8": {
+      "sku": "linux_8_core",
+      "usdPerMinute": "0.022",
+      "verifiedOn": "2026-11-12",
+      "sourceURL": "https://docs.github.com/en/billing/reference/actions-runner-pricing",
+      "billingMappingVerified": false,
+      "mappingAssurance": "Published list rate only; configured group and account applicability remain unverified."
+    },
+    "Linux-x64-64": {
+      "sku": "linux_64_core",
+      "usdPerMinute": "0.162",
+      "verifiedOn": "2026-11-12",
+      "sourceURL": "https://docs.github.com/en/billing/reference/actions-runner-pricing",
+      "billingMappingVerified": false,
+      "mappingAssurance": "Published list rate only; configured group and account applicability remain unverified."
+    },
+    "MacOS-26-5": {
+      "sku": "macos_xl",
+      "usdPerMinute": "0.102",
+      "verifiedOn": "2026-11-12",
+      "sourceURL": "https://docs.github.com/en/billing/reference/actions-runner-pricing",
+      "billingMappingVerified": false,
+      "mappingAssurance": "Published list rate only; configured group and account applicability remain unverified."
+    }
+  },
+  "additionalCharges": {
+    "storage": {
+      "applicability": "unknown",
+      "unit": "GiB-day",
+      "maximumUnitsPerJobAttempt": null,
+      "usdPerUnit": null,
+      "verifiedOn": null,
+      "sourceURL": "https://docs.github.com/en/billing/concepts/product-billing/github-actions",
+      "evidence": "Storage applicability, bounded cache/artifact volume and complete retention liability are not verified."
+    },
+    "transfer": {
+      "applicability": "unknown",
+      "unit": "GiB",
+      "maximumUnitsPerJobAttempt": null,
+      "usdPerUnit": null,
+      "verifiedOn": null,
+      "sourceURL": "https://docs.github.com/en/billing/concepts/product-billing/github-actions",
+      "evidence": "Transfer applicability and a bound covering cache, distribution, artifact and recovery attempts are not verified."
+    }
+  },
+  "allowances": {
+    "experimentUSD": "0.00",
+    "workflowUSD": "0.00",
+    "safetyUSD": "0.00",
+    "maximumPaidJobs": 0,
+    "maximumPaidMinutes": 0,
+    "maximumPaidAttempts": 0
+  },
+  "limitations": [
+    "The checked-in policy authorizes zero hosted work. Published list rates are not verified account mappings or actual billing.",
+    "Every permitted job/attempt reserves its entire outer timeout, including startup, checkout, admission, cold provisioning, bounded command/transfer attempts, diagnostics, cleanup and reports. entryReserveSeconds requires a minimum envelope; checkout/guard have no separate aggregate deadline, so rejected-entry cost reserves the entire outer timeout, never just this minimum.",
+    "Disjoint reservations cover this exact source, workflow run, scope and policy maximum attempt only. They cannot be shared across runs, platforms or jobs.",
+    "Allowances apply independently to one workflow run. A documentation request and its separately dispatched certification are separate runs; repeated dispatches do not share an experiment-wide ledger or an aggregate cross-run spending cap.",
+    "Attempts beyond maximumRunAttempts fail at entry. Arbitrarily repeated rejected checkout/guard startup cannot be centrally bounded by this offline plan; provider budgets and authorized operator controls remain separate pending backstops.",
+    "Any applicable storage/transfer bound must cover the complete lifetime liability, all retries, cache provisioning and retained outputs. Unknown applicability rejects admission; a zero charge requires dated affirmative evidence.",
+    "A local maximum estimate is not an invoice or an immediate exact provider-enforced spending cutoff. Repository billing settings remain pending explicit authorization and verified read-back."
+  ]
+}

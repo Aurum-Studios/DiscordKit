@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "method": "Read-only installer -pkginfo against the same authenticated package inode under two basenames. No installation was performed.",
+  "sha256": "c34e7e5fb0be4bcd61decfd40db1766434d8952d68e37aed90bcff4e8547951c",
+  "observations": [
+    {
+      "packageBasename": "swift-macos.pkg",
+      "arguments": [
+        "installer",
+        "-pkg",
+        "swift-macos.pkg",
+        "-pkginfo"
+      ],
+      "exitCode": 0,
+      "stdout": "Swift Open Source Xcode Toolchain\n\n"
+    },
+    {
+      "packageBasename": "swift-distribution",
+      "arguments": [
+        "installer",
+        "-pkg",
+        "swift-distribution",
+        "-pkginfo"
+      ],
+      "exitCode": 1,
+      "stderr": "installer: Error - the package path specified was invalid."
+    }
+  ],
+  "implication": "Keep a .pkg suffix on the cached macOS package before calling installer.",
+  "authenticatedPackageMetadata": {
+    "packageIdentifier": "org.swift.641202610071a",
+    "toolchainDirectory": "swift-6.4.1-RELEASE.xctoolchain",
+    "installLocation": "/Library/Developer/Toolchains/swift-6.4.1-RELEASE.xctoolchain",
+    "installationDomain": "CurrentUserHomeDirectory enabled by Distribution",
+    "hostArchitectures": [
+      "x86_64",
+      "arm64"
+    ],
+    "installedKiB": 5077927,
+    "method": "Read-only xar extraction of Distribution and PackageInfo from the authenticated official package."
+  }
+}

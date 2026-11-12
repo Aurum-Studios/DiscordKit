@@ -1,0 +1,34 @@
+swift test --package-path Tools/DiscordKitLoadTests --scratch-path .build/ci-phase2-load --build-system native --jobs 6 --force-resolved-versions --disable-experimental-prebuilts --skip-build --no-parallel --filter 'EventHubTimingTests/(dequeueCancellationDoesNotInventDiscard|completedWaitingResultsSurviveInterruptedAggregation)'
+[0/1] Planning build
+warning: '--build-system native' has been deprecated and will be removed in a future release; please report an issue at https://github.com/swiftlang/swift-package-manager/issues if you are unable to adopt the default build system.
+◇ Test run started.
+↳ Testing Library Version: 2084
+↳ Target Platform: arm64e-apple-macos14.0
+◇ Suite "Event hub timing" started.
+◇ Test dequeueCancellationDoesNotInventDiscard(backlog:) started.
+◇ Test case passing 1 argument backlog → 0 to dequeueCancellationDoesNotInventDiscard(backlog:) started.
+✘ Test dequeueCancellationDoesNotInventDiscard(backlog:) recorded an issue with 1 argument backlog → 0 at EventHubTimingTests.swift:24:9: Expectation failed: report.discardedAdmittedCopies == 0
+↳ report.discardedAdmittedCopies == 0 → false
+↳   report.discardedAdmittedCopies → 1
+◇ Test case passing 1 argument backlog → 1 to dequeueCancellationDoesNotInventDiscard(backlog:) started.
+✘ Test dequeueCancellationDoesNotInventDiscard(backlog:) recorded an issue with 1 argument backlog → 1 at EventHubTimingTests.swift:24:9: Expectation failed: report.discardedAdmittedCopies == 0
+↳ report.discardedAdmittedCopies == 0 → false
+↳   report.discardedAdmittedCopies → 1
+✘ Test dequeueCancellationDoesNotInventDiscard(backlog:) with 2 test cases failed after 0.005 seconds with 2 issues.
+↳ /// Cancel synchronously at the real queue-removal endpoint, before iterator return.
+◇ Test completedWaitingResultsSurviveInterruptedAggregation() started.
+✘ Test completedWaitingResultsSurviveInterruptedAggregation() recorded an issue at EventHubTimingTests.swift:43:9: Expectation failed: report.counts.outcomes[.success] == 4
+↳ report.counts.outcomes[.success] == 4 → false
+↳   report.counts.outcomes[.success] → 0
+↳     some → 0
+↳     some → 4
+✘ Test completedWaitingResultsSurviveInterruptedAggregation() recorded an issue at EventHubTimingTests.swift:44:9: Expectation failed: report.discardedAdmittedCopies == 0
+↳ report.discardedAdmittedCopies == 0 → false
+↳   report.discardedAdmittedCopies → 4
+✘ Test completedWaitingResultsSurviveInterruptedAggregation() failed after 0.001 seconds with 2 issues.
+↳ /// An injected driver interruption must preserve child values already returned by next.
+✘ Suite "Event hub timing" failed after 0.008 seconds with 4 issues.
+↳ /// Finite public-API experiments preserve independent workload dimensions and exact owner receipts.
+✘ Test run with 2 tests in 1 suite failed after 0.008 seconds with 4 issues.
+Note: Some test targets reported failures:
+  - DiscordKitLoadTestsPackageTests (Swift Testing)

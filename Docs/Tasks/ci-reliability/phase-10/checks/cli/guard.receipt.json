@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "status": "failed",
+  "name": "phase10-cli-guard",
+  "stage": "phase10-cli-guard",
+  "operation": "localHelperCheck",
+  "arguments": [
+    "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+    "Tools/ci/spend_admission.py",
+    "guard",
+    "--mode",
+    "preflight",
+    "--job",
+    "source",
+    "--group",
+    "ubuntu-24.04",
+    "--output",
+    "Docs/Tasks/ci-reliability/phase-10/checks/cli/guard.json"
+  ],
+  "start": "2026-11-12T16:29:03.047974+00:00",
+  "startMonotonic": 358950.367656416,
+  "deadlineMonotonic": 359250.367656416,
+  "executionLimitSeconds": 300,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "operation",
+  "paths": {
+    "output": "Docs/Tasks/ci-reliability/phase-10/checks/cli/guard.log",
+    "stdout": "Docs/Tasks/ci-reliability/phase-10/checks/cli/guard.stdout",
+    "diagnostics": "Docs/Tasks/ci-reliability/phase-10/checks/cli/guard.diagnostics.jsonl",
+    "receipt": "Docs/Tasks/ci-reliability/phase-10/checks/cli/guard.receipt.json"
+  },
+  "identity": {
+    "executionID": "b482edfc-595b-4cf3-b418-9dfcb389e87a",
+    "supervisorPID": 65626,
+    "host": "Pokemon-GO-Plus",
+    "system": "Darwin",
+    "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase10"
+  },
+  "exitCode": 1,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 65645,
+  "group": 65645,
+  "error": "Command '('/Library/Frameworks/Python.framework/Versions/3.14/bin/python3', 'Tools/ci/spend_admission.py', 'guard', '--mode', 'preflight', '--job', 'source', '--group', 'ubuntu-24.04', '--output', 'Docs/Tasks/ci-reliability/phase-10/checks/cli/guard.json')' returned non-zero exit status 1.",
+  "errorType": "CalledProcessError",
+  "cleanup": {
+    "status": "group-signalled",
+    "signals": [],
+    "parentReaped": true,
+    "allowanceSeconds": 8.0,
+    "seconds": 0.003,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "verificationMalformedRows": 0,
+    "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "Docs/Tasks/ci-reliability/phase-10/checks/cli/guard.log",
+      "retainedBytes": 214,
+      "observedBytes": 214,
+      "truncated": false
+    },
+    {
+      "path": "Docs/Tasks/ci-reliability/phase-10/checks/cli/guard.stdout",
+      "retainedBytes": 381886,
+      "observedBytes": 381886,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T16:29:03.364176+00:00",
+  "endMonotonic": 358950.68389775,
+  "elapsedSeconds": 0.316,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}

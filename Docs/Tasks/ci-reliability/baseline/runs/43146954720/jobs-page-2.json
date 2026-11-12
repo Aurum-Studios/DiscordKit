@@ -1,0 +1,5241 @@
+{
+  "jobs": {
+    "total_count": 152,
+    "jobs": [
+      {
+        "id": 130952646569,
+        "run_id": 43146954720,
+        "name": "Linux x64 / Tests / DiscordActivitiesTests",
+        "workflow_name": "Offline certification",
+        "status": "completed",
+        "conclusion": "success",
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3",
+        "html_url": "https://github.com/Aurum-Studios/DiscordKit/actions/runs/43146954720/job/130952646569",
+        "run_attempt": 1,
+        "runner_id": 1000001281,
+        "runner_name": "linux-x64-8-a-1000001281",
+        "runner_group_id": 31,
+        "runner_group_name": "linux-x64-8",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-11-12T03:31:10Z",
+            "completed_at": "2026-11-12T03:31:11Z"
+          },
+          {
+            "name": "Enable Windows checkout long paths",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 2,
+            "started_at": "2026-11-12T03:31:11Z",
+            "completed_at": "2026-11-12T03:31:11Z"
+          },
+          {
+            "name": "Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-11-12T03:31:11Z",
+            "completed_at": "2026-11-12T03:31:14Z"
+          },
+          {
+            "name": "Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4,
+            "started_at": "2026-11-12T03:31:14Z",
+            "completed_at": "2026-11-12T03:31:56Z"
+          },
+          {
+            "name": "Download this run's compiled package",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5,
+            "started_at": "2026-11-12T03:31:56Z",
+            "completed_at": "2026-11-12T03:32:03Z"
+          },
+          {
+            "name": "Run only the selected suite without rebuilding",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6,
+            "started_at": "2026-11-12T03:32:03Z",
+            "completed_at": "2026-11-12T03:32:16Z"
+          },
+          {
+            "name": "Verify generated source and dependency pins remain unchanged",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7,
+            "started_at": "2026-11-12T03:32:16Z",
+            "completed_at": "2026-11-12T03:32:16Z"
+          },
+          {
+            "name": "Retain selected suite evidence",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8,
+            "started_at": "2026-11-12T03:32:16Z",
+            "completed_at": "2026-11-12T03:32:17Z"
+          },
+          {
+            "name": "Post Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 15,
+            "started_at": "2026-11-12T03:32:17Z",
+            "completed_at": "2026-11-12T03:32:17Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 16,
+            "started_at": "2026-11-12T03:32:17Z",
+            "completed_at": "2026-11-12T03:32:17Z"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 17,
+            "started_at": "2026-11-12T03:32:17Z",
+            "completed_at": "2026-11-12T03:32:17Z"
+          }
+        ],
+        "created_at": "2026-11-12T03:31:08Z",
+        "started_at": "2026-11-12T03:31:10Z",
+        "completed_at": "2026-11-12T03:32:20Z"
+      },
+      {
+        "id": 130952646577,
+        "run_id": 43146954720,
+        "name": "Linux x64 / Tests / DiscordCacheTests",
+        "workflow_name": "Offline certification",
+        "status": "completed",
+        "conclusion": "success",
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3",
+        "html_url": "https://github.com/Aurum-Studios/DiscordKit/actions/runs/43146954720/job/130952646577",
+        "run_attempt": 1,
+        "runner_id": 1000001339,
+        "runner_name": "linux-x64-8-a-1000001339",
+        "runner_group_id": 31,
+        "runner_group_name": "linux-x64-8",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-11-12T03:32:28Z",
+            "completed_at": "2026-11-12T03:32:29Z"
+          },
+          {
+            "name": "Enable Windows checkout long paths",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 2,
+            "started_at": "2026-11-12T03:32:29Z",
+            "completed_at": "2026-11-12T03:32:29Z"
+          },
+          {
+            "name": "Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-11-12T03:32:29Z",
+            "completed_at": "2026-11-12T03:32:31Z"
+          },
+          {
+            "name": "Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4,
+            "started_at": "2026-11-12T03:32:31Z",
+            "completed_at": "2026-11-12T03:33:38Z"
+          },
+          {
+            "name": "Download this run's compiled package",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5,
+            "started_at": "2026-11-12T03:33:38Z",
+            "completed_at": "2026-11-12T03:33:45Z"
+          },
+          {
+            "name": "Run only the selected suite without rebuilding",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6,
+            "started_at": "2026-11-12T03:33:45Z",
+            "completed_at": "2026-11-12T03:34:02Z"
+          },
+          {
+            "name": "Verify generated source and dependency pins remain unchanged",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7,
+            "started_at": "2026-11-12T03:34:02Z",
+            "completed_at": "2026-11-12T03:34:02Z"
+          },
+          {
+            "name": "Retain selected suite evidence",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8,
+            "started_at": "2026-11-12T03:34:02Z",
+            "completed_at": "2026-11-12T03:34:03Z"
+          },
+          {
+            "name": "Post Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 15,
+            "started_at": "2026-11-12T03:34:03Z",
+            "completed_at": "2026-11-12T03:34:04Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 16,
+            "started_at": "2026-11-12T03:34:04Z",
+            "completed_at": "2026-11-12T03:34:04Z"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 17,
+            "started_at": "2026-11-12T03:34:04Z",
+            "completed_at": "2026-11-12T03:34:04Z"
+          }
+        ],
+        "created_at": "2026-11-12T03:31:08Z",
+        "started_at": "2026-11-12T03:32:27Z",
+        "completed_at": "2026-11-12T03:34:07Z"
+      },
+      {
+        "id": 130952646605,
+        "run_id": 43146954720,
+        "name": "Linux x64 / Tests / DiscordBotDSLTests",
+        "workflow_name": "Offline certification",
+        "status": "completed",
+        "conclusion": "success",
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3",
+        "html_url": "https://github.com/Aurum-Studios/DiscordKit/actions/runs/43146954720/job/130952646605",
+        "run_attempt": 1,
+        "runner_id": 1000001286,
+        "runner_name": "linux-x64-8-a-1000001286",
+        "runner_group_id": 31,
+        "runner_group_name": "linux-x64-8",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-11-12T03:31:10Z",
+            "completed_at": "2026-11-12T03:31:12Z"
+          },
+          {
+            "name": "Enable Windows checkout long paths",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 2,
+            "started_at": "2026-11-12T03:31:12Z",
+            "completed_at": "2026-11-12T03:31:12Z"
+          },
+          {
+            "name": "Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-11-12T03:31:12Z",
+            "completed_at": "2026-11-12T03:31:14Z"
+          },
+          {
+            "name": "Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4,
+            "started_at": "2026-11-12T03:31:14Z",
+            "completed_at": "2026-11-12T03:32:30Z"
+          },
+          {
+            "name": "Download this run's compiled package",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5,
+            "started_at": "2026-11-12T03:32:30Z",
+            "completed_at": "2026-11-12T03:32:39Z"
+          },
+          {
+            "name": "Run only the selected suite without rebuilding",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6,
+            "started_at": "2026-11-12T03:32:39Z",
+            "completed_at": "2026-11-12T03:32:59Z"
+          },
+          {
+            "name": "Verify generated source and dependency pins remain unchanged",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7,
+            "started_at": "2026-11-12T03:32:59Z",
+            "completed_at": "2026-11-12T03:32:59Z"
+          },
+          {
+            "name": "Retain selected suite evidence",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8,
+            "started_at": "2026-11-12T03:32:59Z",
+            "completed_at": "2026-11-12T03:33:00Z"
+          },
+          {
+            "name": "Post Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 15,
+            "started_at": "2026-11-12T03:33:00Z",
+            "completed_at": "2026-11-12T03:33:01Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 16,
+            "started_at": "2026-11-12T03:33:01Z",
+            "completed_at": "2026-11-12T03:33:01Z"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 17,
+            "started_at": "2026-11-12T03:33:01Z",
+            "completed_at": "2026-11-12T03:33:01Z"
+          }
+        ],
+        "created_at": "2026-11-12T03:31:08Z",
+        "started_at": "2026-11-12T03:31:10Z",
+        "completed_at": "2026-11-12T03:33:04Z"
+      },
+      {
+        "id": 130952646628,
+        "run_id": 43146954720,
+        "name": "Linux x64 / Tests / DiscordCoreTests",
+        "workflow_name": "Offline certification",
+        "status": "completed",
+        "conclusion": "success",
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3",
+        "html_url": "https://github.com/Aurum-Studios/DiscordKit/actions/runs/43146954720/job/130952646628",
+        "run_attempt": 1,
+        "runner_id": 1000001324,
+        "runner_name": "linux-x64-8-a-1000001324",
+        "runner_group_id": 31,
+        "runner_group_name": "linux-x64-8",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-11-12T03:32:20Z",
+            "completed_at": "2026-11-12T03:32:21Z"
+          },
+          {
+            "name": "Enable Windows checkout long paths",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 2,
+            "started_at": "2026-11-12T03:32:21Z",
+            "completed_at": "2026-11-12T03:32:21Z"
+          },
+          {
+            "name": "Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-11-12T03:32:21Z",
+            "completed_at": "2026-11-12T03:32:23Z"
+          },
+          {
+            "name": "Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4,
+            "started_at": "2026-11-12T03:32:23Z",
+            "completed_at": "2026-11-12T03:33:00Z"
+          },
+          {
+            "name": "Download this run's compiled package",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5,
+            "started_at": "2026-11-12T03:33:00Z",
+            "completed_at": "2026-11-12T03:33:03Z"
+          },
+          {
+            "name": "Run only the selected suite without rebuilding",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6,
+            "started_at": "2026-11-12T03:33:03Z",
+            "completed_at": "2026-11-12T03:33:23Z"
+          },
+          {
+            "name": "Verify generated source and dependency pins remain unchanged",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7,
+            "started_at": "2026-11-12T03:33:23Z",
+            "completed_at": "2026-11-12T03:33:23Z"
+          },
+          {
+            "name": "Retain selected suite evidence",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8,
+            "started_at": "2026-11-12T03:33:23Z",
+            "completed_at": "2026-11-12T03:33:24Z"
+          },
+          {
+            "name": "Post Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 15,
+            "started_at": "2026-11-12T03:33:24Z",
+            "completed_at": "2026-11-12T03:33:24Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 16,
+            "started_at": "2026-11-12T03:33:24Z",
+            "completed_at": "2026-11-12T03:33:24Z"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 17,
+            "started_at": "2026-11-12T03:33:24Z",
+            "completed_at": "2026-11-12T03:33:24Z"
+          }
+        ],
+        "created_at": "2026-11-12T03:31:08Z",
+        "started_at": "2026-11-12T03:32:20Z",
+        "completed_at": "2026-11-12T03:33:27Z"
+      },
+      {
+        "id": 130952646644,
+        "run_id": 43146954720,
+        "name": "Linux x64 / Tests / DiscordBitsTests",
+        "workflow_name": "Offline certification",
+        "status": "completed",
+        "conclusion": "success",
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3",
+        "html_url": "https://github.com/Aurum-Studios/DiscordKit/actions/runs/43146954720/job/130952646644",
+        "run_attempt": 1,
+        "runner_id": 1000001289,
+        "runner_name": "linux-x64-8-a-1000001289",
+        "runner_group_id": 31,
+        "runner_group_name": "linux-x64-8",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-11-12T03:31:11Z",
+            "completed_at": "2026-11-12T03:31:12Z"
+          },
+          {
+            "name": "Enable Windows checkout long paths",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 2,
+            "started_at": "2026-11-12T03:31:12Z",
+            "completed_at": "2026-11-12T03:31:12Z"
+          },
+          {
+            "name": "Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-11-12T03:31:12Z",
+            "completed_at": "2026-11-12T03:31:14Z"
+          },
+          {
+            "name": "Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4,
+            "started_at": "2026-11-12T03:31:14Z",
+            "completed_at": "2026-11-12T03:32:05Z"
+          },
+          {
+            "name": "Download this run's compiled package",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5,
+            "started_at": "2026-11-12T03:32:05Z",
+            "completed_at": "2026-11-12T03:32:13Z"
+          },
+          {
+            "name": "Run only the selected suite without rebuilding",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6,
+            "started_at": "2026-11-12T03:32:13Z",
+            "completed_at": "2026-11-12T03:32:30Z"
+          },
+          {
+            "name": "Verify generated source and dependency pins remain unchanged",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7,
+            "started_at": "2026-11-12T03:32:30Z",
+            "completed_at": "2026-11-12T03:32:30Z"
+          },
+          {
+            "name": "Retain selected suite evidence",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8,
+            "started_at": "2026-11-12T03:32:30Z",
+            "completed_at": "2026-11-12T03:32:31Z"
+          },
+          {
+            "name": "Post Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 15,
+            "started_at": "2026-11-12T03:32:31Z",
+            "completed_at": "2026-11-12T03:32:31Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 16,
+            "started_at": "2026-11-12T03:32:31Z",
+            "completed_at": "2026-11-12T03:32:32Z"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 17,
+            "started_at": "2026-11-12T03:32:32Z",
+            "completed_at": "2026-11-12T03:32:32Z"
+          }
+        ],
+        "created_at": "2026-11-12T03:31:08Z",
+        "started_at": "2026-11-12T03:31:10Z",
+        "completed_at": "2026-11-12T03:32:34Z"
+      },
+      {
+        "id": 130952646652,
+        "run_id": 43146954720,
+        "name": "Linux x64 / Tests / DiscordCommerceTests",
+        "workflow_name": "Offline certification",
+        "status": "completed",
+        "conclusion": "success",
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3",
+        "html_url": "https://github.com/Aurum-Studios/DiscordKit/actions/runs/43146954720/job/130952646652",
+        "run_attempt": 1,
+        "runner_id": 1000001284,
+        "runner_name": "linux-x64-8-a-1000001284",
+        "runner_group_id": 31,
+        "runner_group_name": "linux-x64-8",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-11-12T03:31:10Z",
+            "completed_at": "2026-11-12T03:31:11Z"
+          },
+          {
+            "name": "Enable Windows checkout long paths",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 2,
+            "started_at": "2026-11-12T03:31:11Z",
+            "completed_at": "2026-11-12T03:31:11Z"
+          },
+          {
+            "name": "Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-11-12T03:31:11Z",
+            "completed_at": "2026-11-12T03:31:14Z"
+          },
+          {
+            "name": "Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4,
+            "started_at": "2026-11-12T03:31:14Z",
+            "completed_at": "2026-11-12T03:32:25Z"
+          },
+          {
+            "name": "Download this run's compiled package",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5,
+            "started_at": "2026-11-12T03:32:25Z",
+            "completed_at": "2026-11-12T03:32:28Z"
+          },
+          {
+            "name": "Run only the selected suite without rebuilding",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6,
+            "started_at": "2026-11-12T03:32:28Z",
+            "completed_at": "2026-11-12T03:32:50Z"
+          },
+          {
+            "name": "Verify generated source and dependency pins remain unchanged",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7,
+            "started_at": "2026-11-12T03:32:50Z",
+            "completed_at": "2026-11-12T03:32:50Z"
+          },
+          {
+            "name": "Retain selected suite evidence",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8,
+            "started_at": "2026-11-12T03:32:50Z",
+            "completed_at": "2026-11-12T03:32:50Z"
+          },
+          {
+            "name": "Post Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 15,
+            "started_at": "2026-11-12T03:32:51Z",
+            "completed_at": "2026-11-12T03:32:51Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 16,
+            "started_at": "2026-11-12T03:32:51Z",
+            "completed_at": "2026-11-12T03:32:51Z"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 17,
+            "started_at": "2026-11-12T03:32:51Z",
+            "completed_at": "2026-11-12T03:32:51Z"
+          }
+        ],
+        "created_at": "2026-11-12T03:31:08Z",
+        "started_at": "2026-11-12T03:31:09Z",
+        "completed_at": "2026-11-12T03:32:52Z"
+      },
+      {
+        "id": 130952646653,
+        "run_id": 43146954720,
+        "name": "Linux x64 / Tests / DiscordDSLTests",
+        "workflow_name": "Offline certification",
+        "status": "completed",
+        "conclusion": "success",
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3",
+        "html_url": "https://github.com/Aurum-Studios/DiscordKit/actions/runs/43146954720/job/130952646653",
+        "run_attempt": 1,
+        "runner_id": 1000001287,
+        "runner_name": "linux-x64-8-a-1000001287",
+        "runner_group_id": 31,
+        "runner_group_name": "linux-x64-8",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-11-12T03:31:11Z",
+            "completed_at": "2026-11-12T03:31:12Z"
+          },
+          {
+            "name": "Enable Windows checkout long paths",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 2,
+            "started_at": "2026-11-12T03:31:12Z",
+            "completed_at": "2026-11-12T03:31:12Z"
+          },
+          {
+            "name": "Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-11-12T03:31:12Z",
+            "completed_at": "2026-11-12T03:31:15Z"
+          },
+          {
+            "name": "Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4,
+            "started_at": "2026-11-12T03:31:15Z",
+            "completed_at": "2026-11-12T03:32:08Z"
+          },
+          {
+            "name": "Download this run's compiled package",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5,
+            "started_at": "2026-11-12T03:32:08Z",
+            "completed_at": "2026-11-12T03:32:15Z"
+          },
+          {
+            "name": "Run only the selected suite without rebuilding",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6,
+            "started_at": "2026-11-12T03:32:15Z",
+            "completed_at": "2026-11-12T03:32:32Z"
+          },
+          {
+            "name": "Verify generated source and dependency pins remain unchanged",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7,
+            "started_at": "2026-11-12T03:32:32Z",
+            "completed_at": "2026-11-12T03:32:32Z"
+          },
+          {
+            "name": "Retain selected suite evidence",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8,
+            "started_at": "2026-11-12T03:32:32Z",
+            "completed_at": "2026-11-12T03:32:33Z"
+          },
+          {
+            "name": "Post Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 15,
+            "started_at": "2026-11-12T03:32:33Z",
+            "completed_at": "2026-11-12T03:32:33Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 16,
+            "started_at": "2026-11-12T03:32:33Z",
+            "completed_at": "2026-11-12T03:32:33Z"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 17,
+            "started_at": "2026-11-12T03:32:33Z",
+            "completed_at": "2026-11-12T03:32:33Z"
+          }
+        ],
+        "created_at": "2026-11-12T03:31:08Z",
+        "started_at": "2026-11-12T03:31:10Z",
+        "completed_at": "2026-11-12T03:32:36Z"
+      },
+      {
+        "id": 130952646665,
+        "run_id": 43146954720,
+        "name": "Linux x64 / Tests / DiscordTestSupportTests",
+        "workflow_name": "Offline certification",
+        "status": "completed",
+        "conclusion": "success",
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3",
+        "html_url": "https://github.com/Aurum-Studios/DiscordKit/actions/runs/43146954720/job/130952646665",
+        "run_attempt": 1,
+        "runner_id": 1000001292,
+        "runner_name": "linux-x64-8-a-1000001292",
+        "runner_group_id": 31,
+        "runner_group_name": "linux-x64-8",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-11-12T03:31:10Z",
+            "completed_at": "2026-11-12T03:31:11Z"
+          },
+          {
+            "name": "Enable Windows checkout long paths",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 2,
+            "started_at": "2026-11-12T03:31:11Z",
+            "completed_at": "2026-11-12T03:31:11Z"
+          },
+          {
+            "name": "Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-11-12T03:31:11Z",
+            "completed_at": "2026-11-12T03:31:14Z"
+          },
+          {
+            "name": "Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4,
+            "started_at": "2026-11-12T03:31:14Z",
+            "completed_at": "2026-11-12T03:32:07Z"
+          },
+          {
+            "name": "Download this run's compiled package",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5,
+            "started_at": "2026-11-12T03:32:07Z",
+            "completed_at": "2026-11-12T03:32:12Z"
+          },
+          {
+            "name": "Run only the selected suite without rebuilding",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6,
+            "started_at": "2026-11-12T03:32:12Z",
+            "completed_at": "2026-11-12T03:32:29Z"
+          },
+          {
+            "name": "Verify generated source and dependency pins remain unchanged",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7,
+            "started_at": "2026-11-12T03:32:29Z",
+            "completed_at": "2026-11-12T03:32:29Z"
+          },
+          {
+            "name": "Retain selected suite evidence",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8,
+            "started_at": "2026-11-12T03:32:29Z",
+            "completed_at": "2026-11-12T03:32:30Z"
+          },
+          {
+            "name": "Post Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 15,
+            "started_at": "2026-11-12T03:32:30Z",
+            "completed_at": "2026-11-12T03:32:30Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 16,
+            "started_at": "2026-11-12T03:32:30Z",
+            "completed_at": "2026-11-12T03:32:30Z"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 17,
+            "started_at": "2026-11-12T03:32:30Z",
+            "completed_at": "2026-11-12T03:32:30Z"
+          }
+        ],
+        "created_at": "2026-11-12T03:31:08Z",
+        "started_at": "2026-11-12T03:31:10Z",
+        "completed_at": "2026-11-12T03:32:33Z"
+      },
+      {
+        "id": 130952646675,
+        "run_id": 43146954720,
+        "name": "Linux x64 / Tests / DiscordNIOTransportTests",
+        "workflow_name": "Offline certification",
+        "status": "completed",
+        "conclusion": "success",
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3",
+        "html_url": "https://github.com/Aurum-Studios/DiscordKit/actions/runs/43146954720/job/130952646675",
+        "run_attempt": 1,
+        "runner_id": 1000001293,
+        "runner_name": "linux-x64-8-a-1000001293",
+        "runner_group_id": 31,
+        "runner_group_name": "linux-x64-8",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-11-12T03:31:10Z",
+            "completed_at": "2026-11-12T03:31:11Z"
+          },
+          {
+            "name": "Enable Windows checkout long paths",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 2,
+            "started_at": "2026-11-12T03:31:11Z",
+            "completed_at": "2026-11-12T03:31:11Z"
+          },
+          {
+            "name": "Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-11-12T03:31:11Z",
+            "completed_at": "2026-11-12T03:31:14Z"
+          },
+          {
+            "name": "Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4,
+            "started_at": "2026-11-12T03:31:14Z",
+            "completed_at": "2026-11-12T03:32:18Z"
+          },
+          {
+            "name": "Download this run's compiled package",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5,
+            "started_at": "2026-11-12T03:32:18Z",
+            "completed_at": "2026-11-12T03:32:21Z"
+          },
+          {
+            "name": "Run only the selected suite without rebuilding",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6,
+            "started_at": "2026-11-12T03:32:21Z",
+            "completed_at": "2026-11-12T03:32:45Z"
+          },
+          {
+            "name": "Verify generated source and dependency pins remain unchanged",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7,
+            "started_at": "2026-11-12T03:32:45Z",
+            "completed_at": "2026-11-12T03:32:45Z"
+          },
+          {
+            "name": "Retain selected suite evidence",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8,
+            "started_at": "2026-11-12T03:32:45Z",
+            "completed_at": "2026-11-12T03:32:45Z"
+          },
+          {
+            "name": "Post Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 15,
+            "started_at": "2026-11-12T03:32:45Z",
+            "completed_at": "2026-11-12T03:32:46Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 16,
+            "started_at": "2026-11-12T03:32:46Z",
+            "completed_at": "2026-11-12T03:32:46Z"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 17,
+            "started_at": "2026-11-12T03:32:46Z",
+            "completed_at": "2026-11-12T03:32:46Z"
+          }
+        ],
+        "created_at": "2026-11-12T03:31:08Z",
+        "started_at": "2026-11-12T03:31:09Z",
+        "completed_at": "2026-11-12T03:32:47Z"
+      },
+      {
+        "id": 130952646702,
+        "run_id": 43146954720,
+        "name": "Linux x64 / Tests / DiscordMLSTests",
+        "workflow_name": "Offline certification",
+        "status": "completed",
+        "conclusion": "success",
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3",
+        "html_url": "https://github.com/Aurum-Studios/DiscordKit/actions/runs/43146954720/job/130952646702",
+        "run_attempt": 1,
+        "runner_id": 1000001303,
+        "runner_name": "linux-x64-8-a-1000001303",
+        "runner_group_id": 31,
+        "runner_group_name": "linux-x64-8",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-11-12T03:31:11Z",
+            "completed_at": "2026-11-12T03:31:12Z"
+          },
+          {
+            "name": "Enable Windows checkout long paths",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 2,
+            "started_at": "2026-11-12T03:31:12Z",
+            "completed_at": "2026-11-12T03:31:12Z"
+          },
+          {
+            "name": "Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-11-12T03:31:12Z",
+            "completed_at": "2026-11-12T03:31:15Z"
+          },
+          {
+            "name": "Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4,
+            "started_at": "2026-11-12T03:31:15Z",
+            "completed_at": "2026-11-12T03:32:08Z"
+          },
+          {
+            "name": "Download this run's compiled package",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5,
+            "started_at": "2026-11-12T03:32:08Z",
+            "completed_at": "2026-11-12T03:32:33Z"
+          },
+          {
+            "name": "Run only the selected suite without rebuilding",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6,
+            "started_at": "2026-11-12T03:32:33Z",
+            "completed_at": "2026-11-12T03:32:54Z"
+          },
+          {
+            "name": "Verify generated source and dependency pins remain unchanged",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7,
+            "started_at": "2026-11-12T03:32:54Z",
+            "completed_at": "2026-11-12T03:32:54Z"
+          },
+          {
+            "name": "Retain selected suite evidence",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8,
+            "started_at": "2026-11-12T03:32:54Z",
+            "completed_at": "2026-11-12T03:32:56Z"
+          },
+          {
+            "name": "Post Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 15,
+            "started_at": "2026-11-12T03:32:56Z",
+            "completed_at": "2026-11-12T03:32:56Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 16,
+            "started_at": "2026-11-12T03:32:56Z",
+            "completed_at": "2026-11-12T03:32:56Z"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 17,
+            "started_at": "2026-11-12T03:32:56Z",
+            "completed_at": "2026-11-12T03:32:56Z"
+          }
+        ],
+        "created_at": "2026-11-12T03:31:08Z",
+        "started_at": "2026-11-12T03:31:10Z",
+        "completed_at": "2026-11-12T03:32:59Z"
+      },
+      {
+        "id": 130952646704,
+        "run_id": 43146954720,
+        "name": "Linux x64 / Tests / DiscordGameServicesTests",
+        "workflow_name": "Offline certification",
+        "status": "completed",
+        "conclusion": "success",
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3",
+        "html_url": "https://github.com/Aurum-Studios/DiscordKit/actions/runs/43146954720/job/130952646704",
+        "run_attempt": 1,
+        "runner_id": 1000001288,
+        "runner_name": "linux-x64-8-a-1000001288",
+        "runner_group_id": 31,
+        "runner_group_name": "linux-x64-8",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-11-12T03:31:10Z",
+            "completed_at": "2026-11-12T03:31:11Z"
+          },
+          {
+            "name": "Enable Windows checkout long paths",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 2,
+            "started_at": "2026-11-12T03:31:11Z",
+            "completed_at": "2026-11-12T03:31:11Z"
+          },
+          {
+            "name": "Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-11-12T03:31:11Z",
+            "completed_at": "2026-11-12T03:31:14Z"
+          },
+          {
+            "name": "Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4,
+            "started_at": "2026-11-12T03:31:14Z",
+            "completed_at": "2026-11-12T03:32:24Z"
+          },
+          {
+            "name": "Download this run's compiled package",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5,
+            "started_at": "2026-11-12T03:32:24Z",
+            "completed_at": "2026-11-12T03:32:27Z"
+          },
+          {
+            "name": "Run only the selected suite without rebuilding",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6,
+            "started_at": "2026-11-12T03:32:27Z",
+            "completed_at": "2026-11-12T03:32:45Z"
+          },
+          {
+            "name": "Verify generated source and dependency pins remain unchanged",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7,
+            "started_at": "2026-11-12T03:32:45Z",
+            "completed_at": "2026-11-12T03:32:45Z"
+          },
+          {
+            "name": "Retain selected suite evidence",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8,
+            "started_at": "2026-11-12T03:32:45Z",
+            "completed_at": "2026-11-12T03:32:46Z"
+          },
+          {
+            "name": "Post Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 15,
+            "started_at": "2026-11-12T03:32:46Z",
+            "completed_at": "2026-11-12T03:32:46Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 16,
+            "started_at": "2026-11-12T03:32:46Z",
+            "completed_at": "2026-11-12T03:32:46Z"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 17,
+            "started_at": "2026-11-12T03:32:46Z",
+            "completed_at": "2026-11-12T03:32:46Z"
+          }
+        ],
+        "created_at": "2026-11-12T03:31:08Z",
+        "started_at": "2026-11-12T03:31:10Z",
+        "completed_at": "2026-11-12T03:32:48Z"
+      },
+      {
+        "id": 130952646715,
+        "run_id": 43146954720,
+        "name": "Linux x64 / Tests / DiscordLoggingTests",
+        "workflow_name": "Offline certification",
+        "status": "completed",
+        "conclusion": "success",
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3",
+        "html_url": "https://github.com/Aurum-Studios/DiscordKit/actions/runs/43146954720/job/130952646715",
+        "run_attempt": 1,
+        "runner_id": 1000001323,
+        "runner_name": "linux-x64-8-a-1000001323",
+        "runner_group_id": 31,
+        "runner_group_name": "linux-x64-8",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-11-12T03:32:20Z",
+            "completed_at": "2026-11-12T03:32:21Z"
+          },
+          {
+            "name": "Enable Windows checkout long paths",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 2,
+            "started_at": "2026-11-12T03:32:21Z",
+            "completed_at": "2026-11-12T03:32:21Z"
+          },
+          {
+            "name": "Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-11-12T03:32:21Z",
+            "completed_at": "2026-11-12T03:32:23Z"
+          },
+          {
+            "name": "Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4,
+            "started_at": "2026-11-12T03:32:23Z",
+            "completed_at": "2026-11-12T03:33:11Z"
+          },
+          {
+            "name": "Download this run's compiled package",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5,
+            "started_at": "2026-11-12T03:33:11Z",
+            "completed_at": "2026-11-12T03:33:14Z"
+          },
+          {
+            "name": "Run only the selected suite without rebuilding",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6,
+            "started_at": "2026-11-12T03:33:14Z",
+            "completed_at": "2026-11-12T03:33:34Z"
+          },
+          {
+            "name": "Verify generated source and dependency pins remain unchanged",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7,
+            "started_at": "2026-11-12T03:33:34Z",
+            "completed_at": "2026-11-12T03:33:34Z"
+          },
+          {
+            "name": "Retain selected suite evidence",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8,
+            "started_at": "2026-11-12T03:33:34Z",
+            "completed_at": "2026-11-12T03:33:34Z"
+          },
+          {
+            "name": "Post Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 15,
+            "started_at": "2026-11-12T03:33:34Z",
+            "completed_at": "2026-11-12T03:33:35Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 16,
+            "started_at": "2026-11-12T03:33:35Z",
+            "completed_at": "2026-11-12T03:33:35Z"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 17,
+            "started_at": "2026-11-12T03:33:35Z",
+            "completed_at": "2026-11-12T03:33:35Z"
+          }
+        ],
+        "created_at": "2026-11-12T03:31:08Z",
+        "started_at": "2026-11-12T03:32:19Z",
+        "completed_at": "2026-11-12T03:33:37Z"
+      },
+      {
+        "id": 130952646717,
+        "run_id": 43146954720,
+        "name": "Linux x64 / Tests / DiscordDAVETests",
+        "workflow_name": "Offline certification",
+        "status": "completed",
+        "conclusion": "success",
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3",
+        "html_url": "https://github.com/Aurum-Studios/DiscordKit/actions/runs/43146954720/job/130952646717",
+        "run_attempt": 1,
+        "runner_id": 1000001291,
+        "runner_name": "linux-x64-8-a-1000001291",
+        "runner_group_id": 31,
+        "runner_group_name": "linux-x64-8",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-11-12T03:31:10Z",
+            "completed_at": "2026-11-12T03:31:12Z"
+          },
+          {
+            "name": "Enable Windows checkout long paths",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 2,
+            "started_at": "2026-11-12T03:31:12Z",
+            "completed_at": "2026-11-12T03:31:12Z"
+          },
+          {
+            "name": "Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-11-12T03:31:12Z",
+            "completed_at": "2026-11-12T03:31:14Z"
+          },
+          {
+            "name": "Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4,
+            "started_at": "2026-11-12T03:31:14Z",
+            "completed_at": "2026-11-12T03:32:04Z"
+          },
+          {
+            "name": "Download this run's compiled package",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5,
+            "started_at": "2026-11-12T03:32:04Z",
+            "completed_at": "2026-11-12T03:32:09Z"
+          },
+          {
+            "name": "Run only the selected suite without rebuilding",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6,
+            "started_at": "2026-11-12T03:32:09Z",
+            "completed_at": "2026-11-12T03:32:42Z"
+          },
+          {
+            "name": "Verify generated source and dependency pins remain unchanged",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7,
+            "started_at": "2026-11-12T03:32:42Z",
+            "completed_at": "2026-11-12T03:32:42Z"
+          },
+          {
+            "name": "Retain selected suite evidence",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8,
+            "started_at": "2026-11-12T03:32:42Z",
+            "completed_at": "2026-11-12T03:32:43Z"
+          },
+          {
+            "name": "Post Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 15,
+            "started_at": "2026-11-12T03:32:43Z",
+            "completed_at": "2026-11-12T03:32:44Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 16,
+            "started_at": "2026-11-12T03:32:44Z",
+            "completed_at": "2026-11-12T03:32:44Z"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 17,
+            "started_at": "2026-11-12T03:32:44Z",
+            "completed_at": "2026-11-12T03:32:44Z"
+          }
+        ],
+        "created_at": "2026-11-12T03:31:08Z",
+        "started_at": "2026-11-12T03:31:10Z",
+        "completed_at": "2026-11-12T03:32:46Z"
+      },
+      {
+        "id": 130952646721,
+        "run_id": 43146954720,
+        "name": "Linux x64 / Tests / DiscordGatewayTests",
+        "workflow_name": "Offline certification",
+        "status": "completed",
+        "conclusion": "success",
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3",
+        "html_url": "https://github.com/Aurum-Studios/DiscordKit/actions/runs/43146954720/job/130952646721",
+        "run_attempt": 1,
+        "runner_id": 1000001325,
+        "runner_name": "linux-x64-8-a-1000001325",
+        "runner_group_id": 31,
+        "runner_group_name": "linux-x64-8",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-11-12T03:32:20Z",
+            "completed_at": "2026-11-12T03:32:21Z"
+          },
+          {
+            "name": "Enable Windows checkout long paths",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 2,
+            "started_at": "2026-11-12T03:32:21Z",
+            "completed_at": "2026-11-12T03:32:21Z"
+          },
+          {
+            "name": "Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-11-12T03:32:21Z",
+            "completed_at": "2026-11-12T03:32:23Z"
+          },
+          {
+            "name": "Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4,
+            "started_at": "2026-11-12T03:32:23Z",
+            "completed_at": "2026-11-12T03:33:09Z"
+          },
+          {
+            "name": "Download this run's compiled package",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5,
+            "started_at": "2026-11-12T03:33:09Z",
+            "completed_at": "2026-11-12T03:33:13Z"
+          },
+          {
+            "name": "Run only the selected suite without rebuilding",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6,
+            "started_at": "2026-11-12T03:33:13Z",
+            "completed_at": "2026-11-12T03:33:33Z"
+          },
+          {
+            "name": "Verify generated source and dependency pins remain unchanged",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7,
+            "started_at": "2026-11-12T03:33:33Z",
+            "completed_at": "2026-11-12T03:33:33Z"
+          },
+          {
+            "name": "Retain selected suite evidence",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8,
+            "started_at": "2026-11-12T03:33:33Z",
+            "completed_at": "2026-11-12T03:33:34Z"
+          },
+          {
+            "name": "Post Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 15,
+            "started_at": "2026-11-12T03:33:34Z",
+            "completed_at": "2026-11-12T03:33:34Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 16,
+            "started_at": "2026-11-12T03:33:34Z",
+            "completed_at": "2026-11-12T03:33:34Z"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 17,
+            "started_at": "2026-11-12T03:33:34Z",
+            "completed_at": "2026-11-12T03:33:34Z"
+          }
+        ],
+        "created_at": "2026-11-12T03:31:08Z",
+        "started_at": "2026-11-12T03:32:20Z",
+        "completed_at": "2026-11-12T03:33:36Z"
+      },
+      {
+        "id": 130952646723,
+        "run_id": 43146954720,
+        "name": "Linux x64 / Tests / DiscordVoiceCodecsTests",
+        "workflow_name": "Offline certification",
+        "status": "completed",
+        "conclusion": "success",
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3",
+        "html_url": "https://github.com/Aurum-Studios/DiscordKit/actions/runs/43146954720/job/130952646723",
+        "run_attempt": 1,
+        "runner_id": 1000001294,
+        "runner_name": "linux-x64-8-a-1000001294",
+        "runner_group_id": 31,
+        "runner_group_name": "linux-x64-8",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-11-12T03:31:10Z",
+            "completed_at": "2026-11-12T03:31:11Z"
+          },
+          {
+            "name": "Enable Windows checkout long paths",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 2,
+            "started_at": "2026-11-12T03:31:11Z",
+            "completed_at": "2026-11-12T03:31:11Z"
+          },
+          {
+            "name": "Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-11-12T03:31:11Z",
+            "completed_at": "2026-11-12T03:31:14Z"
+          },
+          {
+            "name": "Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4,
+            "started_at": "2026-11-12T03:31:14Z",
+            "completed_at": "2026-11-12T03:32:09Z"
+          },
+          {
+            "name": "Download this run's compiled package",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5,
+            "started_at": "2026-11-12T03:32:09Z",
+            "completed_at": "2026-11-12T03:32:12Z"
+          },
+          {
+            "name": "Run only the selected suite without rebuilding",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6,
+            "started_at": "2026-11-12T03:32:12Z",
+            "completed_at": "2026-11-12T03:33:45Z"
+          },
+          {
+            "name": "Verify generated source and dependency pins remain unchanged",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7,
+            "started_at": "2026-11-12T03:33:45Z",
+            "completed_at": "2026-11-12T03:33:45Z"
+          },
+          {
+            "name": "Retain selected suite evidence",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8,
+            "started_at": "2026-11-12T03:33:45Z",
+            "completed_at": "2026-11-12T03:33:46Z"
+          },
+          {
+            "name": "Post Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 15,
+            "started_at": "2026-11-12T03:33:46Z",
+            "completed_at": "2026-11-12T03:33:46Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 16,
+            "started_at": "2026-11-12T03:33:46Z",
+            "completed_at": "2026-11-12T03:33:46Z"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 17,
+            "started_at": "2026-11-12T03:33:46Z",
+            "completed_at": "2026-11-12T03:33:46Z"
+          }
+        ],
+        "created_at": "2026-11-12T03:31:08Z",
+        "started_at": "2026-11-12T03:31:10Z",
+        "completed_at": "2026-11-12T03:33:48Z"
+      },
+      {
+        "id": 130952646726,
+        "run_id": 43146954720,
+        "name": "Linux x64 / Tests / DiscordHTTPTests",
+        "workflow_name": "Offline certification",
+        "status": "completed",
+        "conclusion": "success",
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3",
+        "html_url": "https://github.com/Aurum-Studios/DiscordKit/actions/runs/43146954720/job/130952646726",
+        "run_attempt": 1,
+        "runner_id": 1000001297,
+        "runner_name": "linux-x64-8-a-1000001297",
+        "runner_group_id": 31,
+        "runner_group_name": "linux-x64-8",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-11-12T03:31:11Z",
+            "completed_at": "2026-11-12T03:31:12Z"
+          },
+          {
+            "name": "Enable Windows checkout long paths",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 2,
+            "started_at": "2026-11-12T03:31:12Z",
+            "completed_at": "2026-11-12T03:31:12Z"
+          },
+          {
+            "name": "Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-11-12T03:31:12Z",
+            "completed_at": "2026-11-12T03:31:14Z"
+          },
+          {
+            "name": "Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4,
+            "started_at": "2026-11-12T03:31:14Z",
+            "completed_at": "2026-11-12T03:32:09Z"
+          },
+          {
+            "name": "Download this run's compiled package",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5,
+            "started_at": "2026-11-12T03:32:09Z",
+            "completed_at": "2026-11-12T03:32:18Z"
+          },
+          {
+            "name": "Run only the selected suite without rebuilding",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6,
+            "started_at": "2026-11-12T03:32:18Z",
+            "completed_at": "2026-11-12T03:32:52Z"
+          },
+          {
+            "name": "Verify generated source and dependency pins remain unchanged",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7,
+            "started_at": "2026-11-12T03:32:52Z",
+            "completed_at": "2026-11-12T03:32:52Z"
+          },
+          {
+            "name": "Retain selected suite evidence",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8,
+            "started_at": "2026-11-12T03:32:52Z",
+            "completed_at": "2026-11-12T03:32:54Z"
+          },
+          {
+            "name": "Post Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 15,
+            "started_at": "2026-11-12T03:32:54Z",
+            "completed_at": "2026-11-12T03:32:54Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 16,
+            "started_at": "2026-11-12T03:32:54Z",
+            "completed_at": "2026-11-12T03:32:54Z"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 17,
+            "started_at": "2026-11-12T03:32:54Z",
+            "completed_at": "2026-11-12T03:32:54Z"
+          }
+        ],
+        "created_at": "2026-11-12T03:31:08Z",
+        "started_at": "2026-11-12T03:31:10Z",
+        "completed_at": "2026-11-12T03:32:57Z"
+      },
+      {
+        "id": 130952646731,
+        "run_id": 43146954720,
+        "name": "Linux x64 / Tests / DiscordMediaTests",
+        "workflow_name": "Offline certification",
+        "status": "completed",
+        "conclusion": "success",
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3",
+        "html_url": "https://github.com/Aurum-Studios/DiscordKit/actions/runs/43146954720/job/130952646731",
+        "run_attempt": 1,
+        "runner_id": 1000001295,
+        "runner_name": "linux-x64-8-a-1000001295",
+        "runner_group_id": 31,
+        "runner_group_name": "linux-x64-8",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-11-12T03:31:10Z",
+            "completed_at": "2026-11-12T03:31:11Z"
+          },
+          {
+            "name": "Enable Windows checkout long paths",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 2,
+            "started_at": "2026-11-12T03:31:11Z",
+            "completed_at": "2026-11-12T03:31:11Z"
+          },
+          {
+            "name": "Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-11-12T03:31:11Z",
+            "completed_at": "2026-11-12T03:31:14Z"
+          },
+          {
+            "name": "Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4,
+            "started_at": "2026-11-12T03:31:14Z",
+            "completed_at": "2026-11-12T03:31:57Z"
+          },
+          {
+            "name": "Download this run's compiled package",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5,
+            "started_at": "2026-11-12T03:31:57Z",
+            "completed_at": "2026-11-12T03:32:00Z"
+          },
+          {
+            "name": "Run only the selected suite without rebuilding",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6,
+            "started_at": "2026-11-12T03:32:00Z",
+            "completed_at": "2026-11-12T03:32:23Z"
+          },
+          {
+            "name": "Verify generated source and dependency pins remain unchanged",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7,
+            "started_at": "2026-11-12T03:32:23Z",
+            "completed_at": "2026-11-12T03:32:23Z"
+          },
+          {
+            "name": "Retain selected suite evidence",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8,
+            "started_at": "2026-11-12T03:32:23Z",
+            "completed_at": "2026-11-12T03:32:24Z"
+          },
+          {
+            "name": "Post Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 15,
+            "started_at": "2026-11-12T03:32:24Z",
+            "completed_at": "2026-11-12T03:32:24Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 16,
+            "started_at": "2026-11-12T03:32:24Z",
+            "completed_at": "2026-11-12T03:32:25Z"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 17,
+            "started_at": "2026-11-12T03:32:25Z",
+            "completed_at": "2026-11-12T03:32:25Z"
+          }
+        ],
+        "created_at": "2026-11-12T03:31:08Z",
+        "started_at": "2026-11-12T03:31:10Z",
+        "completed_at": "2026-11-12T03:32:26Z"
+      },
+      {
+        "id": 130952646748,
+        "run_id": 43146954720,
+        "name": "Linux x64 / Tests / DiscordOAuthTests",
+        "workflow_name": "Offline certification",
+        "status": "completed",
+        "conclusion": "success",
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3",
+        "html_url": "https://github.com/Aurum-Studios/DiscordKit/actions/runs/43146954720/job/130952646748",
+        "run_attempt": 1,
+        "runner_id": 1000001308,
+        "runner_name": "linux-x64-8-a-1000001308",
+        "runner_group_id": 31,
+        "runner_group_name": "linux-x64-8",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-11-12T03:31:10Z",
+            "completed_at": "2026-11-12T03:31:11Z"
+          },
+          {
+            "name": "Enable Windows checkout long paths",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 2,
+            "started_at": "2026-11-12T03:31:11Z",
+            "completed_at": "2026-11-12T03:31:11Z"
+          },
+          {
+            "name": "Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-11-12T03:31:11Z",
+            "completed_at": "2026-11-12T03:31:14Z"
+          },
+          {
+            "name": "Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4,
+            "started_at": "2026-11-12T03:31:14Z",
+            "completed_at": "2026-11-12T03:31:57Z"
+          },
+          {
+            "name": "Download this run's compiled package",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5,
+            "started_at": "2026-11-12T03:31:57Z",
+            "completed_at": "2026-11-12T03:32:03Z"
+          },
+          {
+            "name": "Run only the selected suite without rebuilding",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6,
+            "started_at": "2026-11-12T03:32:03Z",
+            "completed_at": "2026-11-12T03:32:19Z"
+          },
+          {
+            "name": "Verify generated source and dependency pins remain unchanged",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7,
+            "started_at": "2026-11-12T03:32:19Z",
+            "completed_at": "2026-11-12T03:32:19Z"
+          },
+          {
+            "name": "Retain selected suite evidence",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8,
+            "started_at": "2026-11-12T03:32:19Z",
+            "completed_at": "2026-11-12T03:32:20Z"
+          },
+          {
+            "name": "Post Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 15,
+            "started_at": "2026-11-12T03:32:20Z",
+            "completed_at": "2026-11-12T03:32:20Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 16,
+            "started_at": "2026-11-12T03:32:20Z",
+            "completed_at": "2026-11-12T03:32:20Z"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 17,
+            "started_at": "2026-11-12T03:32:20Z",
+            "completed_at": "2026-11-12T03:32:20Z"
+          }
+        ],
+        "created_at": "2026-11-12T03:31:08Z",
+        "started_at": "2026-11-12T03:31:10Z",
+        "completed_at": "2026-11-12T03:32:22Z"
+      },
+      {
+        "id": 130952646751,
+        "run_id": 43146954720,
+        "name": "Linux x64 / Tests / DiscordRPCTests",
+        "workflow_name": "Offline certification",
+        "status": "completed",
+        "conclusion": "success",
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3",
+        "html_url": "https://github.com/Aurum-Studios/DiscordKit/actions/runs/43146954720/job/130952646751",
+        "run_attempt": 1,
+        "runner_id": 1000001312,
+        "runner_name": "linux-x64-8-a-1000001312",
+        "runner_group_id": 31,
+        "runner_group_name": "linux-x64-8",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-11-12T03:31:11Z",
+            "completed_at": "2026-11-12T03:31:12Z"
+          },
+          {
+            "name": "Enable Windows checkout long paths",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 2,
+            "started_at": "2026-11-12T03:31:12Z",
+            "completed_at": "2026-11-12T03:31:12Z"
+          },
+          {
+            "name": "Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-11-12T03:31:12Z",
+            "completed_at": "2026-11-12T03:31:14Z"
+          },
+          {
+            "name": "Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4,
+            "started_at": "2026-11-12T03:31:14Z",
+            "completed_at": "2026-11-12T03:32:19Z"
+          },
+          {
+            "name": "Download this run's compiled package",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5,
+            "started_at": "2026-11-12T03:32:19Z",
+            "completed_at": "2026-11-12T03:32:33Z"
+          },
+          {
+            "name": "Run only the selected suite without rebuilding",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6,
+            "started_at": "2026-11-12T03:32:33Z",
+            "completed_at": "2026-11-12T03:32:49Z"
+          },
+          {
+            "name": "Verify generated source and dependency pins remain unchanged",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7,
+            "started_at": "2026-11-12T03:32:49Z",
+            "completed_at": "2026-11-12T03:32:49Z"
+          },
+          {
+            "name": "Retain selected suite evidence",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8,
+            "started_at": "2026-11-12T03:32:49Z",
+            "completed_at": "2026-11-12T03:32:51Z"
+          },
+          {
+            "name": "Post Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 15,
+            "started_at": "2026-11-12T03:32:51Z",
+            "completed_at": "2026-11-12T03:32:51Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 16,
+            "started_at": "2026-11-12T03:32:51Z",
+            "completed_at": "2026-11-12T03:32:52Z"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 17,
+            "started_at": "2026-11-12T03:32:52Z",
+            "completed_at": "2026-11-12T03:32:52Z"
+          }
+        ],
+        "created_at": "2026-11-12T03:31:08Z",
+        "started_at": "2026-11-12T03:31:10Z",
+        "completed_at": "2026-11-12T03:32:54Z"
+      },
+      {
+        "id": 130952646752,
+        "run_id": 43146954720,
+        "name": "Linux x64 / Tests / extensions",
+        "workflow_name": "Offline certification",
+        "status": "completed",
+        "conclusion": "success",
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3",
+        "html_url": "https://github.com/Aurum-Studios/DiscordKit/actions/runs/43146954720/job/130952646752",
+        "run_attempt": 1,
+        "runner_id": 1000001302,
+        "runner_name": "linux-x64-8-a-1000001302",
+        "runner_group_id": 31,
+        "runner_group_name": "linux-x64-8",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-11-12T03:31:11Z",
+            "completed_at": "2026-11-12T03:31:12Z"
+          },
+          {
+            "name": "Enable Windows checkout long paths",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 2,
+            "started_at": "2026-11-12T03:31:12Z",
+            "completed_at": "2026-11-12T03:31:12Z"
+          },
+          {
+            "name": "Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-11-12T03:31:12Z",
+            "completed_at": "2026-11-12T03:31:15Z"
+          },
+          {
+            "name": "Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4,
+            "started_at": "2026-11-12T03:31:15Z",
+            "completed_at": "2026-11-12T03:32:05Z"
+          },
+          {
+            "name": "Download this run's compiled package",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5,
+            "started_at": "2026-11-12T03:32:05Z",
+            "completed_at": "2026-11-12T03:32:11Z"
+          },
+          {
+            "name": "Run only the selected suite without rebuilding",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6,
+            "started_at": "2026-11-12T03:32:11Z",
+            "completed_at": "2026-11-12T03:32:22Z"
+          },
+          {
+            "name": "Verify generated source and dependency pins remain unchanged",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7,
+            "started_at": "2026-11-12T03:32:22Z",
+            "completed_at": "2026-11-12T03:32:22Z"
+          },
+          {
+            "name": "Retain selected suite evidence",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8,
+            "started_at": "2026-11-12T03:32:22Z",
+            "completed_at": "2026-11-12T03:32:23Z"
+          },
+          {
+            "name": "Post Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 15,
+            "started_at": "2026-11-12T03:32:23Z",
+            "completed_at": "2026-11-12T03:32:23Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 16,
+            "started_at": "2026-11-12T03:32:23Z",
+            "completed_at": "2026-11-12T03:32:23Z"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 17,
+            "started_at": "2026-11-12T03:32:23Z",
+            "completed_at": "2026-11-12T03:32:23Z"
+          }
+        ],
+        "created_at": "2026-11-12T03:31:08Z",
+        "started_at": "2026-11-12T03:31:10Z",
+        "completed_at": "2026-11-12T03:32:25Z"
+      },
+      {
+        "id": 130952646754,
+        "run_id": 43146954720,
+        "name": "Linux x64 / Tests / DiscordCommandDSLTests",
+        "workflow_name": "Offline certification",
+        "status": "completed",
+        "conclusion": "success",
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3",
+        "html_url": "https://github.com/Aurum-Studios/DiscordKit/actions/runs/43146954720/job/130952646754",
+        "run_attempt": 1,
+        "runner_id": 1000001290,
+        "runner_name": "linux-x64-8-a-1000001290",
+        "runner_group_id": 31,
+        "runner_group_name": "linux-x64-8",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-11-12T03:31:11Z",
+            "completed_at": "2026-11-12T03:31:12Z"
+          },
+          {
+            "name": "Enable Windows checkout long paths",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 2,
+            "started_at": "2026-11-12T03:31:12Z",
+            "completed_at": "2026-11-12T03:31:12Z"
+          },
+          {
+            "name": "Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-11-12T03:31:12Z",
+            "completed_at": "2026-11-12T03:31:14Z"
+          },
+          {
+            "name": "Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4,
+            "started_at": "2026-11-12T03:31:14Z",
+            "completed_at": "2026-11-12T03:32:04Z"
+          },
+          {
+            "name": "Download this run's compiled package",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5,
+            "started_at": "2026-11-12T03:32:04Z",
+            "completed_at": "2026-11-12T03:32:13Z"
+          },
+          {
+            "name": "Run only the selected suite without rebuilding",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6,
+            "started_at": "2026-11-12T03:32:13Z",
+            "completed_at": "2026-11-12T03:32:33Z"
+          },
+          {
+            "name": "Verify generated source and dependency pins remain unchanged",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7,
+            "started_at": "2026-11-12T03:32:33Z",
+            "completed_at": "2026-11-12T03:32:34Z"
+          },
+          {
+            "name": "Retain selected suite evidence",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8,
+            "started_at": "2026-11-12T03:32:34Z",
+            "completed_at": "2026-11-12T03:32:35Z"
+          },
+          {
+            "name": "Post Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 15,
+            "started_at": "2026-11-12T03:32:35Z",
+            "completed_at": "2026-11-12T03:32:35Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 16,
+            "started_at": "2026-11-12T03:32:35Z",
+            "completed_at": "2026-11-12T03:32:36Z"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 17,
+            "started_at": "2026-11-12T03:32:36Z",
+            "completed_at": "2026-11-12T03:32:36Z"
+          }
+        ],
+        "created_at": "2026-11-12T03:31:08Z",
+        "started_at": "2026-11-12T03:31:10Z",
+        "completed_at": "2026-11-12T03:32:38Z"
+      },
+      {
+        "id": 130952646757,
+        "run_id": 43146954720,
+        "name": "Linux x64 / Tests / DiscordVoiceCryptoTests",
+        "workflow_name": "Offline certification",
+        "status": "completed",
+        "conclusion": "success",
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3",
+        "html_url": "https://github.com/Aurum-Studios/DiscordKit/actions/runs/43146954720/job/130952646757",
+        "run_attempt": 1,
+        "runner_id": 1000001305,
+        "runner_name": "linux-x64-8-a-1000001305",
+        "runner_group_id": 31,
+        "runner_group_name": "linux-x64-8",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-11-12T03:31:11Z",
+            "completed_at": "2026-11-12T03:31:12Z"
+          },
+          {
+            "name": "Enable Windows checkout long paths",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 2,
+            "started_at": "2026-11-12T03:31:12Z",
+            "completed_at": "2026-11-12T03:31:12Z"
+          },
+          {
+            "name": "Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-11-12T03:31:12Z",
+            "completed_at": "2026-11-12T03:31:15Z"
+          },
+          {
+            "name": "Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4,
+            "started_at": "2026-11-12T03:31:15Z",
+            "completed_at": "2026-11-12T03:32:07Z"
+          },
+          {
+            "name": "Download this run's compiled package",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5,
+            "started_at": "2026-11-12T03:32:07Z",
+            "completed_at": "2026-11-12T03:32:19Z"
+          },
+          {
+            "name": "Run only the selected suite without rebuilding",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6,
+            "started_at": "2026-11-12T03:32:19Z",
+            "completed_at": "2026-11-12T03:32:35Z"
+          },
+          {
+            "name": "Verify generated source and dependency pins remain unchanged",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7,
+            "started_at": "2026-11-12T03:32:35Z",
+            "completed_at": "2026-11-12T03:32:35Z"
+          },
+          {
+            "name": "Retain selected suite evidence",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8,
+            "started_at": "2026-11-12T03:32:35Z",
+            "completed_at": "2026-11-12T03:32:36Z"
+          },
+          {
+            "name": "Post Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 15,
+            "started_at": "2026-11-12T03:32:36Z",
+            "completed_at": "2026-11-12T03:32:37Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 16,
+            "started_at": "2026-11-12T03:32:37Z",
+            "completed_at": "2026-11-12T03:32:37Z"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 17,
+            "started_at": "2026-11-12T03:32:37Z",
+            "completed_at": "2026-11-12T03:32:37Z"
+          }
+        ],
+        "created_at": "2026-11-12T03:31:08Z",
+        "started_at": "2026-11-12T03:31:10Z",
+        "completed_at": "2026-11-12T03:32:40Z"
+      },
+      {
+        "id": 130952646762,
+        "run_id": 43146954720,
+        "name": "Linux x64 / Tests / DiscordTransportTests",
+        "workflow_name": "Offline certification",
+        "status": "completed",
+        "conclusion": "success",
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3",
+        "html_url": "https://github.com/Aurum-Studios/DiscordKit/actions/runs/43146954720/job/130952646762",
+        "run_attempt": 1,
+        "runner_id": 1000001296,
+        "runner_name": "linux-x64-8-a-1000001296",
+        "runner_group_id": 31,
+        "runner_group_name": "linux-x64-8",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-11-12T03:31:10Z",
+            "completed_at": "2026-11-12T03:31:11Z"
+          },
+          {
+            "name": "Enable Windows checkout long paths",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 2,
+            "started_at": "2026-11-12T03:31:11Z",
+            "completed_at": "2026-11-12T03:31:11Z"
+          },
+          {
+            "name": "Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-11-12T03:31:11Z",
+            "completed_at": "2026-11-12T03:31:14Z"
+          },
+          {
+            "name": "Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4,
+            "started_at": "2026-11-12T03:31:14Z",
+            "completed_at": "2026-11-12T03:31:58Z"
+          },
+          {
+            "name": "Download this run's compiled package",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5,
+            "started_at": "2026-11-12T03:31:58Z",
+            "completed_at": "2026-11-12T03:32:00Z"
+          },
+          {
+            "name": "Run only the selected suite without rebuilding",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6,
+            "started_at": "2026-11-12T03:32:00Z",
+            "completed_at": "2026-11-12T03:32:19Z"
+          },
+          {
+            "name": "Verify generated source and dependency pins remain unchanged",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7,
+            "started_at": "2026-11-12T03:32:19Z",
+            "completed_at": "2026-11-12T03:32:19Z"
+          },
+          {
+            "name": "Retain selected suite evidence",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8,
+            "started_at": "2026-11-12T03:32:19Z",
+            "completed_at": "2026-11-12T03:32:20Z"
+          },
+          {
+            "name": "Post Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 15,
+            "started_at": "2026-11-12T03:32:20Z",
+            "completed_at": "2026-11-12T03:32:20Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 16,
+            "started_at": "2026-11-12T03:32:20Z",
+            "completed_at": "2026-11-12T03:32:21Z"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 17,
+            "started_at": "2026-11-12T03:32:21Z",
+            "completed_at": "2026-11-12T03:32:21Z"
+          }
+        ],
+        "created_at": "2026-11-12T03:31:08Z",
+        "started_at": "2026-11-12T03:31:10Z",
+        "completed_at": "2026-11-12T03:32:22Z"
+      },
+      {
+        "id": 130952646772,
+        "run_id": 43146954720,
+        "name": "Linux x64 / Tests / DiscordKitTests",
+        "workflow_name": "Offline certification",
+        "status": "completed",
+        "conclusion": "success",
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3",
+        "html_url": "https://github.com/Aurum-Studios/DiscordKit/actions/runs/43146954720/job/130952646772",
+        "run_attempt": 1,
+        "runner_id": 1000001307,
+        "runner_name": "linux-x64-8-a-1000001307",
+        "runner_group_id": 31,
+        "runner_group_name": "linux-x64-8",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-11-12T03:31:10Z",
+            "completed_at": "2026-11-12T03:31:11Z"
+          },
+          {
+            "name": "Enable Windows checkout long paths",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 2,
+            "started_at": "2026-11-12T03:31:11Z",
+            "completed_at": "2026-11-12T03:31:11Z"
+          },
+          {
+            "name": "Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-11-12T03:31:11Z",
+            "completed_at": "2026-11-12T03:31:14Z"
+          },
+          {
+            "name": "Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4,
+            "started_at": "2026-11-12T03:31:14Z",
+            "completed_at": "2026-11-12T03:32:00Z"
+          },
+          {
+            "name": "Download this run's compiled package",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5,
+            "started_at": "2026-11-12T03:32:00Z",
+            "completed_at": "2026-11-12T03:32:06Z"
+          },
+          {
+            "name": "Run only the selected suite without rebuilding",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6,
+            "started_at": "2026-11-12T03:32:06Z",
+            "completed_at": "2026-11-12T03:32:21Z"
+          },
+          {
+            "name": "Verify generated source and dependency pins remain unchanged",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7,
+            "started_at": "2026-11-12T03:32:21Z",
+            "completed_at": "2026-11-12T03:32:21Z"
+          },
+          {
+            "name": "Retain selected suite evidence",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8,
+            "started_at": "2026-11-12T03:32:21Z",
+            "completed_at": "2026-11-12T03:32:22Z"
+          },
+          {
+            "name": "Post Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 15,
+            "started_at": "2026-11-12T03:32:22Z",
+            "completed_at": "2026-11-12T03:32:23Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 16,
+            "started_at": "2026-11-12T03:32:23Z",
+            "completed_at": "2026-11-12T03:32:23Z"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 17,
+            "started_at": "2026-11-12T03:32:23Z",
+            "completed_at": "2026-11-12T03:32:23Z"
+          }
+        ],
+        "created_at": "2026-11-12T03:31:08Z",
+        "started_at": "2026-11-12T03:31:10Z",
+        "completed_at": "2026-11-12T03:32:25Z"
+      },
+      {
+        "id": 130952646773,
+        "run_id": 43146954720,
+        "name": "Linux x64 / Tests / DiscordUnixPlatformTests",
+        "workflow_name": "Offline certification",
+        "status": "completed",
+        "conclusion": "success",
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3",
+        "html_url": "https://github.com/Aurum-Studios/DiscordKit/actions/runs/43146954720/job/130952646773",
+        "run_attempt": 1,
+        "runner_id": 1000001306,
+        "runner_name": "linux-x64-8-a-1000001306",
+        "runner_group_id": 31,
+        "runner_group_name": "linux-x64-8",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-11-12T03:31:11Z",
+            "completed_at": "2026-11-12T03:31:12Z"
+          },
+          {
+            "name": "Enable Windows checkout long paths",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 2,
+            "started_at": "2026-11-12T03:31:12Z",
+            "completed_at": "2026-11-12T03:31:12Z"
+          },
+          {
+            "name": "Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-11-12T03:31:12Z",
+            "completed_at": "2026-11-12T03:31:14Z"
+          },
+          {
+            "name": "Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4,
+            "started_at": "2026-11-12T03:31:14Z",
+            "completed_at": "2026-11-12T03:32:08Z"
+          },
+          {
+            "name": "Download this run's compiled package",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5,
+            "started_at": "2026-11-12T03:32:08Z",
+            "completed_at": "2026-11-12T03:32:21Z"
+          },
+          {
+            "name": "Run only the selected suite without rebuilding",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6,
+            "started_at": "2026-11-12T03:32:21Z",
+            "completed_at": "2026-11-12T03:32:42Z"
+          },
+          {
+            "name": "Verify generated source and dependency pins remain unchanged",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7,
+            "started_at": "2026-11-12T03:32:42Z",
+            "completed_at": "2026-11-12T03:32:42Z"
+          },
+          {
+            "name": "Retain selected suite evidence",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8,
+            "started_at": "2026-11-12T03:32:42Z",
+            "completed_at": "2026-11-12T03:32:43Z"
+          },
+          {
+            "name": "Post Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 15,
+            "started_at": "2026-11-12T03:32:43Z",
+            "completed_at": "2026-11-12T03:32:44Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 16,
+            "started_at": "2026-11-12T03:32:44Z",
+            "completed_at": "2026-11-12T03:32:44Z"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 17,
+            "started_at": "2026-11-12T03:32:44Z",
+            "completed_at": "2026-11-12T03:32:44Z"
+          }
+        ],
+        "created_at": "2026-11-12T03:31:08Z",
+        "started_at": "2026-11-12T03:31:10Z",
+        "completed_at": "2026-11-12T03:32:47Z"
+      },
+      {
+        "id": 130952646782,
+        "run_id": 43146954720,
+        "name": "Linux x64 / Tests / DiscordModelsTests",
+        "workflow_name": "Offline certification",
+        "status": "completed",
+        "conclusion": "success",
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3",
+        "html_url": "https://github.com/Aurum-Studios/DiscordKit/actions/runs/43146954720/job/130952646782",
+        "run_attempt": 1,
+        "runner_id": 1000001300,
+        "runner_name": "linux-x64-8-a-1000001300",
+        "runner_group_id": 31,
+        "runner_group_name": "linux-x64-8",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-11-12T03:31:10Z",
+            "completed_at": "2026-11-12T03:31:11Z"
+          },
+          {
+            "name": "Enable Windows checkout long paths",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 2,
+            "started_at": "2026-11-12T03:31:11Z",
+            "completed_at": "2026-11-12T03:31:11Z"
+          },
+          {
+            "name": "Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-11-12T03:31:11Z",
+            "completed_at": "2026-11-12T03:31:15Z"
+          },
+          {
+            "name": "Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4,
+            "started_at": "2026-11-12T03:31:15Z",
+            "completed_at": "2026-11-12T03:31:57Z"
+          },
+          {
+            "name": "Download this run's compiled package",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5,
+            "started_at": "2026-11-12T03:31:57Z",
+            "completed_at": "2026-11-12T03:32:02Z"
+          },
+          {
+            "name": "Run only the selected suite without rebuilding",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6,
+            "started_at": "2026-11-12T03:32:02Z",
+            "completed_at": "2026-11-12T03:32:21Z"
+          },
+          {
+            "name": "Verify generated source and dependency pins remain unchanged",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7,
+            "started_at": "2026-11-12T03:32:21Z",
+            "completed_at": "2026-11-12T03:32:21Z"
+          },
+          {
+            "name": "Retain selected suite evidence",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8,
+            "started_at": "2026-11-12T03:32:21Z",
+            "completed_at": "2026-11-12T03:32:22Z"
+          },
+          {
+            "name": "Post Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 15,
+            "started_at": "2026-11-12T03:32:22Z",
+            "completed_at": "2026-11-12T03:32:22Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 16,
+            "started_at": "2026-11-12T03:32:22Z",
+            "completed_at": "2026-11-12T03:32:22Z"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 17,
+            "started_at": "2026-11-12T03:32:22Z",
+            "completed_at": "2026-11-12T03:32:22Z"
+          }
+        ],
+        "created_at": "2026-11-12T03:31:08Z",
+        "started_at": "2026-11-12T03:31:10Z",
+        "completed_at": "2026-11-12T03:32:25Z"
+      },
+      {
+        "id": 130952646791,
+        "run_id": 43146954720,
+        "name": "Linux x64 / Tests / tooling",
+        "workflow_name": "Offline certification",
+        "status": "completed",
+        "conclusion": "success",
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3",
+        "html_url": "https://github.com/Aurum-Studios/DiscordKit/actions/runs/43146954720/job/130952646791",
+        "run_attempt": 1,
+        "runner_id": 1000001304,
+        "runner_name": "linux-x64-8-a-1000001304",
+        "runner_group_id": 31,
+        "runner_group_name": "linux-x64-8",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-11-12T03:31:11Z",
+            "completed_at": "2026-11-12T03:31:12Z"
+          },
+          {
+            "name": "Enable Windows checkout long paths",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 2,
+            "started_at": "2026-11-12T03:31:12Z",
+            "completed_at": "2026-11-12T03:31:12Z"
+          },
+          {
+            "name": "Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-11-12T03:31:12Z",
+            "completed_at": "2026-11-12T03:31:14Z"
+          },
+          {
+            "name": "Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4,
+            "started_at": "2026-11-12T03:31:14Z",
+            "completed_at": "2026-11-12T03:32:40Z"
+          },
+          {
+            "name": "Download this run's compiled package",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5,
+            "started_at": "2026-11-12T03:32:40Z",
+            "completed_at": "2026-11-12T03:32:43Z"
+          },
+          {
+            "name": "Run only the selected suite without rebuilding",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6,
+            "started_at": "2026-11-12T03:32:43Z",
+            "completed_at": "2026-11-12T03:32:56Z"
+          },
+          {
+            "name": "Verify generated source and dependency pins remain unchanged",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7,
+            "started_at": "2026-11-12T03:32:56Z",
+            "completed_at": "2026-11-12T03:32:56Z"
+          },
+          {
+            "name": "Retain selected suite evidence",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8,
+            "started_at": "2026-11-12T03:32:56Z",
+            "completed_at": "2026-11-12T03:32:58Z"
+          },
+          {
+            "name": "Post Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 15,
+            "started_at": "2026-11-12T03:32:58Z",
+            "completed_at": "2026-11-12T03:32:58Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 16,
+            "started_at": "2026-11-12T03:32:58Z",
+            "completed_at": "2026-11-12T03:32:58Z"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 17,
+            "started_at": "2026-11-12T03:32:58Z",
+            "completed_at": "2026-11-12T03:32:58Z"
+          }
+        ],
+        "created_at": "2026-11-12T03:31:08Z",
+        "started_at": "2026-11-12T03:31:10Z",
+        "completed_at": "2026-11-12T03:33:00Z"
+      },
+      {
+        "id": 130952646809,
+        "run_id": 43146954720,
+        "name": "Linux x64 / Tests / DiscordVoiceTests",
+        "workflow_name": "Offline certification",
+        "status": "completed",
+        "conclusion": "success",
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3",
+        "html_url": "https://github.com/Aurum-Studios/DiscordKit/actions/runs/43146954720/job/130952646809",
+        "run_attempt": 1,
+        "runner_id": 1000001311,
+        "runner_name": "linux-x64-8-a-1000001311",
+        "runner_group_id": 31,
+        "runner_group_name": "linux-x64-8",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-11-12T03:31:11Z",
+            "completed_at": "2026-11-12T03:31:12Z"
+          },
+          {
+            "name": "Enable Windows checkout long paths",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 2,
+            "started_at": "2026-11-12T03:31:12Z",
+            "completed_at": "2026-11-12T03:31:12Z"
+          },
+          {
+            "name": "Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-11-12T03:31:12Z",
+            "completed_at": "2026-11-12T03:31:14Z"
+          },
+          {
+            "name": "Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4,
+            "started_at": "2026-11-12T03:31:14Z",
+            "completed_at": "2026-11-12T03:31:53Z"
+          },
+          {
+            "name": "Download this run's compiled package",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5,
+            "started_at": "2026-11-12T03:31:53Z",
+            "completed_at": "2026-11-12T03:31:59Z"
+          },
+          {
+            "name": "Run only the selected suite without rebuilding",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6,
+            "started_at": "2026-11-12T03:31:59Z",
+            "completed_at": "2026-11-12T03:32:14Z"
+          },
+          {
+            "name": "Verify generated source and dependency pins remain unchanged",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7,
+            "started_at": "2026-11-12T03:32:14Z",
+            "completed_at": "2026-11-12T03:32:14Z"
+          },
+          {
+            "name": "Retain selected suite evidence",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8,
+            "started_at": "2026-11-12T03:32:14Z",
+            "completed_at": "2026-11-12T03:32:15Z"
+          },
+          {
+            "name": "Post Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 15,
+            "started_at": "2026-11-12T03:32:15Z",
+            "completed_at": "2026-11-12T03:32:15Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 16,
+            "started_at": "2026-11-12T03:32:15Z",
+            "completed_at": "2026-11-12T03:32:16Z"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 17,
+            "started_at": "2026-11-12T03:32:16Z",
+            "completed_at": "2026-11-12T03:32:16Z"
+          }
+        ],
+        "created_at": "2026-11-12T03:31:08Z",
+        "started_at": "2026-11-12T03:31:10Z",
+        "completed_at": "2026-11-12T03:32:18Z"
+      },
+      {
+        "id": 130952646815,
+        "run_id": 43146954720,
+        "name": "Linux x64 / Tests / macros",
+        "workflow_name": "Offline certification",
+        "status": "completed",
+        "conclusion": "success",
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3",
+        "html_url": "https://github.com/Aurum-Studios/DiscordKit/actions/runs/43146954720/job/130952646815",
+        "run_attempt": 1,
+        "runner_id": 1000001330,
+        "runner_name": "linux-x64-8-a-1000001330",
+        "runner_group_id": 31,
+        "runner_group_name": "linux-x64-8",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-11-12T03:32:20Z",
+            "completed_at": "2026-11-12T03:32:21Z"
+          },
+          {
+            "name": "Enable Windows checkout long paths",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 2,
+            "started_at": "2026-11-12T03:32:21Z",
+            "completed_at": "2026-11-12T03:32:21Z"
+          },
+          {
+            "name": "Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-11-12T03:32:21Z",
+            "completed_at": "2026-11-12T03:32:23Z"
+          },
+          {
+            "name": "Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4,
+            "started_at": "2026-11-12T03:32:23Z",
+            "completed_at": "2026-11-12T03:33:08Z"
+          },
+          {
+            "name": "Download this run's compiled package",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5,
+            "started_at": "2026-11-12T03:33:08Z",
+            "completed_at": "2026-11-12T03:33:13Z"
+          },
+          {
+            "name": "Run only the selected suite without rebuilding",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6,
+            "started_at": "2026-11-12T03:33:13Z",
+            "completed_at": "2026-11-12T03:33:29Z"
+          },
+          {
+            "name": "Verify generated source and dependency pins remain unchanged",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7,
+            "started_at": "2026-11-12T03:33:29Z",
+            "completed_at": "2026-11-12T03:33:29Z"
+          },
+          {
+            "name": "Retain selected suite evidence",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8,
+            "started_at": "2026-11-12T03:33:29Z",
+            "completed_at": "2026-11-12T03:33:30Z"
+          },
+          {
+            "name": "Post Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 15,
+            "started_at": "2026-11-12T03:33:30Z",
+            "completed_at": "2026-11-12T03:33:31Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 16,
+            "started_at": "2026-11-12T03:33:31Z",
+            "completed_at": "2026-11-12T03:33:31Z"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 17,
+            "started_at": "2026-11-12T03:33:31Z",
+            "completed_at": "2026-11-12T03:33:31Z"
+          }
+        ],
+        "created_at": "2026-11-12T03:31:08Z",
+        "started_at": "2026-11-12T03:32:19Z",
+        "completed_at": "2026-11-12T03:33:33Z"
+      },
+      {
+        "id": 130952646816,
+        "run_id": 43146954720,
+        "name": "Linux x64 / Tests / DiscordInteractionsTests",
+        "workflow_name": "Offline certification",
+        "status": "completed",
+        "conclusion": "success",
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3",
+        "html_url": "https://github.com/Aurum-Studios/DiscordKit/actions/runs/43146954720/job/130952646816",
+        "run_attempt": 1,
+        "runner_id": 1000001328,
+        "runner_name": "linux-x64-8-a-1000001328",
+        "runner_group_id": 31,
+        "runner_group_name": "linux-x64-8",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-11-12T03:32:20Z",
+            "completed_at": "2026-11-12T03:32:21Z"
+          },
+          {
+            "name": "Enable Windows checkout long paths",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 2,
+            "started_at": "2026-11-12T03:32:21Z",
+            "completed_at": "2026-11-12T03:32:21Z"
+          },
+          {
+            "name": "Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-11-12T03:32:21Z",
+            "completed_at": "2026-11-12T03:32:23Z"
+          },
+          {
+            "name": "Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4,
+            "started_at": "2026-11-12T03:32:23Z",
+            "completed_at": "2026-11-12T03:33:10Z"
+          },
+          {
+            "name": "Download this run's compiled package",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5,
+            "started_at": "2026-11-12T03:33:10Z",
+            "completed_at": "2026-11-12T03:33:14Z"
+          },
+          {
+            "name": "Run only the selected suite without rebuilding",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6,
+            "started_at": "2026-11-12T03:33:14Z",
+            "completed_at": "2026-11-12T03:33:36Z"
+          },
+          {
+            "name": "Verify generated source and dependency pins remain unchanged",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7,
+            "started_at": "2026-11-12T03:33:36Z",
+            "completed_at": "2026-11-12T03:33:36Z"
+          },
+          {
+            "name": "Retain selected suite evidence",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8,
+            "started_at": "2026-11-12T03:33:36Z",
+            "completed_at": "2026-11-12T03:33:37Z"
+          },
+          {
+            "name": "Post Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 15,
+            "started_at": "2026-11-12T03:33:37Z",
+            "completed_at": "2026-11-12T03:33:37Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 16,
+            "started_at": "2026-11-12T03:33:37Z",
+            "completed_at": "2026-11-12T03:33:37Z"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 17,
+            "started_at": "2026-11-12T03:33:37Z",
+            "completed_at": "2026-11-12T03:33:38Z"
+          }
+        ],
+        "created_at": "2026-11-12T03:31:08Z",
+        "started_at": "2026-11-12T03:32:19Z",
+        "completed_at": "2026-11-12T03:33:39Z"
+      },
+      {
+        "id": 130952646852,
+        "run_id": 43146954720,
+        "name": "Linux x64 / Tests / media",
+        "workflow_name": "Offline certification",
+        "status": "completed",
+        "conclusion": "success",
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3",
+        "html_url": "https://github.com/Aurum-Studios/DiscordKit/actions/runs/43146954720/job/130952646852",
+        "run_attempt": 1,
+        "runner_id": 1000001310,
+        "runner_name": "linux-x64-8-a-1000001310",
+        "runner_group_id": 31,
+        "runner_group_name": "linux-x64-8",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-11-12T03:31:11Z",
+            "completed_at": "2026-11-12T03:31:12Z"
+          },
+          {
+            "name": "Enable Windows checkout long paths",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 2,
+            "started_at": "2026-11-12T03:31:12Z",
+            "completed_at": "2026-11-12T03:31:12Z"
+          },
+          {
+            "name": "Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-11-12T03:31:12Z",
+            "completed_at": "2026-11-12T03:31:14Z"
+          },
+          {
+            "name": "Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4,
+            "started_at": "2026-11-12T03:31:14Z",
+            "completed_at": "2026-11-12T03:32:12Z"
+          },
+          {
+            "name": "Download this run's compiled package",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5,
+            "started_at": "2026-11-12T03:32:12Z",
+            "completed_at": "2026-11-12T03:32:17Z"
+          },
+          {
+            "name": "Run only the selected suite without rebuilding",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6,
+            "started_at": "2026-11-12T03:32:17Z",
+            "completed_at": "2026-11-12T03:33:05Z"
+          },
+          {
+            "name": "Verify generated source and dependency pins remain unchanged",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7,
+            "started_at": "2026-11-12T03:33:05Z",
+            "completed_at": "2026-11-12T03:33:05Z"
+          },
+          {
+            "name": "Retain selected suite evidence",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8,
+            "started_at": "2026-11-12T03:33:05Z",
+            "completed_at": "2026-11-12T03:33:07Z"
+          },
+          {
+            "name": "Post Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 15,
+            "started_at": "2026-11-12T03:33:07Z",
+            "completed_at": "2026-11-12T03:33:07Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 16,
+            "started_at": "2026-11-12T03:33:07Z",
+            "completed_at": "2026-11-12T03:33:07Z"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 17,
+            "started_at": "2026-11-12T03:33:07Z",
+            "completed_at": "2026-11-12T03:33:07Z"
+          }
+        ],
+        "created_at": "2026-11-12T03:31:08Z",
+        "started_at": "2026-11-12T03:31:10Z",
+        "completed_at": "2026-11-12T03:33:09Z"
+      },
+      {
+        "id": 130952646873,
+        "run_id": 43146954720,
+        "name": "Linux x64 / Tests / DiscordLogHandlersTests",
+        "workflow_name": "Offline certification",
+        "status": "completed",
+        "conclusion": "success",
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3",
+        "html_url": "https://github.com/Aurum-Studios/DiscordKit/actions/runs/43146954720/job/130952646873",
+        "run_attempt": 1,
+        "runner_id": 1000001301,
+        "runner_name": "linux-x64-8-a-1000001301",
+        "runner_group_id": 31,
+        "runner_group_name": "linux-x64-8",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-11-12T03:31:11Z",
+            "completed_at": "2026-11-12T03:31:12Z"
+          },
+          {
+            "name": "Enable Windows checkout long paths",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 2,
+            "started_at": "2026-11-12T03:31:12Z",
+            "completed_at": "2026-11-12T03:31:12Z"
+          },
+          {
+            "name": "Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-11-12T03:31:12Z",
+            "completed_at": "2026-11-12T03:31:14Z"
+          },
+          {
+            "name": "Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4,
+            "started_at": "2026-11-12T03:31:14Z",
+            "completed_at": "2026-11-12T03:32:06Z"
+          },
+          {
+            "name": "Download this run's compiled package",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5,
+            "started_at": "2026-11-12T03:32:06Z",
+            "completed_at": "2026-11-12T03:32:14Z"
+          },
+          {
+            "name": "Run only the selected suite without rebuilding",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6,
+            "started_at": "2026-11-12T03:32:14Z",
+            "completed_at": "2026-11-12T03:32:33Z"
+          },
+          {
+            "name": "Verify generated source and dependency pins remain unchanged",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7,
+            "started_at": "2026-11-12T03:32:33Z",
+            "completed_at": "2026-11-12T03:32:33Z"
+          },
+          {
+            "name": "Retain selected suite evidence",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8,
+            "started_at": "2026-11-12T03:32:33Z",
+            "completed_at": "2026-11-12T03:32:34Z"
+          },
+          {
+            "name": "Post Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 15,
+            "started_at": "2026-11-12T03:32:34Z",
+            "completed_at": "2026-11-12T03:32:34Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 16,
+            "started_at": "2026-11-12T03:32:34Z",
+            "completed_at": "2026-11-12T03:32:35Z"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 17,
+            "started_at": "2026-11-12T03:32:35Z",
+            "completed_at": "2026-11-12T03:32:35Z"
+          }
+        ],
+        "created_at": "2026-11-12T03:31:08Z",
+        "started_at": "2026-11-12T03:31:10Z",
+        "completed_at": "2026-11-12T03:32:37Z"
+      },
+      {
+        "id": 130952646875,
+        "run_id": 43146954720,
+        "name": "Linux x64 / Tests / foundation",
+        "workflow_name": "Offline certification",
+        "status": "completed",
+        "conclusion": "success",
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3",
+        "html_url": "https://github.com/Aurum-Studios/DiscordKit/actions/runs/43146954720/job/130952646875",
+        "run_attempt": 1,
+        "runner_id": 1000001299,
+        "runner_name": "linux-x64-8-a-1000001299",
+        "runner_group_id": 31,
+        "runner_group_name": "linux-x64-8",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-11-12T03:31:11Z",
+            "completed_at": "2026-11-12T03:31:12Z"
+          },
+          {
+            "name": "Enable Windows checkout long paths",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 2,
+            "started_at": "2026-11-12T03:31:12Z",
+            "completed_at": "2026-11-12T03:31:12Z"
+          },
+          {
+            "name": "Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-11-12T03:31:12Z",
+            "completed_at": "2026-11-12T03:31:14Z"
+          },
+          {
+            "name": "Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4,
+            "started_at": "2026-11-12T03:31:14Z",
+            "completed_at": "2026-11-12T03:32:04Z"
+          },
+          {
+            "name": "Download this run's compiled package",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5,
+            "started_at": "2026-11-12T03:32:04Z",
+            "completed_at": "2026-11-12T03:32:12Z"
+          },
+          {
+            "name": "Run only the selected suite without rebuilding",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6,
+            "started_at": "2026-11-12T03:32:12Z",
+            "completed_at": "2026-11-12T03:32:43Z"
+          },
+          {
+            "name": "Verify generated source and dependency pins remain unchanged",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7,
+            "started_at": "2026-11-12T03:32:43Z",
+            "completed_at": "2026-11-12T03:32:43Z"
+          },
+          {
+            "name": "Retain selected suite evidence",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8,
+            "started_at": "2026-11-12T03:32:43Z",
+            "completed_at": "2026-11-12T03:32:44Z"
+          },
+          {
+            "name": "Post Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 15,
+            "started_at": "2026-11-12T03:32:44Z",
+            "completed_at": "2026-11-12T03:32:44Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 16,
+            "started_at": "2026-11-12T03:32:44Z",
+            "completed_at": "2026-11-12T03:32:44Z"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 17,
+            "started_at": "2026-11-12T03:32:45Z",
+            "completed_at": "2026-11-12T03:32:45Z"
+          }
+        ],
+        "created_at": "2026-11-12T03:31:08Z",
+        "started_at": "2026-11-12T03:31:10Z",
+        "completed_at": "2026-11-12T03:32:47Z"
+      },
+      {
+        "id": 130952646882,
+        "run_id": 43146954720,
+        "name": "Linux x64 / Tests / DiscordSocialTests",
+        "workflow_name": "Offline certification",
+        "status": "completed",
+        "conclusion": "success",
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3",
+        "html_url": "https://github.com/Aurum-Studios/DiscordKit/actions/runs/43146954720/job/130952646882",
+        "run_attempt": 1,
+        "runner_id": 1000001298,
+        "runner_name": "linux-x64-8-a-1000001298",
+        "runner_group_id": 31,
+        "runner_group_name": "linux-x64-8",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-11-12T03:31:10Z",
+            "completed_at": "2026-11-12T03:31:11Z"
+          },
+          {
+            "name": "Enable Windows checkout long paths",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 2,
+            "started_at": "2026-11-12T03:31:11Z",
+            "completed_at": "2026-11-12T03:31:11Z"
+          },
+          {
+            "name": "Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-11-12T03:31:11Z",
+            "completed_at": "2026-11-12T03:31:14Z"
+          },
+          {
+            "name": "Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4,
+            "started_at": "2026-11-12T03:31:14Z",
+            "completed_at": "2026-11-12T03:32:08Z"
+          },
+          {
+            "name": "Download this run's compiled package",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5,
+            "started_at": "2026-11-12T03:32:08Z",
+            "completed_at": "2026-11-12T03:32:11Z"
+          },
+          {
+            "name": "Run only the selected suite without rebuilding",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6,
+            "started_at": "2026-11-12T03:32:11Z",
+            "completed_at": "2026-11-12T03:32:30Z"
+          },
+          {
+            "name": "Verify generated source and dependency pins remain unchanged",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7,
+            "started_at": "2026-11-12T03:32:30Z",
+            "completed_at": "2026-11-12T03:32:30Z"
+          },
+          {
+            "name": "Retain selected suite evidence",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8,
+            "started_at": "2026-11-12T03:32:30Z",
+            "completed_at": "2026-11-12T03:32:31Z"
+          },
+          {
+            "name": "Post Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 15,
+            "started_at": "2026-11-12T03:32:31Z",
+            "completed_at": "2026-11-12T03:32:31Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 16,
+            "started_at": "2026-11-12T03:32:31Z",
+            "completed_at": "2026-11-12T03:32:32Z"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 17,
+            "started_at": "2026-11-12T03:32:32Z",
+            "completed_at": "2026-11-12T03:32:32Z"
+          }
+        ],
+        "created_at": "2026-11-12T03:31:08Z",
+        "started_at": "2026-11-12T03:31:10Z",
+        "completed_at": "2026-11-12T03:32:33Z"
+      },
+      {
+        "id": 130952646883,
+        "run_id": 43146954720,
+        "name": "Linux x64 / Tests / LoggingApp",
+        "workflow_name": "Offline certification",
+        "status": "completed",
+        "conclusion": "success",
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3",
+        "html_url": "https://github.com/Aurum-Studios/DiscordKit/actions/runs/43146954720/job/130952646883",
+        "run_attempt": 1,
+        "runner_id": 1000001327,
+        "runner_name": "linux-x64-8-a-1000001327",
+        "runner_group_id": 31,
+        "runner_group_name": "linux-x64-8",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-11-12T03:32:21Z",
+            "completed_at": "2026-11-12T03:32:22Z"
+          },
+          {
+            "name": "Enable Windows checkout long paths",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 2,
+            "started_at": "2026-11-12T03:32:22Z",
+            "completed_at": "2026-11-12T03:32:22Z"
+          },
+          {
+            "name": "Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-11-12T03:32:22Z",
+            "completed_at": "2026-11-12T03:32:24Z"
+          },
+          {
+            "name": "Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4,
+            "started_at": "2026-11-12T03:32:24Z",
+            "completed_at": "2026-11-12T03:33:10Z"
+          },
+          {
+            "name": "Download this run's compiled package",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5,
+            "started_at": "2026-11-12T03:33:10Z",
+            "completed_at": "2026-11-12T03:34:52Z"
+          },
+          {
+            "name": "Run only the selected suite without rebuilding",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6,
+            "started_at": "2026-11-12T03:34:52Z",
+            "completed_at": "2026-11-12T03:36:40Z"
+          },
+          {
+            "name": "Verify generated source and dependency pins remain unchanged",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7,
+            "started_at": "2026-11-12T03:36:40Z",
+            "completed_at": "2026-11-12T03:36:40Z"
+          },
+          {
+            "name": "Retain selected suite evidence",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8,
+            "started_at": "2026-11-12T03:36:40Z",
+            "completed_at": "2026-11-12T03:36:41Z"
+          },
+          {
+            "name": "Post Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 15,
+            "started_at": "2026-11-12T03:36:41Z",
+            "completed_at": "2026-11-12T03:36:41Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 16,
+            "started_at": "2026-11-12T03:36:41Z",
+            "completed_at": "2026-11-12T03:36:42Z"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 17,
+            "started_at": "2026-11-12T03:36:42Z",
+            "completed_at": "2026-11-12T03:36:42Z"
+          }
+        ],
+        "created_at": "2026-11-12T03:31:08Z",
+        "started_at": "2026-11-12T03:32:20Z",
+        "completed_at": "2026-11-12T03:36:44Z"
+      },
+      {
+        "id": 130952646890,
+        "run_id": 43146954720,
+        "name": "Linux x64 / Tests / ActivityHost",
+        "workflow_name": "Offline certification",
+        "status": "completed",
+        "conclusion": "success",
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3",
+        "html_url": "https://github.com/Aurum-Studios/DiscordKit/actions/runs/43146954720/job/130952646890",
+        "run_attempt": 1,
+        "runner_id": 1000001322,
+        "runner_name": "linux-x64-8-a-1000001322",
+        "runner_group_id": 31,
+        "runner_group_name": "linux-x64-8",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-11-12T03:32:09Z",
+            "completed_at": "2026-11-12T03:32:10Z"
+          },
+          {
+            "name": "Enable Windows checkout long paths",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 2,
+            "started_at": "2026-11-12T03:32:10Z",
+            "completed_at": "2026-11-12T03:32:10Z"
+          },
+          {
+            "name": "Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-11-12T03:32:10Z",
+            "completed_at": "2026-11-12T03:32:12Z"
+          },
+          {
+            "name": "Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4,
+            "started_at": "2026-11-12T03:32:12Z",
+            "completed_at": "2026-11-12T03:33:14Z"
+          },
+          {
+            "name": "Download this run's compiled package",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5,
+            "started_at": "2026-11-12T03:33:14Z",
+            "completed_at": "2026-11-12T03:34:07Z"
+          },
+          {
+            "name": "Run only the selected suite without rebuilding",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6,
+            "started_at": "2026-11-12T03:34:07Z",
+            "completed_at": "2026-11-12T03:35:55Z"
+          },
+          {
+            "name": "Verify generated source and dependency pins remain unchanged",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7,
+            "started_at": "2026-11-12T03:35:55Z",
+            "completed_at": "2026-11-12T03:35:55Z"
+          },
+          {
+            "name": "Retain selected suite evidence",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8,
+            "started_at": "2026-11-12T03:35:55Z",
+            "completed_at": "2026-11-12T03:35:56Z"
+          },
+          {
+            "name": "Post Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 15,
+            "started_at": "2026-11-12T03:35:56Z",
+            "completed_at": "2026-11-12T03:35:57Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 16,
+            "started_at": "2026-11-12T03:35:57Z",
+            "completed_at": "2026-11-12T03:35:57Z"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 17,
+            "started_at": "2026-11-12T03:35:57Z",
+            "completed_at": "2026-11-12T03:35:57Z"
+          }
+        ],
+        "created_at": "2026-11-12T03:31:08Z",
+        "started_at": "2026-11-12T03:32:08Z",
+        "completed_at": "2026-11-12T03:35:59Z"
+      },
+      {
+        "id": 130952646901,
+        "run_id": 43146954720,
+        "name": "Linux x64 / Tests / VoiceBot",
+        "workflow_name": "Offline certification",
+        "status": "completed",
+        "conclusion": "success",
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3",
+        "html_url": "https://github.com/Aurum-Studios/DiscordKit/actions/runs/43146954720/job/130952646901",
+        "run_attempt": 1,
+        "runner_id": 1000001336,
+        "runner_name": "linux-x64-8-a-1000001336",
+        "runner_group_id": 31,
+        "runner_group_name": "linux-x64-8",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-11-12T03:32:26Z",
+            "completed_at": "2026-11-12T03:32:27Z"
+          },
+          {
+            "name": "Enable Windows checkout long paths",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 2,
+            "started_at": "2026-11-12T03:32:27Z",
+            "completed_at": "2026-11-12T03:32:27Z"
+          },
+          {
+            "name": "Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-11-12T03:32:27Z",
+            "completed_at": "2026-11-12T03:32:29Z"
+          },
+          {
+            "name": "Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4,
+            "started_at": "2026-11-12T03:32:29Z",
+            "completed_at": "2026-11-12T03:33:16Z"
+          },
+          {
+            "name": "Download this run's compiled package",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5,
+            "started_at": "2026-11-12T03:33:16Z",
+            "completed_at": "2026-11-12T03:34:26Z"
+          },
+          {
+            "name": "Run only the selected suite without rebuilding",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6,
+            "started_at": "2026-11-12T03:34:26Z",
+            "completed_at": "2026-11-12T03:35:30Z"
+          },
+          {
+            "name": "Verify generated source and dependency pins remain unchanged",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7,
+            "started_at": "2026-11-12T03:35:30Z",
+            "completed_at": "2026-11-12T03:35:30Z"
+          },
+          {
+            "name": "Retain selected suite evidence",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8,
+            "started_at": "2026-11-12T03:35:30Z",
+            "completed_at": "2026-11-12T03:35:32Z"
+          },
+          {
+            "name": "Post Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 15,
+            "started_at": "2026-11-12T03:35:32Z",
+            "completed_at": "2026-11-12T03:35:32Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 16,
+            "started_at": "2026-11-12T03:35:32Z",
+            "completed_at": "2026-11-12T03:35:32Z"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 17,
+            "started_at": "2026-11-12T03:35:32Z",
+            "completed_at": "2026-11-12T03:35:32Z"
+          }
+        ],
+        "created_at": "2026-11-12T03:31:08Z",
+        "started_at": "2026-11-12T03:32:26Z",
+        "completed_at": "2026-11-12T03:35:34Z"
+      },
+      {
+        "id": 130952646908,
+        "run_id": 43146954720,
+        "name": "Linux x64 / Tests / load",
+        "workflow_name": "Offline certification",
+        "status": "completed",
+        "conclusion": "cancelled",
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3",
+        "html_url": "https://github.com/Aurum-Studios/DiscordKit/actions/runs/43146954720/job/130952646908",
+        "run_attempt": 1,
+        "runner_id": 1000001326,
+        "runner_name": "linux-x64-8-a-1000001326",
+        "runner_group_id": 31,
+        "runner_group_name": "linux-x64-8",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-11-12T03:32:21Z",
+            "completed_at": "2026-11-12T03:32:22Z"
+          },
+          {
+            "name": "Enable Windows checkout long paths",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 2,
+            "started_at": "2026-11-12T03:32:22Z",
+            "completed_at": "2026-11-12T03:32:22Z"
+          },
+          {
+            "name": "Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-11-12T03:32:22Z",
+            "completed_at": "2026-11-12T03:32:24Z"
+          },
+          {
+            "name": "Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4,
+            "started_at": "2026-11-12T03:32:24Z",
+            "completed_at": "2026-11-12T03:33:15Z"
+          },
+          {
+            "name": "Download this run's compiled package",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5,
+            "started_at": "2026-11-12T03:33:15Z",
+            "completed_at": "2026-11-12T03:33:26Z"
+          },
+          {
+            "name": "Run only the selected suite without rebuilding",
+            "status": "completed",
+            "conclusion": "cancelled",
+            "number": 6,
+            "started_at": "2026-11-12T03:33:26Z",
+            "completed_at": "2026-11-12T03:59:20Z"
+          },
+          {
+            "name": "Verify generated source and dependency pins remain unchanged",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 7,
+            "started_at": "2026-11-12T03:59:20Z",
+            "completed_at": "2026-11-12T03:59:20Z"
+          },
+          {
+            "name": "Retain selected suite evidence",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8,
+            "started_at": "2026-11-12T03:59:20Z",
+            "completed_at": "2026-11-12T03:59:22Z"
+          },
+          {
+            "name": "Post Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 15,
+            "started_at": "2026-11-12T03:59:22Z",
+            "completed_at": "2026-11-12T03:59:22Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 16,
+            "started_at": "2026-11-12T03:59:22Z",
+            "completed_at": "2026-11-12T03:59:23Z"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 17,
+            "started_at": "2026-11-12T03:59:23Z",
+            "completed_at": "2026-11-12T03:59:23Z"
+          }
+        ],
+        "created_at": "2026-11-12T03:31:08Z",
+        "started_at": "2026-11-12T03:32:20Z",
+        "completed_at": "2026-11-12T03:59:25Z"
+      },
+      {
+        "id": 130952646913,
+        "run_id": 43146954720,
+        "name": "Linux x64 / Tests / timing",
+        "workflow_name": "Offline certification",
+        "status": "completed",
+        "conclusion": "success",
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3",
+        "html_url": "https://github.com/Aurum-Studios/DiscordKit/actions/runs/43146954720/job/130952646913",
+        "run_attempt": 1,
+        "runner_id": 1000001309,
+        "runner_name": "linux-x64-8-a-1000001309",
+        "runner_group_id": 31,
+        "runner_group_name": "linux-x64-8",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-11-12T03:31:10Z",
+            "completed_at": "2026-11-12T03:31:11Z"
+          },
+          {
+            "name": "Enable Windows checkout long paths",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 2,
+            "started_at": "2026-11-12T03:31:11Z",
+            "completed_at": "2026-11-12T03:31:11Z"
+          },
+          {
+            "name": "Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-11-12T03:31:11Z",
+            "completed_at": "2026-11-12T03:31:14Z"
+          },
+          {
+            "name": "Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4,
+            "started_at": "2026-11-12T03:31:14Z",
+            "completed_at": "2026-11-12T03:32:18Z"
+          },
+          {
+            "name": "Download this run's compiled package",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5,
+            "started_at": "2026-11-12T03:32:18Z",
+            "completed_at": "2026-11-12T03:32:21Z"
+          },
+          {
+            "name": "Run only the selected suite without rebuilding",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6,
+            "started_at": "2026-11-12T03:32:21Z",
+            "completed_at": "2026-11-12T03:32:38Z"
+          },
+          {
+            "name": "Verify generated source and dependency pins remain unchanged",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7,
+            "started_at": "2026-11-12T03:32:38Z",
+            "completed_at": "2026-11-12T03:32:38Z"
+          },
+          {
+            "name": "Retain selected suite evidence",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8,
+            "started_at": "2026-11-12T03:32:38Z",
+            "completed_at": "2026-11-12T03:32:38Z"
+          },
+          {
+            "name": "Post Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 15,
+            "started_at": "2026-11-12T03:32:38Z",
+            "completed_at": "2026-11-12T03:32:39Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 16,
+            "started_at": "2026-11-12T03:32:39Z",
+            "completed_at": "2026-11-12T03:32:39Z"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 17,
+            "started_at": "2026-11-12T03:32:39Z",
+            "completed_at": "2026-11-12T03:32:39Z"
+          }
+        ],
+        "created_at": "2026-11-12T03:31:08Z",
+        "started_at": "2026-11-12T03:31:10Z",
+        "completed_at": "2026-11-12T03:32:40Z"
+      },
+      {
+        "id": 130952646914,
+        "run_id": 43146954720,
+        "name": "Linux x64 / Tests / CommandsApp",
+        "workflow_name": "Offline certification",
+        "status": "completed",
+        "conclusion": "success",
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3",
+        "html_url": "https://github.com/Aurum-Studios/DiscordKit/actions/runs/43146954720/job/130952646914",
+        "run_attempt": 1,
+        "runner_id": 1000001337,
+        "runner_name": "linux-x64-8-a-1000001337",
+        "runner_group_id": 31,
+        "runner_group_name": "linux-x64-8",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-11-12T03:32:27Z",
+            "completed_at": "2026-11-12T03:32:27Z"
+          },
+          {
+            "name": "Enable Windows checkout long paths",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 2,
+            "started_at": "2026-11-12T03:32:27Z",
+            "completed_at": "2026-11-12T03:32:27Z"
+          },
+          {
+            "name": "Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-11-12T03:32:27Z",
+            "completed_at": "2026-11-12T03:32:29Z"
+          },
+          {
+            "name": "Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4,
+            "started_at": "2026-11-12T03:32:29Z",
+            "completed_at": "2026-11-12T03:33:06Z"
+          },
+          {
+            "name": "Download this run's compiled package",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5,
+            "started_at": "2026-11-12T03:33:06Z",
+            "completed_at": "2026-11-12T03:33:54Z"
+          },
+          {
+            "name": "Run only the selected suite without rebuilding",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6,
+            "started_at": "2026-11-12T03:33:54Z",
+            "completed_at": "2026-11-12T03:35:29Z"
+          },
+          {
+            "name": "Verify generated source and dependency pins remain unchanged",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7,
+            "started_at": "2026-11-12T03:35:29Z",
+            "completed_at": "2026-11-12T03:35:29Z"
+          },
+          {
+            "name": "Retain selected suite evidence",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8,
+            "started_at": "2026-11-12T03:35:29Z",
+            "completed_at": "2026-11-12T03:35:30Z"
+          },
+          {
+            "name": "Post Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 15,
+            "started_at": "2026-11-12T03:35:30Z",
+            "completed_at": "2026-11-12T03:35:30Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 16,
+            "started_at": "2026-11-12T03:35:30Z",
+            "completed_at": "2026-11-12T03:35:31Z"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 17,
+            "started_at": "2026-11-12T03:35:31Z",
+            "completed_at": "2026-11-12T03:35:31Z"
+          }
+        ],
+        "created_at": "2026-11-12T03:31:08Z",
+        "started_at": "2026-11-12T03:32:26Z",
+        "completed_at": "2026-11-12T03:35:33Z"
+      },
+      {
+        "id": 130952646930,
+        "run_id": 43146954720,
+        "name": "Linux x64 / Tests / benchmarks",
+        "workflow_name": "Offline certification",
+        "status": "completed",
+        "conclusion": "success",
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3",
+        "html_url": "https://github.com/Aurum-Studios/DiscordKit/actions/runs/43146954720/job/130952646930",
+        "run_attempt": 1,
+        "runner_id": 1000001329,
+        "runner_name": "linux-x64-8-a-1000001329",
+        "runner_group_id": 31,
+        "runner_group_name": "linux-x64-8",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-11-12T03:32:20Z",
+            "completed_at": "2026-11-12T03:32:22Z"
+          },
+          {
+            "name": "Enable Windows checkout long paths",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 2,
+            "started_at": "2026-11-12T03:32:22Z",
+            "completed_at": "2026-11-12T03:32:22Z"
+          },
+          {
+            "name": "Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-11-12T03:32:22Z",
+            "completed_at": "2026-11-12T03:32:24Z"
+          },
+          {
+            "name": "Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4,
+            "started_at": "2026-11-12T03:32:24Z",
+            "completed_at": "2026-11-12T03:33:09Z"
+          },
+          {
+            "name": "Download this run's compiled package",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5,
+            "started_at": "2026-11-12T03:33:09Z",
+            "completed_at": "2026-11-12T03:33:13Z"
+          },
+          {
+            "name": "Run only the selected suite without rebuilding",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6,
+            "started_at": "2026-11-12T03:33:13Z",
+            "completed_at": "2026-11-12T03:33:31Z"
+          },
+          {
+            "name": "Verify generated source and dependency pins remain unchanged",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7,
+            "started_at": "2026-11-12T03:33:31Z",
+            "completed_at": "2026-11-12T03:33:31Z"
+          },
+          {
+            "name": "Retain selected suite evidence",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8,
+            "started_at": "2026-11-12T03:33:31Z",
+            "completed_at": "2026-11-12T03:33:32Z"
+          },
+          {
+            "name": "Post Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 15,
+            "started_at": "2026-11-12T03:33:32Z",
+            "completed_at": "2026-11-12T03:33:32Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 16,
+            "started_at": "2026-11-12T03:33:32Z",
+            "completed_at": "2026-11-12T03:33:32Z"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 17,
+            "started_at": "2026-11-12T03:33:32Z",
+            "completed_at": "2026-11-12T03:33:32Z"
+          }
+        ],
+        "created_at": "2026-11-12T03:31:08Z",
+        "started_at": "2026-11-12T03:32:20Z",
+        "completed_at": "2026-11-12T03:33:35Z"
+      },
+      {
+        "id": 130952646940,
+        "run_id": 43146954720,
+        "name": "Linux x64 / Tests / DSLCommands",
+        "workflow_name": "Offline certification",
+        "status": "completed",
+        "conclusion": "success",
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3",
+        "html_url": "https://github.com/Aurum-Studios/DiscordKit/actions/runs/43146954720/job/130952646940",
+        "run_attempt": 1,
+        "runner_id": 1000001331,
+        "runner_name": "linux-x64-8-a-1000001331",
+        "runner_group_id": 31,
+        "runner_group_name": "linux-x64-8",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-11-12T03:32:20Z",
+            "completed_at": "2026-11-12T03:32:21Z"
+          },
+          {
+            "name": "Enable Windows checkout long paths",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 2,
+            "started_at": "2026-11-12T03:32:21Z",
+            "completed_at": "2026-11-12T03:32:21Z"
+          },
+          {
+            "name": "Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-11-12T03:32:21Z",
+            "completed_at": "2026-11-12T03:32:23Z"
+          },
+          {
+            "name": "Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4,
+            "started_at": "2026-11-12T03:32:23Z",
+            "completed_at": "2026-11-12T03:33:13Z"
+          },
+          {
+            "name": "Download this run's compiled package",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5,
+            "started_at": "2026-11-12T03:33:13Z",
+            "completed_at": "2026-11-12T03:34:15Z"
+          },
+          {
+            "name": "Run only the selected suite without rebuilding",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6,
+            "started_at": "2026-11-12T03:34:15Z",
+            "completed_at": "2026-11-12T03:36:04Z"
+          },
+          {
+            "name": "Verify generated source and dependency pins remain unchanged",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7,
+            "started_at": "2026-11-12T03:36:04Z",
+            "completed_at": "2026-11-12T03:36:04Z"
+          },
+          {
+            "name": "Retain selected suite evidence",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8,
+            "started_at": "2026-11-12T03:36:04Z",
+            "completed_at": "2026-11-12T03:36:05Z"
+          },
+          {
+            "name": "Post Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 15,
+            "started_at": "2026-11-12T03:36:05Z",
+            "completed_at": "2026-11-12T03:36:05Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 16,
+            "started_at": "2026-11-12T03:36:05Z",
+            "completed_at": "2026-11-12T03:36:05Z"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 17,
+            "started_at": "2026-11-12T03:36:05Z",
+            "completed_at": "2026-11-12T03:36:05Z"
+          }
+        ],
+        "created_at": "2026-11-12T03:31:08Z",
+        "started_at": "2026-11-12T03:32:20Z",
+        "completed_at": "2026-11-12T03:36:07Z"
+      },
+      {
+        "id": 130952646960,
+        "run_id": 43146954720,
+        "name": "Linux x64 / Tests / timing-support",
+        "workflow_name": "Offline certification",
+        "status": "completed",
+        "conclusion": "success",
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3",
+        "html_url": "https://github.com/Aurum-Studios/DiscordKit/actions/runs/43146954720/job/130952646960",
+        "run_attempt": 1,
+        "runner_id": 1000001338,
+        "runner_name": "linux-x64-8-a-1000001338",
+        "runner_group_id": 31,
+        "runner_group_name": "linux-x64-8",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-11-12T03:32:28Z",
+            "completed_at": "2026-11-12T03:32:29Z"
+          },
+          {
+            "name": "Enable Windows checkout long paths",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 2,
+            "started_at": "2026-11-12T03:32:29Z",
+            "completed_at": "2026-11-12T03:32:29Z"
+          },
+          {
+            "name": "Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-11-12T03:32:29Z",
+            "completed_at": "2026-11-12T03:32:31Z"
+          },
+          {
+            "name": "Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4,
+            "started_at": "2026-11-12T03:32:31Z",
+            "completed_at": "2026-11-12T03:33:16Z"
+          },
+          {
+            "name": "Download this run's compiled package",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5,
+            "started_at": "2026-11-12T03:33:16Z",
+            "completed_at": "2026-11-12T03:33:18Z"
+          },
+          {
+            "name": "Run only the selected suite without rebuilding",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6,
+            "started_at": "2026-11-12T03:33:18Z",
+            "completed_at": "2026-11-12T03:33:25Z"
+          },
+          {
+            "name": "Verify generated source and dependency pins remain unchanged",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7,
+            "started_at": "2026-11-12T03:33:25Z",
+            "completed_at": "2026-11-12T03:33:25Z"
+          },
+          {
+            "name": "Retain selected suite evidence",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8,
+            "started_at": "2026-11-12T03:33:25Z",
+            "completed_at": "2026-11-12T03:33:26Z"
+          },
+          {
+            "name": "Post Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 15,
+            "started_at": "2026-11-12T03:33:27Z",
+            "completed_at": "2026-11-12T03:33:27Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 16,
+            "started_at": "2026-11-12T03:33:27Z",
+            "completed_at": "2026-11-12T03:33:27Z"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 17,
+            "started_at": "2026-11-12T03:33:27Z",
+            "completed_at": "2026-11-12T03:33:27Z"
+          }
+        ],
+        "created_at": "2026-11-12T03:31:08Z",
+        "started_at": "2026-11-12T03:32:27Z",
+        "completed_at": "2026-11-12T03:33:30Z"
+      },
+      {
+        "id": 130952646975,
+        "run_id": 43146954720,
+        "name": "Linux x64 / Tests / DSLEvents",
+        "workflow_name": "Offline certification",
+        "status": "completed",
+        "conclusion": "success",
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3",
+        "html_url": "https://github.com/Aurum-Studios/DiscordKit/actions/runs/43146954720/job/130952646975",
+        "run_attempt": 1,
+        "runner_id": 1000001335,
+        "runner_name": "linux-x64-8-a-1000001335",
+        "runner_group_id": 31,
+        "runner_group_name": "linux-x64-8",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-11-12T03:32:24Z",
+            "completed_at": "2026-11-12T03:32:25Z"
+          },
+          {
+            "name": "Enable Windows checkout long paths",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 2,
+            "started_at": "2026-11-12T03:32:25Z",
+            "completed_at": "2026-11-12T03:32:25Z"
+          },
+          {
+            "name": "Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-11-12T03:32:25Z",
+            "completed_at": "2026-11-12T03:32:27Z"
+          },
+          {
+            "name": "Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4,
+            "started_at": "2026-11-12T03:32:27Z",
+            "completed_at": "2026-11-12T03:33:16Z"
+          },
+          {
+            "name": "Download this run's compiled package",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5,
+            "started_at": "2026-11-12T03:33:16Z",
+            "completed_at": "2026-11-12T03:34:10Z"
+          },
+          {
+            "name": "Run only the selected suite without rebuilding",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6,
+            "started_at": "2026-11-12T03:34:10Z",
+            "completed_at": "2026-11-12T03:35:18Z"
+          },
+          {
+            "name": "Verify generated source and dependency pins remain unchanged",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7,
+            "started_at": "2026-11-12T03:35:18Z",
+            "completed_at": "2026-11-12T03:35:18Z"
+          },
+          {
+            "name": "Retain selected suite evidence",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8,
+            "started_at": "2026-11-12T03:35:18Z",
+            "completed_at": "2026-11-12T03:35:19Z"
+          },
+          {
+            "name": "Post Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 15,
+            "started_at": "2026-11-12T03:35:19Z",
+            "completed_at": "2026-11-12T03:35:19Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 16,
+            "started_at": "2026-11-12T03:35:19Z",
+            "completed_at": "2026-11-12T03:35:19Z"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 17,
+            "started_at": "2026-11-12T03:35:19Z",
+            "completed_at": "2026-11-12T03:35:19Z"
+          }
+        ],
+        "created_at": "2026-11-12T03:31:08Z",
+        "started_at": "2026-11-12T03:32:24Z",
+        "completed_at": "2026-11-12T03:35:22Z"
+      },
+      {
+        "id": 130952646985,
+        "run_id": 43146954720,
+        "name": "Linux x64 / Tests / DSLBot",
+        "workflow_name": "Offline certification",
+        "status": "completed",
+        "conclusion": "success",
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3",
+        "html_url": "https://github.com/Aurum-Studios/DiscordKit/actions/runs/43146954720/job/130952646985",
+        "run_attempt": 1,
+        "runner_id": 1000001333,
+        "runner_name": "linux-x64-8-a-1000001333",
+        "runner_group_id": 31,
+        "runner_group_name": "linux-x64-8",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-11-12T03:32:22Z",
+            "completed_at": "2026-11-12T03:32:23Z"
+          },
+          {
+            "name": "Enable Windows checkout long paths",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 2,
+            "started_at": "2026-11-12T03:32:23Z",
+            "completed_at": "2026-11-12T03:32:23Z"
+          },
+          {
+            "name": "Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-11-12T03:32:23Z",
+            "completed_at": "2026-11-12T03:32:25Z"
+          },
+          {
+            "name": "Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4,
+            "started_at": "2026-11-12T03:32:25Z",
+            "completed_at": "2026-11-12T03:33:13Z"
+          },
+          {
+            "name": "Download this run's compiled package",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5,
+            "started_at": "2026-11-12T03:33:13Z",
+            "completed_at": "2026-11-12T03:33:54Z"
+          },
+          {
+            "name": "Run only the selected suite without rebuilding",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6,
+            "started_at": "2026-11-12T03:33:54Z",
+            "completed_at": "2026-11-12T03:35:42Z"
+          },
+          {
+            "name": "Verify generated source and dependency pins remain unchanged",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7,
+            "started_at": "2026-11-12T03:35:42Z",
+            "completed_at": "2026-11-12T03:35:42Z"
+          },
+          {
+            "name": "Retain selected suite evidence",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8,
+            "started_at": "2026-11-12T03:35:42Z",
+            "completed_at": "2026-11-12T03:35:43Z"
+          },
+          {
+            "name": "Post Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 15,
+            "started_at": "2026-11-12T03:35:43Z",
+            "completed_at": "2026-11-12T03:35:44Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 16,
+            "started_at": "2026-11-12T03:35:44Z",
+            "completed_at": "2026-11-12T03:35:44Z"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 17,
+            "started_at": "2026-11-12T03:35:44Z",
+            "completed_at": "2026-11-12T03:35:44Z"
+          }
+        ],
+        "created_at": "2026-11-12T03:31:08Z",
+        "started_at": "2026-11-12T03:32:21Z",
+        "completed_at": "2026-11-12T03:35:46Z"
+      },
+      {
+        "id": 130952647085,
+        "run_id": 43146954720,
+        "name": "Linux x64 / Tests / SocialApp",
+        "workflow_name": "Offline certification",
+        "status": "completed",
+        "conclusion": "success",
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3",
+        "html_url": "https://github.com/Aurum-Studios/DiscordKit/actions/runs/43146954720/job/130952647085",
+        "run_attempt": 1,
+        "runner_id": 1000001334,
+        "runner_name": "linux-x64-8-a-1000001334",
+        "runner_group_id": 31,
+        "runner_group_name": "linux-x64-8",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-11-12T03:32:24Z",
+            "completed_at": "2026-11-12T03:32:25Z"
+          },
+          {
+            "name": "Enable Windows checkout long paths",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 2,
+            "started_at": "2026-11-12T03:32:25Z",
+            "completed_at": "2026-11-12T03:32:25Z"
+          },
+          {
+            "name": "Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-11-12T03:32:25Z",
+            "completed_at": "2026-11-12T03:32:28Z"
+          },
+          {
+            "name": "Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4,
+            "started_at": "2026-11-12T03:32:28Z",
+            "completed_at": "2026-11-12T03:33:26Z"
+          },
+          {
+            "name": "Download this run's compiled package",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5,
+            "started_at": "2026-11-12T03:33:26Z",
+            "completed_at": "2026-11-12T03:35:10Z"
+          },
+          {
+            "name": "Run only the selected suite without rebuilding",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6,
+            "started_at": "2026-11-12T03:35:10Z",
+            "completed_at": "2026-11-12T03:36:33Z"
+          },
+          {
+            "name": "Verify generated source and dependency pins remain unchanged",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7,
+            "started_at": "2026-11-12T03:36:33Z",
+            "completed_at": "2026-11-12T03:36:33Z"
+          },
+          {
+            "name": "Retain selected suite evidence",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8,
+            "started_at": "2026-11-12T03:36:33Z",
+            "completed_at": "2026-11-12T03:36:34Z"
+          },
+          {
+            "name": "Post Run ./.github/actions/setup-native",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 15,
+            "started_at": "2026-11-12T03:36:34Z",
+            "completed_at": "2026-11-12T03:36:34Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 16,
+            "started_at": "2026-11-12T03:36:34Z",
+            "completed_at": "2026-11-12T03:36:35Z"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 17,
+            "started_at": "2026-11-12T03:36:35Z",
+            "completed_at": "2026-11-12T03:36:35Z"
+          }
+        ],
+        "created_at": "2026-11-12T03:31:08Z",
+        "started_at": "2026-11-12T03:32:23Z",
+        "completed_at": "2026-11-12T03:36:37Z"
+      },
+      {
+        "id": 130952647624,
+        "run_id": 43146954720,
+        "name": "Linux x64 / Public API and DocC / macOS ARM",
+        "workflow_name": "Offline certification",
+        "status": "completed",
+        "conclusion": "skipped",
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3",
+        "html_url": "https://github.com/Aurum-Studios/DiscordKit/actions/runs/43146954720/job/130952647624",
+        "run_attempt": 1,
+        "created_at": "2026-11-12T03:31:08Z",
+        "started_at": "2026-11-12T03:31:08Z",
+        "completed_at": "2026-11-12T03:31:08Z"
+      },
+      {
+        "id": 130955307556,
+        "run_id": 43146954720,
+        "name": "macOS ARM64 / Platform validation passed",
+        "workflow_name": "Offline certification",
+        "status": "completed",
+        "conclusion": "failure",
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3",
+        "html_url": "https://github.com/Aurum-Studios/DiscordKit/actions/runs/43146954720/job/130955307556",
+        "run_attempt": 1,
+        "runner_id": 1000001367,
+        "runner_name": "macos-26-5-a-1000001367",
+        "runner_group_id": 33,
+        "runner_group_name": "macos-26-5",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-11-12T03:38:40Z",
+            "completed_at": "2026-11-12T03:38:40Z"
+          },
+          {
+            "name": "Run actions/setup-python@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 2,
+            "started_at": "2026-11-12T03:38:40Z",
+            "completed_at": "2026-11-12T03:38:40Z"
+          },
+          {
+            "name": "Require every applicable platform gate to pass",
+            "status": "completed",
+            "conclusion": "failure",
+            "number": 3,
+            "started_at": "2026-11-12T03:38:40Z",
+            "completed_at": "2026-11-12T03:38:41Z"
+          },
+          {
+            "name": "Post Run actions/setup-python@v6",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 6,
+            "started_at": "2026-11-12T03:38:41Z",
+            "completed_at": "2026-11-12T03:38:41Z"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7,
+            "started_at": "2026-11-12T03:38:41Z",
+            "completed_at": "2026-11-12T03:38:41Z"
+          }
+        ],
+        "created_at": "2026-11-12T03:38:38Z",
+        "started_at": "2026-11-12T03:38:40Z",
+        "completed_at": "2026-11-12T03:38:43Z"
+      },
+      {
+        "id": 130955309155,
+        "run_id": 43146954720,
+        "name": "macOS ARM64 / Export validated platform source",
+        "workflow_name": "Offline certification",
+        "status": "completed",
+        "conclusion": "skipped",
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3",
+        "html_url": "https://github.com/Aurum-Studios/DiscordKit/actions/runs/43146954720/job/130955309155",
+        "run_attempt": 1,
+        "created_at": "2026-11-12T03:38:38Z",
+        "started_at": "2026-11-12T03:38:38Z",
+        "completed_at": "2026-11-12T03:38:38Z"
+      },
+      {
+        "id": 130962475454,
+        "run_id": 43146954720,
+        "name": "Linux x64 / Platform validation passed",
+        "workflow_name": "Offline certification",
+        "status": "completed",
+        "conclusion": "failure",
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3",
+        "html_url": "https://github.com/Aurum-Studios/DiscordKit/actions/runs/43146954720/job/130962475454",
+        "run_attempt": 1,
+        "runner_id": 1000001368,
+        "runner_name": "linux-x64-8-a-1000001368",
+        "runner_group_id": 31,
+        "runner_group_name": "linux-x64-8",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-11-12T03:59:29Z",
+            "completed_at": "2026-11-12T03:59:29Z"
+          },
+          {
+            "name": "Run actions/setup-python@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 2,
+            "started_at": "2026-11-12T03:59:29Z",
+            "completed_at": "2026-11-12T03:59:30Z"
+          },
+          {
+            "name": "Require every applicable platform gate to pass",
+            "status": "completed",
+            "conclusion": "failure",
+            "number": 3,
+            "started_at": "2026-11-12T03:59:30Z",
+            "completed_at": "2026-11-12T03:59:31Z"
+          },
+          {
+            "name": "Post Run actions/setup-python@v6",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 6,
+            "started_at": "2026-11-12T03:59:31Z",
+            "completed_at": "2026-11-12T03:59:31Z"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7,
+            "started_at": "2026-11-12T03:59:31Z",
+            "completed_at": "2026-11-12T03:59:31Z"
+          }
+        ],
+        "created_at": "2026-11-12T03:59:25Z",
+        "started_at": "2026-11-12T03:59:28Z",
+        "completed_at": "2026-11-12T03:59:33Z"
+      },
+      {
+        "id": 130962476496,
+        "run_id": 43146954720,
+        "name": "Linux x64 / Export validated platform source",
+        "workflow_name": "Offline certification",
+        "status": "completed",
+        "conclusion": "cancelled",
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3",
+        "html_url": "https://github.com/Aurum-Studios/DiscordKit/actions/runs/43146954720/job/130962476496",
+        "run_attempt": 1,
+        "created_at": "2026-11-12T03:59:26Z",
+        "started_at": "2026-11-12T03:59:26Z",
+        "completed_at": "2026-11-12T03:59:25Z"
+      },
+      {
+        "id": 130962519712,
+        "run_id": 43146954720,
+        "name": "Offline certification passed",
+        "workflow_name": "Offline certification",
+        "status": "completed",
+        "conclusion": "failure",
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3",
+        "html_url": "https://github.com/Aurum-Studios/DiscordKit/actions/runs/43146954720/job/130962519712",
+        "run_attempt": 1,
+        "runner_id": 1000001369,
+        "runner_name": "linux-x64-8-a-1000001369",
+        "runner_group_id": 31,
+        "runner_group_name": "linux-x64-8",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-11-12T03:59:36Z",
+            "completed_at": "2026-11-12T03:59:36Z"
+          },
+          {
+            "name": "Require every platform, build and suite to pass",
+            "status": "completed",
+            "conclusion": "failure",
+            "number": 2,
+            "started_at": "2026-11-12T03:59:36Z",
+            "completed_at": "2026-11-12T03:59:36Z"
+          },
+          {
+            "name": "Record qualification scope",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 3,
+            "started_at": "2026-11-12T03:59:36Z",
+            "completed_at": "2026-11-12T03:59:36Z"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4,
+            "started_at": "2026-11-12T03:59:36Z",
+            "completed_at": "2026-11-12T03:59:36Z"
+          }
+        ],
+        "created_at": "2026-11-12T03:59:34Z",
+        "started_at": "2026-11-12T03:59:35Z",
+        "completed_at": "2026-11-12T03:59:39Z"
+      }
+    ]
+  }
+}

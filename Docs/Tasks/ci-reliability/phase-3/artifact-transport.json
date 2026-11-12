@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "purpose": "Lossless storage of raw debugger output and replay patch. Historical command/receipt paths name the original emitted files; decompress the corresponding storedPath when reading them. Original bytes and hashes are preserved.",
+  "files": [
+    {
+      "originalPath": "red-regressions.patch",
+      "storedPath": "red-regressions.patch.gz",
+      "uncompressedBytes": 19361,
+      "uncompressedSHA256": "9714376d47660f6356e62048ef7fb203bb5c011e7b993b2d2ed84bc5e39b60bd",
+      "storedBytes": 5145,
+      "storedSHA256": "ffaa9082e5034d8bccf96e69da2a28994784f99bcb8990faa53728497e6d12ff"
+    },
+    {
+      "originalPath": "red-transport-debugger.log",
+      "storedPath": "red-transport-debugger.log.gz",
+      "uncompressedBytes": 29917,
+      "uncompressedSHA256": "5cce5153d94b833d754d12adafdce2df080b32682eec844b2d8df2cf0f23469e",
+      "storedBytes": 5608,
+      "storedSHA256": "ac9f3f2c549ac515fe71c00c96415acae8b27a53f0a1d8766847b9490cdbb40b"
+    }
+  ]
+}

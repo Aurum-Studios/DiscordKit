@@ -1,0 +1,38 @@
++ ["xcodebuild", "-version"]
+Xcode 27.1
+Build version 27A9275
++ ["git", "init", "--quiet"]
++ ["git", "add", "."]
++ ["git", "-c", "user.name=Phase 9 fixture", "-c", "user.email=phase9-fixture@example.invalid", "commit", "--quiet", "-m", "Create synthetic documentation source"]
++ ["/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/docc", "convert", "/Users/carsonrau/Developer/DiscordKit-ci-phase9/.build/phase9-real-docc-final/fixture/Sources/DiscordKit/DiscordKit.docc", "--additional-symbol-graph-dir", "/Users/carsonrau/Developer/DiscordKit-ci-phase9/.build/phase9-real-docc-final/graphs/root", "--output-dir", "/Users/carsonrau/Developer/DiscordKit-ci-phase9/.build/phase9-real-docc-final/converted/root/DiscordKit.doccarchive", "--fallback-display-name", "DiscordKit", "--fallback-bundle-identifier", "org.discordkit.DiscordKit", "--warnings-as-errors", "--analyze", "--experimental-documentation-coverage", "--coverage-summary-level", "brief", "--enable-experimental-external-link-support"]
+
+   --- Experimental coverage output enabled. ---
+                | Abstract        | Curated         | Code Listing
+Types           | (0/0)           | (0/0)           | (0/0)
+Members         | (0/0)           | (0/0)           | (0/0)
+Globals         | 100% (1/1)      | 100% (1/1)      | 0.0% (0/1)
+
+
++ ["/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/docc", "merge", "/Users/carsonrau/Developer/DiscordKit-ci-phase9/.build/phase9-real-docc-final/converted/root/DiscordKit.doccarchive", "--output-path", "/Users/carsonrau/Developer/DiscordKit-ci-phase9/.build/phase9-real-docc-final/converted/root/DiscordKitLibrary.doccarchive", "--synthesized-landing-page-name", "DiscordKit Library", "--synthesized-landing-page-kind", "Swift Package", "--synthesized-landing-page-topics-style", "list"]
++ ["/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/docc", "convert", "/Users/carsonrau/Developer/DiscordKit-ci-phase9/.build/phase9-real-docc-final/fixture/Packages/DiscordDSLMacros/Sources/DiscordDSLMacros/DiscordDSLMacros.docc", "--additional-symbol-graph-dir", "/Users/carsonrau/Developer/DiscordKit-ci-phase9/.build/phase9-real-docc-final/graphs/macros", "--output-dir", "/Users/carsonrau/Developer/DiscordKit-ci-phase9/.build/phase9-real-docc-final/converted/macros/DiscordDSLMacros.doccarchive", "--fallback-display-name", "DiscordDSLMacros", "--fallback-bundle-identifier", "org.discordkit.DiscordDSLMacros", "--warnings-as-errors", "--analyze", "--experimental-documentation-coverage", "--coverage-summary-level", "brief", "--enable-experimental-external-link-support"]
+
+   --- Experimental coverage output enabled. ---
+                | Abstract        | Curated         | Code Listing
+Types           | (0/0)           | (0/0)           | (0/0)
+Members         | (0/0)           | (0/0)           | (0/0)
+Globals         | 100% (1/1)      | 100% (1/1)      | 0.0% (0/1)
+
+
++ ["/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/docc", "merge", "/Users/carsonrau/Developer/DiscordKit-ci-phase9/.build/phase9-real-docc-final/converted/macros/DiscordDSLMacros.doccarchive", "--output-path", "/Users/carsonrau/Developer/DiscordKit-ci-phase9/.build/phase9-real-docc-final/converted/macros/DiscordKitLibrary.doccarchive", "--synthesized-landing-page-name", "DiscordKit Library", "--synthesized-landing-page-kind", "Swift Package", "--synthesized-landing-page-topics-style", "list"]
++ ["/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/docc", "convert", "/Users/carsonrau/Developer/DiscordKit-ci-phase9/.build/phase9-real-docc-final/fixture/Packages/DiscordDSLExtensions/Sources/DiscordDSLExtensions/DiscordDSLExtensions.docc", "--additional-symbol-graph-dir", "/Users/carsonrau/Developer/DiscordKit-ci-phase9/.build/phase9-real-docc-final/graphs/extensions", "--output-dir", "/Users/carsonrau/Developer/DiscordKit-ci-phase9/.build/phase9-real-docc-final/converted/extensions/DiscordDSLExtensions.doccarchive", "--fallback-display-name", "DiscordDSLExtensions", "--fallback-bundle-identifier", "org.discordkit.DiscordDSLExtensions", "--warnings-as-errors", "--analyze", "--experimental-documentation-coverage", "--coverage-summary-level", "brief", "--enable-experimental-external-link-support"]
+
+   --- Experimental coverage output enabled. ---
+                | Abstract        | Curated         | Code Listing
+Types           | (0/0)           | (0/0)           | (0/0)
+Members         | (0/0)           | (0/0)           | (0/0)
+Globals         | 100% (1/1)      | 100% (1/1)      | 0.0% (0/1)
+
+
++ ["/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/docc", "merge", "/Users/carsonrau/Developer/DiscordKit-ci-phase9/.build/phase9-real-docc-final/converted/extensions/DiscordDSLExtensions.doccarchive", "--output-path", "/Users/carsonrau/Developer/DiscordKit-ci-phase9/.build/phase9-real-docc-final/converted/extensions/DiscordKitLibrary.doccarchive", "--synthesized-landing-page-name", "DiscordKit Library", "--synthesized-landing-page-kind", "Swift Package", "--synthesized-landing-page-topics-style", "list"]
++ ["/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/docc", "merge", "/Users/carsonrau/Developer/DiscordKit-ci-phase9/.build/phase9-real-docc-final/documentation-site-8cf59qq6/package-0/DiscordKit.doccarchive", "/Users/carsonrau/Developer/DiscordKit-ci-phase9/.build/phase9-real-docc-final/documentation-site-8cf59qq6/package-1/DiscordDSLMacros.doccarchive", "/Users/carsonrau/Developer/DiscordKit-ci-phase9/.build/phase9-real-docc-final/documentation-site-8cf59qq6/package-2/DiscordDSLExtensions.doccarchive", "--output-path", "/Users/carsonrau/Developer/DiscordKit-ci-phase9/.build/phase9-real-docc-final/documentation-site-8cf59qq6/DiscordKitLibrary.doccarchive", "--synthesized-landing-page-name", "DiscordKit Library", "--synthesized-landing-page-kind", "Swift Package", "--synthesized-landing-page-topics-style", "list"]
++ ["/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/docc", "process-archive", "transform-for-static-hosting", "/Users/carsonrau/Developer/DiscordKit-ci-phase9/.build/phase9-real-docc-final/documentation-site-8cf59qq6/DiscordKitLibrary.doccarchive", "--output-path", "/Users/carsonrau/Developer/DiscordKit-ci-phase9/.build/phase9-real-docc-final/documentation-site-8cf59qq6/site", "--hosting-base-path", "/Phase9Fixture"]

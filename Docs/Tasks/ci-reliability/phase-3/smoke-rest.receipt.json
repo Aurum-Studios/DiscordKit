@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "name": "smoke-rest",
+  "stage": "phase3-smoke-rest",
+  "operation": "timingSmoke",
+  "arguments": [
+    "/scratch/x86_64-unknown-linux-gnu/debug/DiscordKitLoadTests",
+    "timing",
+    "--case",
+    "rest.cacheFresh",
+    "--adapter",
+    "scripted",
+    "--requests",
+    "16",
+    "--warmup-requests",
+    "2",
+    "--concurrency",
+    "2",
+    "--profile",
+    "smoke",
+    "--seed",
+    "1",
+    "--duration-seconds",
+    "3",
+    "--warmup-seconds",
+    "1",
+    "--output",
+    "/work/Docs/Tasks/ci-reliability/phase-3/smoke-rest.json",
+    "--common-report",
+    "/work/Docs/Tasks/ci-reliability/phase-3/smoke-rest-common.json"
+  ],
+  "start": "2026-11-12T13:03:38.447833+00:00",
+  "startMonotonic": 75724.905981522,
+  "deadlineMonotonic": 75844.905981522,
+  "executionLimitSeconds": 120,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "operation",
+  "paths": {
+    "output": "/work/Docs/Tasks/ci-reliability/phase-3/smoke-rest.log",
+    "stdout": null,
+    "diagnostics": "/work/Docs/Tasks/ci-reliability/phase-3/smoke-rest.diagnostics.jsonl",
+    "receipt": "/work/Docs/Tasks/ci-reliability/phase-3/smoke-rest.receipt.json"
+  },
+  "identity": {
+    "executionID": "8a069141-f500-400d-9926-d38811da3a73",
+    "supervisorPID": 6656,
+    "host": "213b31596900",
+    "system": "Linux",
+    "repository": "/work"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 6750,
+  "group": 6750,
+  "cleanup": {
+    "status": "session-signalled",
+    "signals": [],
+    "groupSignals": [],
+    "parentReaped": true,
+    "session": 6750,
+    "allowanceSeconds": 8.0,
+    "discovery": {
+      "status": "available",
+      "truncated": false
+    },
+    "groups": [
+      6750
+    ],
+    "seconds": 0.086,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "boundary": "admitted Linux session; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "/work/Docs/Tasks/ci-reliability/phase-3/smoke-rest.log",
+      "retainedBytes": 6062,
+      "observedBytes": 6062,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T13:03:38.767420+00:00",
+  "endMonotonic": 75725.225627252,
+  "elapsedSeconds": 0.32,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}

@@ -1,0 +1,190 @@
+{
+  "aggregateSeconds": 300,
+  "certifying": false,
+  "commands": [
+    {
+      "arguments": [
+        "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "Tools/DiscordKitTools/scripts",
+        "-p",
+        "test_*.py"
+      ],
+      "diagnostics": "00-tooling-python.diagnostics.jsonl",
+      "execution": {
+        "arguments": [
+          "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "Tools/DiscordKitTools/scripts",
+          "-p",
+          "test_*.py"
+        ],
+        "cleanup": {
+          "allowanceSeconds": 8.0,
+          "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed",
+          "groupState": "gone",
+          "parentReaped": true,
+          "remainingProcesses": [],
+          "seconds": 0.004,
+          "signals": [],
+          "status": "group-signalled",
+          "verification": "available",
+          "verificationMalformedRows": 0,
+          "verificationTruncated": false
+        },
+        "cleanupAllowanceSeconds": 8.0,
+        "deadlineMonotonic": 352738.212235583,
+        "deadlineSource": "aggregate",
+        "diagnosticsTruncated": false,
+        "elapsedSeconds": 5.316,
+        "end": "2026-11-12T14:40:36.156344+00:00",
+        "endMonotonic": 352443.528263625,
+        "executionLimitSeconds": 300,
+        "exitCode": 0,
+        "group": 93111,
+        "identity": {
+          "executionID": "890fadb1-7690-4dc8-8788-da80042a5b12",
+          "host": "Pokemon-GO-Plus",
+          "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase6",
+          "supervisorPID": 93070,
+          "system": "Darwin"
+        },
+        "lastObservedTest": null,
+        "name": "tooling-python",
+        "operation": "localHelperCheck",
+        "outputs": [
+          {
+            "observedBytes": 468,
+            "path": "/Users/carsonrau/Developer/DiscordKit-ci-phase6/.build/phase6-preflight/tooling-python/00-tooling-python.log",
+            "retainedBytes": 468,
+            "truncated": false
+          }
+        ],
+        "paths": {
+          "diagnostics": "/Users/carsonrau/Developer/DiscordKit-ci-phase6/.build/phase6-preflight/tooling-python/00-tooling-python.diagnostics.jsonl",
+          "output": "/Users/carsonrau/Developer/DiscordKit-ci-phase6/.build/phase6-preflight/tooling-python/00-tooling-python.log",
+          "receipt": "/Users/carsonrau/Developer/DiscordKit-ci-phase6/.build/phase6-preflight/tooling-python/00-tooling-python.receipt.json",
+          "stdout": null
+        },
+        "pid": 93111,
+        "readerThreads": 0,
+        "schemaVersion": 1,
+        "signal": null,
+        "stage": "preflight-tooling-python",
+        "start": "2026-11-12T14:40:30.840727+00:00",
+        "startMonotonic": 352438.212662625,
+        "status": "passed",
+        "timeoutCategory": null
+      },
+      "executionReceipt": "00-tooling-python.receipt.json",
+      "log": "00-tooling-python.log",
+      "name": "tooling-python",
+      "operation": "localHelperCheck",
+      "seconds": 5.316,
+      "status": "passed",
+      "timeoutSeconds": 300
+    },
+    {
+      "arguments": [
+        "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "Tools/DiscordKitLoadTests/scripts",
+        "-p",
+        "test_*.py"
+      ],
+      "diagnostics": "01-load-python.diagnostics.jsonl",
+      "execution": {
+        "arguments": [
+          "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "Tools/DiscordKitLoadTests/scripts",
+          "-p",
+          "test_*.py"
+        ],
+        "cleanup": {
+          "allowanceSeconds": 8.0,
+          "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed",
+          "groupState": "gone",
+          "parentReaped": true,
+          "remainingProcesses": [],
+          "seconds": 0.009,
+          "signals": [],
+          "status": "group-signalled",
+          "verification": "available",
+          "verificationMalformedRows": 0,
+          "verificationTruncated": false
+        },
+        "cleanupAllowanceSeconds": 8.0,
+        "deadlineMonotonic": 352738.212235583,
+        "deadlineSource": "aggregate",
+        "diagnosticsTruncated": false,
+        "elapsedSeconds": 8.177,
+        "end": "2026-11-12T14:40:44.334662+00:00",
+        "endMonotonic": 352451.70652775,
+        "executionLimitSeconds": 300,
+        "exitCode": 0,
+        "group": 93598,
+        "identity": {
+          "executionID": "4d1051a1-d886-46e4-90fa-0cc5789c6d11",
+          "host": "Pokemon-GO-Plus",
+          "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase6",
+          "supervisorPID": 93070,
+          "system": "Darwin"
+        },
+        "lastObservedTest": null,
+        "name": "load-python",
+        "operation": "localHelperCheck",
+        "outputs": [
+          {
+            "observedBytes": 715,
+            "path": "/Users/carsonrau/Developer/DiscordKit-ci-phase6/.build/phase6-preflight/tooling-python/01-load-python.log",
+            "retainedBytes": 715,
+            "truncated": false
+          }
+        ],
+        "paths": {
+          "diagnostics": "/Users/carsonrau/Developer/DiscordKit-ci-phase6/.build/phase6-preflight/tooling-python/01-load-python.diagnostics.jsonl",
+          "output": "/Users/carsonrau/Developer/DiscordKit-ci-phase6/.build/phase6-preflight/tooling-python/01-load-python.log",
+          "receipt": "/Users/carsonrau/Developer/DiscordKit-ci-phase6/.build/phase6-preflight/tooling-python/01-load-python.receipt.json",
+          "stdout": null
+        },
+        "pid": 93598,
+        "readerThreads": 0,
+        "schemaVersion": 1,
+        "signal": null,
+        "stage": "preflight-tooling-python",
+        "start": "2026-11-12T14:40:36.157228+00:00",
+        "startMonotonic": 352443.52913075,
+        "status": "passed",
+        "timeoutCategory": null
+      },
+      "executionReceipt": "01-load-python.receipt.json",
+      "log": "01-load-python.log",
+      "name": "load-python",
+      "operation": "localHelperCheck",
+      "seconds": 8.178,
+      "status": "passed",
+      "timeoutSeconds": 300
+    }
+  ],
+  "deadlineMonotonic": 352738.212235583,
+  "group": "tooling-python",
+  "operation": "group",
+  "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase6",
+  "schemaVersion": 1,
+  "seconds": 13.496,
+  "stage": "preflight",
+  "status": "passed"
+}

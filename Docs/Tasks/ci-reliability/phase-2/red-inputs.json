@@ -1,0 +1,11 @@
+{
+  "base": "7632bdd3494d8ec7a52edc798ad98e09b5a8c357",
+  "note": "Patch reconstructed from the exact pre-repair seam and test additions after retaining the red invocation. It changes fault observation and tests only; baseline accounting is unchanged.",
+  "inputs": {
+    "Tools/DiscordKitLoadTests/Sources/DiscordKitLoadTests/EventHubTimingRunner.swift": "96556785c2ef191853c70835954ad48b9aea4d19e12ad4579d1ac02f1d403667",
+    "Tools/DiscordKitLoadTests/Tests/DiscordKitLoadTestsTests/EventHubTimingTests.swift": "5dd52bafae583935d76777bb5854555d8872f2dc1727861a47b3da0e4919f737"
+  },
+  "patchSHA256": "179f776d55610962dc5b1286480092da1a13c87c9b3b304c5fe3c29a7abcc7a9",
+  "patchArchive": "red-regression.patch.gz",
+  "patchArchiveSHA256": "b0384797ca549e448cb521d37f6a39392a5d3056db1b9e7bf0a1e19767b7c28e"
+}

@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "name": "load-python",
+  "stage": "preflight-tooling-python",
+  "operation": "localHelperCheck",
+  "arguments": [
+    "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "Tools/DiscordKitLoadTests/scripts",
+    "-p",
+    "test_*.py"
+  ],
+  "start": "2026-11-12T15:18:00.616915+00:00",
+  "startMonotonic": 354687.968805208,
+  "deadlineMonotonic": 354982.716418875,
+  "executionLimitSeconds": 300,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "aggregate",
+  "paths": {
+    "output": "/Users/carsonrau/Developer/DiscordKit-ci-phase7/Docs/Tasks/ci-reliability/phase-7/checks/tooling-python/01-load-python.log",
+    "stdout": null,
+    "diagnostics": "/Users/carsonrau/Developer/DiscordKit-ci-phase7/Docs/Tasks/ci-reliability/phase-7/checks/tooling-python/01-load-python.diagnostics.jsonl",
+    "receipt": "/Users/carsonrau/Developer/DiscordKit-ci-phase7/Docs/Tasks/ci-reliability/phase-7/checks/tooling-python/01-load-python.receipt.json"
+  },
+  "identity": {
+    "executionID": "3334409e-dc03-4852-af21-add60e5d5d49",
+    "supervisorPID": 23598,
+    "host": "Pokemon-GO-Plus",
+    "system": "Darwin",
+    "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase7"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 24264,
+  "group": 24264,
+  "cleanup": {
+    "status": "group-signalled",
+    "signals": [],
+    "parentReaped": true,
+    "allowanceSeconds": 8.0,
+    "seconds": 0.003,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "verificationMalformedRows": 0,
+    "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "/Users/carsonrau/Developer/DiscordKit-ci-phase7/Docs/Tasks/ci-reliability/phase-7/checks/tooling-python/01-load-python.log",
+      "retainedBytes": 715,
+      "observedBytes": 715,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T15:18:08.814913+00:00",
+  "endMonotonic": 354696.166756208,
+  "elapsedSeconds": 8.198,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}

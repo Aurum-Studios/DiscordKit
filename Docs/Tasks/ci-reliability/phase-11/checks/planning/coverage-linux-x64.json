@@ -1,0 +1,863 @@
+{
+  "all-builds": {
+    "include": [
+      {
+        "component": "load",
+        "group": "Linux-x64-64",
+        "jobs": 2,
+        "platform": "linux-x64",
+        "shell": "bash"
+      },
+      {
+        "component": "root",
+        "group": "Linux-x64-64",
+        "id": "build/linux-x64/root",
+        "jobs": 2,
+        "needs": [
+          "plan"
+        ],
+        "platform": "linux-x64",
+        "shell": "bash"
+      },
+      {
+        "component": "macros",
+        "group": "Linux-x64-64",
+        "id": "build/linux-x64/macros",
+        "jobs": 2,
+        "needs": [
+          "plan"
+        ],
+        "platform": "linux-x64",
+        "shell": "bash"
+      },
+      {
+        "component": "extensions",
+        "group": "Linux-x64-64",
+        "id": "build/linux-x64/extensions",
+        "jobs": 2,
+        "needs": [
+          "plan"
+        ],
+        "platform": "linux-x64",
+        "shell": "bash"
+      },
+      {
+        "component": "tooling",
+        "group": "Linux-x64-8",
+        "id": "build/linux-x64/tooling",
+        "jobs": 2,
+        "needs": [
+          "plan"
+        ],
+        "platform": "linux-x64",
+        "shell": "bash"
+      },
+      {
+        "component": "benchmarks",
+        "group": "Linux-x64-64",
+        "id": "build/linux-x64/benchmarks",
+        "jobs": 2,
+        "needs": [
+          "plan"
+        ],
+        "platform": "linux-x64",
+        "shell": "bash"
+      },
+      {
+        "component": "timing-support",
+        "group": "Linux-x64-8",
+        "id": "build/linux-x64/timing-support",
+        "jobs": 2,
+        "needs": [
+          "plan"
+        ],
+        "platform": "linux-x64",
+        "shell": "bash"
+      },
+      {
+        "component": "timing",
+        "group": "Linux-x64-64",
+        "id": "build/linux-x64/timing",
+        "jobs": 2,
+        "needs": [
+          "plan"
+        ],
+        "platform": "linux-x64",
+        "shell": "bash"
+      },
+      {
+        "component": "foundation",
+        "group": "Linux-x64-64",
+        "id": "build/linux-x64/foundation",
+        "jobs": 2,
+        "needs": [
+          "plan"
+        ],
+        "platform": "linux-x64",
+        "shell": "bash"
+      },
+      {
+        "component": "media",
+        "group": "Linux-x64-64",
+        "id": "build/linux-x64/media",
+        "jobs": 2,
+        "needs": [
+          "plan"
+        ],
+        "platform": "linux-x64",
+        "shell": "bash"
+      },
+      {
+        "component": "consumers",
+        "group": "Linux-x64-64",
+        "id": "build/linux-x64/consumers",
+        "jobs": 2,
+        "needs": [
+          "plan"
+        ],
+        "platform": "linux-x64",
+        "shell": "bash"
+      },
+      {
+        "component": "release",
+        "group": "Linux-x64-64",
+        "id": "build/linux-x64/release",
+        "jobs": 2,
+        "needs": [
+          "plan"
+        ],
+        "platform": "linux-x64",
+        "shell": "bash"
+      }
+    ]
+  },
+  "build-concurrency": 2,
+  "builds": {
+    "include": [
+      {
+        "component": "benchmarks",
+        "group": "Linux-x64-64",
+        "id": "build/linux-x64/benchmarks",
+        "jobs": 2,
+        "needs": [
+          "plan"
+        ],
+        "platform": "linux-x64",
+        "shell": "bash"
+      },
+      {
+        "component": "timing-support",
+        "group": "Linux-x64-8",
+        "id": "build/linux-x64/timing-support",
+        "jobs": 2,
+        "needs": [
+          "plan"
+        ],
+        "platform": "linux-x64",
+        "shell": "bash"
+      },
+      {
+        "component": "timing",
+        "group": "Linux-x64-64",
+        "id": "build/linux-x64/timing",
+        "jobs": 2,
+        "needs": [
+          "plan"
+        ],
+        "platform": "linux-x64",
+        "shell": "bash"
+      },
+      {
+        "component": "foundation",
+        "group": "Linux-x64-64",
+        "id": "build/linux-x64/foundation",
+        "jobs": 2,
+        "needs": [
+          "plan"
+        ],
+        "platform": "linux-x64",
+        "shell": "bash"
+      },
+      {
+        "component": "media",
+        "group": "Linux-x64-64",
+        "id": "build/linux-x64/media",
+        "jobs": 2,
+        "needs": [
+          "plan"
+        ],
+        "platform": "linux-x64",
+        "shell": "bash"
+      },
+      {
+        "component": "consumers",
+        "group": "Linux-x64-64",
+        "id": "build/linux-x64/consumers",
+        "jobs": 2,
+        "needs": [
+          "plan"
+        ],
+        "platform": "linux-x64",
+        "shell": "bash"
+      },
+      {
+        "component": "release",
+        "group": "Linux-x64-64",
+        "id": "build/linux-x64/release",
+        "jobs": 2,
+        "needs": [
+          "plan"
+        ],
+        "platform": "linux-x64",
+        "shell": "bash"
+      }
+    ]
+  },
+  "core-builds": {
+    "include": [
+      {
+        "component": "root",
+        "group": "Linux-x64-64",
+        "id": "build/linux-x64/root",
+        "jobs": 2,
+        "needs": [
+          "plan"
+        ],
+        "platform": "linux-x64",
+        "shell": "bash"
+      },
+      {
+        "component": "macros",
+        "group": "Linux-x64-64",
+        "id": "build/linux-x64/macros",
+        "jobs": 2,
+        "needs": [
+          "plan"
+        ],
+        "platform": "linux-x64",
+        "shell": "bash"
+      },
+      {
+        "component": "extensions",
+        "group": "Linux-x64-64",
+        "id": "build/linux-x64/extensions",
+        "jobs": 2,
+        "needs": [
+          "plan"
+        ],
+        "platform": "linux-x64",
+        "shell": "bash"
+      },
+      {
+        "component": "tooling",
+        "group": "Linux-x64-8",
+        "id": "build/linux-x64/tooling",
+        "jobs": 2,
+        "needs": [
+          "plan"
+        ],
+        "platform": "linux-x64",
+        "shell": "bash"
+      }
+    ]
+  },
+  "coverage": {
+    "commit": "d19bb530fcde7f6a4f269d4b90aa308825be5c31",
+    "entries": [
+      {
+        "id": "probe",
+        "jobName": "Linux x64 / Platform check",
+        "stepName": "Check native host, compiler, linker and runtime"
+      },
+      {
+        "id": "plan",
+        "jobName": "Linux x64 / Plan platform builds and suites",
+        "stepName": "Discover owned test targets and assign runner sizes"
+      },
+      {
+        "id": "build/load",
+        "jobName": "Linux x64 / Builds / linux-x64 / load",
+        "stepName": "Share compiled products with independent test jobs"
+      },
+      {
+        "id": "build/root",
+        "jobName": "Linux x64 / Builds / linux-x64 / root",
+        "stepName": "Share compiled products with independent test jobs"
+      },
+      {
+        "id": "build/macros",
+        "jobName": "Linux x64 / Builds / linux-x64 / macros",
+        "stepName": "Share compiled products with independent test jobs"
+      },
+      {
+        "id": "build/extensions",
+        "jobName": "Linux x64 / Builds / linux-x64 / extensions",
+        "stepName": "Share compiled products with independent test jobs"
+      },
+      {
+        "id": "build/tooling",
+        "jobName": "Linux x64 / Builds / linux-x64 / tooling",
+        "stepName": "Share compiled products with independent test jobs"
+      },
+      {
+        "id": "build/benchmarks",
+        "jobName": "Linux x64 / Builds / linux-x64 / benchmarks",
+        "stepName": "Share compiled products with independent test jobs"
+      },
+      {
+        "id": "build/timing-support",
+        "jobName": "Linux x64 / Builds / linux-x64 / timing-support",
+        "stepName": "Share compiled products with independent test jobs"
+      },
+      {
+        "id": "build/timing",
+        "jobName": "Linux x64 / Builds / linux-x64 / timing",
+        "stepName": "Share compiled products with independent test jobs"
+      },
+      {
+        "id": "build/foundation",
+        "jobName": "Linux x64 / Builds / linux-x64 / foundation",
+        "stepName": "Share compiled products with independent test jobs"
+      },
+      {
+        "id": "build/media",
+        "jobName": "Linux x64 / Builds / linux-x64 / media",
+        "stepName": "Share compiled products with independent test jobs"
+      },
+      {
+        "id": "build/consumers",
+        "jobName": "Linux x64 / Builds / linux-x64 / consumers",
+        "stepName": "Share compiled products with independent test jobs"
+      },
+      {
+        "id": "build/release",
+        "jobName": "Linux x64 / Builds / linux-x64 / release",
+        "stepName": "Share compiled products with independent test jobs"
+      },
+      {
+        "id": "canary/load",
+        "jobName": "Linux x64 / Canary / load tests and smokes",
+        "stepName": "Run complete load suite and existing smokes",
+        "testCoverage": {
+          "component": "load",
+          "jobID": "canary",
+          "platform": "linux-x64",
+          "suite": "load",
+          "suites": [
+            "load"
+          ]
+        }
+      },
+      {
+        "id": "resolve",
+        "jobName": "Linux x64 / Resolve immutable producers",
+        "stepName": "Reconcile every expected component without matrix outputs"
+      },
+      {
+        "id": "suite/root/root-01",
+        "jobName": "Linux x64 / Tests / root-01",
+        "stepName": "Run selected complete suites without rebuilding",
+        "testCoverage": {
+          "component": "root",
+          "jobID": "tests-root",
+          "platform": "linux-x64",
+          "suite": "root-01",
+          "suites": [
+            "DiscordApplePlatformTests",
+            "DiscordClientTests",
+            "DiscordDSLTests",
+            "DiscordTransportTests",
+            "DiscordVoiceCodecsTests",
+            "DiscordVoiceCryptoTests"
+          ]
+        }
+      },
+      {
+        "id": "suite/root/root-02",
+        "jobName": "Linux x64 / Tests / root-02",
+        "stepName": "Run selected complete suites without rebuilding",
+        "testCoverage": {
+          "component": "root",
+          "jobID": "tests-root",
+          "platform": "linux-x64",
+          "suite": "root-02",
+          "suites": [
+            "DiscordActivitiesTests",
+            "DiscordBotDSLTests",
+            "DiscordCoreTests",
+            "DiscordGameServicesTests",
+            "DiscordHTTPTests",
+            "DiscordInteractionsTests",
+            "DiscordKitTests",
+            "DiscordLogHandlersTests",
+            "DiscordOAuthTests"
+          ]
+        }
+      },
+      {
+        "id": "suite/root/root-03",
+        "jobName": "Linux x64 / Tests / root-03",
+        "stepName": "Run selected complete suites without rebuilding",
+        "testCoverage": {
+          "component": "root",
+          "jobID": "tests-root",
+          "platform": "linux-x64",
+          "suite": "root-03",
+          "suites": [
+            "DiscordBitsTests",
+            "DiscordCommandsTests",
+            "DiscordCommerceTests",
+            "DiscordDAVETests",
+            "DiscordGatewayTests",
+            "DiscordModelsTests",
+            "DiscordTestSupportTests",
+            "DiscordUnixPlatformTests",
+            "DiscordVoiceTests"
+          ]
+        }
+      },
+      {
+        "id": "suite/root/root-04",
+        "jobName": "Linux x64 / Tests / root-04",
+        "stepName": "Run selected complete suites without rebuilding",
+        "testCoverage": {
+          "component": "root",
+          "jobID": "tests-root",
+          "platform": "linux-x64",
+          "suite": "root-04",
+          "suites": [
+            "DiscordCacheTests",
+            "DiscordCertifiedDevicesTests",
+            "DiscordCommandDSLTests",
+            "DiscordLoggingTests",
+            "DiscordMLSTests",
+            "DiscordMediaTests",
+            "DiscordNIOTransportTests",
+            "DiscordRPCTests",
+            "DiscordSocialTests"
+          ]
+        }
+      },
+      {
+        "id": "suite/macros/macros",
+        "jobName": "Linux x64 / Tests / macros",
+        "stepName": "Run selected complete suites without rebuilding",
+        "testCoverage": {
+          "component": "macros",
+          "jobID": "tests",
+          "platform": "linux-x64",
+          "suite": "macros",
+          "suites": [
+            "macros"
+          ]
+        }
+      },
+      {
+        "id": "suite/extensions/extensions",
+        "jobName": "Linux x64 / Tests / extensions",
+        "stepName": "Run selected complete suites without rebuilding",
+        "testCoverage": {
+          "component": "extensions",
+          "jobID": "tests",
+          "platform": "linux-x64",
+          "suite": "extensions",
+          "suites": [
+            "extensions"
+          ]
+        }
+      },
+      {
+        "id": "suite/tooling/tooling",
+        "jobName": "Linux x64 / Tests / tooling",
+        "stepName": "Run selected complete suites without rebuilding",
+        "testCoverage": {
+          "component": "tooling",
+          "jobID": "tests",
+          "platform": "linux-x64",
+          "suite": "tooling",
+          "suites": [
+            "tooling"
+          ]
+        }
+      },
+      {
+        "id": "suite/benchmarks/benchmarks",
+        "jobName": "Linux x64 / Tests / benchmarks",
+        "stepName": "Run selected complete suites without rebuilding",
+        "testCoverage": {
+          "component": "benchmarks",
+          "jobID": "tests",
+          "platform": "linux-x64",
+          "suite": "benchmarks",
+          "suites": [
+            "benchmarks"
+          ]
+        }
+      },
+      {
+        "id": "suite/timing-support/timing-support",
+        "jobName": "Linux x64 / Tests / timing-support",
+        "stepName": "Run selected complete suites without rebuilding",
+        "testCoverage": {
+          "component": "timing-support",
+          "jobID": "tests",
+          "platform": "linux-x64",
+          "suite": "timing-support",
+          "suites": [
+            "timing-support"
+          ]
+        }
+      },
+      {
+        "id": "suite/timing/timing",
+        "jobName": "Linux x64 / Tests / timing",
+        "stepName": "Run selected complete suites without rebuilding",
+        "testCoverage": {
+          "component": "timing",
+          "jobID": "tests",
+          "platform": "linux-x64",
+          "suite": "timing",
+          "suites": [
+            "timing"
+          ]
+        }
+      },
+      {
+        "id": "suite/foundation/foundation",
+        "jobName": "Linux x64 / Tests / foundation",
+        "stepName": "Run selected complete suites without rebuilding",
+        "testCoverage": {
+          "component": "foundation",
+          "jobID": "tests",
+          "platform": "linux-x64",
+          "suite": "foundation",
+          "suites": [
+            "foundation"
+          ]
+        }
+      },
+      {
+        "id": "suite/media/media",
+        "jobName": "Linux x64 / Tests / media",
+        "stepName": "Run selected complete suites without rebuilding",
+        "testCoverage": {
+          "component": "media",
+          "jobID": "tests",
+          "platform": "linux-x64",
+          "suite": "media",
+          "suites": [
+            "media"
+          ]
+        }
+      },
+      {
+        "id": "suite/consumers/consumers",
+        "jobName": "Linux x64 / Tests / consumers",
+        "stepName": "Run selected complete suites without rebuilding",
+        "testCoverage": {
+          "component": "consumers",
+          "jobID": "tests",
+          "platform": "linux-x64",
+          "suite": "consumers",
+          "suites": [
+            "ActivityHost",
+            "CommandsApp",
+            "DSLBot",
+            "DSLCommands",
+            "DSLEvents",
+            "LoggingApp",
+            "SocialApp",
+            "VoiceBot"
+          ]
+        }
+      },
+      {
+        "id": "audit",
+        "jobName": "Linux x64 / Documentation, inventory, generation and release audits",
+        "stepName": "Run audits using the compiled tooling executable"
+      },
+      {
+        "id": "fixture/dsl_compile_fixtures",
+        "jobName": "Linux x64 / Compiler fixtures / dsl_compile_fixtures",
+        "stepName": "Require positive builds and exact negative compiler diagnostics"
+      },
+      {
+        "id": "fixture/dsl_extension_fixtures",
+        "jobName": "Linux x64 / Compiler fixtures / dsl_extension_fixtures",
+        "stepName": "Require positive builds and exact negative compiler diagnostics"
+      },
+      {
+        "id": "export",
+        "jobName": "Linux x64 / Export validated platform source",
+        "stepName": "Package the clean source revision validated on this platform"
+      },
+      {
+        "id": "export/upload",
+        "jobName": "Linux x64 / Export validated platform source",
+        "stepName": "Upload platform SwiftPM source bundle"
+      }
+    ],
+    "mode": "full",
+    "platform": "linux-x64",
+    "runAttempt": "1",
+    "runID": "local-planning",
+    "schemaVersion": 1
+  },
+  "has-builds": true,
+  "has-core-builds": true,
+  "has-root-tests": true,
+  "has-tests": true,
+  "root-tests": {
+    "include": [
+      {
+        "artifactProducer": "build/linux-x64/root",
+        "component": "root",
+        "group": "Linux-x64-8",
+        "jobs": 2,
+        "needs": [
+          "plan",
+          "build"
+        ],
+        "platform": "linux-x64",
+        "shell": "bash",
+        "suite": "root-01",
+        "suites": [
+          "DiscordApplePlatformTests",
+          "DiscordClientTests",
+          "DiscordDSLTests",
+          "DiscordTransportTests",
+          "DiscordVoiceCodecsTests",
+          "DiscordVoiceCryptoTests"
+        ]
+      },
+      {
+        "artifactProducer": "build/linux-x64/root",
+        "component": "root",
+        "group": "Linux-x64-8",
+        "jobs": 2,
+        "needs": [
+          "plan",
+          "build"
+        ],
+        "platform": "linux-x64",
+        "shell": "bash",
+        "suite": "root-02",
+        "suites": [
+          "DiscordActivitiesTests",
+          "DiscordBotDSLTests",
+          "DiscordCoreTests",
+          "DiscordGameServicesTests",
+          "DiscordHTTPTests",
+          "DiscordInteractionsTests",
+          "DiscordKitTests",
+          "DiscordLogHandlersTests",
+          "DiscordOAuthTests"
+        ]
+      },
+      {
+        "artifactProducer": "build/linux-x64/root",
+        "component": "root",
+        "group": "Linux-x64-8",
+        "jobs": 2,
+        "needs": [
+          "plan",
+          "build"
+        ],
+        "platform": "linux-x64",
+        "shell": "bash",
+        "suite": "root-03",
+        "suites": [
+          "DiscordBitsTests",
+          "DiscordCommandsTests",
+          "DiscordCommerceTests",
+          "DiscordDAVETests",
+          "DiscordGatewayTests",
+          "DiscordModelsTests",
+          "DiscordTestSupportTests",
+          "DiscordUnixPlatformTests",
+          "DiscordVoiceTests"
+        ]
+      },
+      {
+        "artifactProducer": "build/linux-x64/root",
+        "component": "root",
+        "group": "Linux-x64-8",
+        "jobs": 2,
+        "needs": [
+          "plan",
+          "build"
+        ],
+        "platform": "linux-x64",
+        "shell": "bash",
+        "suite": "root-04",
+        "suites": [
+          "DiscordCacheTests",
+          "DiscordCertifiedDevicesTests",
+          "DiscordCommandDSLTests",
+          "DiscordLoggingTests",
+          "DiscordMLSTests",
+          "DiscordMediaTests",
+          "DiscordNIOTransportTests",
+          "DiscordRPCTests",
+          "DiscordSocialTests"
+        ]
+      }
+    ]
+  },
+  "runtime-concurrency": 2,
+  "tests": {
+    "include": [
+      {
+        "artifactProducer": "build/linux-x64/macros",
+        "component": "macros",
+        "group": "Linux-x64-8",
+        "jobs": 2,
+        "needs": [
+          "plan",
+          "build"
+        ],
+        "platform": "linux-x64",
+        "shell": "bash",
+        "suite": "macros",
+        "suites": [
+          "macros"
+        ]
+      },
+      {
+        "artifactProducer": "build/linux-x64/extensions",
+        "component": "extensions",
+        "group": "Linux-x64-8",
+        "jobs": 2,
+        "needs": [
+          "plan",
+          "build"
+        ],
+        "platform": "linux-x64",
+        "shell": "bash",
+        "suite": "extensions",
+        "suites": [
+          "extensions"
+        ]
+      },
+      {
+        "artifactProducer": "build/linux-x64/tooling",
+        "component": "tooling",
+        "group": "Linux-x64-8",
+        "jobs": 2,
+        "needs": [
+          "plan",
+          "build"
+        ],
+        "platform": "linux-x64",
+        "shell": "bash",
+        "suite": "tooling",
+        "suites": [
+          "tooling"
+        ]
+      },
+      {
+        "artifactProducer": "build/linux-x64/benchmarks",
+        "component": "benchmarks",
+        "group": "Linux-x64-8",
+        "jobs": 2,
+        "needs": [
+          "plan",
+          "build"
+        ],
+        "platform": "linux-x64",
+        "shell": "bash",
+        "suite": "benchmarks",
+        "suites": [
+          "benchmarks"
+        ]
+      },
+      {
+        "artifactProducer": "build/linux-x64/timing-support",
+        "component": "timing-support",
+        "group": "Linux-x64-8",
+        "jobs": 2,
+        "needs": [
+          "plan",
+          "build"
+        ],
+        "platform": "linux-x64",
+        "shell": "bash",
+        "suite": "timing-support",
+        "suites": [
+          "timing-support"
+        ]
+      },
+      {
+        "artifactProducer": "build/linux-x64/timing",
+        "component": "timing",
+        "group": "Linux-x64-8",
+        "jobs": 2,
+        "needs": [
+          "plan",
+          "build"
+        ],
+        "platform": "linux-x64",
+        "shell": "bash",
+        "suite": "timing",
+        "suites": [
+          "timing"
+        ]
+      },
+      {
+        "artifactProducer": "build/linux-x64/foundation",
+        "component": "foundation",
+        "group": "Linux-x64-8",
+        "jobs": 2,
+        "needs": [
+          "plan",
+          "build"
+        ],
+        "platform": "linux-x64",
+        "shell": "bash",
+        "suite": "foundation",
+        "suites": [
+          "foundation"
+        ]
+      },
+      {
+        "artifactProducer": "build/linux-x64/media",
+        "component": "media",
+        "group": "Linux-x64-8",
+        "jobs": 2,
+        "needs": [
+          "plan",
+          "build"
+        ],
+        "platform": "linux-x64",
+        "shell": "bash",
+        "suite": "media",
+        "suites": [
+          "media"
+        ]
+      },
+      {
+        "artifactProducer": "build/linux-x64/consumers",
+        "component": "consumers",
+        "group": "Linux-x64-8",
+        "jobs": 2,
+        "needs": [
+          "plan",
+          "build"
+        ],
+        "platform": "linux-x64",
+        "shell": "bash",
+        "suite": "consumers",
+        "suites": [
+          "ActivityHost",
+          "CommandsApp",
+          "DSLBot",
+          "DSLCommands",
+          "DSLEvents",
+          "LoggingApp",
+          "SocialApp",
+          "VoiceBot"
+        ]
+      }
+    ]
+  }
+}

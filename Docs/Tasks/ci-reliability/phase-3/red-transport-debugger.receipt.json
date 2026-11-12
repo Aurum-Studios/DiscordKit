@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "name": "red-transport-remote",
+  "stage": "phase3-red-transport-remote",
+  "operation": "focusedTest",
+  "arguments": [
+    "lldb",
+    "--batch",
+    "--no-lldbinit",
+    "-o",
+    "settings set frame-format 'frame #${frame.index}: ${frame.pc} ${module.file.basename} ${function.name-without-args}\\n'",
+    "-o",
+    "target create --arch x86_64 /scratch/x86_64-unknown-linux-gnu/debug/DiscordKitLoadTestsPackageTests.xctest",
+    "-o",
+    "gdb-remote 127.0.0.1:38621",
+    "-o",
+    "script exec(\"import lldb,struct\\nprocess=lldb.process\\nerror=lldb.SBError()\\nsp=process.GetSelectedThread().GetFrameAtIndex(0).FindRegister('rsp').GetValueAsUnsigned()\\ndef read_u64(address):\\n    data=process.ReadMemory(address,8,error)\\n    if error.Fail() or len(data)!=8:\\n        raise RuntimeError('initial stack pointer read failed')\\n    return struct.unpack('<Q',data)[0]\\nargc=read_u64(sp)\\nif argc>4096 or read_u64(sp+8*(argc+1))!=0:\\n    raise RuntimeError('unexpected initial x86 ELF stack layout')\\nenvp=sp+8*(argc+2)\\nfound=[]\\nprefix=b'ROSETTA_DEBUGSERVER_PORT='\\nfor index in range(1024):\\n    pointer=read_u64(envp+8*index)\\n    if pointer==0:\\n        break\\n    value=process.ReadMemory(pointer,len(prefix),error)\\n    if error.Fail():\\n        raise RuntimeError('diagnostic variable name read failed')\\n    if value==prefix:\\n        found.append(pointer)\\nelse:\\n    raise RuntimeError('initial environment exceeds diagnostic cap')\\nif len(found)!=1:\\n    raise RuntimeError('expected one diagnostic variable')\\nwritten=process.WriteMemory(found[0],b'_',error)\\nif error.Fail() or written!=1:\\n    raise RuntimeError('diagnostic variable name scrub failed')\\nprint('DIAGNOSTIC_VARIABLE_RENAMED',len(found),'MODIFIED_BYTES',written)\\n\\nimport time\\nlldb.debugger.SetAsync(True)\\nerror=lldb.process.Continue()\\nif error.Fail():\\n    raise RuntimeError('remote continue failed: '+str(error))\\nprint('DIAGNOSTIC_TEST_CONTINUED')\\nuntil=time.monotonic()+10\\nwhile time.monotonic()<until and lldb.process.GetState() not in (lldb.eStateExited,lldb.eStateDetached,lldb.eStateInvalid):\\n    time.sleep(0.05)\\nif lldb.process.GetState()==lldb.eStateRunning:\\n    error=lldb.process.Stop()\\n    if error.Fail():\\n        raise RuntimeError('remote stop failed: '+str(error))\\nuntil=time.monotonic()+2\\nwhile time.monotonic()<until and lldb.process.GetState()!=lldb.eStateStopped:\\n    time.sleep(0.01)\\nif lldb.process.GetState()!=lldb.eStateStopped:\\n    raise RuntimeError('diagnostic process did not remain stopped')\\nprint('DIAGNOSTIC_TEST_STOPPED')\\n\")",
+    "-o",
+    "script exec(\"import lldb,os,struct\\nmodules={}\\nfor line in open('/proc/%d/maps' % lldb.process.GetProcessID()):\\n    fields=line.split(None,5)\\n    if len(fields)!=6 or not fields[5].startswith('/'):\\n        continue\\n    path=fields[5].strip()\\n    if path.endswith(' (deleted)') or not os.path.isfile(path):\\n        continue\\n    with open(path,'rb') as source:\\n        header=source.read(20)\\n    if len(header)!=20 or header[:4]!=b'\\\\x7fELF' or header[4]!=2 or struct.unpack('<H',header[18:20])[0]!=62:\\n        continue\\n    elf_type=struct.unpack('<H',header[16:18])[0]\\n    if elf_type not in (2,3):\\n        continue\\n    start=int(fields[0].split('-')[0],16)\\n    bias=start-int(fields[2],16) if elf_type==3 else 0\\n    modules[path]=min(modules.get(path,bias),bias)\\nfor path,bias in sorted(modules.items()):\\n    module=lldb.target.FindModule(lldb.SBFileSpec(path))\\n    if not module.IsValid():\\n        module=lldb.target.AddModule(path,'x86_64-unknown-linux-gnu',None)\\n    if not module.IsValid():\\n        print('MODULE_INVALID',path)\\n        continue\\n    error=lldb.target.SetModuleLoadAddress(module,bias)\\n    print('MODULE_LOAD',path,hex(bias),error)\\n\")",
+    "-o",
+    "image list -o -f",
+    "-o",
+    "thread backtrace all --count 128",
+    "-o",
+    "process kill"
+  ],
+  "start": "2026-11-12T12:59:04.586801+00:00",
+  "startMonotonic": 75451.044913142,
+  "deadlineMonotonic": 75511.044913142,
+  "executionLimitSeconds": 60,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "operation",
+  "paths": {
+    "output": "/work/Docs/Tasks/ci-reliability/phase-3/red-transport-debugger.log",
+    "stdout": null,
+    "diagnostics": "/work/Docs/Tasks/ci-reliability/phase-3/red-transport-debugger.diagnostics.jsonl",
+    "receipt": "/work/Docs/Tasks/ci-reliability/phase-3/red-transport-debugger.receipt.json"
+  },
+  "identity": {
+    "executionID": "03663329-7f58-4c8b-8222-856cb5890479",
+    "supervisorPID": 5703,
+    "host": "213b31596900",
+    "system": "Linux",
+    "repository": "/work"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 5712,
+  "group": 5712,
+  "cleanup": {
+    "status": "group-signalled",
+    "signals": [],
+    "parentReaped": true,
+    "allowanceSeconds": 8.0,
+    "seconds": 0.028,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "/work/Docs/Tasks/ci-reliability/phase-3/red-transport-debugger.log",
+      "retainedBytes": 29917,
+      "observedBytes": 29917,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T12:59:16.995727+00:00",
+  "endMonotonic": 75463.453934964,
+  "elapsedSeconds": 12.409,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}

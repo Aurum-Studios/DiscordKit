@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "status": "failed",
+  "name": "assertion-failure",
+  "stage": "phase-1-fault-injection",
+  "operation": "fixture",
+  "arguments": [
+    "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+    "-c",
+    "import sys; print('assertion fixture failed', flush=True); sys.exit(7)"
+  ],
+  "start": "2026-11-12T04:57:22.669357+00:00",
+  "startMonotonic": 317450.181758541,
+  "deadlineMonotonic": 317452.181758541,
+  "executionLimitSeconds": 2,
+  "cleanupAllowanceSeconds": 8.0,
+  "paths": {
+    "output": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/Docs/Tasks/ci-reliability/phase-1/faults/assertion-failure.log",
+    "stdout": null,
+    "diagnostics": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/Docs/Tasks/ci-reliability/phase-1/faults/assertion-failure.diagnostics.jsonl",
+    "receipt": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/Docs/Tasks/ci-reliability/phase-1/faults/assertion-failure.receipt.json"
+  },
+  "identity": {
+    "executionID": "bc1dcb7f-b79f-4b3f-9c9e-5c0b0083abae",
+    "supervisorPID": 54297,
+    "host": "Pokemon-GO-Plus",
+    "system": "Darwin",
+    "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase1"
+  },
+  "exitCode": 7,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 54307,
+  "group": 54307,
+  "error": "Command '('/Library/Frameworks/Python.framework/Versions/3.14/bin/python3', '-c', \"import sys; print('assertion fixture failed', flush=True); sys.exit(7)\")' returned non-zero exit status 7.",
+  "errorType": "CalledProcessError",
+  "cleanup": {
+    "status": "group-signalled",
+    "signals": [],
+    "parentReaped": true,
+    "allowanceSeconds": 8.0,
+    "seconds": 0.004,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/Docs/Tasks/ci-reliability/phase-1/faults/assertion-failure.log",
+      "retainedBytes": 172,
+      "observedBytes": 172,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T04:57:22.692045+00:00",
+  "endMonotonic": 317450.20447725,
+  "elapsedSeconds": 0.023,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}

@@ -1,0 +1,102 @@
+{
+  "aggregateSeconds": 300,
+  "certifying": false,
+  "commands": [
+    {
+      "arguments": [
+        "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "Tools/ci",
+        "-p",
+        "test_*.py"
+      ],
+      "diagnostics": "00-ci-python.diagnostics.jsonl",
+      "execution": {
+        "arguments": [
+          "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "Tools/ci",
+          "-p",
+          "test_*.py"
+        ],
+        "cleanup": {
+          "allowanceSeconds": 8.0,
+          "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed",
+          "groupState": "gone",
+          "parentReaped": true,
+          "remainingProcesses": [],
+          "seconds": 0.004,
+          "signals": [],
+          "status": "group-signalled",
+          "verification": "available",
+          "verificationMalformedRows": 0,
+          "verificationTruncated": false
+        },
+        "cleanupAllowanceSeconds": 8.0,
+        "deadlineMonotonic": 354982.716346541,
+        "deadlineSource": "aggregate",
+        "diagnosticsTruncated": false,
+        "elapsedSeconds": 17.041,
+        "end": "2026-11-12T15:18:12.406214+00:00",
+        "endMonotonic": 354699.758036375,
+        "executionLimitSeconds": 300,
+        "exitCode": 0,
+        "group": 23655,
+        "identity": {
+          "executionID": "72437e07-9d82-4c74-a9ac-06809ee86bac",
+          "host": "Pokemon-GO-Plus",
+          "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase7",
+          "supervisorPID": 23600,
+          "system": "Darwin"
+        },
+        "lastObservedTest": null,
+        "name": "ci-python",
+        "operation": "localHelperCheck",
+        "outputs": [
+          {
+            "observedBytes": 1349,
+            "path": "/Users/carsonrau/Developer/DiscordKit-ci-phase7/Docs/Tasks/ci-reliability/phase-7/checks/ci-python/00-ci-python.log",
+            "retainedBytes": 1349,
+            "truncated": false
+          }
+        ],
+        "paths": {
+          "diagnostics": "/Users/carsonrau/Developer/DiscordKit-ci-phase7/Docs/Tasks/ci-reliability/phase-7/checks/ci-python/00-ci-python.diagnostics.jsonl",
+          "output": "/Users/carsonrau/Developer/DiscordKit-ci-phase7/Docs/Tasks/ci-reliability/phase-7/checks/ci-python/00-ci-python.log",
+          "receipt": "/Users/carsonrau/Developer/DiscordKit-ci-phase7/Docs/Tasks/ci-reliability/phase-7/checks/ci-python/00-ci-python.receipt.json",
+          "stdout": null
+        },
+        "pid": 23655,
+        "readerThreads": 0,
+        "schemaVersion": 1,
+        "signal": null,
+        "stage": "preflight-ci-python",
+        "start": "2026-11-12T15:17:55.364874+00:00",
+        "startMonotonic": 354682.716792958,
+        "status": "passed",
+        "timeoutCategory": null
+      },
+      "executionReceipt": "00-ci-python.receipt.json",
+      "log": "00-ci-python.log",
+      "name": "ci-python",
+      "operation": "localHelperCheck",
+      "seconds": 17.042,
+      "status": "passed",
+      "timeoutSeconds": 300
+    }
+  ],
+  "deadlineMonotonic": 354982.716346541,
+  "group": "ci-python",
+  "operation": "group",
+  "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase7",
+  "schemaVersion": 1,
+  "seconds": 17.043,
+  "stage": "preflight",
+  "status": "passed"
+}

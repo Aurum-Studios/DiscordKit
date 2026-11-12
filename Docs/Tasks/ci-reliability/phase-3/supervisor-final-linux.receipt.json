@@ -1,0 +1,100 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "name": "supervisor-final-ci-helpers",
+  "stage": "phase-3-supervisor-regression",
+  "operation": "localHelperCheck",
+  "arguments": [
+    "/usr/bin/python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "Tools/ci",
+    "-p",
+    "test_*.py"
+  ],
+  "start": "2026-11-12T13:10:08.353964+00:00",
+  "startMonotonic": 76114.811962969,
+  "deadlineMonotonic": 76414.811962969,
+  "executionLimitSeconds": 300,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "operation",
+  "paths": {
+    "output": "/work/Docs/Tasks/ci-reliability/phase-3/supervisor-final-linux.log",
+    "stdout": null,
+    "diagnostics": "/work/Docs/Tasks/ci-reliability/phase-3/supervisor-final-linux.diagnostics.jsonl",
+    "receipt": "/work/Docs/Tasks/ci-reliability/phase-3/supervisor-final-linux.receipt.json"
+  },
+  "identity": {
+    "executionID": "76af0890-53ad-495a-8aeb-5e1a0ae284ed",
+    "supervisorPID": 7247,
+    "host": "213b31596900",
+    "system": "Linux",
+    "repository": "/work"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 7253,
+  "group": 7253,
+  "cleanup": {
+    "status": "session-signalled",
+    "signals": [
+      "SIGTERM",
+      "SIGKILL"
+    ],
+    "groupSignals": [
+      {
+        "group": 7253,
+        "signal": "SIGTERM"
+      },
+      {
+        "group": 7253,
+        "signal": "SIGKILL"
+      }
+    ],
+    "parentReaped": true,
+    "session": 7253,
+    "allowanceSeconds": 8.0,
+    "discovery": {
+      "status": "available",
+      "truncated": false
+    },
+    "groups": [
+      7253
+    ],
+    "seconds": 0.094,
+    "groupState": "zombies-only",
+    "remainingProcesses": [
+      {
+        "pid": 7342,
+        "parent": 1,
+        "group": 7253,
+        "state": "Z",
+        "cpuPercent": 0.4,
+        "rssKiB": 0,
+        "executable": "python3",
+        "session": 7253
+      }
+    ],
+    "verification": "available",
+    "verificationTruncated": false,
+    "verificationMalformedRows": 0,
+    "boundary": "admitted Linux session; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "/work/Docs/Tasks/ci-reliability/phase-3/supervisor-final-linux.log",
+      "retainedBytes": 793,
+      "observedBytes": 793,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T13:10:58.718450+00:00",
+  "endMonotonic": 76165.176654939,
+  "elapsedSeconds": 50.365,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}

@@ -1,0 +1,6 @@
+/usr/bin/python3 -m unittest test_linux_ci.LinuxSessionTests
+....
+----------------------------------------------------------------------
+Ran 4 tests in 3.866s
+
+OK

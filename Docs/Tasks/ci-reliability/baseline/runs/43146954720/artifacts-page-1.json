@@ -1,0 +1,2005 @@
+{
+  "total_count": 157,
+  "artifacts": [
+    {
+      "id": 13913665054,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMzY2NTA1NA==",
+      "name": "test-evidence-macos-arm64-LoggingApp-43146954720-1",
+      "size_in_bytes": 4039,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913665054",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913665054/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:38:34Z",
+      "updated_at": "2026-11-12T03:38:34Z",
+      "expires_at": "2026-11-26T03:38:34Z",
+      "digest": "sha256:07746c93aad85563ada1f9b7204d2817252199996fd67194f1e2bfe04753c8cf",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13913555216,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMzU1NTIxNg==",
+      "name": "test-evidence-macos-arm64-DiscordVoiceCryptoTests-43146954720-1",
+      "size_in_bytes": 76387,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913555216",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913555216/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:36:04Z",
+      "updated_at": "2026-11-12T03:36:04Z",
+      "expires_at": "2026-11-26T03:36:03Z",
+      "digest": "sha256:6ba30c804f382c3c4fa9bb7e7afe100fc9c9fee12e1c6c32e4ec4454d8d37482",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13913550278,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMzU1MDI3OA==",
+      "name": "test-evidence-macos-arm64-ActivityHost-43146954720-1",
+      "size_in_bytes": 4037,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913550278",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913550278/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:37:39Z",
+      "updated_at": "2026-11-12T03:37:39Z",
+      "expires_at": "2026-11-26T03:37:37Z",
+      "digest": "sha256:855d0ed7773056698e36e95dbf62ae239e6ca102556c6c6358e8adfb30429262",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13913395163,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMzM5NTE2Mw==",
+      "name": "test-evidence-macos-arm64-DiscordKitTests-43146954720-1",
+      "size_in_bytes": 75899,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913395163",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913395163/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:32:55Z",
+      "updated_at": "2026-11-12T03:32:55Z",
+      "expires_at": "2026-11-26T03:32:54Z",
+      "digest": "sha256:a44d0aea2a1c15371a5649166358472db8a1466568e71158b00200258471e48e",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13913395157,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMzM5NTE1Nw==",
+      "name": "test-evidence-linux-x64-DiscordHTTPTests-43146954720-1",
+      "size_in_bytes": 291400,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913395157",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913395157/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:32:54Z",
+      "updated_at": "2026-11-12T03:32:54Z",
+      "expires_at": "2026-11-26T03:32:53Z",
+      "digest": "sha256:e3397967bb6ad8561ed938e96ee864f119463a7c9fe54094121250af85ba7132",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13913351001,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMzM1MTAwMQ==",
+      "name": "test-evidence-macos-arm64-DiscordVoiceCodecsTests-43146954720-1",
+      "size_in_bytes": 101700,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913351001",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913351001/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:37:26Z",
+      "updated_at": "2026-11-12T03:37:26Z",
+      "expires_at": "2026-11-26T03:37:25Z",
+      "digest": "sha256:e5fdee258ad629b24f65a32203a23e33fdf2e1911c316c5c145f16eeebebf389",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13913325235,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMzMyNTIzNQ==",
+      "name": "test-evidence-linux-x64-DiscordGatewayTests-43146954720-1",
+      "size_in_bytes": 86318,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913325235",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913325235/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:33:34Z",
+      "updated_at": "2026-11-12T03:33:34Z",
+      "expires_at": "2026-11-26T03:33:33Z",
+      "digest": "sha256:73189c684b6cc1e288e1b09110286914f2367f3a456bf96217f37cc46b110bb9",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13913320268,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMzMyMDI2OA==",
+      "name": "test-evidence-linux-x64-DiscordOAuthTests-43146954720-1",
+      "size_in_bytes": 78723,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913320268",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913320268/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:32:19Z",
+      "updated_at": "2026-11-12T03:32:19Z",
+      "expires_at": "2026-11-26T03:32:19Z",
+      "digest": "sha256:a9227af401df78d974777f00901990c368f8cab74bacaad80af03b021121df26",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13913315165,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMzMxNTE2NQ==",
+      "name": "test-evidence-linux-x64-DiscordLoggingTests-43146954720-1",
+      "size_in_bytes": 74639,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913315165",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913315165/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:33:34Z",
+      "updated_at": "2026-11-12T03:33:34Z",
+      "expires_at": "2026-11-26T03:33:34Z",
+      "digest": "sha256:0925a184d5df4f40194e6b5d3122253268bc10f2289f21557414cc28330875d5",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13913310882,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMzMxMDg4Mg==",
+      "name": "test-evidence-linux-x64-CommandsApp-43146954720-1",
+      "size_in_bytes": 3769,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913310882",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913310882/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:35:30Z",
+      "updated_at": "2026-11-12T03:35:30Z",
+      "expires_at": "2026-11-26T03:35:29Z",
+      "digest": "sha256:7455ebcd9b333567bdd5f7c3cb1a537c7f589c65083d4ee03e920c7e8a0f96a3",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13913306056,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMzMwNjA1Ng==",
+      "name": "test-evidence-macos-arm64-DiscordMLSTests-43146954720-1",
+      "size_in_bytes": 78045,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913306056",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913306056/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:36:45Z",
+      "updated_at": "2026-11-12T03:36:45Z",
+      "expires_at": "2026-11-26T03:36:44Z",
+      "digest": "sha256:5c1c82361a2baba68bcf255b73f8fe1b66ecbff560d54cac74df2d6ab1ac28f0",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13913280216,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMzI4MDIxNg==",
+      "name": "test-evidence-linux-x64-DiscordNIOTransportTests-43146954720-1",
+      "size_in_bytes": 77327,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913280216",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913280216/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:32:45Z",
+      "updated_at": "2026-11-12T03:32:45Z",
+      "expires_at": "2026-11-26T03:32:45Z",
+      "digest": "sha256:85704725de1b626b14cb354c7cdb84411377705131f70192451d292577e6be22",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13913275234,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMzI3NTIzNA==",
+      "name": "test-evidence-linux-x64-media-43146954720-1",
+      "size_in_bytes": 28514,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913275234",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913275234/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:33:06Z",
+      "updated_at": "2026-11-12T03:33:06Z",
+      "expires_at": "2026-11-26T03:33:06Z",
+      "digest": "sha256:dbabaa1d9625696bc105ea71749e6777e1dfbb393b9349a155b9790a26a79f13",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13913250379,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMzI1MDM3OQ==",
+      "name": "test-evidence-linux-x64-DiscordActivitiesTests-43146954720-1",
+      "size_in_bytes": 81775,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913250379",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913250379/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:32:17Z",
+      "updated_at": "2026-11-12T03:32:17Z",
+      "expires_at": "2026-11-26T03:32:16Z",
+      "digest": "sha256:c6c32528d8e4bc2a3a27a0c00b1ac6ae0271791bc75a696a128f5890e272a714",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13913244576,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMzI0NDU3Ng==",
+      "name": "test-evidence-linux-x64-load-43146954720-1",
+      "size_in_bytes": 53730,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913244576",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913244576/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:59:22Z",
+      "updated_at": "2026-11-12T03:59:22Z",
+      "expires_at": "2026-11-26T03:59:21Z",
+      "digest": "sha256:ff0463ed0a97b7177eb15ef9bc69a186910e950d4293525994d0916df3d36417",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13913235673,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMzIzNTY3Mw==",
+      "name": "test-evidence-linux-x64-DiscordCoreTests-43146954720-1",
+      "size_in_bytes": 76873,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913235673",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913235673/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:33:24Z",
+      "updated_at": "2026-11-12T03:33:24Z",
+      "expires_at": "2026-11-26T03:33:23Z",
+      "digest": "sha256:fa45eb2655573c45498b942a15826718b362d4c6cbd703acd7a759d34c204140",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13913235473,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMzIzNTQ3Mw==",
+      "name": "test-evidence-linux-x64-DiscordTransportTests-43146954720-1",
+      "size_in_bytes": 74651,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913235473",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913235473/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:32:20Z",
+      "updated_at": "2026-11-12T03:32:20Z",
+      "expires_at": "2026-11-26T03:32:19Z",
+      "digest": "sha256:4ebdfec9ddb09358c1ee61516310eae56bc665ee9116bff7e724f3d60e9ef064",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13913235384,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMzIzNTM4NA==",
+      "name": "api-diagnostics-85eac6f3c1d3b17e53596c49e7438efee366c1b3-43146954720-1",
+      "size_in_bytes": 1366598,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913235384",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913235384/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:31:48Z",
+      "updated_at": "2026-11-12T03:31:48Z",
+      "expires_at": "2026-11-26T03:31:46Z",
+      "digest": "sha256:f621e568e41ec34747eb2c603c9b4160daeb4dc0f9605dd1bb6ed89b713ede8b",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13913225322,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMzIyNTMyMg==",
+      "name": "test-evidence-linux-x64-DiscordMediaTests-43146954720-1",
+      "size_in_bytes": 77494,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913225322",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913225322/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:32:24Z",
+      "updated_at": "2026-11-12T03:32:24Z",
+      "expires_at": "2026-11-26T03:32:23Z",
+      "digest": "sha256:ca13bd1968a92b3e0544e62ca4469a67b1f5540b93ad33f78ffb2d698994ac6f",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13913215944,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMzIxNTk0NA==",
+      "name": "test-evidence-macos-arm64-SocialApp-43146954720-1",
+      "size_in_bytes": 2222,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913215944",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913215944/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:37:18Z",
+      "updated_at": "2026-11-12T03:37:18Z",
+      "expires_at": "2026-11-26T03:37:17Z",
+      "digest": "sha256:9c51d500e840eb67337848775e9e08b2515c4a1249cd774807bcc7fd0817b094",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13913206386,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMzIwNjM4Ng==",
+      "name": "test-evidence-macos-arm64-DiscordNIOTransportTests-43146954720-1",
+      "size_in_bytes": 79146,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913206386",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913206386/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:37:38Z",
+      "updated_at": "2026-11-12T03:37:38Z",
+      "expires_at": "2026-11-26T03:37:36Z",
+      "digest": "sha256:c1a5b6604c2fefb322fe44d98249a7cb4eb6d539b7ae881a90b581695482f2dd",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13913195939,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMzE5NTkzOQ==",
+      "name": "test-evidence-macos-arm64-DiscordUnixPlatformTests-43146954720-1",
+      "size_in_bytes": 76739,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913195939",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913195939/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:34:24Z",
+      "updated_at": "2026-11-12T03:34:24Z",
+      "expires_at": "2026-11-26T03:34:23Z",
+      "digest": "sha256:b399f58052ab74df18ae108c736be79f6d5c3aa7e6b3cc50dd276302198eae63",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13913186059,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMzE4NjA1OQ==",
+      "name": "test-evidence-macos-arm64-DiscordClientTests-43146954720-1",
+      "size_in_bytes": 78685,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913186059",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913186059/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:34:52Z",
+      "updated_at": "2026-11-12T03:34:52Z",
+      "expires_at": "2026-11-26T03:34:51Z",
+      "digest": "sha256:e9b3b2b0979989b06f8569c2b2c9c80e72901afe260632fd3a476428ccafc747",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13913180744,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMzE4MDc0NA==",
+      "name": "test-evidence-linux-x64-foundation-43146954720-1",
+      "size_in_bytes": 13230,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913180744",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913180744/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:32:44Z",
+      "updated_at": "2026-11-12T03:32:44Z",
+      "expires_at": "2026-11-26T03:32:43Z",
+      "digest": "sha256:ecd44b54bbc02367c3a3c8f5a48578777709523f5d203e953deb711ef1a88368",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13913170882,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMzE3MDg4Mg==",
+      "name": "test-evidence-linux-x64-DiscordVoiceCodecsTests-43146954720-1",
+      "size_in_bytes": 99865,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913170882",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913170882/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:33:45Z",
+      "updated_at": "2026-11-12T03:33:45Z",
+      "expires_at": "2026-11-26T03:33:45Z",
+      "digest": "sha256:b96a0159a6bd542e1e63213dcea4372eb1e276634fa8bc8a89e9e1c2eaafa2c3",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13913170438,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMzE3MDQzOA==",
+      "name": "test-evidence-macos-arm64-DiscordGatewayTests-43146954720-1",
+      "size_in_bytes": 88098,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913170438",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913170438/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:31:08Z",
+      "updated_at": "2026-11-12T03:31:08Z",
+      "expires_at": "2026-11-26T03:31:07Z",
+      "digest": "sha256:125141e3f891661cb08f634e312290ca0d6e7d647af11feea1eba05386e6cbc0",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13913166313,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMzE2NjMxMw==",
+      "name": "test-evidence-macos-arm64-macros-43146954720-1",
+      "size_in_bytes": 6314,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913166313",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913166313/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:36:25Z",
+      "updated_at": "2026-11-12T03:36:25Z",
+      "expires_at": "2026-11-26T03:36:24Z",
+      "digest": "sha256:64d167f1e63b9a49b7f560efd768f54a3f55edbf53ab2616de797daf51588103",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13913160381,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMzE2MDM4MQ==",
+      "name": "test-evidence-linux-x64-DiscordClientTests-43146954720-1",
+      "size_in_bytes": 76865,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913160381",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913160381/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:32:22Z",
+      "updated_at": "2026-11-12T03:32:22Z",
+      "expires_at": "2026-11-26T03:32:21Z",
+      "digest": "sha256:072c2841b3ecd3291eb97401c964b56c3894513b8b131a9ece52bc9b9f6c0590",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13913150486,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMzE1MDQ4Ng==",
+      "name": "test-evidence-macos-arm64-DiscordCacheTests-43146954720-1",
+      "size_in_bytes": 78346,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913150486",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913150486/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:31:05Z",
+      "updated_at": "2026-11-12T03:31:05Z",
+      "expires_at": "2026-11-26T03:31:04Z",
+      "digest": "sha256:cc249043d172ce0343c74d90b4d4db232964bef9fc881f4d75dfe0fe209c137f",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13913145463,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMzE0NTQ2Mw==",
+      "name": "compiled-linux-x64-consumers-85eac6f3c1d3b17e53596c49e7438efee366c1b3-43146954720-1",
+      "size_in_bytes": 2609782829,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913145463",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913145463/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:31:03Z",
+      "updated_at": "2026-11-12T03:31:03Z",
+      "expires_at": "2026-11-14T03:30:47Z",
+      "digest": "sha256:a4e856c70048d6eebe2acdcedc858cfc23d5e5c14ee45e237bbc06cd51a865f8",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13913120270,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMzEyMDI3MA==",
+      "name": "build-evidence-macos-arm64-consumers-43146954720-1",
+      "size_in_bytes": 73104,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913120270",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913120270/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:29:15Z",
+      "updated_at": "2026-11-12T03:29:15Z",
+      "expires_at": "2026-11-26T03:29:14Z",
+      "digest": "sha256:f807c970f8af30fe5b99e6eec0318ee397c49b5afdddaa63b928960f92c90329",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13913111315,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMzExMTMxNQ==",
+      "name": "test-evidence-macos-arm64-DiscordTransportTests-43146954720-1",
+      "size_in_bytes": 76498,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913111315",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913111315/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:35:17Z",
+      "updated_at": "2026-11-12T03:35:17Z",
+      "expires_at": "2026-11-26T03:35:16Z",
+      "digest": "sha256:78adc450db6fda0944896a5aedb960ab56074e5173ddccfbcdc373a9bd0110cf",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13913105995,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMzEwNTk5NQ==",
+      "name": "test-evidence-linux-x64-benchmarks-43146954720-1",
+      "size_in_bytes": 7324,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913105995",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913105995/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:33:32Z",
+      "updated_at": "2026-11-12T03:33:32Z",
+      "expires_at": "2026-11-26T03:33:31Z",
+      "digest": "sha256:6697794b90e1af448047f963e21266cb6138bcefc79611c4bd2d0c02aa7f00c1",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13913076596,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMzA3NjU5Ng==",
+      "name": "test-evidence-macos-arm64-timing-43146954720-1",
+      "size_in_bytes": 22058,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913076596",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913076596/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:36:47Z",
+      "updated_at": "2026-11-12T03:36:47Z",
+      "expires_at": "2026-11-26T03:36:46Z",
+      "digest": "sha256:975269f4e8b4c3bc72a7528437ee7679e51f8a7cd4dfb9bc1366b5b9ed322bb6",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13913061494,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMzA2MTQ5NA==",
+      "name": "test-evidence-linux-x64-VoiceBot-43146954720-1",
+      "size_in_bytes": 2716,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913061494",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913061494/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:35:31Z",
+      "updated_at": "2026-11-12T03:35:31Z",
+      "expires_at": "2026-11-26T03:35:31Z",
+      "digest": "sha256:fb312851fab58bddb6db313cd37de7118faa6ae252b051fadae5c1e1dcca9976",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13913026376,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMzAyNjM3Ng==",
+      "name": "test-evidence-macos-arm64-DiscordCommerceTests-43146954720-1",
+      "size_in_bytes": 76620,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913026376",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913026376/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:31:17Z",
+      "updated_at": "2026-11-12T03:31:17Z",
+      "expires_at": "2026-11-26T03:31:16Z",
+      "digest": "sha256:3c79573bcf43e907206fbaf7f13bb3a9b6a564751846d61736f48fe03c92414b",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13913026031,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMzAyNjAzMQ==",
+      "name": "compiled-macos-arm64-consumers-85eac6f3c1d3b17e53596c49e7438efee366c1b3-43146954720-1",
+      "size_in_bytes": 2536784274,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913026031",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913026031/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:29:14Z",
+      "updated_at": "2026-11-12T03:29:14Z",
+      "expires_at": "2026-11-14T03:29:01Z",
+      "digest": "sha256:e8de0be4656c16edea2c36b914b198ccba7e67534ee075379f8039935cfed552",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13913017512,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMzAxNzUxMg==",
+      "name": "test-evidence-macos-arm64-CommandsApp-43146954720-1",
+      "size_in_bytes": 3712,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913017512",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913017512/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:37:53Z",
+      "updated_at": "2026-11-12T03:37:53Z",
+      "expires_at": "2026-11-26T03:37:52Z",
+      "digest": "sha256:23ffc15eecacb57d434833bbcd6cbe3031fe3fb79663b6d6b4f52db2652d4715",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13913017088,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMzAxNzA4OA==",
+      "name": "test-evidence-linux-x64-DSLEvents-43146954720-1",
+      "size_in_bytes": 4171,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913017088",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913017088/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:35:19Z",
+      "updated_at": "2026-11-12T03:35:19Z",
+      "expires_at": "2026-11-26T03:35:18Z",
+      "digest": "sha256:d4dc2cc6ad3ce3a205acd054768de1af89ee9a11d69c99b055ba87d1942eb0d6",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13913011998,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMzAxMTk5OA==",
+      "name": "test-evidence-macos-arm64-DiscordTestSupportTests-43146954720-1",
+      "size_in_bytes": 76807,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913011998",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13913011998/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:35:02Z",
+      "updated_at": "2026-11-12T03:35:02Z",
+      "expires_at": "2026-11-26T03:35:01Z",
+      "digest": "sha256:27a8d01da6160b69aaf0415f9575fb8606072729012bb10d373af215decca74e",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13912992217,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMjk5MjIxNw==",
+      "name": "public-documentation-and-api",
+      "size_in_bytes": 353220133,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912992217",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912992217/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:32:33Z",
+      "updated_at": "2026-11-12T03:32:33Z",
+      "expires_at": "2027-02-10T03:15:22Z",
+      "digest": "sha256:596730a48e159c42f58483d9ee17648329637d6858e82eed54409ea6af267920",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13912991961,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMjk5MTk2MQ==",
+      "name": "test-evidence-macos-arm64-DiscordActivitiesTests-43146954720-1",
+      "size_in_bytes": 83616,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912991961",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912991961/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:31:02Z",
+      "updated_at": "2026-11-12T03:31:02Z",
+      "expires_at": "2026-11-26T03:31:01Z",
+      "digest": "sha256:59e0430fd40eb22b88100690e3647a9a2c16e01405a2bc543b3c344a3f22b43e",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13912978049,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMjk3ODA0OQ==",
+      "name": "test-evidence-macos-arm64-DiscordRPCTests-43146954720-1",
+      "size_in_bytes": 78773,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912978049",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912978049/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:37:28Z",
+      "updated_at": "2026-11-12T03:37:28Z",
+      "expires_at": "2026-11-26T03:37:27Z",
+      "digest": "sha256:ffe50b88fcc78645b32f54fcca1fb50561f5dde7149c1c9d54dfd89daf3ee031",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13912927993,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMjkyNzk5Mw==",
+      "name": "test-evidence-macos-arm64-extensions-43146954720-1",
+      "size_in_bytes": 3110,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912927993",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912927993/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:34:12Z",
+      "updated_at": "2026-11-12T03:34:12Z",
+      "expires_at": "2026-11-26T03:34:11Z",
+      "digest": "sha256:10f4c7f0cbcc03cd5c06e673a73cc7596170331f91b629d22ae9ef02c996762a",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13912923291,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMjkyMzI5MQ==",
+      "name": "audit-evidence-linux-x64-43146954720-1",
+      "size_in_bytes": 10189,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912923291",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912923291/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:35:08Z",
+      "updated_at": "2026-11-12T03:35:08Z",
+      "expires_at": "2026-11-26T03:35:08Z",
+      "digest": "sha256:b925b2ff502d7fde6b398eb74083a414c0d955674cd4a420fb776b4a88f1afd8",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13912908157,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMjkwODE1Nw==",
+      "name": "test-evidence-linux-x64-DiscordCacheTests-43146954720-1",
+      "size_in_bytes": 76499,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912908157",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912908157/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:34:03Z",
+      "updated_at": "2026-11-12T03:34:03Z",
+      "expires_at": "2026-11-26T03:34:02Z",
+      "digest": "sha256:6700665c83384d926d276ea890f445d79969a445eba5995b5d1f8debaf3e9dcc",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13912905623,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMjkwNTYyMw==",
+      "name": "build-evidence-linux-x64-extensions-43146954720-1",
+      "size_in_bytes": 10467,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912905623",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912905623/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:19:01Z",
+      "updated_at": "2026-11-12T03:19:01Z",
+      "expires_at": "2026-11-26T03:19:00Z",
+      "digest": "sha256:b0d41d1d690f5a409229f8deff1cb9b28c56559828e7c1719a4daf177746e9ec",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13912897980,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMjg5Nzk4MA==",
+      "name": "test-evidence-macos-arm64-DiscordSocialTests-43146954720-1",
+      "size_in_bytes": 78875,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912897980",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912897980/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:33:26Z",
+      "updated_at": "2026-11-12T03:33:26Z",
+      "expires_at": "2026-11-26T03:33:26Z",
+      "digest": "sha256:85bdaa3dc68c444de09db9ea423aea40ec5ac87d7e1d6731cb1dab56fedec9e7",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13912883102,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMjg4MzEwMg==",
+      "name": "test-evidence-macos-arm64-DiscordOAuthTests-43146954720-1",
+      "size_in_bytes": 80579,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912883102",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912883102/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:34:12Z",
+      "updated_at": "2026-11-12T03:34:12Z",
+      "expires_at": "2026-11-26T03:34:11Z",
+      "digest": "sha256:6bb0a803ac2a14ba7a41aeef42acb82b0a504ed3de85a3d9080450e27f348cd3",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13912876295,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMjg3NjI5NQ==",
+      "name": "compiled-linux-x64-timing-85eac6f3c1d3b17e53596c49e7438efee366c1b3-43146954720-1",
+      "size_in_bytes": 199134989,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912876295",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912876295/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:22:27Z",
+      "updated_at": "2026-11-12T03:22:27Z",
+      "expires_at": "2026-11-14T03:22:25Z",
+      "digest": "sha256:6d8a21c35c0990259bb11e13ebd3ffbe54fce2a49283d15dc876c865b4bd3619",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13912868568,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMjg2ODU2OA==",
+      "name": "test-evidence-macos-arm64-DSLBot-43146954720-1",
+      "size_in_bytes": 5388,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912868568",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912868568/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:36:01Z",
+      "updated_at": "2026-11-12T03:36:01Z",
+      "expires_at": "2026-11-26T03:36:01Z",
+      "digest": "sha256:8d2000e879634b4eb85212d527da616cba047128409ffdd783e6f54f95c34ddf",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13912868423,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMjg2ODQyMw==",
+      "name": "test-evidence-macos-arm64-DiscordLoggingTests-43146954720-1",
+      "size_in_bytes": 76479,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912868423",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912868423/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:35:09Z",
+      "updated_at": "2026-11-12T03:35:09Z",
+      "expires_at": "2026-11-26T03:35:08Z",
+      "digest": "sha256:1f9c6970b3333be2fc79838f3e60860d0806299cfe80495ed77692ae9b13c6d8",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13912868000,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMjg2ODAwMA==",
+      "name": "test-evidence-linux-x64-DiscordSocialTests-43146954720-1",
+      "size_in_bytes": 77027,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912868000",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912868000/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:32:31Z",
+      "updated_at": "2026-11-12T03:32:31Z",
+      "expires_at": "2026-11-26T03:32:30Z",
+      "digest": "sha256:4f94cb977e361c2f68d1b1b74ac26fd4d67e6d74e27b581d1e3ddfbf7c38b4e9",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13912861574,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMjg2MTU3NA==",
+      "name": "compiled-macos-arm64-root-85eac6f3c1d3b17e53596c49e7438efee366c1b3-43146954720-1",
+      "size_in_bytes": 307163911,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912861574",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912861574/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:23:49Z",
+      "updated_at": "2026-11-12T03:23:49Z",
+      "expires_at": "2026-11-14T03:23:47Z",
+      "digest": "sha256:47568d0a2f92a08ac40b4596f740cd3d321717f69ca1e82492aa9cb9bd00d34a",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13912848092,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMjg0ODA5Mg==",
+      "name": "test-evidence-linux-x64-extensions-43146954720-1",
+      "size_in_bytes": 3112,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912848092",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912848092/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:32:22Z",
+      "updated_at": "2026-11-12T03:32:22Z",
+      "expires_at": "2026-11-26T03:32:22Z",
+      "digest": "sha256:54dff6ed158a34eb8cb2fff6ae6c5e18e99cc06939621560ddb17bfab4de90f6",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13912847908,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMjg0NzkwOA==",
+      "name": "test-evidence-macos-arm64-DiscordDSLTests-43146954720-1",
+      "size_in_bytes": 78628,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912847908",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912847908/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:31:14Z",
+      "updated_at": "2026-11-12T03:31:14Z",
+      "expires_at": "2026-11-26T03:31:13Z",
+      "digest": "sha256:081d585ca5c86a35f9cdc79ab02a672a9b633a638b21b01913ddba07d05ad4c8",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13912841518,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMjg0MTUxOA==",
+      "name": "compiled-linux-x64-media-85eac6f3c1d3b17e53596c49e7438efee366c1b3-43146954720-1",
+      "size_in_bytes": 228498074,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912841518",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912841518/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:23:11Z",
+      "updated_at": "2026-11-12T03:23:11Z",
+      "expires_at": "2026-11-14T03:23:08Z",
+      "digest": "sha256:aa5f4f9f6b218f5971e5e976f7892fceedce4a4cbe6909e48aae1526cb5252e3",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13912838934,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMjgzODkzNA==",
+      "name": "test-evidence-macos-arm64-VoiceBot-43146954720-1",
+      "size_in_bytes": 2675,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912838934",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912838934/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:38:27Z",
+      "updated_at": "2026-11-12T03:38:27Z",
+      "expires_at": "2026-11-26T03:38:26Z",
+      "digest": "sha256:f942ce63ceeb1d0d1a8d2652c8f2126234ac1f347f4541c6c14c2d04a380f9ec",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13912838021,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMjgzODAyMQ==",
+      "name": "test-evidence-linux-x64-DiscordGameServicesTests-43146954720-1",
+      "size_in_bytes": 75126,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912838021",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912838021/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:32:45Z",
+      "updated_at": "2026-11-12T03:32:45Z",
+      "expires_at": "2026-11-26T03:32:45Z",
+      "digest": "sha256:29e86cd506f6aa4387b544467b172a2aac07b91c9dafc32808b6d675418898d2",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13912833047,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMjgzMzA0Nw==",
+      "name": "test-evidence-linux-x64-DiscordDAVETests-43146954720-1",
+      "size_in_bytes": 76705,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912833047",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912833047/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:32:43Z",
+      "updated_at": "2026-11-12T03:32:43Z",
+      "expires_at": "2026-11-26T03:32:42Z",
+      "digest": "sha256:318995e9afbcb8e3b35f2e1f251d8abcfdf9d0f0b22517f73ce960f7dadfc4f7",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13912823487,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMjgyMzQ4Nw==",
+      "name": "test-evidence-macos-arm64-tooling-43146954720-1",
+      "size_in_bytes": 13471,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912823487",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912823487/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:34:53Z",
+      "updated_at": "2026-11-12T03:34:53Z",
+      "expires_at": "2026-11-26T03:34:53Z",
+      "digest": "sha256:6478848777bb28b9daa7a4efa6118bfbbab77a0c97062a05b20f9269fa5b2597",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13912823239,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMjgyMzIzOQ==",
+      "name": "test-evidence-linux-x64-timing-support-43146954720-1",
+      "size_in_bytes": 7239,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912823239",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912823239/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:33:26Z",
+      "updated_at": "2026-11-12T03:33:26Z",
+      "expires_at": "2026-11-26T03:33:25Z",
+      "digest": "sha256:6cc08043d4070a05d0cdce3ea3bbab7df59d1f3593b2539da5f102fbb28bb625",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13912818210,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMjgxODIxMA==",
+      "name": "test-evidence-linux-x64-macros-43146954720-1",
+      "size_in_bytes": 6331,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912818210",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912818210/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:33:30Z",
+      "updated_at": "2026-11-12T03:33:30Z",
+      "expires_at": "2026-11-26T03:33:30Z",
+      "digest": "sha256:ea383f80c980f2ce11a83cd6a9eb10aa066d9087d0aefb37353de7fd4eb2d09e",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13912797596,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMjc5NzU5Ng==",
+      "name": "compiled-linux-x64-release-85eac6f3c1d3b17e53596c49e7438efee366c1b3-43146954720-1",
+      "size_in_bytes": 583808997,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912797596",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912797596/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:30:00Z",
+      "updated_at": "2026-11-12T03:30:00Z",
+      "expires_at": "2026-11-14T03:29:55Z",
+      "digest": "sha256:2d2d08f48150f7da3e0880d7aeba4e8b9943bfaaeaaac84d50caff988191a70a",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13912778745,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMjc3ODc0NQ==",
+      "name": "test-evidence-macos-arm64-timing-support-43146954720-1",
+      "size_in_bytes": 7226,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912778745",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912778745/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:35:10Z",
+      "updated_at": "2026-11-12T03:35:10Z",
+      "expires_at": "2026-11-26T03:35:09Z",
+      "digest": "sha256:d2103ae53f2d9b8e9483eee7700ea6733dd8788c0537ab15d4077a894d2c9b9f",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13912771708,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMjc3MTcwOA==",
+      "name": "apple-selected-module-compilation",
+      "size_in_bytes": 3729,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912771708",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912771708/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:22:35Z",
+      "updated_at": "2026-11-12T03:22:35Z",
+      "expires_at": "2027-02-10T03:15:22Z",
+      "digest": "sha256:7da130e2ef7467ee7bda4d5ca7d020f6053db01aadb0f0b2e1e75dc698c78a10",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13912758378,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMjc1ODM3OA==",
+      "name": "test-evidence-macos-arm64-DiscordCoreTests-43146954720-1",
+      "size_in_bytes": 78711,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912758378",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912758378/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:32:45Z",
+      "updated_at": "2026-11-12T03:32:45Z",
+      "expires_at": "2026-11-26T03:32:44Z",
+      "digest": "sha256:6aa827eb2a244a79affb0ea6a1ae4d16b15a6246dfae545c50e0cbab1edaddd4",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13912752264,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMjc1MjI2NA==",
+      "name": "compiled-linux-x64-foundation-85eac6f3c1d3b17e53596c49e7438efee366c1b3-43146954720-1",
+      "size_in_bytes": 226590394,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912752264",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912752264/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:26:15Z",
+      "updated_at": "2026-11-12T03:26:15Z",
+      "expires_at": "2026-11-14T03:26:13Z",
+      "digest": "sha256:1f6e1d62d20d264697d4c44d68bd89d65223c8a5fbb55b69f910ca6c542a9392",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13912746611,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMjc0NjYxMQ==",
+      "name": "build-evidence-macos-arm64-timing-43146954720-1",
+      "size_in_bytes": 6911,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912746611",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912746611/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:22:35Z",
+      "updated_at": "2026-11-12T03:22:35Z",
+      "expires_at": "2026-11-26T03:22:35Z",
+      "digest": "sha256:0d14b8a657b030d03cdf51c97bfe1f5850b918ead5eb51b011079c1bf05585ab",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13912744119,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMjc0NDExOQ==",
+      "name": "test-evidence-macos-arm64-foundation-43146954720-1",
+      "size_in_bytes": 13110,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912744119",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912744119/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:38:07Z",
+      "updated_at": "2026-11-12T03:38:07Z",
+      "expires_at": "2026-11-26T03:38:06Z",
+      "digest": "sha256:ab41f9ab05d2020b1e9f615bf0c2126eb4a30fa14d2576bc5e7852730cfd3d5a",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13912718461,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMjcxODQ2MQ==",
+      "name": "test-evidence-linux-x64-DiscordInteractionsTests-43146954720-1",
+      "size_in_bytes": 78145,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912718461",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912718461/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:33:37Z",
+      "updated_at": "2026-11-12T03:33:37Z",
+      "expires_at": "2026-11-26T03:33:36Z",
+      "digest": "sha256:e8749772895e2e25833aed2825c357e60de44186027196efde4b9a36b967fd85",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13912713996,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMjcxMzk5Ng==",
+      "name": "test-evidence-linux-x64-DSLCommands-43146954720-1",
+      "size_in_bytes": 3900,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912713996",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912713996/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:36:05Z",
+      "updated_at": "2026-11-12T03:36:05Z",
+      "expires_at": "2026-11-26T03:36:04Z",
+      "digest": "sha256:97b6a9defaa83c2882540b01e145773c7fe7dfbc4a3606bc97e1b0420c4c1886",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13912703502,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMjcwMzUwMg==",
+      "name": "test-evidence-linux-x64-DiscordApplePlatformTests-43146954720-1",
+      "size_in_bytes": 74447,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912703502",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912703502/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:32:32Z",
+      "updated_at": "2026-11-12T03:32:32Z",
+      "expires_at": "2026-11-26T03:32:31Z",
+      "digest": "sha256:4f13e0b76dc79ca4105d92c0dd77d855b59b21e59fe34d41768552cc7556b27c",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13912693851,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMjY5Mzg1MQ==",
+      "name": "test-evidence-macos-arm64-DiscordApplePlatformTests-43146954720-1",
+      "size_in_bytes": 77600,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912693851",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912693851/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:34:46Z",
+      "updated_at": "2026-11-12T03:34:46Z",
+      "expires_at": "2026-11-26T03:34:45Z",
+      "digest": "sha256:77b6d0233bf328df4acff53b1adf28ee8abc7830ad798ef950a6e8a2a2426c8c",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13912693502,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMjY5MzUwMg==",
+      "name": "test-evidence-linux-x64-DiscordUnixPlatformTests-43146954720-1",
+      "size_in_bytes": 74918,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912693502",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912693502/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:32:43Z",
+      "updated_at": "2026-11-12T03:32:43Z",
+      "expires_at": "2026-11-26T03:32:42Z",
+      "digest": "sha256:c872bead99ed4ff5989a47f411a50267d33fbc9f9109825dbde4a8ce5bb4fd15",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13912678832,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMjY3ODgzMg==",
+      "name": "test-evidence-linux-x64-DSLBot-43146954720-1",
+      "size_in_bytes": 5447,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912678832",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912678832/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:35:43Z",
+      "updated_at": "2026-11-12T03:35:43Z",
+      "expires_at": "2026-11-26T03:35:43Z",
+      "digest": "sha256:dcd5cfbb307fc545d878c8fdf99b413d29d93d14759d1bd445b7bb2c49e65ec2",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13912678346,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMjY3ODM0Ng==",
+      "name": "test-evidence-macos-arm64-DiscordVoiceTests-43146954720-1",
+      "size_in_bytes": 82434,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912678346",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912678346/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:33:00Z",
+      "updated_at": "2026-11-12T03:33:00Z",
+      "expires_at": "2026-11-26T03:32:59Z",
+      "digest": "sha256:a39683022e3b0d86be8fc61e138681dbc9ac48b37eaaa932e1abb48058130415",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13912678327,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMjY3ODMyNw==",
+      "name": "test-evidence-macos-arm64-DiscordCertifiedDevicesTests-43146954720-1",
+      "size_in_bytes": 77368,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912678327",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912678327/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:32:54Z",
+      "updated_at": "2026-11-12T03:32:54Z",
+      "expires_at": "2026-11-26T03:32:53Z",
+      "digest": "sha256:49cfd10273253c15b77a013228ebe47165fbefc305181ceae5f0d37d82c1de3b",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13912666932,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMjY2NjkzMg==",
+      "name": "build-evidence-macos-arm64-macros-43146954720-1",
+      "size_in_bytes": 11280,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912666932",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912666932/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:22:38Z",
+      "updated_at": "2026-11-12T03:22:38Z",
+      "expires_at": "2026-11-26T03:22:38Z",
+      "digest": "sha256:6a2af5d32db689151db60e579b39a0f571f68dfe7d7d26f97716562cb217da76",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13912653432,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMjY1MzQzMg==",
+      "name": "test-evidence-macos-arm64-DiscordInteractionsTests-43146954720-1",
+      "size_in_bytes": 79925,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912653432",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912653432/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:32:50Z",
+      "updated_at": "2026-11-12T03:32:50Z",
+      "expires_at": "2026-11-26T03:32:48Z",
+      "digest": "sha256:193e928c215e960d19b057b54cfb8df6f0c6e61b52d3cedd9f9e47fdf2670dd7",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13912648204,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMjY0ODIwNA==",
+      "name": "test-evidence-macos-arm64-DiscordCommandsTests-43146954720-1",
+      "size_in_bytes": 79150,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912648204",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912648204/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:31:06Z",
+      "updated_at": "2026-11-12T03:31:06Z",
+      "expires_at": "2026-11-26T03:31:06Z",
+      "digest": "sha256:3dcb94ea9f45de9c7dd337c00ee04c8d235f0963a3cb8a7a458ede9d72614c1e",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13912637088,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMjYzNzA4OA==",
+      "name": "build-evidence-macos-arm64-release-43146954720-1",
+      "size_in_bytes": 12433,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912637088",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912637088/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:27:35Z",
+      "updated_at": "2026-11-12T03:27:35Z",
+      "expires_at": "2026-11-26T03:27:35Z",
+      "digest": "sha256:52654a486874714a042458c053a5ca6eacf975165cb77064509ffd11a975b009",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13912612580,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMjYxMjU4MA==",
+      "name": "build-evidence-linux-x64-foundation-43146954720-1",
+      "size_in_bytes": 15491,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912612580",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912612580/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:26:16Z",
+      "updated_at": "2026-11-12T03:26:16Z",
+      "expires_at": "2026-11-26T03:26:16Z",
+      "digest": "sha256:8e0a23dd3ee6671c36acddabcd6abfb7d7dbac3315c5274454760a118963aedc",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13912608496,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMjYwODQ5Ng==",
+      "name": "test-evidence-macos-arm64-DiscordModelsTests-43146954720-1",
+      "size_in_bytes": 94588,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912608496",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912608496/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:33:01Z",
+      "updated_at": "2026-11-12T03:33:01Z",
+      "expires_at": "2026-11-26T03:33:00Z",
+      "digest": "sha256:9ae5c5bc7346166735655c70db4e069f4867a2d7119b001bf305b1c8878168b9",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13912604207,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMjYwNDIwNw==",
+      "name": "test-evidence-macos-arm64-benchmarks-43146954720-1",
+      "size_in_bytes": 7793,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912604207",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912604207/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:35:35Z",
+      "updated_at": "2026-11-12T03:35:35Z",
+      "expires_at": "2026-11-26T03:35:33Z",
+      "digest": "sha256:9351ad2b1cc526f70997131d5b5b95fd73d27f843b535e1da9b1711fa3be7b39",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13912603436,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMjYwMzQzNg==",
+      "name": "test-evidence-macos-arm64-DiscordBotDSLTests-43146954720-1",
+      "size_in_bytes": 89531,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912603436",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912603436/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:31:08Z",
+      "updated_at": "2026-11-12T03:31:08Z",
+      "expires_at": "2026-11-26T03:31:07Z",
+      "digest": "sha256:08a777850ade3ca728ccfbebbd37a5bd02be5652b9f90cab4cbe8075e68c0364",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13912600961,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMjYwMDk2MQ==",
+      "name": "platform-linux-x64-85eac6f3c1d3b17e53596c49e7438efee366c1b3-43146954720-1",
+      "size_in_bytes": 2514,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912600961",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912600961/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:16:18Z",
+      "updated_at": "2026-11-12T03:16:18Z",
+      "expires_at": "2026-11-26T03:16:17Z",
+      "digest": "sha256:03ac8e46c18bf7f17d62a165a7f6f28e2e3acb995c33b812389f838595f8de4f",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13912596514,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMjU5NjUxNA==",
+      "name": "build-evidence-macos-arm64-timing-support-43146954720-1",
+      "size_in_bytes": 5266,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912596514",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912596514/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:19:53Z",
+      "updated_at": "2026-11-12T03:19:53Z",
+      "expires_at": "2026-11-26T03:19:52Z",
+      "digest": "sha256:a7b8cecfaa866b3113bb42c3e1ce17e8bf693ab6d35f9ab73cf89cb6f71f2dbd",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13912581144,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMjU4MTE0NA==",
+      "name": "ci-plan-linux-x64-85eac6f3c1d3b17e53596c49e7438efee366c1b3-43146954720-1",
+      "size_in_bytes": 993,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912581144",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912581144/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:17:33Z",
+      "updated_at": "2026-11-12T03:17:33Z",
+      "expires_at": "2026-11-26T03:17:33Z",
+      "digest": "sha256:32cda51e14d887c60d734bf5eba0e91233dbd7366298463ca134540b4bd8814b",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13912569508,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMjU2OTUwOA==",
+      "name": "test-evidence-macos-arm64-DSLCommands-43146954720-1",
+      "size_in_bytes": 3856,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912569508",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912569508/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:38:21Z",
+      "updated_at": "2026-11-12T03:38:21Z",
+      "expires_at": "2026-11-26T03:38:20Z",
+      "digest": "sha256:96af2c37312fbf36349292ff8711cabd794e80b2d34a8c5c9f118551389ab291",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13912563308,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMjU2MzMwOA==",
+      "name": "test-evidence-macos-arm64-DiscordGameServicesTests-43146954720-1",
+      "size_in_bytes": 76972,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912563308",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912563308/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:31:08Z",
+      "updated_at": "2026-11-12T03:31:08Z",
+      "expires_at": "2026-11-26T03:31:07Z",
+      "digest": "sha256:218a5e41c9b4fa234b9313c2990bf49a3dc7d3c589791a9f6f62a176052d98e3",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13912558771,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMjU1ODc3MQ==",
+      "name": "test-evidence-macos-arm64-media-43146954720-1",
+      "size_in_bytes": 28370,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912558771",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912558771/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:33:41Z",
+      "updated_at": "2026-11-12T03:33:41Z",
+      "expires_at": "2026-11-26T03:33:40Z",
+      "digest": "sha256:ce87005d264ccc85d834731a57028f0c0a008d405bd2432b2b4f82f70890883e",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13912558369,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMjU1ODM2OQ==",
+      "name": "test-evidence-macos-arm64-DiscordCommandDSLTests-43146954720-1",
+      "size_in_bytes": 81795,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912558369",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912558369/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:31:11Z",
+      "updated_at": "2026-11-12T03:31:11Z",
+      "expires_at": "2026-11-26T03:31:10Z",
+      "digest": "sha256:1812b01e47cc6db3f194941b196aee054eb601ef68ce9220e5a37840e19dba4c",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13912516483,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMjUxNjQ4Mw==",
+      "name": "compiled-linux-x64-root-85eac6f3c1d3b17e53596c49e7438efee366c1b3-43146954720-1",
+      "size_in_bytes": 288001011,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912516483",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912516483/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:21:49Z",
+      "updated_at": "2026-11-12T03:21:49Z",
+      "expires_at": "2026-11-14T03:21:46Z",
+      "digest": "sha256:d764f570a5be16556bb4879d37ca36057683636ffb2de3e8c927756d72302ff4",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13912514139,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMjUxNDEzOQ==",
+      "name": "test-evidence-macos-arm64-load-43146954720-1",
+      "size_in_bytes": 59276,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912514139",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912514139/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:35:38Z",
+      "updated_at": "2026-11-12T03:35:38Z",
+      "expires_at": "2026-11-26T03:35:37Z",
+      "digest": "sha256:82b70636dfbea30a49135abe6602d25e5cbaee4a2e0d29061805f34123c98606",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13912503747,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMjUwMzc0Nw==",
+      "name": "test-evidence-linux-x64-DiscordLogHandlersTests-43146954720-1",
+      "size_in_bytes": 75177,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912503747",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912503747/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:32:34Z",
+      "updated_at": "2026-11-12T03:32:34Z",
+      "expires_at": "2026-11-26T03:32:33Z",
+      "digest": "sha256:6333810b9ff8c9a9a2f15bf0e5a328b25708d15afa6b79f85efe194f958b0f68",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13912493391,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMjQ5MzM5MQ==",
+      "name": "build-evidence-linux-x64-release-43146954720-1",
+      "size_in_bytes": 20316,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912493391",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912493391/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:30:01Z",
+      "updated_at": "2026-11-12T03:30:01Z",
+      "expires_at": "2026-11-26T03:30:01Z",
+      "digest": "sha256:3fa8ff4de044d5f7a8dc0ecb15996e2a407853d7b9df4f4b8d97fc8eea8e3d89",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13912492260,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMjQ5MjI2MA==",
+      "name": "compiled-linux-x64-benchmarks-85eac6f3c1d3b17e53596c49e7438efee366c1b3-43146954720-1",
+      "size_in_bytes": 222646271,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912492260",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912492260/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:23:10Z",
+      "updated_at": "2026-11-12T03:23:10Z",
+      "expires_at": "2026-11-14T03:23:07Z",
+      "digest": "sha256:8c5ea9abd9b50ac8bf6b387e9bc72ce41e3466ff681cf95fd6290d4b6c53c122",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13912486885,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMjQ4Njg4NQ==",
+      "name": "build-evidence-macos-arm64-load-43146954720-1",
+      "size_in_bytes": 29608,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912486885",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912486885/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:24:11Z",
+      "updated_at": "2026-11-12T03:24:11Z",
+      "expires_at": "2026-11-26T03:24:11Z",
+      "digest": "sha256:08169ee3755799e962402c4f9e73fed77e65464c0d74bee1cf549c88df501b4a",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    },
+    {
+      "id": 13912478783,
+      "node_id": "MDg6QXJ0aWZhY3QxMzkxMjQ3ODc4Mw==",
+      "name": "test-evidence-linux-x64-timing-43146954720-1",
+      "size_in_bytes": 22260,
+      "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912478783",
+      "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13912478783/zip",
+      "expired": false,
+      "created_at": "2026-11-12T03:32:38Z",
+      "updated_at": "2026-11-12T03:32:38Z",
+      "expires_at": "2026-11-26T03:32:38Z",
+      "digest": "sha256:70922c803ed76651754c5001c895328a38e2ba8c0c5cdf0f60f41fef534a276e",
+      "workflow_run": {
+        "id": 43146954720,
+        "repository_id": 1421497969,
+        "head_repository_id": 1421497969,
+        "head_branch": "main",
+        "head_sha": "85eac6f3c1d3b17e53596c49e7438efee366c1b3"
+      }
+    }
+  ]
+}

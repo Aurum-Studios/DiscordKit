@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "name": "supervisor-final-macos-compatibility",
+  "stage": "phase-3-supervisor-regression",
+  "operation": "localHelperCheck",
+  "arguments": [
+    "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+    "-m",
+    "unittest",
+    "test_linux_ci.LinuxExecutionTests",
+    "test_linux_ci.SupervisorEvidenceTests"
+  ],
+  "start": "2026-11-12T13:10:08.566615+00:00",
+  "startMonotonic": 347015.979403583,
+  "deadlineMonotonic": 347135.979403583,
+  "executionLimitSeconds": 120,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "operation",
+  "paths": {
+    "output": "Docs/Tasks/ci-reliability/phase-3/supervisor-final-macos.log",
+    "stdout": null,
+    "diagnostics": "Docs/Tasks/ci-reliability/phase-3/supervisor-final-macos.diagnostics.jsonl",
+    "receipt": "Docs/Tasks/ci-reliability/phase-3/supervisor-final-macos.receipt.json"
+  },
+  "identity": {
+    "executionID": "23454ae1-301d-40ed-87b5-fdac986035d7",
+    "supervisorPID": 30136,
+    "host": "Pokemon-GO-Plus",
+    "system": "Darwin",
+    "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase3"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 30156,
+  "group": 30156,
+  "cleanup": {
+    "status": "group-signalled",
+    "signals": [],
+    "parentReaped": true,
+    "allowanceSeconds": 8.0,
+    "seconds": 0.004,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "verificationMalformedRows": 0,
+    "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "Docs/Tasks/ci-reliability/phase-3/supervisor-final-macos.log",
+      "retainedBytes": 287,
+      "observedBytes": 287,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T13:10:16.818487+00:00",
+  "endMonotonic": 347024.231308541,
+  "elapsedSeconds": 8.252,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}

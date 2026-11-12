@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "status": "interrupted",
+  "name": "baseline-load",
+  "stage": "phase3-baseline-load",
+  "operation": "wholeLoadPackage",
+  "arguments": [
+    "swift",
+    "test",
+    "--package-path",
+    "Tools/DiscordKitLoadTests",
+    "--scratch-path",
+    "/scratch",
+    "--build-system",
+    "native",
+    "--jobs",
+    "6",
+    "--force-resolved-versions",
+    "--disable-experimental-prebuilts",
+    "--explicit-target-dependency-import-check",
+    "error",
+    "--skip-build",
+    "--no-parallel"
+  ],
+  "start": "2026-11-12T12:45:14.590020+00:00",
+  "startMonotonic": 74621.048043104,
+  "deadlineMonotonic": 75221.048043104,
+  "executionLimitSeconds": 600,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "operation",
+  "paths": {
+    "output": "/work/Docs/Tasks/ci-reliability/phase-3/baseline-load.log",
+    "stdout": null,
+    "diagnostics": "/work/Docs/Tasks/ci-reliability/phase-3/baseline-load.diagnostics.jsonl",
+    "receipt": "/work/Docs/Tasks/ci-reliability/phase-3/baseline-load.receipt.json"
+  },
+  "identity": {
+    "executionID": "a2251308-13c3-42ca-b583-a741da2935c2",
+    "supervisorPID": 5340,
+    "host": "213b31596900",
+    "system": "Linux",
+    "repository": "/work"
+  },
+  "exitCode": -15,
+  "signal": 15,
+  "timeoutCategory": null,
+  "pid": 5346,
+  "group": 5346,
+  "error": "supervisor interrupted by signal 15",
+  "errorType": "CommandInterrupted",
+  "interruptSignal": 15,
+  "cleanup": {
+    "status": "group-signalled",
+    "signals": [
+      "SIGTERM"
+    ],
+    "parentReaped": true,
+    "allowanceSeconds": 8.0,
+    "seconds": 0.039,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "/work/Docs/Tasks/ci-reliability/phase-3/baseline-load.log",
+      "retainedBytes": 520433,
+      "observedBytes": 520433,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T12:48:32.887252+00:00",
+  "endMonotonic": 74819.34547407,
+  "elapsedSeconds": 198.297,
+  "lastObservedTest": "rejectsInvalidBounds()",
+  "readerThreads": 0
+}

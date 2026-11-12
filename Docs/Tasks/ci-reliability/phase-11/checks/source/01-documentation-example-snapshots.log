@@ -1,0 +1,2 @@
+/Library/Frameworks/Python.framework/Versions/3.14/bin/python3 Tools/ci/documentation_examples.py --repository /Users/carsonrau/Developer/DiscordKit-ci-phase11
+Verified 32 DocC example listings

@@ -1,0 +1,2 @@
+/scratch/x86_64-unknown-linux-gnu/debug/DiscordKitLoadTests timing --case transport.smallBody --adapter nio --requests 16 --warmup-requests 2 --concurrency 2 --profile smoke --seed 1 --duration-seconds 3 --warmup-seconds 1 --output /work/Docs/Tasks/ci-reliability/phase-3/smoke-loopback.json --common-report /work/Docs/Tasks/ci-reliability/phase-3/smoke-loopback-common.json
+2026-11-12T13:03:39+0000 info discordkit.nio.http: dk.event=nio.http.closed dk.module=nio dk.subsystem=nio.http [DiscordNIOTransport] NIO HTTP transport closed

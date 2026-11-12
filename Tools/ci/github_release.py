@@ -73,11 +73,11 @@ def certified_run(run, repository, revision):
 
 
 def certification_gate_passed(api, run):
-    """Require the final barrier from the same attempt as the run's evidence.
+    """Require the full coverage barrier from the run's current attempt.
 
-    A successful legacy run without the independent-build/suite barrier cannot
-    certify the current workflow. Attempt-scoped jobs also prevent a previous
-    attempt's successful barrier from qualifying a later partial rerun.
+    Scoped final jobs have distinct names and cannot supersede full certification.
+    The full-named job must actually finish its scope/coverage validation step;
+    a legacy barrier, skipped validation, or partial rerun cannot qualify a release.
     """
     gates = []
     page = 1
@@ -89,11 +89,17 @@ def certification_gate_passed(api, run):
         if len(jobs) < 100:
             break
         page += 1
-    return (len(gates) == 1
-            and gates[0].get("run_id") == run["id"]
-            and gates[0].get("head_sha") == run["head_sha"]
-            and gates[0].get("status") == "completed"
-            and gates[0].get("conclusion") == "success")
+    if (len(gates) != 1
+            or gates[0].get("run_id") != run["id"]
+            or gates[0].get("head_sha") != run["head_sha"]
+            or gates[0].get("status") != "completed"
+            or gates[0].get("conclusion") != "success"):
+        return False
+    coverage = [step for step in gates[0].get("steps", [])
+                if step.get("name") == "Verify full scope and complete coverage"]
+    return (len(coverage) == 1
+            and coverage[0].get("status") == "completed"
+            and coverage[0].get("conclusion") == "success")
 
 
 def successful_ci(api, revision):
@@ -106,7 +112,7 @@ def successful_ci(api, revision):
         if len(runs) < 100:
             break
     raise ValueError("No successful Offline certification (ci.yml) push/manual run with its final "
-                     "'Offline certification passed' gate for this exact commit; run CI first")
+                     "'Offline certification passed' gate and verified full coverage for this exact commit; run CI first")
 
 
 def require_unused_version(api, version):

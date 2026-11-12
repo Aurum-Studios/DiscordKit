@@ -22,6 +22,7 @@ import sys
 import tempfile
 
 import build_docc
+import documentation_inputs
 import emit_symbol_graphs
 import native_jobs
 
@@ -58,10 +59,15 @@ def prepare_output(output):
     shutil.rmtree(output)
 
 
-def build_site(repository, output, docc, hosting_base_path, jobs=5, skip_symbol_graphs=False):
-    """Check, convert and merge public modules, optionally reusing compiled graphs."""
+def build_site(repository, output, docc, hosting_base_path, jobs=5, skip_symbol_graphs=False,
+               sealed_inputs=None, input_selection=None):
+    """Merge sealed conversions, or explicitly prepare fresh local documentation."""
     repository = repository.resolve()
     jobs = native_jobs.bounded_jobs(jobs)
+    if sealed_inputs is not None and skip_symbol_graphs:
+        raise ValueError("sealed inputs cannot be combined with graph conversion mode")
+    if input_selection is not None and sealed_inputs is None:
+        raise ValueError("immutable documentation selection requires sealed inputs")
     # Keep a final-component symlink visible to the output ownership check.
     output = output.absolute()
     if (hosting_base_path and not hosting_base_path.startswith("/")) or any(
@@ -73,38 +79,55 @@ def build_site(repository, output, docc, hosting_base_path, jobs=5, skip_symbol_
     with tempfile.TemporaryDirectory(prefix="documentation-site-", dir=output.parent) as temporary:
         staging = Path(temporary)
         archives = []
-        for number, relative in enumerate(PACKAGES):
-            package = repository / relative
-            graphs = package / ".build/out/symbolgraph"
-            if skip_symbol_graphs:
-                # The workflow restores and verifies native artifact receipts first.
-                # Missing or malformed inputs must fail rather than trigger a rebuild.
-                emit_symbol_graphs.validate_directory(graphs, package / ".build")
-                modules = build_docc.public_modules(package)
-                if not modules:
-                    raise ValueError(f"No public modules to document: {package}")
-                for module in modules:
-                    build_docc.module_graphs(graphs, module)
-            else:
-                run([sys.executable, scripts / "emit_symbol_graphs.py", "--repository", package,
-                     "--jobs", jobs], repository)
-            run([sys.executable, scripts / "curate_docc.py", "--repository", package,
-                 "--symbolgraphs", graphs, "--check"], repository)
-            if number == 0:
-                run([sys.executable, scripts / "documentation_examples.py", "--repository", package],
-                    repository)
-            converted = staging / f"package-{number}"
-            run([sys.executable, scripts / "build_docc.py", "--repository", package,
-                 "--symbolgraphs", graphs, "--output", converted, "--docc", docc], repository)
-            report = json.loads((converted / "build-report.json").read_text())
-            if report["failedModules"] or report["mergeStatus"] != "succeeded":
-                raise ValueError(f"Incomplete DocC conversion: {package}")
-            # Use the converter's explicit public scope, excluding its premerged archive.
-            for module in report["modules"]:
-                archive = converted / f"{module}.doccarchive"
-                if not archive.is_dir():
-                    raise ValueError(f"Missing converted public-module archive: {archive}")
-                archives.append(archive)
+        if sealed_inputs is not None:
+            if len(sealed_inputs) != len(documentation_inputs.PACKAGES):
+                raise ValueError("site requires complete root/macros/extensions sealed inputs")
+            source = native_jobs.source_identity(repository)
+            execution = documentation_inputs.receipts.execution_identity(repository)
+            components, modules = set(), set()
+            for number, archive in enumerate(sealed_inputs):
+                metadata, restored = documentation_inputs.restore(archive, staging / f"package-{number}",
+                    source=source, execution=execution, selection=input_selection)
+                if metadata["component"] in components or modules.intersection(metadata["modules"]):
+                    raise ValueError("duplicate sealed documentation component or public module")
+                components.add(metadata["component"])
+                modules.update(metadata["modules"])
+                archives.extend(restored)
+            if components != set(documentation_inputs.PACKAGES):
+                raise ValueError("site requires complete root/macros/extensions sealed inputs")
+        else:
+            for number, relative in enumerate(PACKAGES):
+                package = repository / relative
+                graphs = package / ".build/out/symbolgraph"
+                if skip_symbol_graphs:
+                    # The workflow restores and verifies native artifact receipts first.
+                    # Missing or malformed inputs must fail rather than trigger a rebuild.
+                    emit_symbol_graphs.validate_directory(graphs, package / ".build")
+                    modules = build_docc.public_modules(package)
+                    if not modules:
+                        raise ValueError(f"No public modules to document: {package}")
+                    for module in modules:
+                        build_docc.module_graphs(graphs, module)
+                else:
+                    run([sys.executable, scripts / "emit_symbol_graphs.py", "--repository", package,
+                         "--jobs", jobs], repository)
+                run([sys.executable, scripts / "curate_docc.py", "--repository", package,
+                     "--symbolgraphs", graphs, "--check"], repository)
+                if number == 0:
+                    run([sys.executable, scripts / "documentation_examples.py", "--repository", package],
+                        repository)
+                converted = staging / f"package-{number}"
+                run([sys.executable, scripts / "build_docc.py", "--repository", package,
+                     "--symbolgraphs", graphs, "--output", converted, "--docc", docc], repository)
+                report = json.loads((converted / "build-report.json").read_text())
+                if report["failedModules"] or report["mergeStatus"] != "succeeded":
+                    raise ValueError(f"Incomplete DocC conversion: {package}")
+                # Use the converter's explicit public scope, excluding its premerged archive.
+                for module in report["modules"]:
+                    archive = converted / f"{module}.doccarchive"
+                    if not archive.is_dir():
+                        raise ValueError(f"Missing converted public-module archive: {archive}")
+                    archives.append(archive)
         merged = staging / "DiscordKitLibrary.doccarchive"
         run(build_docc.merge_command(docc, archives, merged), repository)
         site = staging / "site"
@@ -112,6 +135,9 @@ def build_site(repository, output, docc, hosting_base_path, jobs=5, skip_symbol_
              "--output-path", site, "--hosting-base-path", hosting_base_path], repository)
         if not (site / "documentation/index.html").is_file():
             raise ValueError("DocC did not produce the static documentation landing page")
+        if sealed_inputs is not None and (native_jobs.source_identity(repository) != source
+                or documentation_inputs.receipts.execution_identity(repository) != execution):
+            raise ValueError("source or execution changed during sealed documentation export")
         (site / "index.html").write_text(ROOT_REDIRECT)
         (site / ".nojekyll").touch()
         (site / MARKER).write_text(MARKER_CONTENT)
@@ -130,13 +156,22 @@ def main():
                         help="maximum compiler jobs for fresh symbol graphs (default: 5)")
     parser.add_argument("--skip-symbol-graphs", action="store_true",
                         help="validate and reuse existing graphs without compiling; CI restores sealed artifacts first")
+    parser.add_argument("--sealed-input", type=Path, action="append",
+                        help="sealed root/macros/extensions DocC archives; repeat for all three")
+    parser.add_argument("--input-selection", type=Path,
+                        help="verified immutable same-run artifact selection, required for older attempts")
     arguments = parser.parse_args()
+    selection = None
+    if arguments.input_selection:
+        with arguments.input_selection.open() as stream:
+            selection = documentation_inputs.receipts.read_json(stream)
     if not arguments.docc and shutil.which("xcrun"):
         arguments.docc = subprocess.check_output(["xcrun", "--find", "docc"], text=True).strip()
     if not arguments.docc:
         parser.error("docc is not installed; select a Swift toolchain with DocC")
     build_site(arguments.repository, arguments.output, arguments.docc, arguments.hosting_base_path,
-               jobs=arguments.jobs, skip_symbol_graphs=arguments.skip_symbol_graphs)
+               jobs=arguments.jobs, skip_symbol_graphs=arguments.skip_symbol_graphs,
+               sealed_inputs=arguments.sealed_input, input_selection=selection)
 
 
 if __name__ == "__main__":

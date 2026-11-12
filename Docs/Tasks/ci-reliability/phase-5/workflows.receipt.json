@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "name": "phase5-workflows",
+  "stage": "phase5",
+  "operation": "localHelperCheck",
+  "arguments": [
+    "/Users/carsonrau/Developer/DiscordKit-ci-phase5/.build/phase5-tools/actionlint",
+    "-shellcheck=",
+    "-pyflakes="
+  ],
+  "start": "2026-11-12T14:30:41.816311+00:00",
+  "startMonotonic": 351849.1941335,
+  "deadlineMonotonic": 351909.1941335,
+  "executionLimitSeconds": 60,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "operation",
+  "paths": {
+    "output": "/Users/carsonrau/Developer/DiscordKit-ci-phase5/Docs/Tasks/ci-reliability/phase-5/workflows.log",
+    "stdout": null,
+    "diagnostics": "/Users/carsonrau/Developer/DiscordKit-ci-phase5/Docs/Tasks/ci-reliability/phase-5/workflows.diagnostics.jsonl",
+    "receipt": "/Users/carsonrau/Developer/DiscordKit-ci-phase5/Docs/Tasks/ci-reliability/phase-5/workflows.receipt.json"
+  },
+  "identity": {
+    "executionID": "bc46cf90-e686-45d6-bbe7-3436c9f389b2",
+    "supervisorPID": 85495,
+    "host": "Pokemon-GO-Plus",
+    "system": "Darwin",
+    "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase5"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 85497,
+  "group": 85497,
+  "cleanup": {
+    "status": "group-signalled",
+    "signals": [],
+    "parentReaped": true,
+    "allowanceSeconds": 8.0,
+    "seconds": 0.004,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "verificationMalformedRows": 0,
+    "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "/Users/carsonrau/Developer/DiscordKit-ci-phase5/Docs/Tasks/ci-reliability/phase-5/workflows.log",
+      "retainedBytes": 103,
+      "observedBytes": 103,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T14:30:41.842685+00:00",
+  "endMonotonic": 351849.220540833,
+  "elapsedSeconds": 0.026,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}

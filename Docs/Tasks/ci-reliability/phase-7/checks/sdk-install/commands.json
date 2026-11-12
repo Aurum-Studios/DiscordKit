@@ -1,0 +1,92 @@
+{
+  "commands": [
+    {
+      "arguments": [
+        "npm",
+        "ci",
+        "--prefix",
+        "Tools/ci/artifact-sdk",
+        "--ignore-scripts",
+        "--no-audit",
+        "--no-fund"
+      ],
+      "diagnostics": "00-artifact-sdk-install.diagnostics.jsonl",
+      "execution": {
+        "arguments": [
+          "npm",
+          "ci",
+          "--prefix",
+          "Tools/ci/artifact-sdk",
+          "--ignore-scripts",
+          "--no-audit",
+          "--no-fund"
+        ],
+        "cleanup": {
+          "allowanceSeconds": 8.0,
+          "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed",
+          "groupState": "gone",
+          "parentReaped": true,
+          "remainingProcesses": [],
+          "seconds": 0.004,
+          "signals": [],
+          "status": "group-signalled",
+          "verification": "available",
+          "verificationMalformedRows": 0,
+          "verificationTruncated": false
+        },
+        "cleanupAllowanceSeconds": 8.0,
+        "deadlineMonotonic": 354667.478294416,
+        "deadlineSource": "aggregate",
+        "diagnosticsTruncated": false,
+        "elapsedSeconds": 1.564,
+        "end": "2026-11-12T15:12:41.687989+00:00",
+        "endMonotonic": 354369.042278,
+        "executionLimitSeconds": 300,
+        "exitCode": 0,
+        "group": 20036,
+        "identity": {
+          "executionID": "43087379-3240-48f1-8ce7-854cea5e9d07",
+          "host": "Pokemon-GO-Plus",
+          "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase7",
+          "supervisorPID": 20026,
+          "system": "Darwin"
+        },
+        "lastObservedTest": null,
+        "name": "artifact-sdk-install",
+        "operation": "localHelperCheck",
+        "outputs": [
+          {
+            "observedBytes": 379,
+            "path": "Docs/Tasks/ci-reliability/phase-7/checks/sdk-install/00-artifact-sdk-install.log",
+            "retainedBytes": 379,
+            "truncated": false
+          }
+        ],
+        "paths": {
+          "diagnostics": "Docs/Tasks/ci-reliability/phase-7/checks/sdk-install/00-artifact-sdk-install.diagnostics.jsonl",
+          "output": "Docs/Tasks/ci-reliability/phase-7/checks/sdk-install/00-artifact-sdk-install.log",
+          "receipt": "Docs/Tasks/ci-reliability/phase-7/checks/sdk-install/00-artifact-sdk-install.receipt.json",
+          "stdout": null
+        },
+        "pid": 20036,
+        "readerThreads": 0,
+        "schemaVersion": 1,
+        "signal": null,
+        "stage": "artifact-sdk-install",
+        "start": "2026-11-12T15:12:40.124327+00:00",
+        "startMonotonic": 354367.47860375,
+        "status": "passed",
+        "timeoutCategory": null
+      },
+      "executionReceipt": "00-artifact-sdk-install.receipt.json",
+      "log": "00-artifact-sdk-install.log",
+      "name": "artifact-sdk-install",
+      "operation": "localHelperCheck",
+      "seconds": 1.564,
+      "status": "passed",
+      "timeoutSeconds": 300
+    }
+  ],
+  "seconds": 1.565,
+  "status": "passed"
+}

@@ -1,0 +1,254 @@
+{
+  "base": "b190a963f27fc3910b7226e7d15f386ac97b5498",
+  "branch": "ci/phase-5-transfer",
+  "executions": {
+    "helpers": {
+      "cleanup": {
+        "allowanceSeconds": 8.0,
+        "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed",
+        "groupState": "gone",
+        "parentReaped": true,
+        "remainingProcesses": [],
+        "seconds": 0.004,
+        "signals": [],
+        "status": "group-signalled",
+        "verification": "available",
+        "verificationMalformedRows": 0,
+        "verificationTruncated": false
+      },
+      "command": [
+        "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "Tools/ci",
+        "-p",
+        "test_*.py",
+        "-v"
+      ],
+      "elapsedSeconds": 16.503,
+      "exitCode": 0,
+      "log": "helpers.log",
+      "receipt": "helpers.receipt.json",
+      "status": "passed"
+    },
+    "helpers-initial": {
+      "cleanup": {
+        "allowanceSeconds": 8.0,
+        "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed",
+        "groupState": "gone",
+        "parentReaped": true,
+        "remainingProcesses": [],
+        "seconds": 0.004,
+        "signals": [],
+        "status": "group-signalled",
+        "verification": "available",
+        "verificationMalformedRows": 0,
+        "verificationTruncated": false
+      },
+      "command": [
+        "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "Tools/ci",
+        "-p",
+        "test_*.py",
+        "-v"
+      ],
+      "elapsedSeconds": 15.741,
+      "exitCode": 1,
+      "log": "helpers-initial.log",
+      "receipt": "helpers-initial.receipt.json",
+      "status": "failed"
+    },
+    "node-launcher": {
+      "cleanup": {
+        "allowanceSeconds": 8.0,
+        "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed",
+        "groupState": "gone",
+        "parentReaped": true,
+        "remainingProcesses": [],
+        "seconds": 0.004,
+        "signals": [],
+        "status": "group-signalled",
+        "verification": "available",
+        "verificationMalformedRows": 0,
+        "verificationTruncated": false
+      },
+      "command": [
+        "node",
+        "--check",
+        ".github/actions/artifact-transfer/index.mjs"
+      ],
+      "elapsedSeconds": 0.031,
+      "exitCode": 0,
+      "log": "node-launcher.log",
+      "receipt": "node-launcher.receipt.json",
+      "status": "passed"
+    },
+    "node-worker": {
+      "cleanup": {
+        "allowanceSeconds": 8.0,
+        "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed",
+        "groupState": "gone",
+        "parentReaped": true,
+        "remainingProcesses": [],
+        "seconds": 0.003,
+        "signals": [],
+        "status": "group-signalled",
+        "verification": "available",
+        "verificationMalformedRows": 0,
+        "verificationTruncated": false
+      },
+      "command": [
+        "node",
+        "--check",
+        "Tools/ci/artifact-sdk/upload.mjs"
+      ],
+      "elapsedSeconds": 0.035,
+      "exitCode": 0,
+      "log": "node-worker.log",
+      "receipt": "node-worker.receipt.json",
+      "status": "passed"
+    },
+    "policy": {
+      "cleanup": {
+        "allowanceSeconds": 8.0,
+        "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed",
+        "groupState": "gone",
+        "parentReaped": true,
+        "remainingProcesses": [],
+        "seconds": 0.004,
+        "signals": [],
+        "status": "group-signalled",
+        "verification": "available",
+        "verificationMalformedRows": 0,
+        "verificationTruncated": false
+      },
+      "command": [
+        "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+        "Tools/ci/scheduling_policy.py",
+        "validate"
+      ],
+      "elapsedSeconds": 0.065,
+      "exitCode": 0,
+      "log": "policy.log",
+      "receipt": "policy.receipt.json",
+      "status": "passed"
+    },
+    "workflows": {
+      "cleanup": {
+        "allowanceSeconds": 8.0,
+        "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed",
+        "groupState": "gone",
+        "parentReaped": true,
+        "remainingProcesses": [],
+        "seconds": 0.004,
+        "signals": [],
+        "status": "group-signalled",
+        "verification": "available",
+        "verificationMalformedRows": 0,
+        "verificationTruncated": false
+      },
+      "command": [
+        "/Users/carsonrau/Developer/DiscordKit-ci-phase5/.build/phase5-tools/actionlint",
+        "-shellcheck=",
+        "-pyflakes="
+      ],
+      "elapsedSeconds": 0.026,
+      "exitCode": 0,
+      "log": "workflows.log",
+      "receipt": "workflows.receipt.json",
+      "status": "passed"
+    }
+  },
+  "initialFailure": "Initial 319-test full run exposed an outdated scheduling-test assumption that the enclosing build was still 120 minutes. The test now exhausts the actual job ceiling and still asserts the unchanged 5400-second consumer compile policy. Initial logs retained; no product assertion was weakened.",
+  "inputSHA256": {
+    ".github/actions/artifact-transfer/action.yml": "0c7b2e1ece9794daabb42f5d865d3fe344079862018875e54eade84036e1cbb7",
+    ".github/actions/artifact-transfer/index.mjs": "0f49ec32afe0d4ea5385fa092a2806c24d7af2c26b9a12e37ded6738c9e1462c",
+    ".github/actions/consume-native/action.yml": "d178975d3e8f06be7a9ea14c5a0958cfcc401b9ac5a4c528a166b46ec4b6a6e5",
+    ".github/actions/setup-artifact-sdk/action.yml": "27effdbe43483ca334f4ce278332eac4b2f4c1bbe193fe7a04a81bf5975ac8e4",
+    ".github/actions/upload-evidence/action.yml": "d68b6f569d3b4e1b1afc338c609e894ca3c112860dd5744ffad8b58547140783",
+    ".github/workflows/ci.yml": "cd916fd3889dcc0d79088b68edc88f8604fca49f8632f8d885f2f806c5998fd4",
+    ".github/workflows/documentation.yml": "9a16d25d5feb57653ecb12f4f12c246def5991c3fd8c52d1e8b23994a48fce4b",
+    ".github/workflows/native-platform.yml": "74432fbf327e8a7fa889cd6de19aa27349a4b902041a2b3714ca64fb246f1f54",
+    "Tools/ci/artifact-sdk/.gitignore": "4d56952b0fb13bf8f9b6c13a6d4c34a075bac3af447636a1df4335d7576e2f97",
+    "Tools/ci/artifact-sdk/README.md": "99071b73ed621eccb01d3ed5f202d167b3027b7b48b957f6d649b2de0e572e04",
+    "Tools/ci/artifact-sdk/package-lock.json": "68e8bdedfd42d320964c488a117851c5fc9ed01efdd1313cab0d0dcabcc27b2a",
+    "Tools/ci/artifact-sdk/package.json": "6ba48945dbdca96f6b6540b5c23a5529699ad45c684dfeae267b9b620cc41dcd",
+    "Tools/ci/artifact-sdk/upload.mjs": "2d9c2388c8a8afa76d7f7d322458b42b4063fbbc95f895064171fceb0529932c",
+    "Tools/ci/artifact_index.py": "ac889d695f9c2c27fdc8db6d93e3957b5f89a05718ba0acfcc7419847a4075f6",
+    "Tools/ci/artifact_transfer.py": "a907d526528067b8e6ea34c9a8eda61e9664c880bc4ef58cc78ba45f01c639b8",
+    "Tools/ci/native_jobs.py": "4cd945625a211339d3082d04a131e8b6e2214a3489d002df85ddd80e1a566f7f",
+    "Tools/ci/native_receipts.py": "4444c21bb7b8a6b3dac4bf6b943c97c2d50b18fdd04fa845832606de0413f9c0",
+    "Tools/ci/test_artifact_index.py": "5c0411d39ba09d7bf4b571b5639926bb8a1e4fdf2a5a0a6ab83a53e8d3501b71",
+    "Tools/ci/test_artifact_transfer.py": "15af495fe4473ea4d68fb8b3b2b3f833673bfe54ff0391dc3ecde7ca1b061086",
+    "Tools/ci/test_artifact_workflows.py": "5012095985edea4a48004fa0c57509f329999a512b406599ea722ad9e5bd2766",
+    "Tools/ci/test_native_jobs.py": "1d928e3dc21725c810ee0e139ba968a15fa060da89bcacb8ff87b746a391a1a0",
+    "Tools/ci/test_native_receipts.py": "829f50d63680269935fbcb463959cc3535aa7c7a48fffe924831fd7878c792c0",
+    "Tools/ci/test_scheduling_policy.py": "29ef1f3bf6c4ca94d3b4f568dce18c18d02a1df944f6e177c0a2544d9868679a"
+  },
+  "phase": 5,
+  "qualification": {
+    "actualPinnedSDKLocalHTTPProtocol": true,
+    "hosted": false,
+    "hostedTransferAndPartialRerun": "Phase 11 pending",
+    "localHelpers": true,
+    "nativeCompilation": false,
+    "nativeSwiftTesting": false,
+    "paid": false,
+    "phase3NativeX64Acceptance": "pending",
+    "remoteWrites": false
+  },
+  "static": {
+    "gitDiffCheck": "passed",
+    "markdownLinksChecked": 187,
+    "originalCheckoutPreserved": true,
+    "pythonSyntax": "passed"
+  },
+  "status": "passed-local-helper-acceptance; hosted Phase 11 proof pending",
+  "tests": {
+    "discovered": 320,
+    "failed": 0,
+    "index": 16,
+    "passed": 314,
+    "skipped": [
+      {
+        "reason": "Linux session ownership covers distinct child groups",
+        "test": "Session identity survives orphaning when an exited parent leaves inherited pipes."
+      },
+      {
+        "reason": "Linux session ownership covers distinct child groups",
+        "test": "Invalid columns, session identity and resource/state values invalidate enumeration."
+      },
+      {
+        "reason": "Linux session ownership covers distinct child groups",
+        "test": "An interrupted supervisor retains the same session ownership and cleanup receipt."
+      },
+      {
+        "reason": "Linux session ownership covers distinct child groups",
+        "test": "Successful parents must also clean hidden descendants in their own process groups."
+      },
+      {
+        "reason": "Linux session ownership covers distinct child groups",
+        "test": "TERM resistance in two child groups cannot escape an execution deadline."
+      },
+      {
+        "reason": "Linux cleanup requires verified session enumeration",
+        "test": "A successful child cannot qualify when unseen process groups may remain."
+      }
+    ],
+    "transfer": 25,
+    "workflow": 5
+  },
+  "validationScriptSHA256": "55f55df97fc809a094263ec66d134659cba59e31e6bfd93a43edbf9e83328949",
+  "workflowLintTool": {
+    "asset": "https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_darwin_arm64.tar.gz",
+    "sha256": "aba9ced2dee8d27fecca3dc7feb1a7f9a52caefa1eb46f3271ea66b6e0e6953f",
+    "tls": "system curl trust verified",
+    "version": "v1.7.12"
+  }
+}

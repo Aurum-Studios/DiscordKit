@@ -13,6 +13,7 @@ import unittest
 from unittest.mock import patch
 
 import build_documentation_site as site
+from test_documentation_inputs import SOURCE, github_execution, sealed_fixture
 
 
 class DocumentationSiteTests(unittest.TestCase):
@@ -56,6 +57,85 @@ class DocumentationSiteTests(unittest.TestCase):
                 (output / "documentation/index.html").write_text("library landing")
                 (output / "index.html").write_text("DocC application")
         return execute
+
+    def test_sealed_inputs_only_merge_and_transform_once_preserving_static_routes(self):
+        """The full CI consumer performs no graph, curation, or conversion commands."""
+        with tempfile.TemporaryDirectory() as temporary:
+            repository = Path(temporary).resolve()
+            archives = [sealed_fixture(repository, component)[0] for component in site.documentation_inputs.PACKAGES]
+            commands = []
+            fake = self.fake_toolchain(commands)
+            def render(command, root):
+                fake(command, root)
+                if "transform-for-static-hosting" in command:
+                    output = Path(command[command.index("--output-path") + 1])
+                    base = command[command.index("--hosting-base-path") + 1]
+                    for module in ("discordkit", "discorddslmacros", "discorddslextensions"):
+                        page = output / "documentation" / module / "index.html"
+                        page.parent.mkdir(exist_ok=True)
+                        page.write_text(f'<a href="{base}/documentation/discordkit/">Runtime</a>'
+                                        f'<script src="{base}/js/app.js"></script>')
+                    (output / "js").mkdir()
+                    (output / "js/app.js").write_text("app")
+            output = repository / "site"
+            with patch.object(site, "run", side_effect=render), \
+                    patch.object(site.native_jobs, "source_identity", return_value=SOURCE), \
+                    patch.object(site.documentation_inputs.receipts, "execution_identity", return_value=github_execution(job="documentation-site")), \
+                    patch.object(site.build_docc, "public_modules", side_effect=AssertionError("consumer evaluated SwiftPM")):
+                site.build_site(repository, output, "docc", "/Phase9Fixture", sealed_inputs=archives)
+            self.assertEqual(len(commands), 2)
+            self.assertEqual(commands[0][1], "merge")
+            self.assertEqual(commands[1][1:3], ["process-archive", "transform-for-static-hosting"])
+            self.assertEqual(commands[1][-2:], ["--hosting-base-path", "/Phase9Fixture"])
+            merged = [Path(value).name for value in commands[0][2:commands[0].index("--output-path")]]
+            self.assertEqual(merged, ["DiscordKit.doccarchive", "DiscordCore.doccarchive",
+                                     "DiscordDSLMacros.doccarchive", "DiscordDSLExtensions.doccarchive"])
+            for module in ("discordkit", "discorddslmacros", "discorddslextensions"):
+                html = (output / "documentation" / module / "index.html").read_text()
+                self.assertIn('href="/Phase9Fixture/documentation/discordkit/"', html)
+                self.assertIn('src="/Phase9Fixture/js/app.js"', html)
+            self.assertTrue((output / "js/app.js").is_file())
+            self.assertTrue((output / "documentation/index.html").is_file())
+            self.assertIn('href="documentation/"', (output / "index.html").read_text())
+
+    def test_incomplete_duplicate_changed_and_wrong_source_sealed_inputs_cannot_export(self):
+        """A partial or altered archive set never falls back to any producer work."""
+        for invalid in ("missing-package", "duplicate", "missing-file", "corrupt", "wrong-source"):
+            with self.subTest(invalid=invalid), tempfile.TemporaryDirectory() as temporary:
+                repository = Path(temporary).resolve()
+                archives = [sealed_fixture(repository, component)[0] for component in site.documentation_inputs.PACKAGES]
+                if invalid == "missing-package":
+                    archives.pop()
+                elif invalid == "duplicate":
+                    archives[1] = archives[0]
+                elif invalid == "missing-file":
+                    archives[0].unlink()
+                elif invalid == "corrupt":
+                    archives[0].write_bytes(b"corrupt archive")
+                source = {**SOURCE, "commit": "d" * 40} if invalid == "wrong-source" else SOURCE
+                output = repository / "site"
+                output.mkdir()
+                (output / site.MARKER).write_text(site.MARKER_CONTENT)
+                (output / "index.html").write_text("old site")
+                with patch.object(site, "run") as run, \
+                        patch.object(site.native_jobs, "source_identity", return_value=source), \
+                        patch.object(site.documentation_inputs.receipts, "execution_identity", return_value=github_execution(job="documentation-site")), \
+                        self.assertRaises(ValueError):
+                    site.build_site(repository, output, "docc", "/DiscordKit", sealed_inputs=archives)
+                run.assert_not_called()
+                self.assertFalse(output.exists())
+
+    def test_source_change_during_static_transformation_discards_export(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            repository = Path(temporary).resolve()
+            archives = [sealed_fixture(repository, component)[0] for component in site.documentation_inputs.PACKAGES]
+            output = repository / "site"
+            with patch.object(site, "run", side_effect=self.fake_toolchain([])), \
+                    patch.object(site.native_jobs, "source_identity", side_effect=[SOURCE, {**SOURCE, "commit": "d" * 40}]), \
+                    patch.object(site.documentation_inputs.receipts, "execution_identity", return_value=github_execution(job="documentation-site")), \
+                    self.assertRaisesRegex(ValueError, "changed during"):
+                site.build_site(repository, output, "docc", "/DiscordKit", sealed_inputs=archives)
+            self.assertFalse(output.exists())
 
     def test_all_packages_are_checked_and_individual_archives_share_one_static_site(self):
         """Authoring modules share the library navigator and all deep routes survive."""

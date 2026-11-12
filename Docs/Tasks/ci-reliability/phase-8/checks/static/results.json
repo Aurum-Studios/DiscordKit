@@ -1,0 +1,18 @@
+{
+  "status": "passed",
+  "pythonFiles": [
+    "Tools/ci/linux_ci.py",
+    "Tools/ci/native_provisioning.py",
+    "Tools/ci/platform_probe.py",
+    "Tools/ci/test_linux_ci.py",
+    "Tools/ci/test_native_provisioning.py",
+    "Tools/ci/test_platform_probe.py",
+    "Tools/ci/test_provisioning_workflow.py"
+  ],
+  "embeddedPythonBlocks": 11,
+  "jsonFiles": 37,
+  "localMarkdownLinks": 235,
+  "originalPlanningHashesUnchanged": true,
+  "realPayloadCheckSourceHashesMatch": true,
+  "provisioningMatchesSchedulingSetupSeconds": 600
+}

@@ -1,0 +1,1617 @@
+{
+  "acceptedLocalReceipts": [
+    {
+      "cleanupAllowanceSeconds": 8.0,
+      "elapsedSeconds": 12.139,
+      "endUTC": "2026-11-12T13:00:35.951213+00:00",
+      "executionID": "392e1e67-d6e5-42a3-903f-965cbbdae0e0",
+      "executionLimitSeconds": 1200,
+      "exitCode": 0,
+      "groupState": "gone",
+      "name": "green-final-build",
+      "parentReaped": true,
+      "pid": 5847,
+      "readerThreads": 0,
+      "remainingProcesses": [],
+      "startUTC": "2026-11-12T13:00:23.812744+00:00",
+      "status": "passed",
+      "testSummaries": [],
+      "verification": "available",
+      "verificationMalformedRows": 0,
+      "verificationTruncated": false
+    },
+    {
+      "cleanupAllowanceSeconds": 8.0,
+      "elapsedSeconds": 1.84,
+      "endUTC": "2026-11-12T13:11:26.688536+00:00",
+      "executionID": "ead1ee6c-12e8-4e6c-8ac3-7ebb069038e5",
+      "executionLimitSeconds": 60,
+      "exitCode": 0,
+      "groupState": "gone",
+      "name": "final-discovery",
+      "parentReaped": true,
+      "pid": 7665,
+      "readerThreads": 0,
+      "remainingProcesses": [],
+      "startUTC": "2026-11-12T13:11:24.848771+00:00",
+      "status": "passed",
+      "testSummaries": [],
+      "verification": "available",
+      "verificationMalformedRows": 0,
+      "verificationTruncated": false
+    },
+    {
+      "cleanupAllowanceSeconds": 8.0,
+      "elapsedSeconds": 1.994,
+      "endUTC": "2026-11-12T13:02:06.959445+00:00",
+      "executionID": "234bd0d7-670e-4ef4-8cb1-21806e1b79c6",
+      "executionLimitSeconds": 90,
+      "exitCode": 0,
+      "groupState": "gone",
+      "name": "green-synthetic",
+      "parentReaped": true,
+      "pid": 6175,
+      "readerThreads": 0,
+      "remainingProcesses": [],
+      "startUTC": "2026-11-12T13:02:04.966018+00:00",
+      "status": "passed",
+      "testSummaries": [
+        "Test run with 4 tests in 1 suite passed after 0.182 seconds."
+      ],
+      "verification": "available",
+      "verificationMalformedRows": 0,
+      "verificationTruncated": false
+    },
+    {
+      "cleanupAllowanceSeconds": 8.0,
+      "elapsedSeconds": 2.675,
+      "endUTC": "2026-11-12T13:02:20.814171+00:00",
+      "executionID": "680eed5f-c121-4c6c-9c32-8552274d04f9",
+      "executionLimitSeconds": 90,
+      "exitCode": 0,
+      "groupState": "gone",
+      "name": "green-transport",
+      "parentReaped": true,
+      "pid": 6298,
+      "readerThreads": 0,
+      "remainingProcesses": [],
+      "startUTC": "2026-11-12T13:02:18.139541+00:00",
+      "status": "passed",
+      "testSummaries": [
+        "Test run with 13 tests in 1 suite passed after 0.886 seconds."
+      ],
+      "verification": "available",
+      "verificationMalformedRows": 0,
+      "verificationTruncated": false
+    },
+    {
+      "cleanupAllowanceSeconds": 8.0,
+      "elapsedSeconds": 8.48,
+      "endUTC": "2026-11-12T13:00:47.741554+00:00",
+      "executionID": "1c021fbe-4cab-4b38-9f50-d71406910dbb",
+      "executionLimitSeconds": 60,
+      "exitCode": 0,
+      "groupState": "gone",
+      "name": "peer-green",
+      "parentReaped": true,
+      "pid": 5941,
+      "readerThreads": 0,
+      "remainingProcesses": [],
+      "startUTC": "2026-11-12T13:00:39.262026+00:00",
+      "status": "passed",
+      "testSummaries": [
+        "Ran 10 tests in 8.197s",
+        "OK"
+      ],
+      "verification": "available",
+      "verificationMalformedRows": 0,
+      "verificationTruncated": false
+    },
+    {
+      "cleanupAllowanceSeconds": 8.0,
+      "elapsedSeconds": 22.403,
+      "endUTC": "2026-11-12T13:11:59.029402+00:00",
+      "executionID": "b5fe7088-fc45-49ca-91e6-dad2b9068043",
+      "executionLimitSeconds": 600,
+      "exitCode": 0,
+      "groupState": "gone",
+      "name": "final-load",
+      "parentReaped": true,
+      "pid": 7713,
+      "readerThreads": 0,
+      "remainingProcesses": [],
+      "startUTC": "2026-11-12T13:11:36.626978+00:00",
+      "status": "passed",
+      "testSummaries": [
+        "Test run with 161 tests in 28 suites passed after 20.522 seconds."
+      ],
+      "verification": "available",
+      "verificationMalformedRows": 0,
+      "verificationTruncated": false
+    },
+    {
+      "cleanupAllowanceSeconds": 8.0,
+      "elapsedSeconds": 4.467,
+      "endUTC": "2026-11-12T13:09:37.571074+00:00",
+      "executionID": "5dec8283-8648-45d3-8e0f-5de3988f24d2",
+      "executionLimitSeconds": 30,
+      "exitCode": 0,
+      "groupState": "gone",
+      "name": "supervisor-final-focused",
+      "parentReaped": true,
+      "pid": 7205,
+      "readerThreads": 0,
+      "remainingProcesses": [],
+      "startUTC": "2026-11-12T13:09:33.104041+00:00",
+      "status": "passed",
+      "testSummaries": [
+        "Ran 7 tests in 4.156s",
+        "OK"
+      ],
+      "verification": "available",
+      "verificationMalformedRows": 0,
+      "verificationTruncated": false
+    },
+    {
+      "cleanupAllowanceSeconds": 8.0,
+      "elapsedSeconds": 50.365,
+      "endUTC": "2026-11-12T13:10:58.718450+00:00",
+      "executionID": "76af0890-53ad-495a-8aeb-5e1a0ae284ed",
+      "executionLimitSeconds": 300,
+      "exitCode": 0,
+      "groupState": "zombies-only",
+      "name": "supervisor-final-linux",
+      "parentReaped": true,
+      "pid": 7253,
+      "readerThreads": 0,
+      "remainingProcesses": [
+        {
+          "cpuPercent": 0.4,
+          "executable": "python3",
+          "group": 7253,
+          "parent": 1,
+          "pid": 7342,
+          "rssKiB": 0,
+          "session": 7253,
+          "state": "Z"
+        }
+      ],
+      "startUTC": "2026-11-12T13:10:08.353964+00:00",
+      "status": "passed",
+      "testSummaries": [
+        "Ran 237 tests in 50.022s",
+        "OK"
+      ],
+      "verification": "available",
+      "verificationMalformedRows": 0,
+      "verificationTruncated": false
+    },
+    {
+      "cleanupAllowanceSeconds": 8.0,
+      "elapsedSeconds": 8.252,
+      "endUTC": "2026-11-12T13:10:16.818487+00:00",
+      "executionID": "23454ae1-301d-40ed-87b5-fdac986035d7",
+      "executionLimitSeconds": 120,
+      "exitCode": 0,
+      "groupState": "gone",
+      "name": "supervisor-final-macos",
+      "parentReaped": true,
+      "pid": 30156,
+      "readerThreads": 0,
+      "remainingProcesses": [],
+      "startUTC": "2026-11-12T13:10:08.566615+00:00",
+      "status": "passed",
+      "testSummaries": [
+        "Ran 29 tests in 7.977s",
+        "OK (skipped=1)"
+      ],
+      "verification": "available",
+      "verificationMalformedRows": 0,
+      "verificationTruncated": false
+    },
+    {
+      "cleanupAllowanceSeconds": 8.0,
+      "elapsedSeconds": 7.843,
+      "endUTC": "2026-11-12T13:14:07.919396+00:00",
+      "executionID": "55d54edd-55e8-4dd7-9001-a083c613e4d3",
+      "executionLimitSeconds": 60,
+      "exitCode": 0,
+      "groupState": "gone",
+      "name": "peer-green-macos",
+      "parentReaped": true,
+      "pid": 31517,
+      "readerThreads": 0,
+      "remainingProcesses": [],
+      "startUTC": "2026-11-12T13:14:00.076721+00:00",
+      "status": "passed",
+      "testSummaries": [
+        "Ran 10 tests in 7.760s",
+        "OK"
+      ],
+      "verification": "available",
+      "verificationMalformedRows": 0,
+      "verificationTruncated": false
+    }
+  ],
+  "artifactStorageReview": {
+    "files": [
+      {
+        "decompressedBytesVerified": true,
+        "gzipMtime": 0,
+        "originalMetadataMatches": true,
+        "originalPath": "red-regressions.patch",
+        "storedBytes": 5145,
+        "storedPath": "red-regressions.patch.gz",
+        "storedSHA256": "ffaa9082e5034d8bccf96e69da2a28994784f99bcb8990faa53728497e6d12ff",
+        "uncompressedBytes": 19361,
+        "uncompressedSHA256": "9714376d47660f6356e62048ef7fb203bb5c011e7b993b2d2ed84bc5e39b60bd"
+      },
+      {
+        "decompressedBytesVerified": true,
+        "gzipMtime": 0,
+        "originalMetadataMatches": true,
+        "originalPath": "red-transport-debugger.log",
+        "storedBytes": 5608,
+        "storedPath": "red-transport-debugger.log.gz",
+        "storedSHA256": "ac9f3f2c549ac515fe71c00c96415acae8b27a53f0a1d8766847b9490cdbb40b",
+        "uncompressedBytes": 29917,
+        "uncompressedSHA256": "5cce5153d94b833d754d12adafdce2df080b32682eec844b2d8df2cf0f23469e"
+      }
+    ],
+    "manifest": "artifact-transport.json",
+    "note": "The debugger log and regression replay patch are stored as lossless gzip with mtime 0. Decompression reproduces the exact historical bytes and SHA256. Historical emitted receipt paths and diagnostic-assessment metadata retain their original filenames; consult storedPath in the transport manifest to read them.",
+    "reviewedAtUTC": "2026-11-12T13:22:22.187800+00:00"
+  },
+  "artifacts": {
+    "artifact-transport.json": {
+      "bytes": 1000,
+      "sha256": "b3cdeb5467fb36e516c3c04e8cae2ac091c23df3c786718f0ea753ebc8290c29"
+    },
+    "baseline-inputs.json": {
+      "bytes": 1560,
+      "sha256": "cec1a67ccc45d42423683dd8cb981e2d5b8d936ca0396c768988882c4dd67c02"
+    },
+    "container-cleanup.json": {
+      "bytes": 5139,
+      "sha256": "739c227ec48c532e7879ad34c953bb08d7866f3a8261c715170b8bd9fa8f9fa7"
+    },
+    "diagnostic-assessment.json": {
+      "bytes": 9769,
+      "sha256": "7a7807fa974b30ff53cddcd6e02f0ad1160dbae5200ab0802f2046cbbe556506"
+    },
+    "final-discovery.diagnostics.jsonl": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "final-discovery.log": {
+      "bytes": 463,
+      "sha256": "1ed127428a9b4516cd3ae6598d5a2c5e89eb514b9127b0a2adb486b03a97f92b"
+    },
+    "final-discovery.receipt.json": {
+      "bytes": 2475,
+      "sha256": "458a58e9926da38f7bf4a8e4bde6f7c96650b0569f0a8737a68fe55b34029b13"
+    },
+    "final-discovery.stdout": {
+      "bytes": 13708,
+      "sha256": "8be50afc83287c28963e8fb9597d75c8cf031fa58d6de206322fd09c713a95a2"
+    },
+    "final-load.diagnostics.jsonl": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "final-load.log": {
+      "bytes": 594716,
+      "sha256": "347a45056b8a6cb06613b72f720d78fd0b3e63308e96ddaa71de306daf41f37b"
+    },
+    "final-load.receipt.json": {
+      "bytes": 2229,
+      "sha256": "3926a4e36797a0484c88bf80c92208bc840d6486d2ad6e5a62f041bba7fa7267"
+    },
+    "green-final-build.diagnostics.jsonl": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "green-final-build.log": {
+      "bytes": 1181,
+      "sha256": "f685048fd97132d1dd05cdcba5be70d9722c7cb1e5a0f19b0ac077058ac1ee0b"
+    },
+    "green-final-build.receipt.json": {
+      "bytes": 2214,
+      "sha256": "b3dafe77fe2d9bb03d61ead81fae7f5d16a1d787a7f7ebfc948feec940beb759"
+    },
+    "green-synthetic.diagnostics.jsonl": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "green-synthetic.log": {
+      "bytes": 6244,
+      "sha256": "aa3c3dad4dd616c93c1e7d4d85f85503abe934281866262a6b80f4a9f844e531"
+    },
+    "green-synthetic.receipt.json": {
+      "bytes": 2269,
+      "sha256": "1a17d78e5d0a169580eef1c027a1199111f825fc3854f1b26baa7900dfd6baf3"
+    },
+    "green-transport.diagnostics.jsonl": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "green-transport.log": {
+      "bytes": 3413,
+      "sha256": "a240a23014391ddc27b4e9b9b832fccba0555d8b7f554033b944a20386b9ebcb"
+    },
+    "green-transport.receipt.json": {
+      "bytes": 2262,
+      "sha256": "7b8c6822571504bf0ce832d216991fc61493aa1f3d3ebe0e17dde3615c3c2599"
+    },
+    "linux-environment.json": {
+      "bytes": 2317,
+      "sha256": "8b43a0f0826c600792775f27d81a0025f04e54a7dd7bf6c0ad0cbf1d5ae83082"
+    },
+    "peer-green-macos.diagnostics.jsonl": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "peer-green-macos.log": {
+      "bytes": 2525,
+      "sha256": "0273efd979f8b8fce2db36199683e75873222fb9a6f9e482136a5a38244ef8fe"
+    },
+    "peer-green-macos.receipt.json": {
+      "bytes": 2124,
+      "sha256": "0a85a0d405c8b6cf216b8caec518a927155113cd41d40aa3160533ccff8f001a"
+    },
+    "peer-green.diagnostics.jsonl": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "peer-green.log": {
+      "bytes": 2525,
+      "sha256": "4538c3bd54aa8cc5f12cd30bf9891b5811683786381a2af190815fd494fe48d5"
+    },
+    "peer-green.receipt.json": {
+      "bytes": 1986,
+      "sha256": "ded50ef3fb2a0845c018591a8718f0e62026f942c97ca068e2d9a3c1ea785c96"
+    },
+    "peer-red.diagnostics.jsonl": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "peer-red.log": {
+      "bytes": 2990,
+      "sha256": "0cc7b260d0c2beff866de3ee9dc083414de5991d1ed9ff019284a00a646cde1d"
+    },
+    "peer-red.receipt.json": {
+      "bytes": 2104,
+      "sha256": "7c682de6836b7e30bd86fe9396637ef2bd98989fe6dee659a211f92c9464efd1"
+    },
+    "red-regressions.patch.gz": {
+      "bytes": 5145,
+      "sha256": "ffaa9082e5034d8bccf96e69da2a28994784f99bcb8990faa53728497e6d12ff"
+    },
+    "red-transport-debugger.log.gz": {
+      "bytes": 5608,
+      "sha256": "ac9f3f2c549ac515fe71c00c96415acae8b27a53f0a1d8766847b9490cdbb40b"
+    },
+    "scenario-directCancelled.diagnostics.jsonl": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "scenario-directCancelled.log": {
+      "bytes": 417,
+      "sha256": "e169856a9aa9b7ba66078bd83a573517406edc74835bcaa49c0edc708d80370f"
+    },
+    "scenario-directCancelled.receipt.json": {
+      "bytes": 2499,
+      "sha256": "5a7156431b38a26ce52202b0d294fc6919ee60d3b86e3502c2bfe628793bc173"
+    },
+    "scenario-directDeferred.diagnostics.jsonl": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "scenario-directDeferred.log": {
+      "bytes": 414,
+      "sha256": "7bfdc53f2d8e86e57f408de6ed550be02b02c40deba3a5e25d225b983257b3d0"
+    },
+    "scenario-directDeferred.receipt.json": {
+      "bytes": 2489,
+      "sha256": "a3e5c8f51a9c79b45a8e9465dc32276a605b6e6b7a4794b65db352e77c93bc6b"
+    },
+    "scenario-directFailure.diagnostics.jsonl": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "scenario-directFailure.log": {
+      "bytes": 1664,
+      "sha256": "34d27e3a646fb41eb2f9923464aff02cc6eced6d871410eba358d7492c3eb5bf"
+    },
+    "scenario-directFailure.receipt.json": {
+      "bytes": 2478,
+      "sha256": "12afb860842fc4a6a8e82e9f5dc9aeb31f467542fcec9ceb84baf7930bf82828"
+    },
+    "scenario-directImmediate.diagnostics.jsonl": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "scenario-directImmediate.log": {
+      "bytes": 417,
+      "sha256": "25708e597eab71fa3536fd40e5c57b2e43700d4822f0290ff8c0dacc73a8a478"
+    },
+    "scenario-directImmediate.receipt.json": {
+      "bytes": 2497,
+      "sha256": "f0042a77319ea046d7bf4e86297b579d3d78a2ca4caa28e6b69b018caa00539d"
+    },
+    "scenario-dslCancelled.diagnostics.jsonl": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "scenario-dslCancelled.log": {
+      "bytes": 408,
+      "sha256": "7f8ef055da0e707e800dd0b1c53ce2f9bd4a00e0dff78b28d921ef3860edcd13"
+    },
+    "scenario-dslCancelled.receipt.json": {
+      "bytes": 2472,
+      "sha256": "4c373fe6ffbc2b54a0252682b6338b5fcfecab868b6a0b1c6d4e142e03c555f0"
+    },
+    "scenario-dslDeferred.diagnostics.jsonl": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "scenario-dslDeferred.log": {
+      "bytes": 405,
+      "sha256": "a50f9bb84ae8c2ce75063abd3480f509869efe4b3e96dfd1a796184df8e63e6f"
+    },
+    "scenario-dslDeferred.receipt.json": {
+      "bytes": 2463,
+      "sha256": "ac4e988367f02f844a38f78985ad3e9bf065a857809216586efe72df93609cfd"
+    },
+    "scenario-dslFailure.diagnostics.jsonl": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "scenario-dslFailure.log": {
+      "bytes": 1655,
+      "sha256": "fb454ac2119dcc6115b587a0fcc0b16b15c24da1baa7e4daaca48d82172ee87a"
+    },
+    "scenario-dslFailure.receipt.json": {
+      "bytes": 2456,
+      "sha256": "147c531e47d0705cd5ac233396543048f5451878182e52c676511936065e0abd"
+    },
+    "scenario-dslImmediate.diagnostics.jsonl": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "scenario-dslImmediate.log": {
+      "bytes": 408,
+      "sha256": "672cb8c4d77d5256a0add96fb3708eb89015baad3a6245ac2af76d72f6a69c75"
+    },
+    "scenario-dslImmediate.receipt.json": {
+      "bytes": 2469,
+      "sha256": "41c95789c1d5b8ca1435fb818f9a008a289b8c3a088b62770cd17d87bd39f8c7"
+    },
+    "scenario-report-validation.json": {
+      "bytes": 16424,
+      "sha256": "7f6b9390b5370ca37b6c24428829d18a71ed33f5eee30cf20a32c0abd07137c1"
+    },
+    "smoke-loopback.diagnostics.jsonl": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "smoke-loopback.log": {
+      "bytes": 535,
+      "sha256": "ed3c08b155acfc1d6abc7de24c4837a6680e6f3a4f67e9dd6a61fbd0c0020867"
+    },
+    "smoke-loopback.receipt.json": {
+      "bytes": 2394,
+      "sha256": "37da2bc9de2839075489f395a5a063827c69b6d352daaae67eb7197298158067"
+    },
+    "smoke-rest.diagnostics.jsonl": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "smoke-rest.log": {
+      "bytes": 6062,
+      "sha256": "2d4cc93a35a66cda069461f915c4dc6d4137064123b9a7cb1c19606cfa294f90"
+    },
+    "smoke-rest.receipt.json": {
+      "bytes": 2364,
+      "sha256": "915616a59a1cea533288897fbd8d479223db53fa34d86f720a41ee79c94d21bb"
+    },
+    "supervisor-final-focused.diagnostics.jsonl": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "supervisor-final-focused.log": {
+      "bytes": 363,
+      "sha256": "123074a4b0e97cce2ee41fef58949220e15cef67116b0d0dd374c31ce5378c94"
+    },
+    "supervisor-final-focused.receipt.json": {
+      "bytes": 2249,
+      "sha256": "c4004a945af2ede5191cebdc733a80805263a759c8943292f9f0f741ef4335dd"
+    },
+    "supervisor-final-linux.diagnostics.jsonl": {
+      "bytes": 835,
+      "sha256": "daec016ad17ce925c6f819eb351a3a89eac5c8a8c432477375880302513af88c"
+    },
+    "supervisor-final-linux.log": {
+      "bytes": 793,
+      "sha256": "5ac07b149bb32ff6330f9802e0f18fe247c197c42399d5134e53d0f1a0f0cd90"
+    },
+    "supervisor-final-linux.receipt.json": {
+      "bytes": 2464,
+      "sha256": "bdba78449355867319ff9f2ae1977d53566b712bff2fb17d5b37e19d796de37e"
+    },
+    "supervisor-final-macos.diagnostics.jsonl": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "supervisor-final-macos.log": {
+      "bytes": 287,
+      "sha256": "99a3c910b3fee29766c69eb28bbefe54d39e521854e1bffaf8acbac2ace2811e"
+    },
+    "supervisor-final-macos.receipt.json": {
+      "bytes": 2009,
+      "sha256": "3a829375ddf19bdd4d8cef2c1c9c9e508db0c61cdc97365b430e3f3e3bd232cf"
+    },
+    "supervisor-red.diagnostics.jsonl": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "supervisor-red.log": {
+      "bytes": 1038,
+      "sha256": "ec5991e762f1a2c5ea7b4a2b7a6d0d911b64db2b1ee13a711ce608a84701af97"
+    },
+    "supervisor-red.receipt.json": {
+      "bytes": 2095,
+      "sha256": "9a81f0fac27cf1ef3a9019764f1043e391379d2b2b8be24fd14925b77d5560dc"
+    },
+    "supervisor-unverified-red.diagnostics.jsonl": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "supervisor-unverified-red.log": {
+      "bytes": 862,
+      "sha256": "d69e7bc6834b6318530429a995aabe21f71fbde83ac95d7d3c913e2da3f021c9"
+    },
+    "supervisor-unverified-red.receipt.json": {
+      "bytes": 2300,
+      "sha256": "3bbdac42dfbbcee183b58b74f2cd852b173ac405a83735aee22b8ed2acb5e0f7"
+    }
+  },
+  "authorshipBoundary": "This reviewer authored the peer shutdown regression and report verifier. Their code review is not independent of authorship; separate peer repair/regression review is retained in diagnostic-assessment.json.",
+  "baseRevision": "07cdea35d6f9ad384bfb42a3005940ca69e76922",
+  "discovery": {
+    "exactIdentifiers": 161,
+    "path": "final-discovery.stdout",
+    "uniqueIdentifiers": 161
+  },
+  "finalSourceSHA256": {
+    "Docs/Tasks/ci-reliability/phase-3/validate.py": "6d22b86cdc495697a0b8514389e20872f87d63ea89b2f9db42cad9f87cdce37e",
+    "Docs/Tasks/ci-reliability/phase-3/verify_reports.py": "49aee1126506caaeaa60ef723a4f5a1140980b2e9969052bd45f0d000210c19a",
+    "Package.resolved": "dd6c86faf979e3b991553d84ae0b378105629a3a010d71f842ed84dda9bf263c",
+    "Package.swift": "d6822bdd8a38ecf262d0f22625f8c57699c4f720f77c8aa4f531d9d895f6e23e",
+    "Sources/DiscordCommands/CommandRouter.swift": "fd7d9b7bff67a8896b1e1e73c679041570c4eb3d950d44d23c602def2d832dc5",
+    "Sources/DiscordInteractions/InteractionContext.swift": "4b8e329f3ea327180618af1d4d98c6f6a92843ac752bbdc35b9f4093acebc18a",
+    "Sources/DiscordInteractions/InteractionOperationFailure.swift": "986802ddcd622b4fb40568afbe2f8e1fe32f8a6ccf759f853e7cdf2a63570541",
+    "Sources/DiscordInteractions/InteractionResponder.swift": "496945dfe5f45b39e7252d3fb1797e700859b106b0cb27ae9ce76780ca60e788",
+    "Tools/DiscordBenchmarkSupport/Sources/DiscordBenchmarkSupport/RunStatistics.swift": "029865fc555d654c18a4f44bda87e32c96fbc532edf74bbcffdedcf9e8a9315b",
+    "Tools/DiscordKitLoadTests/Package.resolved": "447bf3ccefdc65c7cbe44f1c8b610f5616e971394c8e971956a3f1e9159cdb52",
+    "Tools/DiscordKitLoadTests/Package.swift": "85413795644edcb637bc48955a800cb240264887970622d4e7aec19068089c7c",
+    "Tools/DiscordKitLoadTests/Sources/DiscordKitLoadTests/SyntheticCommandTimingRunner.swift": "8716b76baece4f5843c16c11e1e5bf444a526d3a6d761e1de2454e419dfe6bb5",
+    "Tools/DiscordKitLoadTests/Sources/DiscordKitLoadTests/main.swift": "5453a9cacc05803440079abe23e813302e67f9a08933522264480cddd81ec3df",
+    "Tools/DiscordKitLoadTests/Tests/DiscordKitLoadTestsTests/SyntheticCommandTimingRunnerTests.swift": "1340ab172f818f2aac15b8f86d490cb1c33158b6e94e57eaf9ed62d84dd917ba",
+    "Tools/DiscordKitLoadTests/scripts/local_peer.py": "455490eaa14245035b0f72cf9398a4d650e78430e156e07c5467651d9cecdefa",
+    "Tools/DiscordKitLoadTests/scripts/test_local_peer.py": "f8dfc002c7aff18e37adf41be4932862d9ec849f986ae604d98f327d93039766",
+    "Tools/ci/linux_ci.py": "af1d42dcda3f60127346fb571343bf2060be06d21818d61e6b81084985a6b33a",
+    "Tools/ci/native_jobs.py": "389d00c4d4906a60113c065df83fe0da677ebc1a9e5cc8319b778347f54457c2",
+    "Tools/ci/test_linux_ci.py": "a58485660f4e514075a5177673bb7908bdf39dab01f7fd5e62864d6588462354"
+  },
+  "findings": [
+    {
+      "description": "Multi-group Linux cleanup could return a passed command when final session enumeration was unavailable or truncated, leaving unseen groups unqualified.",
+      "greenEvidence": [
+        "supervisor-final-focused.receipt.json",
+        "supervisor-final-linux.receipt.json",
+        "supervisor-final-macos.receipt.json"
+      ],
+      "id": "R1",
+      "redEvidence": "supervisor-unverified-red.log: expected OSError was not raised; exit 1.",
+      "repair": "Linux cleanup now fails closed for unavailable, truncated or malformed final session enumeration; malformed identity/resource/state rows invalidate enumeration.",
+      "severity": "material",
+      "status": "resolved"
+    }
+  ],
+  "limits": [
+    "Swift executable, build and test evidence is debug configuration, not release performance or release qualification.",
+    "Ubuntu 24.04 x86_64 / Swift 6.4.1 execution used Rosetta on an aarch64 Colima guest and Apple Silicon host. Native SwiftPM engine and Linux target do not make this native Linux x64 acceptance.",
+    "The transport teardown stack and blocked/pending SIGTERM demonstrate the observed local owner. They do not prove the original hosted failure has the identical cause without the pending native probe.",
+    "The eight CLI reports are synthetic caller-entry observations, bypassing trusted ingress, Gateway provenance and live Discord. No numerical latency/throughput gate or live-service qualification is claimed.",
+    "Linux cleanup ownership covers the admitted session. Escaped sessions remain outside its guarantee; zombies-only receipts prove termination, not reaping by container PID 1.",
+    "Hosted CI, native Linux x64 acceptance, push/merge, publication and deployment were not performed by this review."
+  ],
+  "ownedContainerCleanup": {
+    "coreAbsent": true,
+    "ownedContainerAbsent": true,
+    "receipt": "container-cleanup.json",
+    "retainedOwnedResources": [
+      "discordkit-ci-phase3-amd64-scratch",
+      "swift@sha256:1a784fc9de712a985020336bbc447c21050777cbe3b76f915eb352fd21b50f3d"
+    ],
+    "status": "passed",
+    "verification": "Read-back of retained stop/remove/absence receipts; no new container operation by reviewer.",
+    "zombieProcessesDisposed": 68
+  },
+  "peerFixtureReceipts": {
+    "peer-green": [
+      {
+        "blockedSIGTERM": false,
+        "exitCode": 0,
+        "fixture": "local-peer-sigterm",
+        "forcedKill": false,
+        "portClosed": true,
+        "reaped": true,
+        "terminatedBeforeCleanup": true
+      },
+      {
+        "blockedSIGTERM": true,
+        "exitCode": 0,
+        "fixture": "local-peer-sigterm",
+        "forcedKill": false,
+        "portClosed": true,
+        "reaped": true,
+        "terminatedBeforeCleanup": true
+      }
+    ],
+    "peer-green-macos": [
+      {
+        "blockedSIGTERM": false,
+        "exitCode": 0,
+        "fixture": "local-peer-sigterm",
+        "forcedKill": false,
+        "portClosed": true,
+        "reaped": true,
+        "terminatedBeforeCleanup": true
+      },
+      {
+        "blockedSIGTERM": true,
+        "exitCode": 0,
+        "fixture": "local-peer-sigterm",
+        "forcedKill": false,
+        "portClosed": true,
+        "reaped": true,
+        "terminatedBeforeCleanup": true
+      }
+    ],
+    "peer-red": [
+      {
+        "blockedSIGTERM": false,
+        "exitCode": 0,
+        "fixture": "local-peer-sigterm",
+        "forcedKill": false,
+        "portClosed": true,
+        "reaped": true,
+        "terminatedBeforeCleanup": true
+      },
+      {
+        "blockedSIGTERM": true,
+        "exitCode": -9,
+        "fixture": "local-peer-sigterm",
+        "forcedKill": true,
+        "portClosed": true,
+        "reaped": true,
+        "terminatedBeforeCleanup": false
+      }
+    ]
+  },
+  "redReceipts": [
+    {
+      "cleanupAllowanceSeconds": 8.0,
+      "elapsedSeconds": 3.851,
+      "endUTC": "2026-11-12T12:50:22.591487+00:00",
+      "executionID": "9d59d98f-fa1c-4386-b0de-f3c6f3036f25",
+      "executionLimitSeconds": 30,
+      "exitCode": 1,
+      "groupState": "gone",
+      "name": "peer-red",
+      "parentReaped": true,
+      "pid": 5546,
+      "readerThreads": 0,
+      "remainingProcesses": [],
+      "startUTC": "2026-11-12T12:50:18.740715+00:00",
+      "status": "failed",
+      "testSummaries": [
+        "Ran 2 tests in 3.595s",
+        "FAILED (failures=1)"
+      ],
+      "verification": "available",
+      "verificationMalformedRows": 0,
+      "verificationTruncated": false
+    },
+    {
+      "cleanupAllowanceSeconds": 8.0,
+      "elapsedSeconds": 1.283,
+      "endUTC": "2026-11-12T12:57:46.291387+00:00",
+      "executionID": "4d744afc-ddc5-4e72-ae8a-5b4ea4c8d6d7",
+      "executionLimitSeconds": 30,
+      "exitCode": 1,
+      "groupState": "gone",
+      "name": "supervisor-red",
+      "parentReaped": true,
+      "pid": 5689,
+      "readerThreads": 0,
+      "remainingProcesses": [],
+      "startUTC": "2026-11-12T12:57:45.008918+00:00",
+      "status": "failed",
+      "testSummaries": [
+        "Ran 1 test in 1.045s",
+        "FAILED (failures=1)"
+      ],
+      "verification": "available",
+      "verificationMalformedRows": 0,
+      "verificationTruncated": false
+    },
+    {
+      "cleanupAllowanceSeconds": 8.0,
+      "elapsedSeconds": 0.41,
+      "endUTC": "2026-11-12T13:08:17.544894+00:00",
+      "executionID": "61bb226e-35c4-47de-ab30-93524d66db5b",
+      "executionLimitSeconds": 30,
+      "exitCode": 1,
+      "groupState": "gone",
+      "name": "supervisor-unverified-red",
+      "parentReaped": true,
+      "pid": 7194,
+      "readerThreads": 0,
+      "remainingProcesses": [],
+      "startUTC": "2026-11-12T13:08:17.135432+00:00",
+      "status": "failed",
+      "testSummaries": [
+        "Ran 1 test in 0.105s",
+        "FAILED (failures=1)"
+      ],
+      "verification": "available",
+      "verificationMalformedRows": 0,
+      "verificationTruncated": false
+    }
+  ],
+  "reportAcceptance": {
+    "allHistogramsConservePopulation": true,
+    "allMetricPopulationsExact": true,
+    "counterOverflow": false,
+    "directDSLFamilyParity": 4,
+    "droppedObservations": 0,
+    "freshExecutions": 10,
+    "histogramDistributions": 63,
+    "inputFiles": 20,
+    "metricObservations": 522,
+    "nativeAndCommonContentMatches": true,
+    "reportPairs": 10,
+    "scenarioInvocations": 56,
+    "scenarioTerminalOutcomes": {
+      "cancelled": 14,
+      "failure": 14,
+      "success": 28
+    },
+    "scenarios": [
+      {
+        "callbacks": 7,
+        "cleanup": {
+          "acknowledgementBytes": 0,
+          "acknowledgements": 0,
+          "handlers": 0
+        },
+        "counts": {
+          "admitted": 7,
+          "completed": 7,
+          "deadlineMisses": 0,
+          "offered": 7,
+          "outcomes": {
+            "cancelled": 0,
+            "failure": 0,
+            "rejected": 0,
+            "success": 7,
+            "timedOut": 0,
+            "uncertain": 0
+          }
+        },
+        "edits": 0,
+        "expectedOutcome": "success",
+        "metricPopulations": [
+          {
+            "id": "command.admission",
+            "observedCount": 7,
+            "outcome": "success"
+          },
+          {
+            "id": "command.arguments",
+            "observedCount": 7,
+            "outcome": "success"
+          },
+          {
+            "id": "command.handler",
+            "observedCount": 7,
+            "outcome": "success"
+          },
+          {
+            "id": "command.route",
+            "observedCount": 7,
+            "outcome": "success"
+          },
+          {
+            "id": "interaction.initialResponse",
+            "observedCount": 7,
+            "outcome": "success"
+          },
+          {
+            "id": "synthetic.invoke",
+            "observedCount": 7,
+            "outcome": "success"
+          },
+          {
+            "id": "synthetic.providerWait",
+            "observedCount": 7,
+            "outcome": "success"
+          }
+        ],
+        "name": "scenario-directImmediate",
+        "receipt": {
+          "cleanupAllowanceSeconds": 8.0,
+          "elapsedSeconds": 0.309,
+          "endUTC": "2026-11-12T13:03:36.322454+00:00",
+          "executionID": "952d244e-5e8f-49df-8f91-5ada9cce4128",
+          "executionLimitSeconds": 90,
+          "exitCode": 0,
+          "groupState": "gone",
+          "name": "scenario-directImmediate",
+          "parentReaped": true,
+          "pid": 6662,
+          "readerThreads": 0,
+          "remainingProcesses": [],
+          "startUTC": "2026-11-12T13:03:36.013379+00:00",
+          "status": "passed",
+          "testSummaries": [],
+          "verification": "available",
+          "verificationMalformedRows": 0,
+          "verificationTruncated": false
+        }
+      },
+      {
+        "callbacks": 7,
+        "cleanup": {
+          "acknowledgementBytes": 0,
+          "acknowledgements": 0,
+          "handlers": 0
+        },
+        "counts": {
+          "admitted": 7,
+          "completed": 7,
+          "deadlineMisses": 0,
+          "offered": 7,
+          "outcomes": {
+            "cancelled": 0,
+            "failure": 0,
+            "rejected": 0,
+            "success": 7,
+            "timedOut": 0,
+            "uncertain": 0
+          }
+        },
+        "edits": 0,
+        "expectedOutcome": "success",
+        "metricPopulations": [
+          {
+            "id": "command.admission",
+            "observedCount": 7,
+            "outcome": "success"
+          },
+          {
+            "id": "command.arguments",
+            "observedCount": 7,
+            "outcome": "success"
+          },
+          {
+            "id": "command.handler",
+            "observedCount": 7,
+            "outcome": "success"
+          },
+          {
+            "id": "command.route",
+            "observedCount": 7,
+            "outcome": "success"
+          },
+          {
+            "id": "interaction.initialResponse",
+            "observedCount": 7,
+            "outcome": "success"
+          },
+          {
+            "id": "synthetic.invoke",
+            "observedCount": 7,
+            "outcome": "success"
+          },
+          {
+            "id": "synthetic.providerWait",
+            "observedCount": 7,
+            "outcome": "success"
+          }
+        ],
+        "name": "scenario-dslImmediate",
+        "receipt": {
+          "cleanupAllowanceSeconds": 8.0,
+          "elapsedSeconds": 0.307,
+          "endUTC": "2026-11-12T13:03:36.633170+00:00",
+          "executionID": "b9091352-d68f-4fb6-bfdb-8724019d6384",
+          "executionLimitSeconds": 90,
+          "exitCode": 0,
+          "groupState": "gone",
+          "name": "scenario-dslImmediate",
+          "parentReaped": true,
+          "pid": 6674,
+          "readerThreads": 0,
+          "remainingProcesses": [],
+          "startUTC": "2026-11-12T13:03:36.325991+00:00",
+          "status": "passed",
+          "testSummaries": [],
+          "verification": "available",
+          "verificationMalformedRows": 0,
+          "verificationTruncated": false
+        }
+      },
+      {
+        "callbacks": 7,
+        "cleanup": {
+          "acknowledgementBytes": 0,
+          "acknowledgements": 0,
+          "handlers": 0
+        },
+        "counts": {
+          "admitted": 7,
+          "completed": 7,
+          "deadlineMisses": 0,
+          "offered": 7,
+          "outcomes": {
+            "cancelled": 0,
+            "failure": 0,
+            "rejected": 0,
+            "success": 7,
+            "timedOut": 0,
+            "uncertain": 0
+          }
+        },
+        "edits": 7,
+        "expectedOutcome": "success",
+        "metricPopulations": [
+          {
+            "id": "command.admission",
+            "observedCount": 7,
+            "outcome": "success"
+          },
+          {
+            "id": "command.arguments",
+            "observedCount": 7,
+            "outcome": "success"
+          },
+          {
+            "id": "command.handler",
+            "observedCount": 7,
+            "outcome": "success"
+          },
+          {
+            "id": "command.route",
+            "observedCount": 7,
+            "outcome": "success"
+          },
+          {
+            "id": "interaction.initialResponse",
+            "observedCount": 7,
+            "outcome": "success"
+          },
+          {
+            "id": "interaction.originalEdit",
+            "observedCount": 7,
+            "outcome": "success"
+          },
+          {
+            "id": "synthetic.invoke",
+            "observedCount": 7,
+            "outcome": "success"
+          },
+          {
+            "id": "synthetic.providerWait",
+            "observedCount": 7,
+            "outcome": "success"
+          }
+        ],
+        "name": "scenario-directDeferred",
+        "receipt": {
+          "cleanupAllowanceSeconds": 8.0,
+          "elapsedSeconds": 0.312,
+          "endUTC": "2026-11-12T13:03:36.948545+00:00",
+          "executionID": "d56d7126-98d2-49e2-aa90-876c100a36ff",
+          "executionLimitSeconds": 90,
+          "exitCode": 0,
+          "groupState": "gone",
+          "name": "scenario-directDeferred",
+          "parentReaped": true,
+          "pid": 6686,
+          "readerThreads": 0,
+          "remainingProcesses": [],
+          "startUTC": "2026-11-12T13:03:36.636231+00:00",
+          "status": "passed",
+          "testSummaries": [],
+          "verification": "available",
+          "verificationMalformedRows": 0,
+          "verificationTruncated": false
+        }
+      },
+      {
+        "callbacks": 7,
+        "cleanup": {
+          "acknowledgementBytes": 0,
+          "acknowledgements": 0,
+          "handlers": 0
+        },
+        "counts": {
+          "admitted": 7,
+          "completed": 7,
+          "deadlineMisses": 0,
+          "offered": 7,
+          "outcomes": {
+            "cancelled": 0,
+            "failure": 0,
+            "rejected": 0,
+            "success": 7,
+            "timedOut": 0,
+            "uncertain": 0
+          }
+        },
+        "edits": 7,
+        "expectedOutcome": "success",
+        "metricPopulations": [
+          {
+            "id": "command.admission",
+            "observedCount": 7,
+            "outcome": "success"
+          },
+          {
+            "id": "command.arguments",
+            "observedCount": 7,
+            "outcome": "success"
+          },
+          {
+            "id": "command.handler",
+            "observedCount": 7,
+            "outcome": "success"
+          },
+          {
+            "id": "command.route",
+            "observedCount": 7,
+            "outcome": "success"
+          },
+          {
+            "id": "interaction.initialResponse",
+            "observedCount": 7,
+            "outcome": "success"
+          },
+          {
+            "id": "interaction.originalEdit",
+            "observedCount": 7,
+            "outcome": "success"
+          },
+          {
+            "id": "synthetic.invoke",
+            "observedCount": 7,
+            "outcome": "success"
+          },
+          {
+            "id": "synthetic.providerWait",
+            "observedCount": 7,
+            "outcome": "success"
+          }
+        ],
+        "name": "scenario-dslDeferred",
+        "receipt": {
+          "cleanupAllowanceSeconds": 8.0,
+          "elapsedSeconds": 0.348,
+          "endUTC": "2026-11-12T13:03:37.300280+00:00",
+          "executionID": "400dcf73-6462-4407-a0db-be0993f29c41",
+          "executionLimitSeconds": 90,
+          "exitCode": 0,
+          "groupState": "gone",
+          "name": "scenario-dslDeferred",
+          "parentReaped": true,
+          "pid": 6698,
+          "readerThreads": 0,
+          "remainingProcesses": [],
+          "startUTC": "2026-11-12T13:03:36.951850+00:00",
+          "status": "passed",
+          "testSummaries": [],
+          "verification": "available",
+          "verificationMalformedRows": 0,
+          "verificationTruncated": false
+        }
+      },
+      {
+        "callbacks": 0,
+        "cleanup": {
+          "acknowledgementBytes": 0,
+          "acknowledgements": 0,
+          "handlers": 0
+        },
+        "counts": {
+          "admitted": 7,
+          "completed": 7,
+          "deadlineMisses": 0,
+          "offered": 7,
+          "outcomes": {
+            "cancelled": 0,
+            "failure": 7,
+            "rejected": 0,
+            "success": 0,
+            "timedOut": 0,
+            "uncertain": 0
+          }
+        },
+        "edits": 0,
+        "expectedOutcome": "failure",
+        "metricPopulations": [
+          {
+            "id": "command.admission",
+            "observedCount": 7,
+            "outcome": "success"
+          },
+          {
+            "id": "command.arguments",
+            "observedCount": 7,
+            "outcome": "success"
+          },
+          {
+            "id": "command.handler",
+            "observedCount": 7,
+            "outcome": "failure"
+          },
+          {
+            "id": "command.route",
+            "observedCount": 7,
+            "outcome": "failure"
+          },
+          {
+            "id": "synthetic.invoke",
+            "observedCount": 7,
+            "outcome": "failure"
+          },
+          {
+            "id": "synthetic.providerWait",
+            "observedCount": 7,
+            "outcome": "failure"
+          }
+        ],
+        "name": "scenario-directFailure",
+        "receipt": {
+          "cleanupAllowanceSeconds": 8.0,
+          "elapsedSeconds": 0.288,
+          "endUTC": "2026-11-12T13:03:37.590971+00:00",
+          "executionID": "e691ceff-da2a-47ff-8e95-b8d4321fbebd",
+          "executionLimitSeconds": 90,
+          "exitCode": 0,
+          "groupState": "gone",
+          "name": "scenario-directFailure",
+          "parentReaped": true,
+          "pid": 6710,
+          "readerThreads": 0,
+          "remainingProcesses": [],
+          "startUTC": "2026-11-12T13:03:37.302983+00:00",
+          "status": "passed",
+          "testSummaries": [],
+          "verification": "available",
+          "verificationMalformedRows": 0,
+          "verificationTruncated": false
+        }
+      },
+      {
+        "callbacks": 0,
+        "cleanup": {
+          "acknowledgementBytes": 0,
+          "acknowledgements": 0,
+          "handlers": 0
+        },
+        "counts": {
+          "admitted": 7,
+          "completed": 7,
+          "deadlineMisses": 0,
+          "offered": 7,
+          "outcomes": {
+            "cancelled": 0,
+            "failure": 7,
+            "rejected": 0,
+            "success": 0,
+            "timedOut": 0,
+            "uncertain": 0
+          }
+        },
+        "edits": 0,
+        "expectedOutcome": "failure",
+        "metricPopulations": [
+          {
+            "id": "command.admission",
+            "observedCount": 7,
+            "outcome": "success"
+          },
+          {
+            "id": "command.arguments",
+            "observedCount": 7,
+            "outcome": "success"
+          },
+          {
+            "id": "command.handler",
+            "observedCount": 7,
+            "outcome": "failure"
+          },
+          {
+            "id": "command.route",
+            "observedCount": 7,
+            "outcome": "failure"
+          },
+          {
+            "id": "synthetic.invoke",
+            "observedCount": 7,
+            "outcome": "failure"
+          },
+          {
+            "id": "synthetic.providerWait",
+            "observedCount": 7,
+            "outcome": "failure"
+          }
+        ],
+        "name": "scenario-dslFailure",
+        "receipt": {
+          "cleanupAllowanceSeconds": 8.0,
+          "elapsedSeconds": 0.284,
+          "endUTC": "2026-11-12T13:03:37.878464+00:00",
+          "executionID": "a2d7c844-d256-49f2-b280-e4f428857a0f",
+          "executionLimitSeconds": 90,
+          "exitCode": 0,
+          "groupState": "gone",
+          "name": "scenario-dslFailure",
+          "parentReaped": true,
+          "pid": 6720,
+          "readerThreads": 0,
+          "remainingProcesses": [],
+          "startUTC": "2026-11-12T13:03:37.594206+00:00",
+          "status": "passed",
+          "testSummaries": [],
+          "verification": "available",
+          "verificationMalformedRows": 0,
+          "verificationTruncated": false
+        }
+      },
+      {
+        "callbacks": 0,
+        "cleanup": {
+          "acknowledgementBytes": 0,
+          "acknowledgements": 0,
+          "handlers": 0
+        },
+        "counts": {
+          "admitted": 7,
+          "completed": 7,
+          "deadlineMisses": 0,
+          "offered": 7,
+          "outcomes": {
+            "cancelled": 7,
+            "failure": 0,
+            "rejected": 0,
+            "success": 0,
+            "timedOut": 0,
+            "uncertain": 0
+          }
+        },
+        "edits": 0,
+        "expectedOutcome": "cancelled",
+        "metricPopulations": [
+          {
+            "id": "command.admission",
+            "observedCount": 7,
+            "outcome": "success"
+          },
+          {
+            "id": "command.arguments",
+            "observedCount": 7,
+            "outcome": "success"
+          },
+          {
+            "id": "command.handler",
+            "observedCount": 7,
+            "outcome": "cancelled"
+          },
+          {
+            "id": "command.route",
+            "observedCount": 7,
+            "outcome": "cancelled"
+          },
+          {
+            "id": "synthetic.invoke",
+            "observedCount": 7,
+            "outcome": "cancelled"
+          },
+          {
+            "id": "synthetic.providerWait",
+            "observedCount": 7,
+            "outcome": "cancelled"
+          }
+        ],
+        "name": "scenario-directCancelled",
+        "receipt": {
+          "cleanupAllowanceSeconds": 8.0,
+          "elapsedSeconds": 0.277,
+          "endUTC": "2026-11-12T13:03:38.158212+00:00",
+          "executionID": "a25afd40-7a00-437f-a930-d69fa82a9630",
+          "executionLimitSeconds": 90,
+          "exitCode": 0,
+          "groupState": "gone",
+          "name": "scenario-directCancelled",
+          "parentReaped": true,
+          "pid": 6730,
+          "readerThreads": 0,
+          "remainingProcesses": [],
+          "startUTC": "2026-11-12T13:03:37.881387+00:00",
+          "status": "passed",
+          "testSummaries": [],
+          "verification": "available",
+          "verificationMalformedRows": 0,
+          "verificationTruncated": false
+        }
+      },
+      {
+        "callbacks": 0,
+        "cleanup": {
+          "acknowledgementBytes": 0,
+          "acknowledgements": 0,
+          "handlers": 0
+        },
+        "counts": {
+          "admitted": 7,
+          "completed": 7,
+          "deadlineMisses": 0,
+          "offered": 7,
+          "outcomes": {
+            "cancelled": 7,
+            "failure": 0,
+            "rejected": 0,
+            "success": 0,
+            "timedOut": 0,
+            "uncertain": 0
+          }
+        },
+        "edits": 0,
+        "expectedOutcome": "cancelled",
+        "metricPopulations": [
+          {
+            "id": "command.admission",
+            "observedCount": 7,
+            "outcome": "success"
+          },
+          {
+            "id": "command.arguments",
+            "observedCount": 7,
+            "outcome": "success"
+          },
+          {
+            "id": "command.handler",
+            "observedCount": 7,
+            "outcome": "cancelled"
+          },
+          {
+            "id": "command.route",
+            "observedCount": 7,
+            "outcome": "cancelled"
+          },
+          {
+            "id": "synthetic.invoke",
+            "observedCount": 7,
+            "outcome": "cancelled"
+          },
+          {
+            "id": "synthetic.providerWait",
+            "observedCount": 7,
+            "outcome": "cancelled"
+          }
+        ],
+        "name": "scenario-dslCancelled",
+        "receipt": {
+          "cleanupAllowanceSeconds": 8.0,
+          "elapsedSeconds": 0.283,
+          "endUTC": "2026-11-12T13:03:38.444529+00:00",
+          "executionID": "b1c546d8-3302-43b0-acf0-23d313018612",
+          "executionLimitSeconds": 90,
+          "exitCode": 0,
+          "groupState": "gone",
+          "name": "scenario-dslCancelled",
+          "parentReaped": true,
+          "pid": 6740,
+          "readerThreads": 0,
+          "remainingProcesses": [],
+          "startUTC": "2026-11-12T13:03:38.161254+00:00",
+          "status": "passed",
+          "testSummaries": [],
+          "verification": "available",
+          "verificationMalformedRows": 0,
+          "verificationTruncated": false
+        }
+      }
+    ],
+    "serialExecutions": true,
+    "smokeInvocations": 32,
+    "smokes": [
+      {
+        "cleanup": {
+          "active": 0,
+          "cacheEntries": 0,
+          "flights": 0,
+          "ordered": 0,
+          "queued": 0,
+          "transportActive": 0,
+          "transportBodies": 0,
+          "waiters": 0
+        },
+        "counts": {
+          "admitted": 16,
+          "completed": 16,
+          "deadlineMisses": 0,
+          "offered": 16,
+          "outcomes": {
+            "cancelled": 0,
+            "failure": 0,
+            "rejected": 0,
+            "success": 16,
+            "timedOut": 0,
+            "uncertain": 0
+          }
+        },
+        "metricPopulations": [
+          {
+            "id": "rest.cacheLookup",
+            "observedCount": 16,
+            "outcome": "success"
+          },
+          {
+            "id": "rest.decode",
+            "observedCount": 16,
+            "outcome": "success"
+          },
+          {
+            "id": "rest.executionJoined",
+            "observedCount": 16,
+            "outcome": "success"
+          },
+          {
+            "id": "rest.request",
+            "observedCount": 16,
+            "outcome": "success"
+          }
+        ],
+        "name": "smoke-rest",
+        "receipt": {
+          "cleanupAllowanceSeconds": 8.0,
+          "elapsedSeconds": 0.32,
+          "endUTC": "2026-11-12T13:03:38.767420+00:00",
+          "executionID": "8a069141-f500-400d-9926-d38811da3a73",
+          "executionLimitSeconds": 120,
+          "exitCode": 0,
+          "groupState": "gone",
+          "name": "smoke-rest",
+          "parentReaped": true,
+          "pid": 6750,
+          "readerThreads": 0,
+          "remainingProcesses": [],
+          "startUTC": "2026-11-12T13:03:38.447833+00:00",
+          "status": "passed",
+          "testSummaries": [],
+          "verification": "available",
+          "verificationMalformedRows": 0,
+          "verificationTruncated": false
+        }
+      },
+      {
+        "cleanup": {
+          "note": "All owned adapters closed and joined; NIO public pool counts sampled only afterward.",
+          "ownedAdaptersClosed": true,
+          "peerConnections": {
+            "acceptedConnections": 2,
+            "activeConnections": 0,
+            "peakConnections": 2
+          },
+          "poolActiveAfterShutdown": 0,
+          "poolIdleAfterShutdown": 0
+        },
+        "counts": {
+          "admitted": 16,
+          "completed": 16,
+          "deadlineMisses": 0,
+          "offered": 16,
+          "outcomes": {
+            "cancelled": 0,
+            "failure": 0,
+            "rejected": 0,
+            "success": 16,
+            "timedOut": 0,
+            "uncertain": 0
+          }
+        },
+        "metricPopulations": [
+          {
+            "id": "transport.body",
+            "observedCount": 16,
+            "outcome": "success"
+          },
+          {
+            "id": "transport.bodyClose",
+            "observedCount": 16,
+            "outcome": "success"
+          },
+          {
+            "id": "transport.construct",
+            "observedCount": 16,
+            "outcome": "success"
+          },
+          {
+            "id": "transport.headers",
+            "observedCount": 16,
+            "outcome": "success"
+          },
+          {
+            "id": "transport.request",
+            "observedCount": 16,
+            "outcome": "success"
+          }
+        ],
+        "name": "smoke-loopback",
+        "receipt": {
+          "cleanupAllowanceSeconds": 8.0,
+          "elapsedSeconds": 0.914,
+          "endUTC": "2026-11-12T13:03:39.684289+00:00",
+          "executionID": "c64c204b-8f66-420f-a2f9-cf691dbbb9b0",
+          "executionLimitSeconds": 120,
+          "exitCode": 0,
+          "groupState": "gone",
+          "name": "smoke-loopback",
+          "parentReaped": true,
+          "pid": 6760,
+          "readerThreads": 0,
+          "remainingProcesses": [],
+          "startUTC": "2026-11-12T13:03:38.770619+00:00",
+          "status": "passed",
+          "testSummaries": [],
+          "verification": "available",
+          "verificationMalformedRows": 0,
+          "verificationTruncated": false
+        }
+      }
+    ],
+    "sourceBoundVerifierSummary": "scenario-report-validation.json",
+    "status": "passed",
+    "uniqueProcessIDs": 10
+  },
+  "reviewMethod": "Read-only source/diff and retained-evidence inspection; independent JSON/hash/population/receipt calculations. No Swift/native reruns or helper reruns during this final review.",
+  "reviewedAtUTC": "2026-11-12T13:14:03.546507+00:00",
+  "reviewer": "Codex subagent /root/synthetic_review",
+  "schemaVersion": 1,
+  "sourceReview": {
+    "instrumentationDecision": "Runtime stage patch remains unapplied. Focused synthetic success plus blocked peer signal masks and transport waitUntilExit stack justify repairing the observed peer owner without changing router/responder/statistics APIs.",
+    "peer": "The SIGTERM handler is installed before unblocking only SIGTERM and before announcing readiness. Exec launchers isolate signal masks; startup/read/termination waits are finite and cleanup reaps the child and checks port closure.",
+    "supervisor": "Linux admission creates a new session. Cleanup enumerates that session and signals distinct child groups before the leader, preserves a finite TERM/KILL/reap allowance, and rejects unverifiable final enumeration. Real child/grandchild fixtures cover timeout, exited parent, success with hidden output, supervisor interruption and an unrelated session. The heartbeat fixture makes its marker ready before starting cadence measurement.",
+    "synthetic": "All eight direct/DSL cases remain. Exact offered/admitted/completed parity and individual handler/acknowledgement/byte cleanup assertions are present. Both deferred cancellation paths join the task after confirmed callback and assert one terminal, no edit and no replacement cohort. All eight pre-cancelled paths assert no work. AsyncStream completion/cancellation removes the non-cancellation-aware continuation barrier owner."
+  },
+  "status": "passed-local-review",
+  "unchangedSinceBaseline": [
+    "Tools/DiscordKitLoadTests/Sources/DiscordKitLoadTests/SyntheticCommandTimingRunner.swift",
+    "Sources/DiscordCommands/CommandRouter.swift",
+    "Sources/DiscordInteractions/InteractionResponder.swift",
+    "Sources/DiscordInteractions/InteractionContext.swift",
+    "Sources/DiscordInteractions/InteractionOperationFailure.swift",
+    "Tools/DiscordBenchmarkSupport/Sources/DiscordBenchmarkSupport/RunStatistics.swift",
+    "Tools/DiscordKitLoadTests/Package.swift",
+    "Tools/DiscordKitLoadTests/Package.resolved",
+    "Package.swift",
+    "Package.resolved"
+  ],
+  "unresolvedBlockingSourceFindings": []
+}

@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "name": "phase4-helpers",
+  "stage": "phase4",
+  "operation": "localHelperCheck",
+  "arguments": [
+    "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "Tools/ci",
+    "-p",
+    "test_*.py"
+  ],
+  "start": "2026-11-12T13:55:24.518199+00:00",
+  "startMonotonic": 349731.912719166,
+  "deadlineMonotonic": 350031.912719166,
+  "executionLimitSeconds": 300,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "operation",
+  "paths": {
+    "output": "/Users/carsonrau/Developer/DiscordKit-ci-phase4/Docs/Tasks/ci-reliability/phase-4/helpers.log",
+    "stdout": null,
+    "diagnostics": "/Users/carsonrau/Developer/DiscordKit-ci-phase4/Docs/Tasks/ci-reliability/phase-4/helpers.diagnostics.jsonl",
+    "receipt": "/Users/carsonrau/Developer/DiscordKit-ci-phase4/Docs/Tasks/ci-reliability/phase-4/helpers.receipt.json"
+  },
+  "identity": {
+    "executionID": "622aed56-ef29-4c79-a885-871fc37e49b2",
+    "supervisorPID": 61899,
+    "host": "Pokemon-GO-Plus",
+    "system": "Darwin",
+    "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase4"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 61911,
+  "group": 61911,
+  "cleanup": {
+    "status": "group-signalled",
+    "signals": [],
+    "parentReaped": true,
+    "allowanceSeconds": 8.0,
+    "seconds": 0.003,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "verificationMalformedRows": 0,
+    "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "/Users/carsonrau/Developer/DiscordKit-ci-phase4/Docs/Tasks/ci-reliability/phase-4/helpers.log",
+      "retainedBytes": 1060,
+      "observedBytes": 1060,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T13:55:36.758576+00:00",
+  "endMonotonic": 349744.153084333,
+  "elapsedSeconds": 12.24,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}

@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "name": "benchmarks-python",
+  "stage": "preflight-benchmark-python",
+  "operation": "localHelperCheck",
+  "arguments": [
+    "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "Tools/DiscordDSLBenchmarks/scripts",
+    "-p",
+    "test_*.py"
+  ],
+  "start": "2026-11-12T15:17:55.365614+00:00",
+  "startMonotonic": 354682.717533708,
+  "deadlineMonotonic": 354982.7169555,
+  "executionLimitSeconds": 300,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "aggregate",
+  "paths": {
+    "output": "/Users/carsonrau/Developer/DiscordKit-ci-phase7/Docs/Tasks/ci-reliability/phase-7/checks/benchmark-python/00-benchmarks-python.log",
+    "stdout": null,
+    "diagnostics": "/Users/carsonrau/Developer/DiscordKit-ci-phase7/Docs/Tasks/ci-reliability/phase-7/checks/benchmark-python/00-benchmarks-python.diagnostics.jsonl",
+    "receipt": "/Users/carsonrau/Developer/DiscordKit-ci-phase7/Docs/Tasks/ci-reliability/phase-7/checks/benchmark-python/00-benchmarks-python.receipt.json"
+  },
+  "identity": {
+    "executionID": "50c99416-3127-48b9-84a6-a3beae447a9b",
+    "supervisorPID": 23601,
+    "host": "Pokemon-GO-Plus",
+    "system": "Darwin",
+    "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase7"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 23658,
+  "group": 23658,
+  "cleanup": {
+    "status": "group-signalled",
+    "signals": [],
+    "parentReaped": true,
+    "allowanceSeconds": 8.0,
+    "seconds": 0.004,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "verificationMalformedRows": 0,
+    "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "/Users/carsonrau/Developer/DiscordKit-ci-phase7/Docs/Tasks/ci-reliability/phase-7/checks/benchmark-python/00-benchmarks-python.log",
+      "retainedBytes": 390,
+      "observedBytes": 390,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T15:17:55.763260+00:00",
+  "endMonotonic": 354683.115199458,
+  "elapsedSeconds": 0.398,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}

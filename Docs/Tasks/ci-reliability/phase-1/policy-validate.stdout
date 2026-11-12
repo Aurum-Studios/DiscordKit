@@ -1,0 +1,8 @@
+{
+  "components": 12,
+  "discoveredTestLeaves": false,
+  "evaluatedSwiftPM": false,
+  "inventoryLevel": "declared-targets-and-existing-planner-suites; not discovered test leaves",
+  "rootTargets": 34,
+  "status": "valid"
+}

@@ -1,0 +1,53 @@
+# File: .github/actions/consume-native/action.yml
+# Created by Carson Rau.
+# Copyright (c) 2026 Aurum Studios.
+# https://aurum-studios.com
+
+name: Resolve and download immutable native producers
+description: Select successful same-run producers for this consumer without compiling.
+inputs:
+  platform:
+    required: true
+    description: Exact native platform.
+  components-json:
+    required: true
+    description: Exact nonempty component array or build matrix.
+  selection:
+    default: .build/artifact-index.json
+    description: Current consumer's authenticated selection receipt.
+  destination:
+    required: true
+    description: New directory for compiled tarballs.
+runs:
+  using: composite
+  steps:
+    - name: Reconcile this consumer's immutable producer index
+      shell: python
+      env:
+        NATIVE_PLATFORM: ${{ inputs.platform }}
+        NATIVE_COMPONENTS: ${{ inputs.components-json }}
+        NATIVE_SELECTION: ${{ inputs.selection }}
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        import os, subprocess, sys
+        subprocess.run([sys.executable, 'Tools/ci/artifact_index.py', 'resolve',
+                        '--platform', os.environ['NATIVE_PLATFORM'],
+                        '--components-json', os.environ['NATIVE_COMPONENTS'],
+                        '--output', os.environ['NATIVE_SELECTION']], check=True)
+    - name: Verify downloads by immutable ID and API digest
+      shell: python
+      env:
+        NATIVE_SELECTION: ${{ inputs.selection }}
+        NATIVE_DESTINATION: ${{ inputs.destination }}
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        import json, os, subprocess, sys
+        from pathlib import Path
+        selection = Path(os.environ['NATIVE_SELECTION'])
+        index = json.loads(selection.read_text())
+        for component, entry in sorted(index['components'].items()):
+            subprocess.run([sys.executable, 'Tools/ci/artifact_transfer.py', 'download',
+                            '--artifact-id', str(entry['artifactID']),
+                            '--expected-digest', entry['artifactDigest'],
+                            '--destination', os.environ['NATIVE_DESTINATION'],
+                            '--receipt', str(selection.parent / ('download-' + component + '.json'))], check=True)

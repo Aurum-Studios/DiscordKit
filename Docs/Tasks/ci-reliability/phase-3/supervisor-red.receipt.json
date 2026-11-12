@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "status": "failed",
+  "name": "supervisor-separate-pgid-red",
+  "stage": "phase-3-supervisor-regression",
+  "operation": "localHelperCheck",
+  "arguments": [
+    "/usr/bin/python3",
+    "-m",
+    "unittest",
+    "test_linux_ci.LinuxSessionTests.test_timeout_cleans_separate_child_and_grandchild_groups"
+  ],
+  "start": "2026-11-12T12:57:45.008918+00:00",
+  "startMonotonic": 75371.466932009,
+  "deadlineMonotonic": 75401.466932009,
+  "executionLimitSeconds": 30,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "operation",
+  "paths": {
+    "output": "/work/Docs/Tasks/ci-reliability/phase-3/supervisor-red.log",
+    "stdout": null,
+    "diagnostics": "/work/Docs/Tasks/ci-reliability/phase-3/supervisor-red.diagnostics.jsonl",
+    "receipt": "/work/Docs/Tasks/ci-reliability/phase-3/supervisor-red.receipt.json"
+  },
+  "identity": {
+    "executionID": "4d744afc-ddc5-4e72-ae8a-5b4ea4c8d6d7",
+    "supervisorPID": 5683,
+    "host": "213b31596900",
+    "system": "Linux",
+    "repository": "/work"
+  },
+  "exitCode": 1,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 5689,
+  "group": 5689,
+  "error": "Command '('/usr/bin/python3', '-m', 'unittest', 'test_linux_ci.LinuxSessionTests.test_timeout_cleans_separate_child_and_grandchild_groups')' returned non-zero exit status 1.",
+  "errorType": "CalledProcessError",
+  "cleanup": {
+    "status": "group-signalled",
+    "signals": [],
+    "parentReaped": true,
+    "allowanceSeconds": 8.0,
+    "seconds": 0.028,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "/work/Docs/Tasks/ci-reliability/phase-3/supervisor-red.log",
+      "retainedBytes": 1038,
+      "observedBytes": 1038,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T12:57:46.291387+00:00",
+  "endMonotonic": 75372.749593473,
+  "elapsedSeconds": 1.283,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}

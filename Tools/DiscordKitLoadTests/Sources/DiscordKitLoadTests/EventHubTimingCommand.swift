@@ -9,16 +9,32 @@ import Foundation
 /// Versioned native owner receipts plus directly measured common publication/residence populations.
 struct EventHubTimingReport: Codable, Sendable {
     var format = "DiscordKitLoadTests.gateway-hub-timing"
-    var schemaVersion: UInt32 = 1
+    var schemaVersion: UInt32 = 2
     let configuration: EventHubTimingConfiguration
     let measurement: EventHubTimingMeasurement
     let common: DiscordBenchmarkReport
 }
 
+/// Native accounting changed incompatibly; do not reinterpret historical schema-1 reports.
+extension EventHubTimingReport {
+    init(from decoder: any Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        format = try values.decode(String.self, forKey: .format)
+        schemaVersion = try values.decode(UInt32.self, forKey: .schemaVersion)
+        guard format == "DiscordKitLoadTests.gateway-hub-timing", schemaVersion == 2 else {
+            throw DecodingError.dataCorruptedError(forKey: .schemaVersion, in: values,
+                debugDescription: "Expected event-hub owner accounting schema 2")
+        }
+        configuration = try values.decode(EventHubTimingConfiguration.self, forKey: .configuration)
+        measurement = try values.decode(EventHubTimingMeasurement.self, forKey: .measurement)
+        common = try values.decode(DiscordBenchmarkReport.self, forKey: .common)
+    }
+}
+
 enum EventHubTimingCommand {
     /// Lists only the four versioned public-hub experiments, excluding scripted socket scenarios.
     static var cases: [String] { EventHubTimingScenario.allCases.map(\.rawValue) }
-    static let scheduler = "sequential-publication-fixed-backlog-v1"
+    static let scheduler = "sequential-publication-fixed-backlog-v2"
 
     /// Runs independent finite warmup and measured hubs with cooperative caps and joined teardown.
     /// - Parameter configuration: Validated workload dimensions and distinct warmup/measured caps.
@@ -60,7 +76,7 @@ enum EventHubTimingCommand {
                 "queuedDepth": UInt64(configuration.queuedDepth), "payloadBytes": UInt64(configuration.payloadBytes),
                 "overflowPolicy": UInt64(EventHubTimingPolicy.allCases.firstIndex(of: configuration.policy)!),
                 "delayMicroseconds": UInt64(configuration.delayMicroseconds), "durationCapSeconds": configuration.durationSeconds],
-            instrumentation: "whole-population-aggregate-1us-publication-100us-residence", scheduler: scheduler,
+            instrumentation: "owner-accounting-v2-1us-publication-100us-residence", scheduler: scheduler,
             concurrency: 1, warmupNanoseconds: warmup, requestedWarmupNanoseconds: configuration.warmupSeconds * 1_000_000_000,
             measuredNanoseconds: elapsed, repetitions: 1)
         identity.catalogVersion = 6
@@ -81,6 +97,7 @@ enum EventHubTimingCommand {
             qualificationLimitations: [
                 "Local informational timing; reserved-host no-change floor, profiler evidence and numerical qualification remain separate requirements.",
                 "One sequential publisher; concurrency is 1. Subscriber/hub fan-out, queued depth, payload bytes, overflow policy and injected consumer hold are independent input dimensions.",
+                "Native schema 2 retains setup and measured dispositions separately; owner accounting adds bounded bookkeeping, so compare only matching scheduler and instrumentation identities.",
                 "Counts partition measured subscriber copies; publication metrics count actual publication calls. Successful throughput includes eventual measured-copy consumption and gross setup/drain time.",
                 "Residence includes setup backlog and all retained terminal copies. Direct handoffs have no retained residence; publication, residence and pull percentiles cannot be added or subtracted.",
                 "Warmup uses separate owners. CPU includes setup and warmup; peak RSS is process lifetime. Envelope byte charges do not establish metadata allocations or unique payload memory.",

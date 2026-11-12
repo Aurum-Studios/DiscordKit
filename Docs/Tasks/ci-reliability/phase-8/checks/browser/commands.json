@@ -1,0 +1,96 @@
+{
+  "aggregateSeconds": 300,
+  "certifying": false,
+  "commands": [
+    {
+      "arguments": [
+        "node",
+        "--test",
+        "Browser/DiscordActivityBridge/ActivityBridge.test.mjs",
+        "Browser/DiscordActivityBridge/ActivityHostExample.test.mjs",
+        "Browser/DiscordActivityBridge/ActivityNetwork.test.mjs"
+      ],
+      "diagnostics": "00-browser.diagnostics.jsonl",
+      "execution": {
+        "arguments": [
+          "node",
+          "--test",
+          "Browser/DiscordActivityBridge/ActivityBridge.test.mjs",
+          "Browser/DiscordActivityBridge/ActivityHostExample.test.mjs",
+          "Browser/DiscordActivityBridge/ActivityNetwork.test.mjs"
+        ],
+        "cleanup": {
+          "allowanceSeconds": 8.0,
+          "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed",
+          "groupState": "gone",
+          "parentReaped": true,
+          "remainingProcesses": [],
+          "seconds": 0.004,
+          "signals": [],
+          "status": "group-signalled",
+          "verification": "available",
+          "verificationMalformedRows": 0,
+          "verificationTruncated": false
+        },
+        "cleanupAllowanceSeconds": 8.0,
+        "deadlineMonotonic": 355986.269148625,
+        "deadlineSource": "aggregate",
+        "diagnosticsTruncated": false,
+        "elapsedSeconds": 0.138,
+        "end": "2026-11-12T15:34:39.062311+00:00",
+        "endMonotonic": 355686.407170375,
+        "executionLimitSeconds": 300,
+        "exitCode": 0,
+        "group": 39613,
+        "identity": {
+          "executionID": "6f2bda01-fa83-44b9-98ef-2ef17ee65a09",
+          "host": "Pokemon-GO-Plus",
+          "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase8",
+          "supervisorPID": 39559,
+          "system": "Darwin"
+        },
+        "lastObservedTest": null,
+        "name": "browser",
+        "operation": "localHelperCheck",
+        "outputs": [
+          {
+            "observedBytes": 4349,
+            "path": "/Users/carsonrau/Developer/DiscordKit-ci-phase8/Docs/Tasks/ci-reliability/phase-8/checks/browser/00-browser.log",
+            "retainedBytes": 4349,
+            "truncated": false
+          }
+        ],
+        "paths": {
+          "diagnostics": "/Users/carsonrau/Developer/DiscordKit-ci-phase8/Docs/Tasks/ci-reliability/phase-8/checks/browser/00-browser.diagnostics.jsonl",
+          "output": "/Users/carsonrau/Developer/DiscordKit-ci-phase8/Docs/Tasks/ci-reliability/phase-8/checks/browser/00-browser.log",
+          "receipt": "/Users/carsonrau/Developer/DiscordKit-ci-phase8/Docs/Tasks/ci-reliability/phase-8/checks/browser/00-browser.receipt.json",
+          "stdout": null
+        },
+        "pid": 39613,
+        "readerThreads": 0,
+        "schemaVersion": 1,
+        "signal": null,
+        "stage": "preflight-browser",
+        "start": "2026-11-12T15:34:38.924740+00:00",
+        "startMonotonic": 355686.269583833,
+        "status": "passed",
+        "timeoutCategory": null
+      },
+      "executionReceipt": "00-browser.receipt.json",
+      "log": "00-browser.log",
+      "name": "browser",
+      "operation": "localHelperCheck",
+      "seconds": 0.138,
+      "status": "passed",
+      "timeoutSeconds": 300
+    }
+  ],
+  "deadlineMonotonic": 355986.269148625,
+  "group": "browser",
+  "operation": "group",
+  "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase8",
+  "schemaVersion": 1,
+  "seconds": 0.141,
+  "stage": "preflight",
+  "status": "passed"
+}

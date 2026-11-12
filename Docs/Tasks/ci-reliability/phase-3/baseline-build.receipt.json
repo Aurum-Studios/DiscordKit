@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "name": "baseline-build",
+  "stage": "phase3-baseline-build",
+  "operation": "coldCompileCommand",
+  "arguments": [
+    "swift",
+    "build",
+    "--package-path",
+    "Tools/DiscordKitLoadTests",
+    "--scratch-path",
+    "/scratch",
+    "--build-system",
+    "native",
+    "--jobs",
+    "6",
+    "--force-resolved-versions",
+    "--disable-experimental-prebuilts",
+    "--explicit-target-dependency-import-check",
+    "error",
+    "--build-tests"
+  ],
+  "start": "2026-11-12T12:39:50.424269+00:00",
+  "startMonotonic": 74296.882306356,
+  "deadlineMonotonic": 75496.882306356,
+  "executionLimitSeconds": 1200,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "operation",
+  "paths": {
+    "output": "/work/Docs/Tasks/ci-reliability/phase-3/baseline-build.log",
+    "stdout": null,
+    "diagnostics": "/work/Docs/Tasks/ci-reliability/phase-3/baseline-build.diagnostics.jsonl",
+    "receipt": "/work/Docs/Tasks/ci-reliability/phase-3/baseline-build.receipt.json"
+  },
+  "identity": {
+    "executionID": "b9470732-07a1-4cde-90ac-82a1214ecfbd",
+    "supervisorPID": 454,
+    "host": "213b31596900",
+    "system": "Linux",
+    "repository": "/work"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 460,
+  "group": 460,
+  "cleanup": {
+    "status": "group-signalled",
+    "signals": [],
+    "parentReaped": true,
+    "allowanceSeconds": 8.0,
+    "seconds": 0.027,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "/work/Docs/Tasks/ci-reliability/phase-3/baseline-build.log",
+      "retainedBytes": 99550,
+      "observedBytes": 99550,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T12:44:33.567475+00:00",
+  "endMonotonic": 74580.025716373,
+  "elapsedSeconds": 283.143,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}

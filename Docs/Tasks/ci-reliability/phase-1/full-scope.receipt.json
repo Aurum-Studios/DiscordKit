@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "name": "full-scope",
+  "stage": "phase-1-static",
+  "operation": "localHelperCheck",
+  "arguments": [
+    "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+    "Tools/ci/scheduling_policy.py",
+    "scope",
+    "--mode",
+    "full"
+  ],
+  "start": "2026-11-12T05:04:33.007442+00:00",
+  "startMonotonic": 317880.5169425,
+  "deadlineMonotonic": 318180.5169425,
+  "executionLimitSeconds": 300,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "operation",
+  "paths": {
+    "output": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/Docs/Tasks/ci-reliability/phase-1/full-scope.log",
+    "stdout": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/Docs/Tasks/ci-reliability/phase-1/full-scope.stdout",
+    "diagnostics": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/Docs/Tasks/ci-reliability/phase-1/full-scope.diagnostics.jsonl",
+    "receipt": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/Docs/Tasks/ci-reliability/phase-1/full-scope.receipt.json"
+  },
+  "identity": {
+    "executionID": "32716419-2460-4886-ad6b-10e793ac62da",
+    "supervisorPID": 64705,
+    "host": "Pokemon-GO-Plus",
+    "system": "Darwin",
+    "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase1"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 64730,
+  "group": 64730,
+  "cleanup": {
+    "status": "group-signalled",
+    "signals": [],
+    "parentReaped": true,
+    "allowanceSeconds": 8.0,
+    "seconds": 0.004,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/Docs/Tasks/ci-reliability/phase-1/full-scope.log",
+      "retainedBytes": 111,
+      "observedBytes": 111,
+      "truncated": false
+    },
+    {
+      "path": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/Docs/Tasks/ci-reliability/phase-1/full-scope.stdout",
+      "retainedBytes": 35976,
+      "observedBytes": 35976,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T05:04:33.070304+00:00",
+  "endMonotonic": 317880.579835625,
+  "elapsedSeconds": 0.063,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}

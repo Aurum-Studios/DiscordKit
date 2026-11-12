@@ -1,0 +1,102 @@
+{
+  "aggregateSeconds": 300,
+  "certifying": false,
+  "commands": [
+    {
+      "arguments": [
+        "actionlint",
+        ".github/workflows/ci.yml",
+        ".github/workflows/documentation.yml",
+        ".github/workflows/native-platform.yml",
+        ".github/workflows/release.yml",
+        ".github/workflows/timing-comparison.yml",
+        ".github/workflows/timing-periodic.yml",
+        ".github/workflows/upstream-review.yml"
+      ],
+      "diagnostics": "00-actionlint.diagnostics.jsonl",
+      "execution": {
+        "arguments": [
+          "actionlint",
+          ".github/workflows/ci.yml",
+          ".github/workflows/documentation.yml",
+          ".github/workflows/native-platform.yml",
+          ".github/workflows/release.yml",
+          ".github/workflows/timing-comparison.yml",
+          ".github/workflows/timing-periodic.yml",
+          ".github/workflows/upstream-review.yml"
+        ],
+        "cleanup": {
+          "allowanceSeconds": 8.0,
+          "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed",
+          "groupState": "gone",
+          "parentReaped": true,
+          "remainingProcesses": [],
+          "seconds": 0.003,
+          "signals": [],
+          "status": "group-signalled",
+          "verification": "available",
+          "verificationMalformedRows": 0,
+          "verificationTruncated": false
+        },
+        "cleanupAllowanceSeconds": 8.0,
+        "deadlineMonotonic": 356164.516217375,
+        "deadlineSource": "aggregate",
+        "diagnosticsTruncated": false,
+        "elapsedSeconds": 0.014,
+        "end": "2026-11-12T15:37:37.186669+00:00",
+        "endMonotonic": 355864.530216666,
+        "executionLimitSeconds": 300,
+        "exitCode": 0,
+        "group": 43502,
+        "identity": {
+          "executionID": "ee9e89f4-2124-4385-a48a-e155305a07b0",
+          "host": "Pokemon-GO-Plus",
+          "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase8",
+          "supervisorPID": 43468,
+          "system": "Darwin"
+        },
+        "lastObservedTest": null,
+        "name": "actionlint",
+        "operation": "localHelperCheck",
+        "outputs": [
+          {
+            "observedBytes": 256,
+            "path": "/Users/carsonrau/Developer/DiscordKit-ci-phase8/Docs/Tasks/ci-reliability/phase-8/checks/workflow-final/00-actionlint.log",
+            "retainedBytes": 256,
+            "truncated": false
+          }
+        ],
+        "paths": {
+          "diagnostics": "/Users/carsonrau/Developer/DiscordKit-ci-phase8/Docs/Tasks/ci-reliability/phase-8/checks/workflow-final/00-actionlint.diagnostics.jsonl",
+          "output": "/Users/carsonrau/Developer/DiscordKit-ci-phase8/Docs/Tasks/ci-reliability/phase-8/checks/workflow-final/00-actionlint.log",
+          "receipt": "/Users/carsonrau/Developer/DiscordKit-ci-phase8/Docs/Tasks/ci-reliability/phase-8/checks/workflow-final/00-actionlint.receipt.json",
+          "stdout": null
+        },
+        "pid": 43502,
+        "readerThreads": 0,
+        "schemaVersion": 1,
+        "signal": null,
+        "stage": "preflight-workflow",
+        "start": "2026-11-12T15:37:37.173028+00:00",
+        "startMonotonic": 355864.516556791,
+        "status": "passed",
+        "timeoutCategory": null
+      },
+      "executionReceipt": "00-actionlint.receipt.json",
+      "log": "00-actionlint.log",
+      "name": "actionlint",
+      "operation": "localHelperCheck",
+      "seconds": 0.014,
+      "status": "passed",
+      "timeoutSeconds": 300
+    }
+  ],
+  "deadlineMonotonic": 356164.516217375,
+  "group": null,
+  "operation": "workflow",
+  "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase8",
+  "schemaVersion": 1,
+  "seconds": 0.016,
+  "stage": "preflight",
+  "status": "passed"
+}

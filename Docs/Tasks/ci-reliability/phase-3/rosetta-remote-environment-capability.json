@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "capturedAtUTC": "2026-11-12T12:50:49.711163+00:00",
+  "scope": "One sacrificial Python child only, querying one allowlisted diagnostic environment variable; no compiler/test/Swift process",
+  "debuggerLimitSeconds": 5,
+  "overallLimitSeconds": 15,
+  "fixturePID": 5558,
+  "port": 41291,
+  "childSubreaperEnabled": true,
+  "probe": {
+    "arguments": [
+      "lldb",
+      "--batch",
+      "--no-lldbinit",
+      "-o",
+      "target create --arch x86_64 /usr/bin/python3",
+      "-o",
+      "gdb-remote 127.0.0.1:41291",
+      "-o",
+      "script import lldb,time; lldb.debugger.SetAsync(True); print(\"CONTINUE\",lldb.process.Continue()); time.sleep(0.3); print(\"STATE\",lldb.process.GetState())",
+      "-o",
+      "process status"
+    ],
+    "status": "available",
+    "output": "(lldb) target create --arch x86_64 /usr/bin/python3\nCurrent executable set to '/usr/bin/python3' (x86_64).\n(lldb) gdb-remote 127.0.0.1:41291\nProcess 5558 stopped\n* thread #1, stop reason = signal SIGTRAP\n      frame #0: 0x00007ffffffe5540 \n->  0x7ffffffe5540: movq   %rsp, %rdi\n    0x7ffffffe5543: callq  0x7ffffffe61d0\n    0x7ffffffe5548: movq   %rax, %r12\n    0x7ffffffe554b: movq   %rsp, %r13\nTarget 0: (python3) stopped.\n(lldb) script import lldb,time; lldb.debugger.SetAsync(True); print(\"CONTINUE\",lldb.process.Continue()); time.sleep(0.3); print(\"STATE\",lldb.process.GetState())\nProcess 5558 exited with status = 0 (0x00000000) \nCONTINUE success\nSTATE 10\n(lldb) process status\nProcess 5558 exited with status = 0 (0x00000000) \n",
+    "exitCode": 0,
+    "truncated": false,
+    "seconds": 1.034
+  },
+  "fixtureReaped": true,
+  "fixtureExitCode": 0,
+  "fixtureOutput": "ROSETTA_DEBUGSERVER_PORT_IN_TARGET 41291\n",
+  "adoptedChildrenReaped": [
+    {
+      "pid": 5559,
+      "waitStatus": 0
+    }
+  ],
+  "fixtureProcessGroupGone": true,
+  "seconds": 1.045
+}

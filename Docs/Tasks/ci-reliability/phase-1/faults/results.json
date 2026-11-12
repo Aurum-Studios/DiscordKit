@@ -1,0 +1,123 @@
+{
+  "schemaVersion": 1,
+  "qualification": "local macOS Python process fixtures; no native Swift or hosted qualification",
+  "cases": [
+    {
+      "name": "normal-success",
+      "seconds": 0.023,
+      "expectedException": null,
+      "exception": null,
+      "status": "passed",
+      "timeoutCategory": null,
+      "readerThreads": 0,
+      "groupState": "gone",
+      "receipt": "normal-success.receipt.json",
+      "diagnostics": "normal-success.diagnostics.jsonl",
+      "testProcessAttempts": 1
+    },
+    {
+      "name": "assertion-failure",
+      "seconds": 0.023,
+      "expectedException": "CalledProcessError",
+      "exception": "CalledProcessError",
+      "status": "failed",
+      "timeoutCategory": null,
+      "readerThreads": 0,
+      "groupState": "gone",
+      "receipt": "assertion-failure.receipt.json",
+      "diagnostics": "assertion-failure.diagnostics.jsonl",
+      "testProcessAttempts": 1
+    },
+    {
+      "name": "silent-stuck",
+      "seconds": 0.707,
+      "expectedException": "TimeoutExpired",
+      "exception": "TimeoutExpired",
+      "status": "failed",
+      "timeoutCategory": "execution",
+      "readerThreads": 0,
+      "groupState": "gone",
+      "receipt": "silent-stuck.receipt.json",
+      "diagnostics": "silent-stuck.diagnostics.jsonl",
+      "testProcessAttempts": 1
+    },
+    {
+      "name": "term-ignoring",
+      "seconds": 5.707,
+      "expectedException": "TimeoutExpired",
+      "exception": "TimeoutExpired",
+      "status": "failed",
+      "timeoutCategory": "execution",
+      "readerThreads": 0,
+      "groupState": "gone",
+      "receipt": "term-ignoring.receipt.json",
+      "diagnostics": "term-ignoring.diagnostics.jsonl",
+      "testProcessAttempts": 1
+    },
+    {
+      "name": "inherited-stdout",
+      "seconds": 0.705,
+      "expectedException": "TimeoutExpired",
+      "exception": "TimeoutExpired",
+      "status": "failed",
+      "timeoutCategory": "inherited-output",
+      "readerThreads": 0,
+      "groupState": "gone",
+      "receipt": "inherited-stdout.receipt.json",
+      "diagnostics": "inherited-stdout.diagnostics.jsonl",
+      "testProcessAttempts": 1
+    },
+    {
+      "name": "failed-debugger",
+      "seconds": 0.906,
+      "expectedException": "TimeoutExpired",
+      "exception": "TimeoutExpired",
+      "status": "failed",
+      "timeoutCategory": "execution",
+      "readerThreads": 0,
+      "groupState": "gone",
+      "receipt": "failed-debugger.receipt.json",
+      "diagnostics": "failed-debugger.diagnostics.jsonl",
+      "testProcessAttempts": 1
+    },
+    {
+      "name": "failed-forwarding",
+      "seconds": 0.023,
+      "expectedException": "OSError",
+      "exception": "OSError",
+      "status": "failed",
+      "timeoutCategory": null,
+      "readerThreads": 0,
+      "groupState": "gone",
+      "receipt": "failed-forwarding.receipt.json",
+      "diagnostics": "failed-forwarding.diagnostics.jsonl",
+      "testProcessAttempts": 1
+    },
+    {
+      "name": "interruption",
+      "seconds": 0.261,
+      "expectedException": "CommandInterrupted",
+      "exception": "CommandInterrupted",
+      "status": "interrupted",
+      "timeoutCategory": null,
+      "readerThreads": 0,
+      "groupState": "gone",
+      "receipt": "interruption.receipt.json",
+      "diagnostics": "interruption.diagnostics.jsonl",
+      "testProcessAttempts": 1
+    },
+    {
+      "name": "discovery-stdout",
+      "seconds": 0.023,
+      "expectedException": null,
+      "exception": null,
+      "status": "passed",
+      "timeoutCategory": null,
+      "readerThreads": 0,
+      "groupState": "gone",
+      "receipt": "discovery-stdout.receipt.json",
+      "diagnostics": "discovery-stdout.diagnostics.jsonl",
+      "testProcessAttempts": 1
+    }
+  ]
+}

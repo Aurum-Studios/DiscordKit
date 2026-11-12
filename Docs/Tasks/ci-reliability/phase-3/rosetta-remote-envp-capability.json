@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 1,
+  "capturedAtUTC": "2026-11-12T12:53:38.399085+00:00",
+  "scope": "One sacrificial Python child then true subprocess only; no compiler/test/Swift process",
+  "debuggerLimitSeconds": 5,
+  "overallLimitSeconds": 15,
+  "priorAttempts": [
+    {
+      "schemaVersion": 1,
+      "capturedAtUTC": "2026-11-12T12:52:54.576185+00:00",
+      "scope": "One sacrificial Python child then true subprocess only; no compiler/test/Swift process",
+      "debuggerLimitSeconds": 5,
+      "overallLimitSeconds": 15,
+      "environmentScrubCode": "import lldb,struct\nprocess=lldb.process\nerror=lldb.SBError()\nsp=process.GetSelectedThread().GetFrameAtIndex(0).FindRegister('rsp').GetValueAsUnsigned()\ndef read_u64(address):\n    data=process.ReadMemory(address,8,error)\n    if error.Fail() or len(data)!=8:\n        raise RuntimeError('initial stack pointer read failed')\n    return struct.unpack('<Q',data)[0]\nargc=read_u64(sp)\nif argc>4096 or read_u64(sp+8*(argc+1))!=0:\n    raise RuntimeError('unexpected initial x86 ELF stack layout')\nenvp=sp+8*(argc+2)\npointers=[]\nfound=[]\nprefix=b'ROSETTA_DEBUGSERVER_PORT='\nfor index in range(1024):\n    pointer=read_u64(envp+8*index)\n    pointers.append(pointer)\n    if pointer==0:\n        break\n    value=process.ReadMemory(pointer,len(prefix),error)\n    if error.Fail():\n        raise RuntimeError('diagnostic variable name read failed')\n    if value==prefix:\n        found.append(index)\nelse:\n    raise RuntimeError('initial environment exceeds diagnostic cap')\nif len(found)!=1:\n    raise RuntimeError('expected one diagnostic variable')\nindex=found[0]\ntail=b''.join(struct.pack('<Q',pointer) for pointer in pointers[index+1:])\nwritten=process.WriteMemory(envp+8*index,tail,error)\nif error.Fail() or written!=len(tail):\n    raise RuntimeError('diagnostic variable pointer removal failed')\nprint('DIAGNOSTIC_VARIABLE_REMOVED',len(found),'SHIFTED_POINTERS',len(tail)//8)\n",
+      "fixturePID": 5597,
+      "port": 53135,
+      "childSubreaperEnabled": true,
+      "probe": {
+        "arguments": [
+          "lldb",
+          "--batch",
+          "--no-lldbinit",
+          "-o",
+          "target create --arch x86_64 /usr/bin/python3",
+          "-o",
+          "gdb-remote 127.0.0.1:53135",
+          "-o",
+          "script exec(\"import lldb,struct\\nprocess=lldb.process\\nerror=lldb.SBError()\\nsp=process.GetSelectedThread().GetFrameAtIndex(0).FindRegister('rsp').GetValueAsUnsigned()\\ndef read_u64(address):\\n    data=process.ReadMemory(address,8,error)\\n    if error.Fail() or len(data)!=8:\\n        raise RuntimeError('initial stack pointer read failed')\\n    return struct.unpack('<Q',data)[0]\\nargc=read_u64(sp)\\nif argc>4096 or read_u64(sp+8*(argc+1))!=0:\\n    raise RuntimeError('unexpected initial x86 ELF stack layout')\\nenvp=sp+8*(argc+2)\\npointers=[]\\nfound=[]\\nprefix=b'ROSETTA_DEBUGSERVER_PORT='\\nfor index in range(1024):\\n    pointer=read_u64(envp+8*index)\\n    pointers.append(pointer)\\n    if pointer==0:\\n        break\\n    value=process.ReadMemory(pointer,len(prefix),error)\\n    if error.Fail():\\n        raise RuntimeError('diagnostic variable name read failed')\\n    if value==prefix:\\n        found.append(index)\\nelse:\\n    raise RuntimeError('initial environment exceeds diagnostic cap')\\nif len(found)!=1:\\n    raise RuntimeError('expected one diagnostic variable')\\nindex=found[0]\\ntail=b''.join(struct.pack('<Q',pointer) for pointer in pointers[index+1:])\\nwritten=process.WriteMemory(envp+8*index,tail,error)\\nif error.Fail() or written!=len(tail):\\n    raise RuntimeError('diagnostic variable pointer removal failed')\\nprint('DIAGNOSTIC_VARIABLE_REMOVED',len(found),'SHIFTED_POINTERS',len(tail)//8)\\n\")",
+          "-o",
+          "script import lldb,time; lldb.debugger.SetAsync(True); print(\"CONTINUE\",lldb.process.Continue()); time.sleep(0.3); print(\"STATE\",lldb.process.GetState())",
+          "-o",
+          "process status"
+        ],
+        "status": "available",
+        "output": "(lldb) target create --arch x86_64 /usr/bin/python3\nCurrent executable set to '/usr/bin/python3' (x86_64).\n(lldb) gdb-remote 127.0.0.1:53135\nProcess 5597 stopped\n* thread #1, stop reason = signal SIGTRAP\n      frame #0: 0x00007ffffffe5540 \n->  0x7ffffffe5540: movq   %rsp, %rdi\n    0x7ffffffe5543: callq  0x7ffffffe61d0\n    0x7ffffffe5548: movq   %rax, %r12\n    0x7ffffffe554b: movq   %rsp, %r13\nTarget 0: (python3) stopped.\n(lldb) script exec(\"import lldb,struct\\nprocess=lldb.process\\nerror=lldb.SBError()\\nsp=process.GetSelectedThread().GetFrameAtIndex(0).FindRegister('rsp').GetValueAsUnsigned()\\ndef read_u64(address):\\n    data=process.ReadMemory(address,8,error)\\n    if error.Fail() or len(data)!=8:\\n        raise RuntimeError('initial stack pointer read failed')\\n    return struct.unpack('<Q',data)[0]\\nargc=read_u64(sp)\\nif argc>4096 or read_u64(sp+8*(argc+1))!=0:\\n    raise RuntimeError('unexpected initial x86 ELF stack layout')\\nenvp=sp+8*(argc+2)\\npointers=[]\\nfound=[]\\nprefix=b'ROSETTA_DEBUGSERVER_PORT='\\nfor index in range(1024):\\n    pointer=read_u64(envp+8*index)\\n    pointers.append(pointer)\\n    if pointer==0:\\n        break\\n    value=process.ReadMemory(pointer,len(prefix),error)\\n    if error.Fail():\\n        raise RuntimeError('diagnostic variable name read failed')\\n    if value==prefix:\\n        found.append(index)\\nelse:\\n    raise RuntimeError('initial environment exceeds diagnostic cap')\\nif len(found)!=1:\\n    raise RuntimeError('expected one diagnostic variable')\\nindex=found[0]\\ntail=b''.join(struct.pack('<Q',pointer) for pointer in pointers[index+1:])\\nwritten=process.WriteMemory(envp+8*index,tail,error)\\nif error.Fail() or written!=len(tail):\\n    raise RuntimeError('diagnostic variable pointer removal failed')\\nprint('DIAGNOSTIC_VARIABLE_REMOVED',len(found),'SHIFTED_POINTERS',len(tail)//8)\\n\")\nDIAGNOSTIC_VARIABLE_REMOVED 1 SHIFTED_POINTERS 1\n(lldb) script import lldb,time; lldb.debugger.SetAsync(True); print(\"CONTINUE\",lldb.process.Continue()); time.sleep(0.3); print(\"STATE\",lldb.process.GetState())\nProcess 5597 exited with status = 127 (0x0000007f) \nCONTINUE success\nSTATE 10\n(lldb) process status\nProcess 5597 exited with status = 127 (0x0000007f) \n",
+        "exitCode": 0,
+        "truncated": false,
+        "seconds": 1.038
+      },
+      "fixtureReaped": true,
+      "fixtureExitCode": 127,
+      "fixtureOutput": "-c: error while loading shared libraries: -c: cannot open shared object file\n",
+      "adoptedChildrenReaped": [
+        {
+          "pid": 5598,
+          "waitStatus": 0
+        }
+      ],
+      "fixtureProcessGroupGone": true,
+      "seconds": 1.05,
+      "assessment": "Pointer removal shifted envp terminator but not auxv; dynamic loader failed before program code. Corrected by preserving table layout and renaming only one byte of the diagnostic variable name."
+    }
+  ],
+  "environmentScrubCode": "import lldb,struct\nprocess=lldb.process\nerror=lldb.SBError()\nsp=process.GetSelectedThread().GetFrameAtIndex(0).FindRegister('rsp').GetValueAsUnsigned()\ndef read_u64(address):\n    data=process.ReadMemory(address,8,error)\n    if error.Fail() or len(data)!=8:\n        raise RuntimeError('initial stack pointer read failed')\n    return struct.unpack('<Q',data)[0]\nargc=read_u64(sp)\nif argc>4096 or read_u64(sp+8*(argc+1))!=0:\n    raise RuntimeError('unexpected initial x86 ELF stack layout')\nenvp=sp+8*(argc+2)\nfound=[]\nprefix=b'ROSETTA_DEBUGSERVER_PORT='\nfor index in range(1024):\n    pointer=read_u64(envp+8*index)\n    if pointer==0:\n        break\n    value=process.ReadMemory(pointer,len(prefix),error)\n    if error.Fail():\n        raise RuntimeError('diagnostic variable name read failed')\n    if value==prefix:\n        found.append(pointer)\nelse:\n    raise RuntimeError('initial environment exceeds diagnostic cap')\nif len(found)!=1:\n    raise RuntimeError('expected one diagnostic variable')\nwritten=process.WriteMemory(found[0],b'_',error)\nif error.Fail() or written!=1:\n    raise RuntimeError('diagnostic variable name scrub failed')\nprint('DIAGNOSTIC_VARIABLE_RENAMED',len(found),'MODIFIED_BYTES',written)\n",
+  "fixturePID": 5617,
+  "port": 60751,
+  "childSubreaperEnabled": true,
+  "probe": {
+    "arguments": [
+      "lldb",
+      "--batch",
+      "--no-lldbinit",
+      "-o",
+      "target create --arch x86_64 /usr/bin/python3",
+      "-o",
+      "gdb-remote 127.0.0.1:60751",
+      "-o",
+      "script exec(\"import lldb,struct\\nprocess=lldb.process\\nerror=lldb.SBError()\\nsp=process.GetSelectedThread().GetFrameAtIndex(0).FindRegister('rsp').GetValueAsUnsigned()\\ndef read_u64(address):\\n    data=process.ReadMemory(address,8,error)\\n    if error.Fail() or len(data)!=8:\\n        raise RuntimeError('initial stack pointer read failed')\\n    return struct.unpack('<Q',data)[0]\\nargc=read_u64(sp)\\nif argc>4096 or read_u64(sp+8*(argc+1))!=0:\\n    raise RuntimeError('unexpected initial x86 ELF stack layout')\\nenvp=sp+8*(argc+2)\\nfound=[]\\nprefix=b'ROSETTA_DEBUGSERVER_PORT='\\nfor index in range(1024):\\n    pointer=read_u64(envp+8*index)\\n    if pointer==0:\\n        break\\n    value=process.ReadMemory(pointer,len(prefix),error)\\n    if error.Fail():\\n        raise RuntimeError('diagnostic variable name read failed')\\n    if value==prefix:\\n        found.append(pointer)\\nelse:\\n    raise RuntimeError('initial environment exceeds diagnostic cap')\\nif len(found)!=1:\\n    raise RuntimeError('expected one diagnostic variable')\\nwritten=process.WriteMemory(found[0],b'_',error)\\nif error.Fail() or written!=1:\\n    raise RuntimeError('diagnostic variable name scrub failed')\\nprint('DIAGNOSTIC_VARIABLE_RENAMED',len(found),'MODIFIED_BYTES',written)\\n\")",
+      "-o",
+      "script import lldb,time; lldb.debugger.SetAsync(True); print(\"CONTINUE\",lldb.process.Continue()); time.sleep(0.3); print(\"STATE\",lldb.process.GetState())",
+      "-o",
+      "process status"
+    ],
+    "status": "available",
+    "output": "(lldb) target create --arch x86_64 /usr/bin/python3\nCurrent executable set to '/usr/bin/python3' (x86_64).\n(lldb) gdb-remote 127.0.0.1:60751\nProcess 5617 stopped\n* thread #1, stop reason = signal SIGTRAP\n      frame #0: 0x00007ffffffe5540 \n->  0x7ffffffe5540: movq   %rsp, %rdi\n    0x7ffffffe5543: callq  0x7ffffffe61d0\n    0x7ffffffe5548: movq   %rax, %r12\n    0x7ffffffe554b: movq   %rsp, %r13\nTarget 0: (python3) stopped.\n(lldb) script exec(\"import lldb,struct\\nprocess=lldb.process\\nerror=lldb.SBError()\\nsp=process.GetSelectedThread().GetFrameAtIndex(0).FindRegister('rsp').GetValueAsUnsigned()\\ndef read_u64(address):\\n    data=process.ReadMemory(address,8,error)\\n    if error.Fail() or len(data)!=8:\\n        raise RuntimeError('initial stack pointer read failed')\\n    return struct.unpack('<Q',data)[0]\\nargc=read_u64(sp)\\nif argc>4096 or read_u64(sp+8*(argc+1))!=0:\\n    raise RuntimeError('unexpected initial x86 ELF stack layout')\\nenvp=sp+8*(argc+2)\\nfound=[]\\nprefix=b'ROSETTA_DEBUGSERVER_PORT='\\nfor index in range(1024):\\n    pointer=read_u64(envp+8*index)\\n    if pointer==0:\\n        break\\n    value=process.ReadMemory(pointer,len(prefix),error)\\n    if error.Fail():\\n        raise RuntimeError('diagnostic variable name read failed')\\n    if value==prefix:\\n        found.append(pointer)\\nelse:\\n    raise RuntimeError('initial environment exceeds diagnostic cap')\\nif len(found)!=1:\\n    raise RuntimeError('expected one diagnostic variable')\\nwritten=process.WriteMemory(found[0],b'_',error)\\nif error.Fail() or written!=1:\\n    raise RuntimeError('diagnostic variable name scrub failed')\\nprint('DIAGNOSTIC_VARIABLE_RENAMED',len(found),'MODIFIED_BYTES',written)\\n\")\nDIAGNOSTIC_VARIABLE_RENAMED 1 MODIFIED_BYTES 1\n(lldb) script import lldb,time; lldb.debugger.SetAsync(True); print(\"CONTINUE\",lldb.process.Continue()); time.sleep(0.3); print(\"STATE\",lldb.process.GetState())\nProcess 5617 stopped and restarted: thread 1 received signal: SIGCHLD\nProcess 5617 exited with status = 0 (0x00000000) \nCONTINUE success\nSTATE 10\n(lldb) process status\nProcess 5617 exited with status = 0 (0x00000000) \n",
+    "exitCode": 0,
+    "truncated": false,
+    "seconds": 1.038
+  },
+  "fixtureReaped": true,
+  "fixtureExitCode": 0,
+  "fixtureOutput": "ROSETTA_DEBUGSERVER_PORT_IN_TARGET None\nTRUE_CHILD_EXIT 0\n",
+  "adoptedChildrenReaped": [
+    {
+      "pid": 5618,
+      "waitStatus": 0
+    }
+  ],
+  "fixtureProcessGroupGone": true,
+  "seconds": 1.048
+}

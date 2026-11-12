@@ -1,0 +1,25 @@
+# File: .github/actions/setup-artifact-sdk/action.yml
+# Created by Carson Rau.
+# Copyright (c) 2026 Aurum Studios.
+# https://aurum-studios.com
+
+name: Install locked artifact protocol dependencies
+description: Provision the pinned Node adapter with a bounded install and no package scripts.
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v6
+      with:
+        node-version: '24'
+    - name: Install the exact dependency lock
+      shell: python
+      run: |
+        from pathlib import Path
+        import sys
+        sys.path.insert(0, 'Tools/ci')
+        from linux_ci import Command, execute
+        if not Path('Tools/ci/artifact-sdk/node_modules/@actions/artifact').is_dir():
+            execute(Command('artifact-sdk-install', ('npm', 'ci', '--ignore-scripts',
+                    '--fetch-retries=0', '--fetch-timeout=120000', '--prefix',
+                    'Tools/ci/artifact-sdk'), 180, operation='metadata'),
+                    Path.cwd(), Path('.build/artifact-sdk-install.log'))

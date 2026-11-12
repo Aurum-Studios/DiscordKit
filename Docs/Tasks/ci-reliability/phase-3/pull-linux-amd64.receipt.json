@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "name": "pull-linux-amd64",
+  "stage": "phase3-environment",
+  "operation": "transportAttempt",
+  "arguments": [
+    "docker",
+    "pull",
+    "--platform",
+    "linux/amd64",
+    "swift@sha256:1a784fc9de712a985020336bbc447c21050777cbe3b76f915eb352fd21b50f3d"
+  ],
+  "start": "2026-11-12T12:37:51.595535+00:00",
+  "startMonotonic": 345079.015700458,
+  "deadlineMonotonic": 345199.015700458,
+  "executionLimitSeconds": 120,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "operation",
+  "paths": {
+    "output": "Docs/Tasks/ci-reliability/phase-3/pull-linux-amd64.log",
+    "stdout": null,
+    "diagnostics": "Docs/Tasks/ci-reliability/phase-3/pull-linux-amd64.diagnostics.jsonl",
+    "receipt": "Docs/Tasks/ci-reliability/phase-3/pull-linux-amd64.receipt.json"
+  },
+  "identity": {
+    "executionID": "474377ef-a8ee-4eea-a8e1-7828d0e242a5",
+    "supervisorPID": 4521,
+    "host": "Pokemon-GO-Plus",
+    "system": "Darwin",
+    "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase3"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 4531,
+  "group": 4531,
+  "cleanup": {
+    "status": "group-signalled",
+    "signals": [],
+    "parentReaped": true,
+    "allowanceSeconds": 8.0,
+    "seconds": 0.003,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "Docs/Tasks/ci-reliability/phase-3/pull-linux-amd64.log",
+      "retainedBytes": 890,
+      "observedBytes": 890,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T12:38:23.897954+00:00",
+  "endMonotonic": 345111.318063166,
+  "elapsedSeconds": 32.302,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}

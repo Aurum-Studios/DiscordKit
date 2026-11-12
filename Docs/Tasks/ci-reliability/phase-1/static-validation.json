@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "completedAt": "2026-11-12T05:04:33.071440+00:00",
+  "qualification": "local static/source checks; no native or hosted execution",
+  "status": "passed",
+  "checks": {
+    "finalTestedInputsMatch": true,
+    "testLogHashesMatch": true,
+    "pythonFilesParsed": 37,
+    "jsonFilesParsed": 17,
+    "originalCheckoutUnchanged": true,
+    "phase0CheckoutUnchanged": true,
+    "workflowProductManifestsAndPinsUnchanged": true,
+    "phase0CaptureHashesVerified": 29,
+    "phase0ReceiptsUnchanged": true,
+    "localMarkdownLinksVerified": 124,
+    "diffWhitespace": "passed",
+    "paidExecutionAllowanceRemainsZero": true,
+    "sourceAnchoredScope": {
+      "builds": 24,
+      "suiteJobs": 101,
+      "platforms": [
+        "linux-x64",
+        "macos-arm64"
+      ],
+      "nativeQualification": false
+    },
+    "retainedFaultCleanupReceiptsVerified": 9,
+    "reviewFixtureCleanupVerified": true
+  },
+  "commands": [
+    {
+      "argv": [
+        "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+        "Tools/ci/scheduling_policy.py",
+        "validate"
+      ],
+      "exit": 0,
+      "receipt": "policy-validate.receipt.json"
+    },
+    {
+      "argv": [
+        "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+        "Tools/ci/scheduling_policy.py",
+        "bootstrap"
+      ],
+      "exit": 0,
+      "receipt": "bootstrap.receipt.json"
+    },
+    {
+      "argv": [
+        "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+        "Tools/ci/scheduling_policy.py",
+        "scope",
+        "--mode",
+        "full"
+      ],
+      "exit": 0,
+      "receipt": "full-scope.receipt.json"
+    }
+  ],
+  "independentReview": "Final source/config review found no material blocker; seven validation input hashes match."
+}

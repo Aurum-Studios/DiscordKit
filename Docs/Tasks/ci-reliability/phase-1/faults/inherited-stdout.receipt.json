@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "status": "failed",
+  "name": "inherited-stdout",
+  "stage": "phase-1-fault-injection",
+  "operation": "fixture",
+  "arguments": [
+    "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+    "-c",
+    "import subprocess,sys; subprocess.Popen([sys.executable,'-c','import time; time.sleep(60)']); print('parent completed',flush=True)"
+  ],
+  "start": "2026-11-12T04:57:29.106338+00:00",
+  "startMonotonic": 317456.618696125,
+  "deadlineMonotonic": 317457.318696125,
+  "executionLimitSeconds": 0.7,
+  "cleanupAllowanceSeconds": 8.0,
+  "paths": {
+    "output": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/Docs/Tasks/ci-reliability/phase-1/faults/inherited-stdout.log",
+    "stdout": null,
+    "diagnostics": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/Docs/Tasks/ci-reliability/phase-1/faults/inherited-stdout.diagnostics.jsonl",
+    "receipt": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/Docs/Tasks/ci-reliability/phase-1/faults/inherited-stdout.receipt.json"
+  },
+  "identity": {
+    "executionID": "c154c1d3-8a1b-48a3-ba2a-3f6e0cb01eb2",
+    "supervisorPID": 54297,
+    "host": "Pokemon-GO-Plus",
+    "system": "Darwin",
+    "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase1"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "timeoutCategory": "inherited-output",
+  "pid": 54550,
+  "group": 54550,
+  "error": "Command '('/Library/Frameworks/Python.framework/Versions/3.14/bin/python3', '-c', \"import subprocess,sys; subprocess.Popen([sys.executable,'-c','import time; time.sleep(60)']); print('parent completed',flush=True)\")' timed out after 0.7 seconds",
+  "errorType": "TimeoutExpired",
+  "cleanup": {
+    "status": "group-signalled",
+    "signals": [
+      "SIGTERM",
+      "SIGKILL"
+    ],
+    "parentReaped": true,
+    "allowanceSeconds": 8.0,
+    "seconds": 0.004,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/Docs/Tasks/ci-reliability/phase-1/faults/inherited-stdout.log",
+      "retainedBytes": 240,
+      "observedBytes": 240,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T04:57:29.811116+00:00",
+  "endMonotonic": 317457.323502375,
+  "elapsedSeconds": 0.705,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}

@@ -1,0 +1,5 @@
+{
+  "container": "discordkit-ci-phase3-artifact-identity",
+  "absent": true,
+  "scope": "Read-only private scratch identity only; container auto-removed or owned fallback removed."
+}

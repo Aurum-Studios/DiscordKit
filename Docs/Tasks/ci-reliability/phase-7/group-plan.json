@@ -1,0 +1,1243 @@
+{
+  "base": "e47b506ce4b619e5a055d248f5c42df3b9f68f2a",
+  "builds": {
+    "include": [
+      {
+        "component": "root",
+        "group": "Linux-x64-64",
+        "jobs": 2,
+        "platform": "linux-x64",
+        "shell": "bash"
+      },
+      {
+        "component": "macros",
+        "group": "Linux-x64-64",
+        "jobs": 2,
+        "platform": "linux-x64",
+        "shell": "bash"
+      },
+      {
+        "component": "extensions",
+        "group": "Linux-x64-64",
+        "jobs": 2,
+        "platform": "linux-x64",
+        "shell": "bash"
+      },
+      {
+        "component": "tooling",
+        "group": "Linux-x64-8",
+        "jobs": 2,
+        "platform": "linux-x64",
+        "shell": "bash"
+      },
+      {
+        "component": "load",
+        "group": "Linux-x64-64",
+        "jobs": 2,
+        "platform": "linux-x64",
+        "shell": "bash"
+      },
+      {
+        "component": "benchmarks",
+        "group": "Linux-x64-64",
+        "jobs": 2,
+        "platform": "linux-x64",
+        "shell": "bash"
+      },
+      {
+        "component": "timing-support",
+        "group": "Linux-x64-8",
+        "jobs": 2,
+        "platform": "linux-x64",
+        "shell": "bash"
+      },
+      {
+        "component": "timing",
+        "group": "Linux-x64-64",
+        "jobs": 2,
+        "platform": "linux-x64",
+        "shell": "bash"
+      },
+      {
+        "component": "foundation",
+        "group": "Linux-x64-64",
+        "jobs": 2,
+        "platform": "linux-x64",
+        "shell": "bash"
+      },
+      {
+        "component": "media",
+        "group": "Linux-x64-64",
+        "jobs": 2,
+        "platform": "linux-x64",
+        "shell": "bash"
+      },
+      {
+        "component": "consumers",
+        "group": "Linux-x64-64",
+        "jobs": 2,
+        "platform": "linux-x64",
+        "shell": "bash"
+      },
+      {
+        "component": "release",
+        "group": "Linux-x64-64",
+        "jobs": 2,
+        "platform": "linux-x64",
+        "shell": "bash"
+      },
+      {
+        "component": "root",
+        "group": "MacOS-26-5",
+        "jobs": 2,
+        "platform": "macos-arm64",
+        "shell": "bash"
+      },
+      {
+        "component": "macros",
+        "group": "MacOS-26-5",
+        "jobs": 2,
+        "platform": "macos-arm64",
+        "shell": "bash"
+      },
+      {
+        "component": "extensions",
+        "group": "MacOS-26-5",
+        "jobs": 2,
+        "platform": "macos-arm64",
+        "shell": "bash"
+      },
+      {
+        "component": "tooling",
+        "group": "MacOS-26-5",
+        "jobs": 2,
+        "platform": "macos-arm64",
+        "shell": "bash"
+      },
+      {
+        "component": "load",
+        "group": "MacOS-26-5",
+        "jobs": 2,
+        "platform": "macos-arm64",
+        "shell": "bash"
+      },
+      {
+        "component": "benchmarks",
+        "group": "MacOS-26-5",
+        "jobs": 2,
+        "platform": "macos-arm64",
+        "shell": "bash"
+      },
+      {
+        "component": "timing-support",
+        "group": "MacOS-26-5",
+        "jobs": 2,
+        "platform": "macos-arm64",
+        "shell": "bash"
+      },
+      {
+        "component": "timing",
+        "group": "MacOS-26-5",
+        "jobs": 2,
+        "platform": "macos-arm64",
+        "shell": "bash"
+      },
+      {
+        "component": "foundation",
+        "group": "MacOS-26-5",
+        "jobs": 2,
+        "platform": "macos-arm64",
+        "shell": "bash"
+      },
+      {
+        "component": "media",
+        "group": "MacOS-26-5",
+        "jobs": 2,
+        "platform": "macos-arm64",
+        "shell": "bash"
+      },
+      {
+        "component": "consumers",
+        "group": "MacOS-26-5",
+        "jobs": 2,
+        "platform": "macos-arm64",
+        "shell": "bash"
+      },
+      {
+        "component": "release",
+        "group": "MacOS-26-5",
+        "jobs": 2,
+        "platform": "macos-arm64",
+        "shell": "bash"
+      }
+    ]
+  },
+  "evidence": "local source planner; no native discovery/execution",
+  "groups": {
+    "linux-x64": [
+      {
+        "durationSources": [
+          {
+            "jobID": 130952646534,
+            "kind": "retained-mixed-step",
+            "seconds": 19,
+            "source": "jobs-page-1",
+            "stepNumber": 6,
+            "suite": "DiscordApplePlatformTests"
+          },
+          {
+            "jobID": 130952646550,
+            "kind": "retained-mixed-step",
+            "seconds": 14,
+            "source": "jobs-page-1",
+            "stepNumber": 6,
+            "suite": "DiscordClientTests"
+          },
+          {
+            "jobID": 130952646653,
+            "kind": "retained-mixed-step",
+            "seconds": 17,
+            "source": "jobs-page-2",
+            "stepNumber": 6,
+            "suite": "DiscordDSLTests"
+          },
+          {
+            "jobID": 130952646762,
+            "kind": "retained-mixed-step",
+            "seconds": 19,
+            "source": "jobs-page-2",
+            "stepNumber": 6,
+            "suite": "DiscordTransportTests"
+          },
+          {
+            "jobID": 130952646723,
+            "kind": "retained-mixed-step",
+            "seconds": 93,
+            "source": "jobs-page-2",
+            "stepNumber": 6,
+            "suite": "DiscordVoiceCodecsTests"
+          },
+          {
+            "jobID": 130952646757,
+            "kind": "retained-mixed-step",
+            "seconds": 16,
+            "source": "jobs-page-2",
+            "stepNumber": 6,
+            "suite": "DiscordVoiceCryptoTests"
+          }
+        ],
+        "name": "root-01",
+        "planningWeightSeconds": 178,
+        "suite": "root-01",
+        "suites": [
+          "DiscordApplePlatformTests",
+          "DiscordClientTests",
+          "DiscordDSLTests",
+          "DiscordTransportTests",
+          "DiscordVoiceCodecsTests",
+          "DiscordVoiceCryptoTests"
+        ]
+      },
+      {
+        "durationSources": [
+          {
+            "jobID": 130952646569,
+            "kind": "retained-mixed-step",
+            "seconds": 13,
+            "source": "jobs-page-2",
+            "stepNumber": 6,
+            "suite": "DiscordActivitiesTests"
+          },
+          {
+            "jobID": 130952646605,
+            "kind": "retained-mixed-step",
+            "seconds": 20,
+            "source": "jobs-page-2",
+            "stepNumber": 6,
+            "suite": "DiscordBotDSLTests"
+          },
+          {
+            "jobID": 130952646628,
+            "kind": "retained-mixed-step",
+            "seconds": 20,
+            "source": "jobs-page-2",
+            "stepNumber": 6,
+            "suite": "DiscordCoreTests"
+          },
+          {
+            "jobID": 130952646704,
+            "kind": "retained-mixed-step",
+            "seconds": 18,
+            "source": "jobs-page-2",
+            "stepNumber": 6,
+            "suite": "DiscordGameServicesTests"
+          },
+          {
+            "jobID": 130952646726,
+            "kind": "retained-mixed-step",
+            "seconds": 34,
+            "source": "jobs-page-2",
+            "stepNumber": 6,
+            "suite": "DiscordHTTPTests"
+          },
+          {
+            "jobID": 130952646816,
+            "kind": "retained-mixed-step",
+            "seconds": 22,
+            "source": "jobs-page-2",
+            "stepNumber": 6,
+            "suite": "DiscordInteractionsTests"
+          },
+          {
+            "jobID": 130952646772,
+            "kind": "retained-mixed-step",
+            "seconds": 15,
+            "source": "jobs-page-2",
+            "stepNumber": 6,
+            "suite": "DiscordKitTests"
+          },
+          {
+            "jobID": 130952646873,
+            "kind": "retained-mixed-step",
+            "seconds": 19,
+            "source": "jobs-page-2",
+            "stepNumber": 6,
+            "suite": "DiscordLogHandlersTests"
+          },
+          {
+            "jobID": 130952646748,
+            "kind": "retained-mixed-step",
+            "seconds": 16,
+            "source": "jobs-page-2",
+            "stepNumber": 6,
+            "suite": "DiscordOAuthTests"
+          }
+        ],
+        "name": "root-02",
+        "planningWeightSeconds": 177,
+        "suite": "root-02",
+        "suites": [
+          "DiscordActivitiesTests",
+          "DiscordBotDSLTests",
+          "DiscordCoreTests",
+          "DiscordGameServicesTests",
+          "DiscordHTTPTests",
+          "DiscordInteractionsTests",
+          "DiscordKitTests",
+          "DiscordLogHandlersTests",
+          "DiscordOAuthTests"
+        ]
+      },
+      {
+        "durationSources": [
+          {
+            "jobID": 130952646644,
+            "kind": "retained-mixed-step",
+            "seconds": 17,
+            "source": "jobs-page-2",
+            "stepNumber": 6,
+            "suite": "DiscordBitsTests"
+          },
+          {
+            "jobID": 130952646560,
+            "kind": "retained-mixed-step",
+            "seconds": 13,
+            "source": "jobs-page-1",
+            "stepNumber": 6,
+            "suite": "DiscordCommandsTests"
+          },
+          {
+            "jobID": 130952646652,
+            "kind": "retained-mixed-step",
+            "seconds": 22,
+            "source": "jobs-page-2",
+            "stepNumber": 6,
+            "suite": "DiscordCommerceTests"
+          },
+          {
+            "jobID": 130952646717,
+            "kind": "retained-mixed-step",
+            "seconds": 33,
+            "source": "jobs-page-2",
+            "stepNumber": 6,
+            "suite": "DiscordDAVETests"
+          },
+          {
+            "jobID": 130952646721,
+            "kind": "retained-mixed-step",
+            "seconds": 20,
+            "source": "jobs-page-2",
+            "stepNumber": 6,
+            "suite": "DiscordGatewayTests"
+          },
+          {
+            "jobID": 130952646782,
+            "kind": "retained-mixed-step",
+            "seconds": 19,
+            "source": "jobs-page-2",
+            "stepNumber": 6,
+            "suite": "DiscordModelsTests"
+          },
+          {
+            "jobID": 130952646665,
+            "kind": "retained-mixed-step",
+            "seconds": 17,
+            "source": "jobs-page-2",
+            "stepNumber": 6,
+            "suite": "DiscordTestSupportTests"
+          },
+          {
+            "jobID": 130952646773,
+            "kind": "retained-mixed-step",
+            "seconds": 21,
+            "source": "jobs-page-2",
+            "stepNumber": 6,
+            "suite": "DiscordUnixPlatformTests"
+          },
+          {
+            "jobID": 130952646809,
+            "kind": "retained-mixed-step",
+            "seconds": 15,
+            "source": "jobs-page-2",
+            "stepNumber": 6,
+            "suite": "DiscordVoiceTests"
+          }
+        ],
+        "name": "root-03",
+        "planningWeightSeconds": 177,
+        "suite": "root-03",
+        "suites": [
+          "DiscordBitsTests",
+          "DiscordCommandsTests",
+          "DiscordCommerceTests",
+          "DiscordDAVETests",
+          "DiscordGatewayTests",
+          "DiscordModelsTests",
+          "DiscordTestSupportTests",
+          "DiscordUnixPlatformTests",
+          "DiscordVoiceTests"
+        ]
+      },
+      {
+        "durationSources": [
+          {
+            "jobID": 130952646577,
+            "kind": "retained-mixed-step",
+            "seconds": 17,
+            "source": "jobs-page-2",
+            "stepNumber": 6,
+            "suite": "DiscordCacheTests"
+          },
+          {
+            "jobID": 130952646556,
+            "kind": "retained-mixed-step",
+            "seconds": 14,
+            "source": "jobs-page-1",
+            "stepNumber": 6,
+            "suite": "DiscordCertifiedDevicesTests"
+          },
+          {
+            "jobID": 130952646754,
+            "kind": "retained-mixed-step",
+            "seconds": 20,
+            "source": "jobs-page-2",
+            "stepNumber": 6,
+            "suite": "DiscordCommandDSLTests"
+          },
+          {
+            "jobID": 130952646715,
+            "kind": "retained-mixed-step",
+            "seconds": 20,
+            "source": "jobs-page-2",
+            "stepNumber": 6,
+            "suite": "DiscordLoggingTests"
+          },
+          {
+            "jobID": 130952646702,
+            "kind": "retained-mixed-step",
+            "seconds": 21,
+            "source": "jobs-page-2",
+            "stepNumber": 6,
+            "suite": "DiscordMLSTests"
+          },
+          {
+            "jobID": 130952646731,
+            "kind": "retained-mixed-step",
+            "seconds": 23,
+            "source": "jobs-page-2",
+            "stepNumber": 6,
+            "suite": "DiscordMediaTests"
+          },
+          {
+            "jobID": 130952646675,
+            "kind": "retained-mixed-step",
+            "seconds": 24,
+            "source": "jobs-page-2",
+            "stepNumber": 6,
+            "suite": "DiscordNIOTransportTests"
+          },
+          {
+            "jobID": 130952646751,
+            "kind": "retained-mixed-step",
+            "seconds": 16,
+            "source": "jobs-page-2",
+            "stepNumber": 6,
+            "suite": "DiscordRPCTests"
+          },
+          {
+            "jobID": 130952646882,
+            "kind": "retained-mixed-step",
+            "seconds": 19,
+            "source": "jobs-page-2",
+            "stepNumber": 6,
+            "suite": "DiscordSocialTests"
+          }
+        ],
+        "name": "root-04",
+        "planningWeightSeconds": 174,
+        "suite": "root-04",
+        "suites": [
+          "DiscordCacheTests",
+          "DiscordCertifiedDevicesTests",
+          "DiscordCommandDSLTests",
+          "DiscordLoggingTests",
+          "DiscordMLSTests",
+          "DiscordMediaTests",
+          "DiscordNIOTransportTests",
+          "DiscordRPCTests",
+          "DiscordSocialTests"
+        ]
+      }
+    ],
+    "macos-arm64": [
+      {
+        "durationSources": [
+          {
+            "jobID": 130951994008,
+            "kind": "retained-mixed-step",
+            "seconds": 34,
+            "source": "jobs-page-1",
+            "stepNumber": 6,
+            "suite": "DiscordDSLTests"
+          },
+          {
+            "jobID": 130951993888,
+            "kind": "retained-mixed-step",
+            "seconds": 35,
+            "source": "jobs-page-1",
+            "stepNumber": 6,
+            "suite": "DiscordGatewayTests"
+          },
+          {
+            "jobID": 130951993963,
+            "kind": "retained-mixed-step",
+            "seconds": 33,
+            "source": "jobs-page-1",
+            "stepNumber": 6,
+            "suite": "DiscordInteractionsTests"
+          },
+          {
+            "jobID": 130951994219,
+            "kind": "retained-mixed-step",
+            "seconds": 32,
+            "source": "jobs-page-1",
+            "stepNumber": 6,
+            "suite": "DiscordRPCTests"
+          },
+          {
+            "jobID": 130951994083,
+            "kind": "retained-mixed-step",
+            "seconds": 34,
+            "source": "jobs-page-1",
+            "stepNumber": 6,
+            "suite": "DiscordTransportTests"
+          },
+          {
+            "jobID": 130951994041,
+            "kind": "retained-mixed-step",
+            "seconds": 30,
+            "source": "jobs-page-1",
+            "stepNumber": 6,
+            "suite": "DiscordUnixPlatformTests"
+          },
+          {
+            "jobID": 130951994191,
+            "kind": "retained-mixed-step",
+            "seconds": 101,
+            "source": "jobs-page-1",
+            "stepNumber": 6,
+            "suite": "DiscordVoiceCodecsTests"
+          }
+        ],
+        "name": "root-01",
+        "planningWeightSeconds": 299,
+        "suite": "root-01",
+        "suites": [
+          "DiscordDSLTests",
+          "DiscordGatewayTests",
+          "DiscordInteractionsTests",
+          "DiscordRPCTests",
+          "DiscordTransportTests",
+          "DiscordUnixPlatformTests",
+          "DiscordVoiceCodecsTests"
+        ]
+      },
+      {
+        "durationSources": [
+          {
+            "jobID": 130951993906,
+            "kind": "retained-mixed-step",
+            "seconds": 29,
+            "source": "jobs-page-1",
+            "stepNumber": 6,
+            "suite": "DiscordCommandsTests"
+          },
+          {
+            "jobID": 130951993890,
+            "kind": "retained-mixed-step",
+            "seconds": 47,
+            "source": "jobs-page-1",
+            "stepNumber": 6,
+            "suite": "DiscordDAVETests"
+          },
+          {
+            "jobID": 130951994032,
+            "kind": "retained-mixed-step",
+            "seconds": 34,
+            "source": "jobs-page-1",
+            "stepNumber": 6,
+            "suite": "DiscordFoundationTransportTests"
+          },
+          {
+            "jobID": 130951994014,
+            "kind": "retained-mixed-step",
+            "seconds": 31,
+            "source": "jobs-page-1",
+            "stepNumber": 6,
+            "suite": "DiscordKitTests"
+          },
+          {
+            "jobID": 130951994046,
+            "kind": "retained-mixed-step",
+            "seconds": 39,
+            "source": "jobs-page-1",
+            "stepNumber": 6,
+            "suite": "DiscordLogHandlersTests"
+          },
+          {
+            "jobID": 130951994029,
+            "kind": "retained-mixed-step",
+            "seconds": 32,
+            "source": "jobs-page-1",
+            "stepNumber": 6,
+            "suite": "DiscordLoggingTests"
+          },
+          {
+            "jobID": 130951994207,
+            "kind": "retained-mixed-step",
+            "seconds": 35,
+            "source": "jobs-page-1",
+            "stepNumber": 6,
+            "suite": "DiscordMLSTests"
+          },
+          {
+            "jobID": 130951994042,
+            "kind": "retained-mixed-step",
+            "seconds": 36,
+            "source": "jobs-page-1",
+            "stepNumber": 6,
+            "suite": "DiscordMediaTests"
+          },
+          {
+            "jobID": 130951994214,
+            "kind": "retained-mixed-step",
+            "seconds": 34,
+            "source": "jobs-page-1",
+            "stepNumber": 6,
+            "suite": "DiscordVoiceCryptoTests"
+          }
+        ],
+        "name": "root-02",
+        "planningWeightSeconds": 317,
+        "suite": "root-02",
+        "suites": [
+          "DiscordCommandsTests",
+          "DiscordDAVETests",
+          "DiscordFoundationTransportTests",
+          "DiscordKitTests",
+          "DiscordLogHandlersTests",
+          "DiscordLoggingTests",
+          "DiscordMLSTests",
+          "DiscordMediaTests",
+          "DiscordVoiceCryptoTests"
+        ]
+      },
+      {
+        "durationSources": [
+          {
+            "jobID": 130951993857,
+            "kind": "retained-mixed-step",
+            "seconds": 31,
+            "source": "jobs-page-1",
+            "stepNumber": 6,
+            "suite": "DiscordActivitiesTests"
+          },
+          {
+            "jobID": 130951993912,
+            "kind": "retained-mixed-step",
+            "seconds": 33,
+            "source": "jobs-page-1",
+            "stepNumber": 6,
+            "suite": "DiscordApplePlatformTests"
+          },
+          {
+            "jobID": 130951993908,
+            "kind": "retained-mixed-step",
+            "seconds": 29,
+            "source": "jobs-page-1",
+            "stepNumber": 6,
+            "suite": "DiscordBitsTests"
+          },
+          {
+            "jobID": 130951993891,
+            "kind": "retained-mixed-step",
+            "seconds": 32,
+            "source": "jobs-page-1",
+            "stepNumber": 6,
+            "suite": "DiscordBotDSLTests"
+          },
+          {
+            "jobID": 130951993959,
+            "kind": "retained-mixed-step",
+            "seconds": 38,
+            "source": "jobs-page-1",
+            "stepNumber": 6,
+            "suite": "DiscordClientTests"
+          },
+          {
+            "jobID": 130951993932,
+            "kind": "retained-mixed-step",
+            "seconds": 34,
+            "source": "jobs-page-1",
+            "stepNumber": 6,
+            "suite": "DiscordGameServicesTests"
+          },
+          {
+            "jobID": 130951993979,
+            "kind": "retained-mixed-step",
+            "seconds": 47,
+            "source": "jobs-page-1",
+            "stepNumber": 6,
+            "suite": "DiscordHTTPTests"
+          },
+          {
+            "jobID": 130951994049,
+            "kind": "retained-mixed-step",
+            "seconds": 35,
+            "source": "jobs-page-1",
+            "stepNumber": 6,
+            "suite": "DiscordModelsTests"
+          },
+          {
+            "jobID": 130951994088,
+            "kind": "retained-mixed-step",
+            "seconds": 37,
+            "source": "jobs-page-1",
+            "stepNumber": 6,
+            "suite": "DiscordSocialTests"
+          }
+        ],
+        "name": "root-03",
+        "planningWeightSeconds": 316,
+        "suite": "root-03",
+        "suites": [
+          "DiscordActivitiesTests",
+          "DiscordApplePlatformTests",
+          "DiscordBitsTests",
+          "DiscordBotDSLTests",
+          "DiscordClientTests",
+          "DiscordGameServicesTests",
+          "DiscordHTTPTests",
+          "DiscordModelsTests",
+          "DiscordSocialTests"
+        ]
+      },
+      {
+        "durationSources": [
+          {
+            "jobID": 130951993866,
+            "kind": "retained-mixed-step",
+            "seconds": 29,
+            "source": "jobs-page-1",
+            "stepNumber": 6,
+            "suite": "DiscordCacheTests"
+          },
+          {
+            "jobID": 130951993895,
+            "kind": "retained-mixed-step",
+            "seconds": 32,
+            "source": "jobs-page-1",
+            "stepNumber": 6,
+            "suite": "DiscordCertifiedDevicesTests"
+          },
+          {
+            "jobID": 130951993896,
+            "kind": "retained-mixed-step",
+            "seconds": 33,
+            "source": "jobs-page-1",
+            "stepNumber": 6,
+            "suite": "DiscordCommandDSLTests"
+          },
+          {
+            "jobID": 130951993968,
+            "kind": "retained-mixed-step",
+            "seconds": 40,
+            "source": "jobs-page-1",
+            "stepNumber": 6,
+            "suite": "DiscordCommerceTests"
+          },
+          {
+            "jobID": 130951993922,
+            "kind": "retained-mixed-step",
+            "seconds": 31,
+            "source": "jobs-page-1",
+            "stepNumber": 6,
+            "suite": "DiscordCoreTests"
+          },
+          {
+            "jobID": 130951994234,
+            "kind": "retained-mixed-step",
+            "seconds": 46,
+            "source": "jobs-page-1",
+            "stepNumber": 6,
+            "suite": "DiscordNIOTransportTests"
+          },
+          {
+            "jobID": 130951994184,
+            "kind": "retained-mixed-step",
+            "seconds": 36,
+            "source": "jobs-page-1",
+            "stepNumber": 6,
+            "suite": "DiscordOAuthTests"
+          },
+          {
+            "jobID": 130951994109,
+            "kind": "retained-mixed-step",
+            "seconds": 34,
+            "source": "jobs-page-1",
+            "stepNumber": 6,
+            "suite": "DiscordTestSupportTests"
+          },
+          {
+            "jobID": 130951994107,
+            "kind": "retained-mixed-step",
+            "seconds": 35,
+            "source": "jobs-page-1",
+            "stepNumber": 6,
+            "suite": "DiscordVoiceTests"
+          }
+        ],
+        "name": "root-04",
+        "planningWeightSeconds": 316,
+        "suite": "root-04",
+        "suites": [
+          "DiscordCacheTests",
+          "DiscordCertifiedDevicesTests",
+          "DiscordCommandDSLTests",
+          "DiscordCommerceTests",
+          "DiscordCoreTests",
+          "DiscordNIOTransportTests",
+          "DiscordOAuthTests",
+          "DiscordTestSupportTests",
+          "DiscordVoiceTests"
+        ]
+      }
+    ]
+  },
+  "schemaVersion": 1,
+  "tests": {
+    "include": [
+      {
+        "component": "root",
+        "group": "Linux-x64-8",
+        "jobs": 2,
+        "platform": "linux-x64",
+        "shell": "bash",
+        "suite": "root-01",
+        "suites": [
+          "DiscordApplePlatformTests",
+          "DiscordClientTests",
+          "DiscordDSLTests",
+          "DiscordTransportTests",
+          "DiscordVoiceCodecsTests",
+          "DiscordVoiceCryptoTests"
+        ]
+      },
+      {
+        "component": "root",
+        "group": "Linux-x64-8",
+        "jobs": 2,
+        "platform": "linux-x64",
+        "shell": "bash",
+        "suite": "root-02",
+        "suites": [
+          "DiscordActivitiesTests",
+          "DiscordBotDSLTests",
+          "DiscordCoreTests",
+          "DiscordGameServicesTests",
+          "DiscordHTTPTests",
+          "DiscordInteractionsTests",
+          "DiscordKitTests",
+          "DiscordLogHandlersTests",
+          "DiscordOAuthTests"
+        ]
+      },
+      {
+        "component": "root",
+        "group": "Linux-x64-8",
+        "jobs": 2,
+        "platform": "linux-x64",
+        "shell": "bash",
+        "suite": "root-03",
+        "suites": [
+          "DiscordBitsTests",
+          "DiscordCommandsTests",
+          "DiscordCommerceTests",
+          "DiscordDAVETests",
+          "DiscordGatewayTests",
+          "DiscordModelsTests",
+          "DiscordTestSupportTests",
+          "DiscordUnixPlatformTests",
+          "DiscordVoiceTests"
+        ]
+      },
+      {
+        "component": "root",
+        "group": "Linux-x64-8",
+        "jobs": 2,
+        "platform": "linux-x64",
+        "shell": "bash",
+        "suite": "root-04",
+        "suites": [
+          "DiscordCacheTests",
+          "DiscordCertifiedDevicesTests",
+          "DiscordCommandDSLTests",
+          "DiscordLoggingTests",
+          "DiscordMLSTests",
+          "DiscordMediaTests",
+          "DiscordNIOTransportTests",
+          "DiscordRPCTests",
+          "DiscordSocialTests"
+        ]
+      },
+      {
+        "component": "macros",
+        "group": "Linux-x64-8",
+        "jobs": 2,
+        "platform": "linux-x64",
+        "shell": "bash",
+        "suite": "macros",
+        "suites": [
+          "macros"
+        ]
+      },
+      {
+        "component": "extensions",
+        "group": "Linux-x64-8",
+        "jobs": 2,
+        "platform": "linux-x64",
+        "shell": "bash",
+        "suite": "extensions",
+        "suites": [
+          "extensions"
+        ]
+      },
+      {
+        "component": "tooling",
+        "group": "Linux-x64-8",
+        "jobs": 2,
+        "platform": "linux-x64",
+        "shell": "bash",
+        "suite": "tooling",
+        "suites": [
+          "tooling"
+        ]
+      },
+      {
+        "component": "load",
+        "group": "Linux-x64-8",
+        "jobs": 2,
+        "platform": "linux-x64",
+        "shell": "bash",
+        "suite": "load",
+        "suites": [
+          "load"
+        ]
+      },
+      {
+        "component": "benchmarks",
+        "group": "Linux-x64-8",
+        "jobs": 2,
+        "platform": "linux-x64",
+        "shell": "bash",
+        "suite": "benchmarks",
+        "suites": [
+          "benchmarks"
+        ]
+      },
+      {
+        "component": "timing-support",
+        "group": "Linux-x64-8",
+        "jobs": 2,
+        "platform": "linux-x64",
+        "shell": "bash",
+        "suite": "timing-support",
+        "suites": [
+          "timing-support"
+        ]
+      },
+      {
+        "component": "timing",
+        "group": "Linux-x64-8",
+        "jobs": 2,
+        "platform": "linux-x64",
+        "shell": "bash",
+        "suite": "timing",
+        "suites": [
+          "timing"
+        ]
+      },
+      {
+        "component": "foundation",
+        "group": "Linux-x64-8",
+        "jobs": 2,
+        "platform": "linux-x64",
+        "shell": "bash",
+        "suite": "foundation",
+        "suites": [
+          "foundation"
+        ]
+      },
+      {
+        "component": "media",
+        "group": "Linux-x64-8",
+        "jobs": 2,
+        "platform": "linux-x64",
+        "shell": "bash",
+        "suite": "media",
+        "suites": [
+          "media"
+        ]
+      },
+      {
+        "component": "consumers",
+        "group": "Linux-x64-8",
+        "jobs": 2,
+        "platform": "linux-x64",
+        "shell": "bash",
+        "suite": "consumers",
+        "suites": [
+          "ActivityHost",
+          "CommandsApp",
+          "DSLBot",
+          "DSLCommands",
+          "DSLEvents",
+          "LoggingApp",
+          "SocialApp",
+          "VoiceBot"
+        ]
+      },
+      {
+        "component": "root",
+        "group": "MacOS-26-5",
+        "jobs": 2,
+        "platform": "macos-arm64",
+        "shell": "bash",
+        "suite": "root-01",
+        "suites": [
+          "DiscordDSLTests",
+          "DiscordGatewayTests",
+          "DiscordInteractionsTests",
+          "DiscordRPCTests",
+          "DiscordTransportTests",
+          "DiscordUnixPlatformTests",
+          "DiscordVoiceCodecsTests"
+        ]
+      },
+      {
+        "component": "root",
+        "group": "MacOS-26-5",
+        "jobs": 2,
+        "platform": "macos-arm64",
+        "shell": "bash",
+        "suite": "root-02",
+        "suites": [
+          "DiscordCommandsTests",
+          "DiscordDAVETests",
+          "DiscordFoundationTransportTests",
+          "DiscordKitTests",
+          "DiscordLogHandlersTests",
+          "DiscordLoggingTests",
+          "DiscordMLSTests",
+          "DiscordMediaTests",
+          "DiscordVoiceCryptoTests"
+        ]
+      },
+      {
+        "component": "root",
+        "group": "MacOS-26-5",
+        "jobs": 2,
+        "platform": "macos-arm64",
+        "shell": "bash",
+        "suite": "root-03",
+        "suites": [
+          "DiscordActivitiesTests",
+          "DiscordApplePlatformTests",
+          "DiscordBitsTests",
+          "DiscordBotDSLTests",
+          "DiscordClientTests",
+          "DiscordGameServicesTests",
+          "DiscordHTTPTests",
+          "DiscordModelsTests",
+          "DiscordSocialTests"
+        ]
+      },
+      {
+        "component": "root",
+        "group": "MacOS-26-5",
+        "jobs": 2,
+        "platform": "macos-arm64",
+        "shell": "bash",
+        "suite": "root-04",
+        "suites": [
+          "DiscordCacheTests",
+          "DiscordCertifiedDevicesTests",
+          "DiscordCommandDSLTests",
+          "DiscordCommerceTests",
+          "DiscordCoreTests",
+          "DiscordNIOTransportTests",
+          "DiscordOAuthTests",
+          "DiscordTestSupportTests",
+          "DiscordVoiceTests"
+        ]
+      },
+      {
+        "component": "macros",
+        "group": "MacOS-26-5",
+        "jobs": 2,
+        "platform": "macos-arm64",
+        "shell": "bash",
+        "suite": "macros",
+        "suites": [
+          "macros"
+        ]
+      },
+      {
+        "component": "extensions",
+        "group": "MacOS-26-5",
+        "jobs": 2,
+        "platform": "macos-arm64",
+        "shell": "bash",
+        "suite": "extensions",
+        "suites": [
+          "extensions"
+        ]
+      },
+      {
+        "component": "tooling",
+        "group": "MacOS-26-5",
+        "jobs": 2,
+        "platform": "macos-arm64",
+        "shell": "bash",
+        "suite": "tooling",
+        "suites": [
+          "tooling"
+        ]
+      },
+      {
+        "component": "load",
+        "group": "MacOS-26-5",
+        "jobs": 2,
+        "platform": "macos-arm64",
+        "shell": "bash",
+        "suite": "load",
+        "suites": [
+          "load"
+        ]
+      },
+      {
+        "component": "benchmarks",
+        "group": "MacOS-26-5",
+        "jobs": 2,
+        "platform": "macos-arm64",
+        "shell": "bash",
+        "suite": "benchmarks",
+        "suites": [
+          "benchmarks"
+        ]
+      },
+      {
+        "component": "timing-support",
+        "group": "MacOS-26-5",
+        "jobs": 2,
+        "platform": "macos-arm64",
+        "shell": "bash",
+        "suite": "timing-support",
+        "suites": [
+          "timing-support"
+        ]
+      },
+      {
+        "component": "timing",
+        "group": "MacOS-26-5",
+        "jobs": 2,
+        "platform": "macos-arm64",
+        "shell": "bash",
+        "suite": "timing",
+        "suites": [
+          "timing"
+        ]
+      },
+      {
+        "component": "foundation",
+        "group": "MacOS-26-5",
+        "jobs": 2,
+        "platform": "macos-arm64",
+        "shell": "bash",
+        "suite": "foundation",
+        "suites": [
+          "foundation"
+        ]
+      },
+      {
+        "component": "media",
+        "group": "MacOS-26-5",
+        "jobs": 2,
+        "platform": "macos-arm64",
+        "shell": "bash",
+        "suite": "media",
+        "suites": [
+          "media"
+        ]
+      },
+      {
+        "component": "consumers",
+        "group": "MacOS-26-5",
+        "jobs": 2,
+        "platform": "macos-arm64",
+        "shell": "bash",
+        "suite": "consumers",
+        "suites": [
+          "ActivityHost",
+          "CommandsApp",
+          "DSLBot",
+          "DSLCommands",
+          "DSLEvents",
+          "LoggingApp",
+          "SocialApp",
+          "VoiceBot"
+        ]
+      }
+    ]
+  }
+}

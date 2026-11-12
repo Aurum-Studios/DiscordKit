@@ -4,6 +4,7 @@
 // https://aurum-studios.com
 
 import DiscordBenchmarkSupport
+import DiscordLogging
 import Foundation
 import Testing
 @testable import DiscordKitLoadTests
@@ -11,6 +12,89 @@ import Testing
 /// Finite public-API experiments preserve independent workload dimensions and exact owner receipts.
 @Suite("Event hub timing", .serialized, .timeLimit(.minutes(1)))
 struct EventHubTimingTests {
+    /// Cancel synchronously at the real queue-removal endpoint, before iterator return.
+    @Test(arguments: [0, 1])
+    func dequeueCancellationDoesNotInventDiscard(backlog: Int) async throws {
+        var configuration = EventHubTimingConfiguration()
+        configuration.requests = 2; configuration.subscriptions = 1; configuration.queuedDepth = backlog
+        let report = try await EventHubTimingRunner(onResidence: { event in
+            if event.outcome == .succeeded { withUnsafeCurrentTask { $0?.cancel() } }
+        }).run(configuration)
+        #expect(report.cleanup.isEmpty)
+        #expect(report.discardedAdmittedCopies == 0)
+        #expect(report.measuredCopies.cancelledHandoff == (backlog == 0 ? 1 : 0))
+        #expect(report.setupOutcomes.cancelledHandoff == (backlog == 1 ? 1 : 0))
+        #expect(report.counts.outcomes[.success] == 0)
+    }
+
+    /// An injected driver interruption must preserve child values already returned by next.
+    @Test(arguments: [false, true])
+    func completedWaitingResultsSurviveInterruptedAggregation(afterFirstAcceptance: Bool) async throws {
+        var configuration = EventHubTimingConfiguration()
+        configuration.scenario = EventHubTimingScenario.waiting.rawValue
+        configuration.requests = 2; configuration.subscriptions = 2; configuration.hubs = 2
+        let returned = EventHubTimingTestBarrier()
+        let report = try await EventHubTimingRunner(onCheckpoint: { point in
+            if case .waitingReturned = point { await returned.arrive() }
+            if point == .beforeWaitingAggregation {
+                try await returned.wait(for: 4)
+                if !afterFirstAcceptance { throw CancellationError() }
+            }
+            if afterFirstAcceptance && point == .afterAcceptance(0) { throw CancellationError() }
+        }).run(configuration)
+        #expect(report.cleanup.isEmpty)
+        #expect(report.counts.offered == 4)
+        #expect(report.counts.outcomes[.success] == 4)
+        #expect(report.discardedAdmittedCopies == 0)
+    }
+
+    /// A returned waiting value that loses its child handoff is cancellation, not an eviction.
+    @Test func waitingCancellationAtConsumerHandoffIsExplicit() async throws {
+        var configuration = EventHubTimingConfiguration()
+        configuration.scenario = EventHubTimingScenario.waiting.rawValue
+        configuration.requests = 2; configuration.subscriptions = 2; configuration.hubs = 2
+        let report = try await EventHubTimingRunner(onCheckpoint: { point in
+            if point == .waitingReturned(0) { throw CancellationError() }
+        }).run(configuration)
+        #expect(report.measuredCopies.consumed == 3)
+        #expect(report.measuredCopies.cancelledHandoff == 1)
+        #expect(report.measuredCopies.cancelledRetained == 0 && report.discardedAdmittedCopies == 0)
+        #expect(report.measuredCopies.total == 4 && report.cleanup.isEmpty)
+    }
+
+    /// Later task cancellation preserves already accepted setup/measured values across multiple hubs.
+    @Test(arguments: [0, 2])
+    func cancellationAfterAcceptancePreservesPartialCohorts(backlog: Int) async throws {
+        var configuration = EventHubTimingConfiguration()
+        configuration.requests = 3; configuration.subscriptions = 2; configuration.hubs = 2
+        configuration.queuedDepth = backlog
+        let finite = configuration
+        let task = Task {
+            try await EventHubTimingRunner(onCheckpoint: { point in
+                if point == .afterAcceptance(2) { withUnsafeCurrentTask { $0?.cancel() } }
+            }).run(finite)
+        }
+        let report = try await task.value
+        #expect(report.measuredCopies.total == 4 && report.setupOutcomes.total == backlog * 4)
+        #expect(report.measuredCopies.consumed == (backlog == 0 ? 3 : 0))
+        #expect(report.setupOutcomes.consumed == (backlog == 0 ? 0 : 3))
+        #expect(report.measuredCopies.cancelledHandoff == 0 && report.setupOutcomes.cancelledHandoff == 0)
+        #expect(report.discardedAdmittedCopies == 0 && report.cleanup.isEmpty)
+    }
+
+    /// Cancellation cannot hide a contradictory accounting or driver failure.
+    @Test func cancelledDriverStillReportsIntegrityFailure() async {
+        let task = Task {
+            try await EventHubTimingRunner(onCheckpoint: { point in
+                if point == .setupComplete {
+                    withUnsafeCurrentTask { $0?.cancel() }
+                    throw EventHubTimingError.integrityFailure("Injected contradiction")
+                }
+            }).run(EventHubTimingConfiguration())
+        }
+        await #expect(throws: EventHubTimingError.integrityFailure("Injected contradiction")) { try await task.value }
+    }
+
     /// Explicit options take precedence over driver defaults without inventing publisher concurrency.
     @Test func parsesIndependentDimensions() throws {
         let value = try EventHubTimingConfiguration.parse([
@@ -70,6 +154,10 @@ struct EventHubTimingTests {
         configuration.queuedDepth = 2; configuration.payloadBytes = 17
         let report = try await EventHubTimingRunner().run(configuration)
         try report.counts.validate()
+        #expect(report.measuredCopies.total == report.admittedCopies)
+        #expect(report.setupOutcomes.total == report.setupCopies)
+        #expect(report.measuredCopies.consumed == Int(report.counts.outcomes[.success, default: 0]))
+        #expect(report.measuredCopies.cancelledRetained + report.measuredCopies.cancelledHandoff == Int(report.counts.outcomes[.cancelled, default: 0]))
         #expect(report.cleanup.isEmpty)
         #expect(report.publicationCalls == 12)
         #expect(report.counts.offered == 36 && report.counts.completed == 36)
@@ -142,8 +230,9 @@ struct EventHubTimingTests {
         configuration.subscriptions = 2; configuration.hubs = 2; configuration.queuedDepth = 1
         let report = try await EventHubTimingCommand.measure(configuration)
         #expect(report.measurement.counts.offered == 12 && report.measurement.publicationCalls == 6)
+        #expect(report.schemaVersion == 2)
         #expect(report.common.identity.concurrency == 1)
-        #expect(report.common.identity.scheduler == "sequential-publication-fixed-backlog-v1")
+        #expect(report.common.identity.scheduler == "sequential-publication-fixed-backlog-v2")
         #expect(report.common.identity.inputSizes["subscriptionsPerHub"] == 2)
         #expect(report.common.identity.inputSizes["hubs"] == 2 && report.common.identity.inputSizes["queuedDepth"] == 1)
         #expect((report.common.identity.warmupNanoseconds ?? 0) > 0)
@@ -152,6 +241,10 @@ struct EventHubTimingTests {
         #expect(try DiscordBenchmarkReport.decode(report.common.validatedData()) == report.common)
         let data = try JSONEncoder().encode(report)
         #expect(try JSONDecoder().decode(EventHubTimingReport.self, from: data).format == "DiscordKitLoadTests.gateway-hub-timing")
+        var historical = try #require(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        historical["schemaVersion"] = 1
+        let incompatible = try JSONSerialization.data(withJSONObject: historical)
+        #expect(throws: DecodingError.self) { try JSONDecoder().decode(EventHubTimingReport.self, from: incompatible) }
     }
 
     /// Cancellation resolves suspended pull tasks and releases retained queues before returning partial counts.
@@ -160,13 +253,22 @@ struct EventHubTimingTests {
         var configuration = EventHubTimingConfiguration()
         configuration.scenario = scenario.rawValue; configuration.requests = 100_000
         configuration.subscriptions = 2; configuration.hubs = 1; configuration.queuedDepth = 3
-        if scenario == .queued { configuration.delayMicroseconds = 1_000_000 }
         let finite = configuration
-        let task = Task { try await EventHubTimingRunner().run(finite) }
-        try await ContinuousClock().sleep(for: .milliseconds(10))
-        task.cancel()
+        let task = Task {
+            try await EventHubTimingRunner(onCheckpoint: { point in
+                if (scenario == .queued && point == .beforeQueuedPull(0)) ||
+                   (scenario == .waiting && point == .waitingReady) {
+                    withUnsafeCurrentTask { $0?.cancel() }
+                    throw CancellationError()
+                }
+            }).run(finite)
+        }
         let report = try await task.value
         try report.counts.validate()
+        #expect(report.measuredCopies.total == report.admittedCopies)
+        #expect(report.setupOutcomes.total == report.setupCopies)
+        #expect(report.measuredCopies.consumed == Int(report.counts.outcomes[.success, default: 0]))
+        #expect(report.measuredCopies.cancelledRetained + report.measuredCopies.cancelledHandoff == Int(report.counts.outcomes[.cancelled, default: 0]))
         #expect(report.cleanup.isEmpty)
         #expect(report.counts.offered < 200_000 && report.counts.completed == report.counts.offered)
         #expect(report.counts.outcomes[.cancelled, default: 0] + report.counts.outcomes[.success, default: 0] == report.counts.offered)
@@ -193,6 +295,20 @@ struct EventHubTimingTests {
         configuration.requests = 1; configuration.subscriptions = 256
         await #expect(throws: EventHubTimingError.invalidConfiguration) {
             try await EventHubTimingRunner().run(configuration, requests: 100_000)
+        }
+    }
+}
+
+/// Finite state barrier: wait for actual ownership endpoints with a three-second failure bound.
+private actor EventHubTimingTestBarrier {
+    private var arrivals = 0
+    func arrive() { arrivals += 1 }
+    func reached(_ target: Int) -> Bool { arrivals >= target }
+    nonisolated func wait(for target: Int) async throws {
+        let clock = ContinuousClock(), deadline = clock.now.advanced(by: .seconds(3))
+        while !(await reached(target)) {
+            if clock.now >= deadline { throw EventHubTimingError.integrityFailure("Test barrier timed out") }
+            await Task.yield()
         }
     }
 }

@@ -1,0 +1,76 @@
+swift test --scratch-path .build/ci-phase2-runtime --build-system native --jobs 6 --force-resolved-versions --disable-experimental-prebuilts --skip-build --no-parallel --filter EventHubTests
+warning: '--build-system native' has been deprecated and will be removed in a future release; please report an issue at https://github.com/swiftlang/swift-package-manager/issues if you are unable to adopt the default build system.
+◇ Test run started.
+↳ Testing Library Version: 2084
+↳ Target Platform: arm64e-apple-macos14.0
+◇ Suite "Gateway event hub" started.
+◇ Test configurationValidation() started.
+✔ Test configurationValidation() passed after 0.001 seconds.
+◇ Test independentOrderedBroadcast() started.
+✔ Test independentOrderedBroadcast() passed after 0.001 seconds.
+◇ Test overflowIsolationAndMetadataRelease() started.
+2026-11-11T23:18:22-0600 warning discordkit.gateway.events: dk.dropped=0 dk.event=gateway.subscription.overflow dk.module=gateway dk.subsystem=gateway.events dk.terminated=1 [DiscordGateway] Gateway subscriber capacity exhausted
+✔ Test overflowIsolationAndMetadataRelease() passed after 0.001 seconds.
+◇ Test byteLimitsAndTerminalMetadataBound() started.
+2026-11-11T23:18:22-0600 warning discordkit.gateway.events: dk.dropped=0 dk.event=gateway.subscription.overflow dk.module=gateway dk.subsystem=gateway.events dk.terminated=1 [DiscordGateway] Gateway subscriber capacity exhausted
+✔ Test byteLimitsAndTerminalMetadataBound() passed after 0.001 seconds.
+◇ Test explicitLossyPolicies(_:) started.
+◇ Test case passing 1 argument policy → .dropNewest to explicitLossyPolicies(_:) started.
+2026-11-11T23:18:22-0600 warning discordkit.gateway.events: dk.dropped=1 dk.event=gateway.subscription.overflow dk.module=gateway dk.subsystem=gateway.events dk.terminated=0 [DiscordGateway] Gateway subscriber capacity exhausted
+◇ Test case passing 1 argument policy → .dropOldest to explicitLossyPolicies(_:) started.
+✔ Test explicitLossyPolicies(_:) with 2 test cases passed after 0.001 seconds.
+◇ Test aggregateBudgetsAndHubIsolation() started.
+2026-11-11T23:18:22-0600 warning discordkit.gateway.events: dk.dropped=0 dk.event=gateway.subscription.overflow dk.module=gateway dk.subsystem=gateway.events dk.terminated=1 [DiscordGateway] Gateway subscriber capacity exhausted
+✔ Test aggregateBudgetsAndHubIsolation() passed after 0.001 seconds.
+◇ Test localAggregateBytesAndLossySharedCapacity() started.
+2026-11-11T23:18:22-0600 warning discordkit.gateway.events: dk.dropped=1 dk.event=gateway.subscription.overflow dk.module=gateway dk.subsystem=gateway.events dk.terminated=0 [DiscordGateway] Gateway subscriber capacity exhausted
+2026-11-11T23:18:22-0600 warning discordkit.gateway.events: dk.dropped=1 dk.event=gateway.subscription.overflow dk.module=gateway dk.subsystem=gateway.events dk.terminated=0 [DiscordGateway] Gateway subscriber capacity exhausted
+✔ Test localAggregateBytesAndLossySharedCapacity() passed after 0.001 seconds.
+◇ Test oversizedLossyEvent(_:) started.
+◇ Test case passing 1 argument policy → .dropNewest to oversizedLossyEvent(_:) started.
+2026-11-11T23:18:22-0600 warning discordkit.gateway.events: dk.dropped=1 dk.event=gateway.subscription.overflow dk.module=gateway dk.subsystem=gateway.events dk.terminated=0 [DiscordGateway] Gateway subscriber capacity exhausted
+◇ Test case passing 1 argument policy → .dropOldest to oversizedLossyEvent(_:) started.
+2026-11-11T23:18:22-0600 warning discordkit.gateway.events: dk.dropped=1 dk.event=gateway.subscription.overflow dk.module=gateway dk.subsystem=gateway.events dk.terminated=0 [DiscordGateway] Gateway subscriber capacity exhausted
+✔ Test oversizedLossyEvent(_:) with 2 test cases passed after 0.001 seconds.
+◇ Test circularQueueWrapGrowthAndRepeatedDrain(_:) started.
+◇ Test case passing 1 argument capacity → 1 to circularQueueWrapGrowthAndRepeatedDrain(_:) started.
+◇ Test case passing 1 argument capacity → 3 to circularQueueWrapGrowthAndRepeatedDrain(_:) started.
+◇ Test case passing 1 argument capacity → 5 to circularQueueWrapGrowthAndRepeatedDrain(_:) started.
+◇ Test case passing 1 argument capacity → 17 to circularQueueWrapGrowthAndRepeatedDrain(_:) started.
+✔ Test circularQueueWrapGrowthAndRepeatedDrain(_:) with 4 test cases passed after 0.002 seconds.
+◇ Test admissionPrioritySurvivesRemovalAndReplacement() started.
+2026-11-11T23:18:22-0600 warning discordkit.gateway.events: dk.dropped=2 dk.event=gateway.subscription.overflow dk.module=gateway dk.subsystem=gateway.events dk.terminated=0 [DiscordGateway] Gateway subscriber capacity exhausted
+2026-11-11T23:18:22-0600 warning discordkit.gateway.events: dk.dropped=1 dk.event=gateway.subscription.overflow dk.module=gateway dk.subsystem=gateway.events dk.terminated=0 [DiscordGateway] Gateway subscriber capacity exhausted
+✔ Test admissionPrioritySurvivesRemovalAndReplacement() passed after 0.001 seconds.
+◇ Test byteBoundedDropOldestEvictsMultipleWrappedCopies() started.
+✔ Test byteBoundedDropOldestEvictsMultipleWrappedCopies() passed after 0.001 seconds.
+◇ Test dropOldestCannotReclaimAnotherHubsCapacity() started.
+2026-11-11T23:18:22-0600 warning discordkit.gateway.events: dk.dropped=1 dk.event=gateway.subscription.overflow dk.module=gateway dk.subsystem=gateway.events dk.terminated=0 [DiscordGateway] Gateway subscriber capacity exhausted
+✔ Test dropOldestCannotReclaimAnotherHubsCapacity() passed after 0.001 seconds.
+◇ Test exactCountersAcrossSharedHubLifecycles() started.
+2026-11-11T23:18:22-0600 warning discordkit.gateway.events: dk.dropped=0 dk.event=gateway.subscription.overflow dk.module=gateway dk.subsystem=gateway.events dk.terminated=1 [DiscordGateway] Gateway subscriber capacity exhausted
+✔ Test exactCountersAcrossSharedHubLifecycles() passed after 0.001 seconds.
+◇ Test manyClientAggregateMetadataAndBytes() started.
+2026-11-11T23:18:22-0600 warning discordkit.gateway.events: dk.dropped=1 dk.event=gateway.subscription.overflow dk.module=gateway dk.subsystem=gateway.events dk.terminated=0 [DiscordGateway] Gateway subscriber capacity exhausted
+2026-11-11T23:18:22-0600 warning discordkit.gateway.events: dk.dropped=1 dk.event=gateway.subscription.overflow dk.module=gateway dk.subsystem=gateway.events dk.terminated=0 [DiscordGateway] Gateway subscriber capacity exhausted
+2026-11-11T23:18:22-0600 warning discordkit.gateway.events: dk.dropped=1 dk.event=gateway.subscription.overflow dk.module=gateway dk.subsystem=gateway.events dk.terminated=0 [DiscordGateway] Gateway subscriber capacity exhausted
+2026-11-11T23:18:22-0600 warning discordkit.gateway.events: dk.dropped=1 dk.event=gateway.subscription.overflow dk.module=gateway dk.subsystem=gateway.events dk.terminated=0 [DiscordGateway] Gateway subscriber capacity exhausted
+✔ Test manyClientAggregateMetadataAndBytes() passed after 0.001 seconds.
+◇ Test parkedCancellationAndFinish() started.
+✔ Test parkedCancellationAndFinish() passed after 0.001 seconds.
+◇ Test cancellationBetweenDequeueAndPublicDelivery() started.
+✔ Test cancellationBetweenDequeueAndPublicDelivery() passed after 0.001 seconds.
+◇ Test cancellationBeforeDequeuePreservesAcceptedValues(acceptFirst:) started.
+◇ Test case passing 1 argument acceptFirst → false to cancellationBeforeDequeuePreservesAcceptedValues(acceptFirst:) started.
+◇ Test case passing 1 argument acceptFirst → true to cancellationBeforeDequeuePreservesAcceptedValues(acceptFirst:) started.
+✔ Test cancellationBeforeDequeuePreservesAcceptedValues(acceptFirst:) with 2 test cases passed after 0.001 seconds.
+◇ Test overlappingIterationAndDirectDelivery() started.
+✔ Test overlappingIterationAndDirectDelivery() passed after 0.001 seconds.
+◇ Test finishWakesParkedConsumer() started.
+✔ Test finishWakesParkedConsumer() passed after 0.001 seconds.
+◇ Test mainActorConsumerAndPreCancellation() started.
+✔ Test mainActorConsumerAndPreCancellation() passed after 0.001 seconds.
+◇ Test subscribeShutdownRace() started.
+✔ Test subscribeShutdownRace() passed after 0.001 seconds.
+✔ Suite "Gateway event hub" passed after 0.008 seconds.
+✔ Test run with 21 tests in 1 suite passed after 0.008 seconds.

@@ -1,0 +1,78 @@
+{
+  "capturedAt": "2026-11-12T05:11:33.001893+00:00",
+  "owner": "Codex /root",
+  "base": {
+    "argv": [
+      "git",
+      "rev-parse",
+      "HEAD"
+    ],
+    "exit": 0,
+    "stdout": "7632bdd3494d8ec7a52edc798ad98e09b5a8c357\n",
+    "stderr": ""
+  },
+  "branch": {
+    "argv": [
+      "git",
+      "branch",
+      "--show-current"
+    ],
+    "exit": 0,
+    "stdout": "ci/phase-2-event-hub\n",
+    "stderr": ""
+  },
+  "status": {
+    "argv": [
+      "git",
+      "status",
+      "--porcelain=v1"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "worktrees": {
+    "argv": [
+      "git",
+      "worktree",
+      "list",
+      "--porcelain"
+    ],
+    "exit": 0,
+    "stdout": "worktree /Users/carsonrau/Developer/DiscordKit\nHEAD 85eac6f3c1d3b17e53596c49e7438efee366c1b3\nbranch refs/heads/main\n\nworktree /Users/carsonrau/Developer/DiscordKit-ci-phase0\nHEAD a74d58a754048ff4058c64a2d75b5bb3b21d04e0\nbranch refs/heads/ci/phase-0-baseline\n\nworktree /Users/carsonrau/Developer/DiscordKit-ci-phase1\nHEAD 7632bdd3494d8ec7a52edc798ad98e09b5a8c357\nbranch refs/heads/ci/phase-1-supervision\n\nworktree /Users/carsonrau/Developer/DiscordKit-ci-phase2\nHEAD 7632bdd3494d8ec7a52edc798ad98e09b5a8c357\nbranch refs/heads/ci/phase-2-event-hub\n\nworktree /Users/carsonrau/Developer/DiscordKit/.build/performance-phase1/baseline-source\nHEAD 01c743e44615aa48fb81a2e193b41195cd9e86c3\ndetached\n\nworktree /Users/carsonrau/Developer/DiscordKit/.build/performance-phase10/baseline-source\nHEAD a8a7539b32851e122ca1f81e399e77be996590c6\ndetached\n\nworktree /Users/carsonrau/Developer/DiscordKit/.build/performance-phase2/baseline-source\nHEAD 1b10c663e70cae90c0f49c7bb80aba89ff90600f\ndetached\n\nworktree /Users/carsonrau/Developer/DiscordKit/.build/performance-phase3/baseline-source\nHEAD 5e06464b9dae57fcdeae63c14ea7f4c534de68ca\ndetached\n\nworktree /Users/carsonrau/Developer/DiscordKit/.build/performance-phase4/baseline-source\nHEAD 3e8066749f1ba9e043438b13a6e160cd2ab77f8f\ndetached\n\nworktree /Users/carsonrau/Developer/DiscordKit/.build/performance-phase5/baseline-source\nHEAD ca5c4cb9d45a824f2470555161158634c7714bb8\ndetached\n\nworktree /Users/carsonrau/Developer/DiscordKit/.build/performance-phase6/baseline-source\nHEAD 035cf9f02f5955552f5b0357a0e0abf90cdc6729\ndetached\n\nworktree /Users/carsonrau/Developer/DiscordKit/.build/performance-phase7/baseline-source\nHEAD d766cf83db7a9baffeb46bcadbc1153336f4ba9b\ndetached\n\nworktree /Users/carsonrau/Developer/DiscordKit/.build/performance-phase8/baseline-source\nHEAD 57328709aaafd440750623b196053e8bc1e07f61\ndetached\n\nworktree /Users/carsonrau/Developer/DiscordKit/.build/performance-phase9/baseline-source\nHEAD f150293e75bace0b1e72519346f09389b9d3925e\ndetached\n\nworktree /Users/carsonrau/Developer/MiniCarson/.git/air-local/MC-33/20261112-docs/validation-pair/DiscordKit\nHEAD 85eac6f3c1d3b17e53596c49e7438efee366c1b3\ndetached\n\n",
+    "stderr": ""
+  },
+  "remote": {
+    "argv": [
+      "git",
+      "remote",
+      "-v"
+    ],
+    "exit": 0,
+    "stdout": "origin\thttps://github.com/Aurum-Studios/DiscordKit.git (fetch)\norigin\thttps://github.com/Aurum-Studios/DiscordKit.git (push)\n",
+    "stderr": ""
+  },
+  "toolchain": {
+    "argv": [
+      "swift",
+      "--version"
+    ],
+    "exit": 0,
+    "stdout": "Apple Swift version 6.4 (swiftlang-6.4.0.34.1 clang-2100.3.34.1)\nTarget: arm64-apple-macosx27.0.0\n",
+    "stderr": "swift-driver version: 1.168.6 "
+  },
+  "platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
+  "processes": {
+    "argv": [
+      "pgrep",
+      "-fl",
+      "swift|linux_ci.py"
+    ],
+    "exit": 1,
+    "stdout": "",
+    "stderr": ""
+  },
+  "paidJobs": 0,
+  "paidMinutes": 0,
+  "paidAttempts": 0
+}

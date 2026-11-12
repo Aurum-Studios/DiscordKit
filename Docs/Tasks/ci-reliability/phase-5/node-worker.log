@@ -1,0 +1,1 @@
+node --check Tools/ci/artifact-sdk/upload.mjs

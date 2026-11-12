@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "name": "green-synthetic",
+  "stage": "phase3-green-synthetic",
+  "operation": "focusedTest",
+  "arguments": [
+    "swift",
+    "test",
+    "--package-path",
+    "Tools/DiscordKitLoadTests",
+    "--scratch-path",
+    "/scratch",
+    "--build-system",
+    "native",
+    "--jobs",
+    "6",
+    "--force-resolved-versions",
+    "--disable-experimental-prebuilts",
+    "--explicit-target-dependency-import-check",
+    "error",
+    "--skip-build",
+    "--no-parallel",
+    "--filter",
+    "SyntheticCommandTimingRunnerTests"
+  ],
+  "start": "2026-11-12T13:02:04.966018+00:00",
+  "startMonotonic": 75631.424066999,
+  "deadlineMonotonic": 75721.424066999,
+  "executionLimitSeconds": 90,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "operation",
+  "paths": {
+    "output": "/work/Docs/Tasks/ci-reliability/phase-3/green-synthetic.log",
+    "stdout": null,
+    "diagnostics": "/work/Docs/Tasks/ci-reliability/phase-3/green-synthetic.diagnostics.jsonl",
+    "receipt": "/work/Docs/Tasks/ci-reliability/phase-3/green-synthetic.receipt.json"
+  },
+  "identity": {
+    "executionID": "234bd0d7-670e-4ef4-8cb1-21806e1b79c6",
+    "supervisorPID": 6169,
+    "host": "213b31596900",
+    "system": "Linux",
+    "repository": "/work"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 6175,
+  "group": 6175,
+  "cleanup": {
+    "status": "session-signalled",
+    "signals": [],
+    "groupSignals": [],
+    "parentReaped": true,
+    "session": 6175,
+    "allowanceSeconds": 8.0,
+    "discovery": {
+      "status": "available",
+      "truncated": false
+    },
+    "groups": [
+      6175
+    ],
+    "seconds": 0.084,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "boundary": "admitted Linux session; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "/work/Docs/Tasks/ci-reliability/phase-3/green-synthetic.log",
+      "retainedBytes": 6244,
+      "observedBytes": 6244,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T13:02:06.959445+00:00",
+  "endMonotonic": 75633.417653574,
+  "elapsedSeconds": 1.994,
+  "lastObservedTest": "run",
+  "readerThreads": 0
+}

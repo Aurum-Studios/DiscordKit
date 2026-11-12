@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "status": "failed",
+  "name": "phase4-exact-types-red",
+  "stage": "phase4-exact-types-red",
+  "operation": "localHelperCheck",
+  "arguments": [
+    "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+    "-m",
+    "unittest",
+    "test_native_jobs.NativeArtifactTests.test_final_compatibility_change_fails_after_successful_restored_tests"
+  ],
+  "start": "2026-11-12T13:53:31.157136+00:00",
+  "startMonotonic": 349618.552212833,
+  "deadlineMonotonic": 349678.552212833,
+  "executionLimitSeconds": 60,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "operation",
+  "paths": {
+    "output": "/Users/carsonrau/Developer/DiscordKit-ci-phase4/Docs/Tasks/ci-reliability/phase-4/exact-types-red.log",
+    "stdout": null,
+    "diagnostics": "/Users/carsonrau/Developer/DiscordKit-ci-phase4/Docs/Tasks/ci-reliability/phase-4/exact-types-red.diagnostics.jsonl",
+    "receipt": "/Users/carsonrau/Developer/DiscordKit-ci-phase4/Docs/Tasks/ci-reliability/phase-4/exact-types-red.receipt.json"
+  },
+  "identity": {
+    "executionID": "11504456-dc62-430c-ac47-68cca3353b42",
+    "supervisorPID": 61076,
+    "host": "Pokemon-GO-Plus",
+    "system": "Darwin",
+    "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase4/Tools/ci"
+  },
+  "exitCode": 1,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 61087,
+  "group": 61087,
+  "error": "Command '('/Library/Frameworks/Python.framework/Versions/3.14/bin/python3', '-m', 'unittest', 'test_native_jobs.NativeArtifactTests.test_final_compatibility_change_fails_after_successful_restored_tests')' returned non-zero exit status 1.",
+  "errorType": "CalledProcessError",
+  "cleanup": {
+    "status": "group-signalled",
+    "signals": [],
+    "parentReaped": true,
+    "allowanceSeconds": 8.0,
+    "seconds": 0.004,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "verificationMalformedRows": 0,
+    "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "/Users/carsonrau/Developer/DiscordKit-ci-phase4/Docs/Tasks/ci-reliability/phase-4/exact-types-red.log",
+      "retainedBytes": 1937,
+      "observedBytes": 1937,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T13:53:31.275121+00:00",
+  "endMonotonic": 349618.670240416,
+  "elapsedSeconds": 0.118,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}

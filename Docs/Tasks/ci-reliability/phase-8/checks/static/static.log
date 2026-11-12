@@ -1,0 +1,2 @@
+/Library/Frameworks/Python.framework/Versions/3.14/bin/python3 .build/phase8-static-check.py
+{"embeddedPythonBlocks": 11, "jsonFiles": 37, "localMarkdownLinks": 235, "originalPlanningHashesUnchanged": true, "provisioningMatchesSchedulingSetupSeconds": 600, "pythonFiles": ["Tools/ci/linux_ci.py", "Tools/ci/native_provisioning.py", "Tools/ci/platform_probe.py", "Tools/ci/test_linux_ci.py", "Tools/ci/test_native_provisioning.py", "Tools/ci/test_platform_probe.py", "Tools/ci/test_provisioning_workflow.py"], "realPayloadCheckSourceHashesMatch": true, "status": "passed"}

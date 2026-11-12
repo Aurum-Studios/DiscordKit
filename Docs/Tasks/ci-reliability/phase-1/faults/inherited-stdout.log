@@ -1,0 +1,2 @@
+/Library/Frameworks/Python.framework/Versions/3.14/bin/python3 -c 'import subprocess,sys; subprocess.Popen([sys.executable,'"'"'-c'"'"','"'"'import time; time.sleep(60)'"'"']); print('"'"'parent completed'"'"',flush=True)'
+parent completed

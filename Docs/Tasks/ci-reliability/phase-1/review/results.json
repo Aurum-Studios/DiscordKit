@@ -1,0 +1,467 @@
+{
+  "successClosedOutputDescendant": {
+    "returnCode": 0,
+    "seconds": 0.126,
+    "childAlive": false,
+    "receipt": {
+      "schemaVersion": 1,
+      "status": "passed",
+      "name": "closed-output",
+      "stage": "closed-output",
+      "operation": "command",
+      "arguments": [
+        "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+        "-c",
+        "import subprocess,sys,time;from pathlib import Path;subprocess.Popen([sys.executable,'-c',\"import os,signal,time;from pathlib import Path;signal.signal(signal.SIGTERM,signal.SIG_IGN);Path('/Users/carsonrau/Developer/DiscordKit-ci-phase1/.build/reviewer-phase1/closed-output.pid').write_text(str(os.getpid()));time.sleep(60)\"],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL);p=Path('/Users/carsonrau/Developer/DiscordKit-ci-phase1/.build/reviewer-phase1/closed-output.pid');exec('while not p.exists(): time.sleep(.01)')"
+      ],
+      "start": "2026-11-12T04:55:16.944001+00:00",
+      "startMonotonic": 317324.457096333,
+      "deadlineMonotonic": 317325.957096333,
+      "executionLimitSeconds": 1.5,
+      "cleanupAllowanceSeconds": 8.0,
+      "paths": {
+        "output": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/.build/reviewer-phase1/closed-output.log",
+        "stdout": null,
+        "diagnostics": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/.build/reviewer-phase1/closed-output.diagnostics.jsonl",
+        "receipt": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/.build/reviewer-phase1/closed-output.receipt.json"
+      },
+      "identity": {
+        "executionID": "3122ad55-cf17-4300-8a40-1b58bb7fbeea",
+        "supervisorPID": 50635,
+        "host": "Pokemon-GO-Plus",
+        "system": "Darwin",
+        "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase1"
+      },
+      "exitCode": 0,
+      "signal": null,
+      "timeoutCategory": null,
+      "pid": 50636,
+      "group": 50636,
+      "cleanup": {
+        "status": "group-signalled",
+        "signals": [
+          "SIGTERM",
+          "SIGKILL"
+        ],
+        "parentReaped": true,
+        "allowanceSeconds": 8.0,
+        "seconds": 0.003,
+        "groupState": "gone",
+        "remainingProcesses": [],
+        "verification": "available",
+        "verificationTruncated": false,
+        "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+      },
+      "outputs": [
+        {
+          "path": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/.build/reviewer-phase1/closed-output.log",
+          "retainedBytes": 624,
+          "observedBytes": 624,
+          "truncated": false
+        }
+      ],
+      "diagnosticsTruncated": false,
+      "end": "2026-11-12T04:55:17.004594+00:00",
+      "endMonotonic": 317324.517723083,
+      "elapsedSeconds": 0.061,
+      "lastObservedTest": null,
+      "readerThreads": 0
+    }
+  },
+  "realSIGTERM": {
+    "returnCode": 1,
+    "seconds": 0.083,
+    "childAlive": false,
+    "receipt": {
+      "schemaVersion": 1,
+      "status": "interrupted",
+      "name": "signal",
+      "stage": "signal",
+      "operation": "command",
+      "arguments": [
+        "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+        "-c",
+        "import os,time;from pathlib import Path;Path('/Users/carsonrau/Developer/DiscordKit-ci-phase1/.build/reviewer-phase1/signal-child.pid').write_text(str(os.getpid()));time.sleep(60)"
+      ],
+      "start": "2026-11-12T04:55:17.071669+00:00",
+      "startMonotonic": 317324.584758041,
+      "deadlineMonotonic": 317384.584758041,
+      "executionLimitSeconds": 60,
+      "cleanupAllowanceSeconds": 8.0,
+      "paths": {
+        "output": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/.build/reviewer-phase1/signal.log",
+        "stdout": null,
+        "diagnostics": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/.build/reviewer-phase1/signal.diagnostics.jsonl",
+        "receipt": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/.build/reviewer-phase1/signal.receipt.json"
+      },
+      "identity": {
+        "executionID": "285fc4f6-78d2-4643-bb85-8e3e120b2218",
+        "supervisorPID": 50639,
+        "host": "Pokemon-GO-Plus",
+        "system": "Darwin",
+        "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase1"
+      },
+      "exitCode": -15,
+      "signal": 15,
+      "timeoutCategory": null,
+      "pid": 50640,
+      "group": 50640,
+      "error": "supervisor interrupted by signal 15",
+      "errorType": "CommandInterrupted",
+      "interruptSignal": 15,
+      "cleanup": {
+        "status": "group-signalled",
+        "signals": [
+          "SIGTERM"
+        ],
+        "parentReaped": true,
+        "allowanceSeconds": 8.0,
+        "seconds": 0.005,
+        "groupState": "gone",
+        "remainingProcesses": [],
+        "verification": "available",
+        "verificationTruncated": false,
+        "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+      },
+      "outputs": [
+        {
+          "path": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/.build/reviewer-phase1/signal.log",
+          "retainedBytes": 256,
+          "observedBytes": 256,
+          "truncated": false
+        }
+      ],
+      "diagnosticsTruncated": false,
+      "end": "2026-11-12T04:55:17.105566+00:00",
+      "endMonotonic": 317324.618695,
+      "elapsedSeconds": 0.034,
+      "lastObservedTest": null,
+      "readerThreads": 0
+    }
+  },
+  "blockedConsolePipe": {
+    "returnCode": 1,
+    "seconds": 0.078,
+    "receipt": {
+      "schemaVersion": 1,
+      "status": "failed",
+      "name": "blocked-console",
+      "stage": "blocked-console",
+      "operation": "command",
+      "arguments": [
+        "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+        "-c",
+        "import os;os.write(1,b'x'*1000000)"
+      ],
+      "start": "2026-11-12T04:55:17.155994+00:00",
+      "startMonotonic": 317324.669089125,
+      "deadlineMonotonic": 317325.669089125,
+      "executionLimitSeconds": 1,
+      "cleanupAllowanceSeconds": 8.0,
+      "paths": {
+        "output": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/.build/reviewer-phase1/blocked-console.log",
+        "stdout": null,
+        "diagnostics": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/.build/reviewer-phase1/blocked-console.diagnostics.jsonl",
+        "receipt": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/.build/reviewer-phase1/blocked-console.receipt.json"
+      },
+      "identity": {
+        "executionID": "bb533e63-24fb-4f68-a99b-a49ea643e47c",
+        "supervisorPID": 50642,
+        "host": "Pokemon-GO-Plus",
+        "system": "Darwin",
+        "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase1"
+      },
+      "exitCode": -15,
+      "signal": 15,
+      "timeoutCategory": null,
+      "pid": 50643,
+      "group": 50643,
+      "error": "[Errno 35] Resource temporarily unavailable",
+      "errorType": "BlockingIOError",
+      "cleanup": {
+        "status": "group-signalled",
+        "signals": [
+          "SIGTERM"
+        ],
+        "parentReaped": true,
+        "allowanceSeconds": 8.0,
+        "seconds": 0.005,
+        "groupState": "gone",
+        "remainingProcesses": [],
+        "verification": "available",
+        "verificationTruncated": false,
+        "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+      },
+      "outputs": [
+        {
+          "path": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/.build/reviewer-phase1/blocked-console.log",
+          "retainedBytes": 73839,
+          "observedBytes": 73839,
+          "truncated": false
+        }
+      ],
+      "diagnosticsTruncated": false,
+      "end": "2026-11-12T04:55:17.179477+00:00",
+      "endMonotonic": 317324.692607166,
+      "elapsedSeconds": 0.024,
+      "lastObservedTest": null,
+      "readerThreads": 0
+    }
+  },
+  "flood-normal": {
+    "returnCode": 0,
+    "seconds": 0.185,
+    "receipt": {
+      "schemaVersion": 1,
+      "status": "passed",
+      "name": "flood-normal",
+      "stage": "flood-normal",
+      "operation": "command",
+      "arguments": [
+        "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+        "-c",
+        "import os;os.write(1,b'x'*9000000)"
+      ],
+      "start": "2026-11-12T04:55:17.235111+00:00",
+      "startMonotonic": 317324.748206333,
+      "deadlineMonotonic": 317326.748206333,
+      "executionLimitSeconds": 2,
+      "cleanupAllowanceSeconds": 8.0,
+      "paths": {
+        "output": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/.build/reviewer-phase1/flood-normal.log",
+        "stdout": null,
+        "diagnostics": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/.build/reviewer-phase1/flood-normal.diagnostics.jsonl",
+        "receipt": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/.build/reviewer-phase1/flood-normal.receipt.json"
+      },
+      "identity": {
+        "executionID": "4fef5ebc-d2d0-4819-9cbf-8f4c46b6cf19",
+        "supervisorPID": 50645,
+        "host": "Pokemon-GO-Plus",
+        "system": "Darwin",
+        "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase1"
+      },
+      "exitCode": 0,
+      "signal": null,
+      "timeoutCategory": null,
+      "pid": 50646,
+      "group": 50646,
+      "cleanup": {
+        "status": "group-signalled",
+        "signals": [],
+        "parentReaped": true,
+        "allowanceSeconds": 8.0,
+        "seconds": 0.004,
+        "groupState": "gone",
+        "remainingProcesses": [],
+        "verification": "available",
+        "verificationTruncated": false,
+        "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+      },
+      "outputs": [
+        {
+          "path": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/.build/reviewer-phase1/flood-normal.log",
+          "retainedBytes": 8388608,
+          "observedBytes": 9000111,
+          "truncated": true
+        }
+      ],
+      "diagnosticsTruncated": false,
+      "end": "2026-11-12T04:55:17.330610+00:00",
+      "endMonotonic": 317324.843742291,
+      "elapsedSeconds": 0.096,
+      "lastObservedTest": null,
+      "readerThreads": 0
+    }
+  },
+  "flood-discovery": {
+    "returnCode": 1,
+    "seconds": 0.18,
+    "receipt": {
+      "schemaVersion": 1,
+      "status": "failed",
+      "name": "flood-discovery",
+      "stage": "flood-discovery",
+      "operation": "command",
+      "arguments": [
+        "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+        "-c",
+        "import os;os.write(1,b'x'*9000000)"
+      ],
+      "start": "2026-11-12T04:55:17.419171+00:00",
+      "startMonotonic": 317324.932259541,
+      "deadlineMonotonic": 317326.932259541,
+      "executionLimitSeconds": 2,
+      "cleanupAllowanceSeconds": 8.0,
+      "paths": {
+        "output": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/.build/reviewer-phase1/flood-discovery.log",
+        "stdout": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/.build/reviewer-phase1/flood-discovery.stdout",
+        "diagnostics": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/.build/reviewer-phase1/flood-discovery.diagnostics.jsonl",
+        "receipt": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/.build/reviewer-phase1/flood-discovery.receipt.json"
+      },
+      "identity": {
+        "executionID": "85a535a3-7097-4b68-94da-1629723ca1f1",
+        "supervisorPID": 50648,
+        "host": "Pokemon-GO-Plus",
+        "system": "Darwin",
+        "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase1"
+      },
+      "exitCode": -15,
+      "signal": 15,
+      "timeoutCategory": null,
+      "pid": 50649,
+      "group": 50649,
+      "error": "machine-readable stdout exceeded its finite output limit",
+      "errorType": "OSError",
+      "cleanup": {
+        "status": "group-signalled",
+        "signals": [
+          "SIGTERM"
+        ],
+        "parentReaped": true,
+        "allowanceSeconds": 8.0,
+        "seconds": 0.005,
+        "groupState": "gone",
+        "remainingProcesses": [],
+        "verification": "available",
+        "verificationTruncated": false,
+        "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+      },
+      "outputs": [
+        {
+          "path": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/.build/reviewer-phase1/flood-discovery.log",
+          "retainedBytes": 111,
+          "observedBytes": 111,
+          "truncated": false
+        },
+        {
+          "path": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/.build/reviewer-phase1/flood-discovery.stdout",
+          "retainedBytes": 8388608,
+          "observedBytes": 8396800,
+          "truncated": true
+        }
+      ],
+      "diagnosticsTruncated": false,
+      "end": "2026-11-12T04:55:17.508558+00:00",
+      "endMonotonic": 317325.021692916,
+      "elapsedSeconds": 0.089,
+      "lastObservedTest": null,
+      "readerThreads": 0
+    }
+  },
+  "probePipeHolder": {
+    "arguments": [
+      "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+      "-c",
+      "import subprocess,sys,time;from pathlib import Path;subprocess.Popen([sys.executable,'-c',\"import os,signal,time;from pathlib import Path;signal.signal(signal.SIGTERM,signal.SIG_IGN);Path('/Users/carsonrau/Developer/DiscordKit-ci-phase1/.build/reviewer-phase1/probe-child.pid').write_text(str(os.getpid()));time.sleep(60)\"]);p=Path('/Users/carsonrau/Developer/DiscordKit-ci-phase1/.build/reviewer-phase1/probe-child.pid');exec('while not p.exists(): time.sleep(.01)')"
+    ],
+    "status": "timeout",
+    "output": "",
+    "exitCode": 0,
+    "truncated": false,
+    "seconds": 0.391,
+    "wallSeconds": 0.391,
+    "childAlive": false
+  },
+  "escapedSessionBoundary": {
+    "returnCode": 0,
+    "seconds": 0.132,
+    "childAlive": true,
+    "receipt": {
+      "schemaVersion": 1,
+      "status": "passed",
+      "name": "escaped",
+      "stage": "escaped",
+      "operation": "command",
+      "arguments": [
+        "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+        "-c",
+        "import subprocess,sys,time;from pathlib import Path;subprocess.Popen([sys.executable,'-c',\"import os,time;from pathlib import Path;Path('/Users/carsonrau/Developer/DiscordKit-ci-phase1/.build/reviewer-phase1/escaped-child.pid').write_text(str(os.getpid()));time.sleep(60)\"],start_new_session=True,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL);p=Path('/Users/carsonrau/Developer/DiscordKit-ci-phase1/.build/reviewer-phase1/escaped-child.pid');exec('while not p.exists(): time.sleep(.01)')"
+      ],
+      "start": "2026-11-12T04:55:17.996329+00:00",
+      "startMonotonic": 317325.509423916,
+      "deadlineMonotonic": 317327.009423916,
+      "executionLimitSeconds": 1.5,
+      "cleanupAllowanceSeconds": 8.0,
+      "paths": {
+        "output": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/.build/reviewer-phase1/escaped.log",
+        "stdout": null,
+        "diagnostics": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/.build/reviewer-phase1/escaped.diagnostics.jsonl",
+        "receipt": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/.build/reviewer-phase1/escaped.receipt.json"
+      },
+      "identity": {
+        "executionID": "31407eeb-398b-4e23-bfa1-749040ed0807",
+        "supervisorPID": 50654,
+        "host": "Pokemon-GO-Plus",
+        "system": "Darwin",
+        "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase1"
+      },
+      "exitCode": 0,
+      "signal": null,
+      "timeoutCategory": null,
+      "pid": 50656,
+      "group": 50656,
+      "cleanup": {
+        "status": "group-signalled",
+        "signals": [],
+        "parentReaped": true,
+        "allowanceSeconds": 8.0,
+        "seconds": 0.004,
+        "groupState": "gone",
+        "remainingProcesses": [],
+        "verification": "available",
+        "verificationTruncated": false,
+        "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+      },
+      "outputs": [
+        {
+          "path": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/.build/reviewer-phase1/escaped.log",
+          "retainedBytes": 595,
+          "observedBytes": 595,
+          "truncated": false
+        }
+      ],
+      "diagnosticsTruncated": false,
+      "end": "2026-11-12T04:55:18.057395+00:00",
+      "endMonotonic": 317325.570527166,
+      "elapsedSeconds": 0.061,
+      "lastObservedTest": null,
+      "readerThreads": 0
+    }
+  },
+  "fixtureCleanupVerification": {
+    "allFixtureDescendantsGone": true,
+    "checks": [
+      {
+        "fixturePIDFile": "closed-output.pid",
+        "pid": 50637,
+        "state": "absent",
+        "aliveAfterOwnerCleanup": false
+      },
+      {
+        "fixturePIDFile": "escaped-child.pid",
+        "pid": 50657,
+        "state": "absent",
+        "aliveAfterOwnerCleanup": false
+      },
+      {
+        "fixturePIDFile": "probe-child.pid",
+        "pid": 50652,
+        "state": "absent",
+        "aliveAfterOwnerCleanup": false
+      },
+      {
+        "fixturePIDFile": "signal-child.pid",
+        "pid": 50640,
+        "state": "absent",
+        "aliveAfterOwnerCleanup": false
+      },
+      {
+        "fixturePIDFile": "signal-confirm-child.pid",
+        "pid": 50485,
+        "state": "absent",
+        "aliveAfterOwnerCleanup": false
+      }
+    ],
+    "escapedSessionCleanup": "owner sent SIGKILL in finally after explicitly observing boundary limitation"
+  }
+}

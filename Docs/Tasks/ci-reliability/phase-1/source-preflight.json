@@ -1,0 +1,132 @@
+{
+  "schemaVersion": 1,
+  "owner": "Codex /root; supervisor and native_limits delegated owned files",
+  "capturedAt": "2026-11-12T04:44:53.541715+00:00",
+  "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase1",
+  "branch": "ci/phase-1-supervision",
+  "baseRevision": "a74d58a754048ff4058c64a2d75b5bb3b21d04e0",
+  "remoteTrackingMain": "85eac6f3c1d3b17e53596c49e7438efee366c1b3",
+  "remotes": [
+    "origin\thttps://github.com/Aurum-Studios/DiscordKit.git (fetch)",
+    "origin\thttps://github.com/Aurum-Studios/DiscordKit.git (push)"
+  ],
+  "worktrees": [
+    "worktree /Users/carsonrau/Developer/DiscordKit",
+    "HEAD 85eac6f3c1d3b17e53596c49e7438efee366c1b3",
+    "branch refs/heads/main",
+    "",
+    "worktree /Users/carsonrau/Developer/DiscordKit-ci-phase0",
+    "HEAD a74d58a754048ff4058c64a2d75b5bb3b21d04e0",
+    "branch refs/heads/ci/phase-0-baseline",
+    "",
+    "worktree /Users/carsonrau/Developer/DiscordKit-ci-phase1",
+    "HEAD a74d58a754048ff4058c64a2d75b5bb3b21d04e0",
+    "branch refs/heads/ci/phase-1-supervision",
+    "",
+    "worktree /Users/carsonrau/Developer/DiscordKit/.build/performance-phase1/baseline-source",
+    "HEAD 01c743e44615aa48fb81a2e193b41195cd9e86c3",
+    "detached",
+    "",
+    "worktree /Users/carsonrau/Developer/DiscordKit/.build/performance-phase10/baseline-source",
+    "HEAD a8a7539b32851e122ca1f81e399e77be996590c6",
+    "detached",
+    "",
+    "worktree /Users/carsonrau/Developer/DiscordKit/.build/performance-phase2/baseline-source",
+    "HEAD 1b10c663e70cae90c0f49c7bb80aba89ff90600f",
+    "detached",
+    "",
+    "worktree /Users/carsonrau/Developer/DiscordKit/.build/performance-phase3/baseline-source",
+    "HEAD 5e06464b9dae57fcdeae63c14ea7f4c534de68ca",
+    "detached",
+    "",
+    "worktree /Users/carsonrau/Developer/DiscordKit/.build/performance-phase4/baseline-source",
+    "HEAD 3e8066749f1ba9e043438b13a6e160cd2ab77f8f",
+    "detached",
+    "",
+    "worktree /Users/carsonrau/Developer/DiscordKit/.build/performance-phase5/baseline-source",
+    "HEAD ca5c4cb9d45a824f2470555161158634c7714bb8",
+    "detached",
+    "",
+    "worktree /Users/carsonrau/Developer/DiscordKit/.build/performance-phase6/baseline-source",
+    "HEAD 035cf9f02f5955552f5b0357a0e0abf90cdc6729",
+    "detached",
+    "",
+    "worktree /Users/carsonrau/Developer/DiscordKit/.build/performance-phase7/baseline-source",
+    "HEAD d766cf83db7a9baffeb46bcadbc1153336f4ba9b",
+    "detached",
+    "",
+    "worktree /Users/carsonrau/Developer/DiscordKit/.build/performance-phase8/baseline-source",
+    "HEAD 57328709aaafd440750623b196053e8bc1e07f61",
+    "detached",
+    "",
+    "worktree /Users/carsonrau/Developer/DiscordKit/.build/performance-phase9/baseline-source",
+    "HEAD f150293e75bace0b1e72519346f09389b9d3925e",
+    "detached",
+    ""
+  ],
+  "initialStatus": [],
+  "author": {
+    "name": "Carson R",
+    "email": "carsonaurum1@icloud.com"
+  },
+  "host": {
+    "system": "Darwin",
+    "machine": "arm64",
+    "python": "3.14.0"
+  },
+  "originalCheckout": {
+    "path": "/Users/carsonrau/Developer/DiscordKit",
+    "status": [
+      " M Docs/CI.md",
+      " A Docs/Tasks/ci-reliability/EVIDENCE.md",
+      " A Docs/Tasks/ci-reliability/PLAN.md",
+      " A Docs/Tasks/ci-reliability/STATE.md"
+    ],
+    "planningFileSHA256": {
+      "Docs/CI.md": "52d344b12487a46ec46f3ff0ad7f1c207faf876f937a172473c3f44b7aa81629",
+      "Docs/Tasks/ci-reliability/PLAN.md": "2fa145ad46499a1fbe26d272704f825d590fe1937a5f59e2f2f4099431527d83",
+      "Docs/Tasks/ci-reliability/STATE.md": "b2a181246e1c3e323a433be1c0f17d6db36039658e4dde68c19f36302098180d",
+      "Docs/Tasks/ci-reliability/EVIDENCE.md": "5e1de6b2d0f1259424dafe7e9aae4651a039edd9cceda65a15a0bf7c08f0e476"
+    }
+  },
+  "phase0Checkout": {
+    "path": "/Users/carsonrau/Developer/DiscordKit-ci-phase0",
+    "revision": "a74d58a754048ff4058c64a2d75b5bb3b21d04e0",
+    "status": []
+  },
+  "processInspection": {
+    "command": [
+      "ps",
+      "-axo",
+      "pid,ppid,pgid,etime,comm"
+    ],
+    "observedValidationProcesses": [],
+    "note": "Pre-work ps inspection found GitHub MCP server processes only; no Swift/Python validation or native planner process."
+  },
+  "authorization": {
+    "scope": "Plan, implement, local helper test and commit phase 1",
+    "paidJobs": 0,
+    "paidMinutes": 0,
+    "paidAttempts": 0,
+    "paidAllowanceUSD": "0.00",
+    "nativeSwiftCompilations": 0,
+    "nativeSwiftTests": 0,
+    "remoteWrites": false
+  },
+  "remoteRead": {
+    "argv": [
+      "git",
+      "ls-remote",
+      "origin",
+      "HEAD",
+      "refs/heads/main"
+    ],
+    "exit": 0,
+    "refs": [
+      "85eac6f3c1d3b17e53596c49e7438efee366c1b3\tHEAD",
+      "85eac6f3c1d3b17e53596c49e7438efee366c1b3\trefs/heads/main"
+    ],
+    "stderr": "",
+    "capturedAt": "2026-11-12T04:47:56.184212+00:00"
+  }
+}

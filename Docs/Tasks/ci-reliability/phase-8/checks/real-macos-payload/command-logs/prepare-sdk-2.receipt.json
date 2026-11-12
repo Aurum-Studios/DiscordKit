@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "name": "prepare-sdk-2",
+  "stage": "setup-native",
+  "operation": "provisioning",
+  "arguments": [
+    "xcodebuild",
+    "-version"
+  ],
+  "start": "2026-11-12T15:36:16.867779+00:00",
+  "startMonotonic": 355784.211897791,
+  "deadlineMonotonic": 355814.211897791,
+  "executionLimitSeconds": 30,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "operation",
+  "paths": {
+    "output": "/private/var/folders/3j/5mxmxjxn1z98m1c1y32z64zh0000gn/T/discordkit-phase8-authenticated-payload-5c1523ev/state/evidence/prepare-sdk-2.log",
+    "stdout": "/private/var/folders/3j/5mxmxjxn1z98m1c1y32z64zh0000gn/T/discordkit-phase8-authenticated-payload-5c1523ev/state/evidence/prepare-sdk-2.stdout",
+    "diagnostics": "/private/var/folders/3j/5mxmxjxn1z98m1c1y32z64zh0000gn/T/discordkit-phase8-authenticated-payload-5c1523ev/state/evidence/prepare-sdk-2.diagnostics.jsonl",
+    "receipt": "/private/var/folders/3j/5mxmxjxn1z98m1c1y32z64zh0000gn/T/discordkit-phase8-authenticated-payload-5c1523ev/state/evidence/prepare-sdk-2.receipt.json"
+  },
+  "identity": {
+    "executionID": "99d1c7b3-0e6c-4ec2-9e51-2b91ca60e7b3",
+    "supervisorPID": 42771,
+    "host": "Pokemon-GO-Plus",
+    "system": "Darwin",
+    "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase8"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 42783,
+  "group": 42783,
+  "cleanup": {
+    "status": "group-signalled",
+    "signals": [],
+    "parentReaped": true,
+    "allowanceSeconds": 8.0,
+    "seconds": 0.004,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "verificationMalformedRows": 0,
+    "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "/private/var/folders/3j/5mxmxjxn1z98m1c1y32z64zh0000gn/T/discordkit-phase8-authenticated-payload-5c1523ev/state/evidence/prepare-sdk-2.log",
+      "retainedBytes": 20,
+      "observedBytes": 20,
+      "truncated": false
+    },
+    {
+      "path": "/private/var/folders/3j/5mxmxjxn1z98m1c1y32z64zh0000gn/T/discordkit-phase8-authenticated-payload-5c1523ev/state/evidence/prepare-sdk-2.stdout",
+      "retainedBytes": 33,
+      "observedBytes": 33,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T15:36:16.978407+00:00",
+  "endMonotonic": 355784.32254675,
+  "elapsedSeconds": 0.111,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}

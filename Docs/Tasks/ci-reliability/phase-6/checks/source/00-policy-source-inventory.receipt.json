@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "name": "policy-source-inventory",
+  "stage": "preflight-source",
+  "operation": "localHelperCheck",
+  "arguments": [
+    "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+    "Tools/ci/scheduling_policy.py",
+    "validate",
+    "--policy",
+    "/Users/carsonrau/Developer/DiscordKit-ci-phase6/Tools/ci/scheduling-policy.v1.json",
+    "--repository",
+    "/Users/carsonrau/Developer/DiscordKit-ci-phase6"
+  ],
+  "start": "2026-11-12T14:51:00.515001+00:00",
+  "startMonotonic": 353067.882846666,
+  "deadlineMonotonic": 353367.882477875,
+  "executionLimitSeconds": 300,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "aggregate",
+  "paths": {
+    "output": "/Users/carsonrau/Developer/DiscordKit-ci-phase6/.build/phase6-preflight/source-final/00-policy-source-inventory.log",
+    "stdout": null,
+    "diagnostics": "/Users/carsonrau/Developer/DiscordKit-ci-phase6/.build/phase6-preflight/source-final/00-policy-source-inventory.diagnostics.jsonl",
+    "receipt": "/Users/carsonrau/Developer/DiscordKit-ci-phase6/.build/phase6-preflight/source-final/00-policy-source-inventory.receipt.json"
+  },
+  "identity": {
+    "executionID": "5b718890-88c3-42e9-8f81-e2c5085b8571",
+    "supervisorPID": 3391,
+    "host": "Pokemon-GO-Plus",
+    "system": "Darwin",
+    "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase6"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 3427,
+  "group": 3427,
+  "cleanup": {
+    "status": "group-signalled",
+    "signals": [],
+    "parentReaped": true,
+    "allowanceSeconds": 8.0,
+    "seconds": 0.003,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "verificationMalformedRows": 0,
+    "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "/Users/carsonrau/Developer/DiscordKit-ci-phase6/.build/phase6-preflight/source-final/00-policy-source-inventory.log",
+      "retainedBytes": 478,
+      "observedBytes": 478,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T14:51:00.628261+00:00",
+  "endMonotonic": 353067.99612825,
+  "elapsedSeconds": 0.113,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}

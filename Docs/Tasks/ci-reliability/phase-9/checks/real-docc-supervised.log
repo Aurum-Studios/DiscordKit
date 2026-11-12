@@ -1,0 +1,92 @@
+/Library/Frameworks/Python.framework/Versions/3.14/bin/python3 Docs/Tasks/ci-reliability/phase-9/checks/real-docc/replay.py --output .build/phase9-real-docc-acceptance
+::group::identity-query
+git rev-parse HEAD
+7136027c13899a4ec95b38ebb4fd4aa41cc88b6e
+::endgroup::
+::group::identity-query
+/Library/Frameworks/Python.framework/Versions/3.14/bin/python3 -c 'import base64,subprocess,sys; result=subprocess.run(sys.argv[1:], stdout=subprocess.PIPE); sys.stdout.buffer.write(base64.b64encode(result.stdout)); sys.stdout.flush(); raise SystemExit(result.returncode)' git ls-files -z
+LmdpdGlnbm9yZQBQYWNrYWdlcy9EaXNjb3JkRFNMRXh0ZW5zaW9ucy9Tb3VyY2VzL0Rpc2NvcmREU0xFeHRlbnNpb25zL0Rpc2NvcmREU0xFeHRlbnNpb25zLmRvY2MvRGlzY29yZERTTEV4dGVuc2lvbnMubWQAUGFja2FnZXMvRGlzY29yZERTTE1hY3Jvcy9Tb3VyY2VzL0Rpc2NvcmREU0xNYWNyb3MvRGlzY29yZERTTE1hY3Jvcy5kb2NjL0Rpc2NvcmREU0xNYWNyb3MubWQAU291cmNlcy9EaXNjb3JkS2l0L0Rpc2NvcmRLaXQuZG9jYy9EaXNjb3JkS2l0Lm1kAA==::endgroup::
+::group::identity-query
+git rev-parse HEAD
+7136027c13899a4ec95b38ebb4fd4aa41cc88b6e
+::endgroup::
+::group::identity-query
+/Library/Frameworks/Python.framework/Versions/3.14/bin/python3 -c 'import base64,subprocess,sys; result=subprocess.run(sys.argv[1:], stdout=subprocess.PIPE); sys.stdout.buffer.write(base64.b64encode(result.stdout)); sys.stdout.flush(); raise SystemExit(result.returncode)' git ls-files -z
+LmdpdGlnbm9yZQBQYWNrYWdlcy9EaXNjb3JkRFNMRXh0ZW5zaW9ucy9Tb3VyY2VzL0Rpc2NvcmREU0xFeHRlbnNpb25zL0Rpc2NvcmREU0xFeHRlbnNpb25zLmRvY2MvRGlzY29yZERTTEV4dGVuc2lvbnMubWQAUGFja2FnZXMvRGlzY29yZERTTE1hY3Jvcy9Tb3VyY2VzL0Rpc2NvcmREU0xNYWNyb3MvRGlzY29yZERTTE1hY3Jvcy5kb2NjL0Rpc2NvcmREU0xNYWNyb3MubWQAU291cmNlcy9EaXNjb3JkS2l0L0Rpc2NvcmRLaXQuZG9jYy9EaXNjb3JkS2l0Lm1kAA==::endgroup::
+::group::identity-query
+git rev-parse HEAD
+7136027c13899a4ec95b38ebb4fd4aa41cc88b6e
+::endgroup::
+::group::identity-query
+/Library/Frameworks/Python.framework/Versions/3.14/bin/python3 -c 'import base64,subprocess,sys; result=subprocess.run(sys.argv[1:], stdout=subprocess.PIPE); sys.stdout.buffer.write(base64.b64encode(result.stdout)); sys.stdout.flush(); raise SystemExit(result.returncode)' git ls-files -z
+LmdpdGlnbm9yZQBQYWNrYWdlcy9EaXNjb3JkRFNMRXh0ZW5zaW9ucy9Tb3VyY2VzL0Rpc2NvcmREU0xFeHRlbnNpb25zL0Rpc2NvcmREU0xFeHRlbnNpb25zLmRvY2MvRGlzY29yZERTTEV4dGVuc2lvbnMubWQAUGFja2FnZXMvRGlzY29yZERTTE1hY3Jvcy9Tb3VyY2VzL0Rpc2NvcmREU0xNYWNyb3MvRGlzY29yZERTTE1hY3Jvcy5kb2NjL0Rpc2NvcmREU0xNYWNyb3MubWQAU291cmNlcy9EaXNjb3JkS2l0L0Rpc2NvcmRLaXQuZG9jYy9EaXNjb3JkS2l0Lm1kAA==::endgroup::
+::group::identity-query
+git rev-parse HEAD
+7136027c13899a4ec95b38ebb4fd4aa41cc88b6e
+::endgroup::
+::group::identity-query
+/Library/Frameworks/Python.framework/Versions/3.14/bin/python3 -c 'import base64,subprocess,sys; result=subprocess.run(sys.argv[1:], stdout=subprocess.PIPE); sys.stdout.buffer.write(base64.b64encode(result.stdout)); sys.stdout.flush(); raise SystemExit(result.returncode)' git ls-files -z
+LmdpdGlnbm9yZQBQYWNrYWdlcy9EaXNjb3JkRFNMRXh0ZW5zaW9ucy9Tb3VyY2VzL0Rpc2NvcmREU0xFeHRlbnNpb25zL0Rpc2NvcmREU0xFeHRlbnNpb25zLmRvY2MvRGlzY29yZERTTEV4dGVuc2lvbnMubWQAUGFja2FnZXMvRGlzY29yZERTTE1hY3Jvcy9Tb3VyY2VzL0Rpc2NvcmREU0xNYWNyb3MvRGlzY29yZERTTE1hY3Jvcy5kb2NjL0Rpc2NvcmREU0xNYWNyb3MubWQAU291cmNlcy9EaXNjb3JkS2l0L0Rpc2NvcmRLaXQuZG9jYy9EaXNjb3JkS2l0Lm1kAA==::endgroup::
+::group::identity-query
+git rev-parse HEAD
+7136027c13899a4ec95b38ebb4fd4aa41cc88b6e
+::endgroup::
+::group::identity-query
+/Library/Frameworks/Python.framework/Versions/3.14/bin/python3 -c 'import base64,subprocess,sys; result=subprocess.run(sys.argv[1:], stdout=subprocess.PIPE); sys.stdout.buffer.write(base64.b64encode(result.stdout)); sys.stdout.flush(); raise SystemExit(result.returncode)' git ls-files -z
+LmdpdGlnbm9yZQBQYWNrYWdlcy9EaXNjb3JkRFNMRXh0ZW5zaW9ucy9Tb3VyY2VzL0Rpc2NvcmREU0xFeHRlbnNpb25zL0Rpc2NvcmREU0xFeHRlbnNpb25zLmRvY2MvRGlzY29yZERTTEV4dGVuc2lvbnMubWQAUGFja2FnZXMvRGlzY29yZERTTE1hY3Jvcy9Tb3VyY2VzL0Rpc2NvcmREU0xNYWNyb3MvRGlzY29yZERTTE1hY3Jvcy5kb2NjL0Rpc2NvcmREU0xNYWNyb3MubWQAU291cmNlcy9EaXNjb3JkS2l0L0Rpc2NvcmRLaXQuZG9jYy9EaXNjb3JkS2l0Lm1kAA==::endgroup::
+::group::identity-query
+git rev-parse HEAD
+7136027c13899a4ec95b38ebb4fd4aa41cc88b6e
+::endgroup::
+::group::identity-query
+/Library/Frameworks/Python.framework/Versions/3.14/bin/python3 -c 'import base64,subprocess,sys; result=subprocess.run(sys.argv[1:], stdout=subprocess.PIPE); sys.stdout.buffer.write(base64.b64encode(result.stdout)); sys.stdout.flush(); raise SystemExit(result.returncode)' git ls-files -z
+LmdpdGlnbm9yZQBQYWNrYWdlcy9EaXNjb3JkRFNMRXh0ZW5zaW9ucy9Tb3VyY2VzL0Rpc2NvcmREU0xFeHRlbnNpb25zL0Rpc2NvcmREU0xFeHRlbnNpb25zLmRvY2MvRGlzY29yZERTTEV4dGVuc2lvbnMubWQAUGFja2FnZXMvRGlzY29yZERTTE1hY3Jvcy9Tb3VyY2VzL0Rpc2NvcmREU0xNYWNyb3MvRGlzY29yZERTTE1hY3Jvcy5kb2NjL0Rpc2NvcmREU0xNYWNyb3MubWQAU291cmNlcy9EaXNjb3JkS2l0L0Rpc2NvcmRLaXQuZG9jYy9EaXNjb3JkS2l0Lm1kAA==::endgroup::
+::group::identity-query
+git rev-parse HEAD
+7136027c13899a4ec95b38ebb4fd4aa41cc88b6e
+::endgroup::
+::group::identity-query
+/Library/Frameworks/Python.framework/Versions/3.14/bin/python3 -c 'import base64,subprocess,sys; result=subprocess.run(sys.argv[1:], stdout=subprocess.PIPE); sys.stdout.buffer.write(base64.b64encode(result.stdout)); sys.stdout.flush(); raise SystemExit(result.returncode)' git ls-files -z
+LmdpdGlnbm9yZQBQYWNrYWdlcy9EaXNjb3JkRFNMRXh0ZW5zaW9ucy9Tb3VyY2VzL0Rpc2NvcmREU0xFeHRlbnNpb25zL0Rpc2NvcmREU0xFeHRlbnNpb25zLmRvY2MvRGlzY29yZERTTEV4dGVuc2lvbnMubWQAUGFja2FnZXMvRGlzY29yZERTTE1hY3Jvcy9Tb3VyY2VzL0Rpc2NvcmREU0xNYWNyb3MvRGlzY29yZERTTE1hY3Jvcy5kb2NjL0Rpc2NvcmREU0xNYWNyb3MubWQAU291cmNlcy9EaXNjb3JkS2l0L0Rpc2NvcmRLaXQuZG9jYy9EaXNjb3JkS2l0Lm1kAA==::endgroup::
+::group::identity-query
+git rev-parse HEAD
+7136027c13899a4ec95b38ebb4fd4aa41cc88b6e
+::endgroup::
+::group::identity-query
+/Library/Frameworks/Python.framework/Versions/3.14/bin/python3 -c 'import base64,subprocess,sys; result=subprocess.run(sys.argv[1:], stdout=subprocess.PIPE); sys.stdout.buffer.write(base64.b64encode(result.stdout)); sys.stdout.flush(); raise SystemExit(result.returncode)' git ls-files -z
+LmdpdGlnbm9yZQBQYWNrYWdlcy9EaXNjb3JkRFNMRXh0ZW5zaW9ucy9Tb3VyY2VzL0Rpc2NvcmREU0xFeHRlbnNpb25zL0Rpc2NvcmREU0xFeHRlbnNpb25zLmRvY2MvRGlzY29yZERTTEV4dGVuc2lvbnMubWQAUGFja2FnZXMvRGlzY29yZERTTE1hY3Jvcy9Tb3VyY2VzL0Rpc2NvcmREU0xNYWNyb3MvRGlzY29yZERTTE1hY3Jvcy5kb2NjL0Rpc2NvcmREU0xNYWNyb3MubWQAU291cmNlcy9EaXNjb3JkS2l0L0Rpc2NvcmRLaXQuZG9jYy9EaXNjb3JkS2l0Lm1kAA==::endgroup::
+Built 3 public-module archives into /Users/carsonrau/Developer/DiscordKit-ci-phase9/.build/phase9-real-docc-acceptance/site
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "xcodeVersion": "Xcode 27.1\nBuild version 27A9275",
+  "doccSHA256": "a570f408e327fa647603cb7c9cb1e301abd89d1303dffefc66a4e54b24b827e1",
+  "qualification": "Local synthetic DocC transport and rendered static routes only",
+  "nativeCompilationCount": 0,
+  "symbolGraphEmissionCount": 0,
+  "syntheticGraphFixtureCount": 3,
+  "strictModuleConversionCount": 3,
+  "packageMergeCount": 3,
+  "consumerCommandCount": 2,
+  "consumerMergeCount": 1,
+  "consumerStaticTransformCount": 1,
+  "consumerCompilationCount": 0,
+  "consumerGraphEmissionCount": 0,
+  "consumerConversionCount": 0,
+  "hostingBasePath": "/Phase9Fixture",
+  "routes": [
+    "documentation/index.html",
+    "documentation/discordkit/index.html",
+    "documentation/discorddslmacros/index.html",
+    "documentation/discorddslextensions/index.html"
+  ],
+  "checkedAssetLinks": [
+    "/Phase9Fixture/css/index.63be42cf.css",
+    "/Phase9Fixture/favicon.ico",
+    "/Phase9Fixture/favicon.svg",
+    "/Phase9Fixture/js/chunk-vendors.88e02fc3.js",
+    "/Phase9Fixture/js/index.f7bc5188.js"
+  ],
+  "rootRedirectChecked": true,
+  "sourceIdentityAndSealedHashesChecked": true
+}

@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "name": "scenario-dslDeferred",
+  "stage": "phase3-scenario-dslDeferred",
+  "operation": "focusedScenario",
+  "arguments": [
+    "/scratch/x86_64-unknown-linux-gnu/debug/DiscordKitLoadTests",
+    "command-timing",
+    "--case",
+    "synthetic.dslDeferred",
+    "--requests",
+    "7",
+    "--concurrency",
+    "3",
+    "--warmup-requests",
+    "0",
+    "--delay-microseconds",
+    "0",
+    "--duration-seconds",
+    "3",
+    "--warmup-seconds",
+    "0",
+    "--profile",
+    "smoke",
+    "--seed",
+    "1",
+    "--output",
+    "/work/Docs/Tasks/ci-reliability/phase-3/scenario-dslDeferred.json",
+    "--common-report",
+    "/work/Docs/Tasks/ci-reliability/phase-3/scenario-dslDeferred-common.json"
+  ],
+  "start": "2026-11-12T13:03:36.951850+00:00",
+  "startMonotonic": 75723.409998156,
+  "deadlineMonotonic": 75813.409998156,
+  "executionLimitSeconds": 90,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "operation",
+  "paths": {
+    "output": "/work/Docs/Tasks/ci-reliability/phase-3/scenario-dslDeferred.log",
+    "stdout": null,
+    "diagnostics": "/work/Docs/Tasks/ci-reliability/phase-3/scenario-dslDeferred.diagnostics.jsonl",
+    "receipt": "/work/Docs/Tasks/ci-reliability/phase-3/scenario-dslDeferred.receipt.json"
+  },
+  "identity": {
+    "executionID": "400dcf73-6462-4407-a0db-be0993f29c41",
+    "supervisorPID": 6656,
+    "host": "213b31596900",
+    "system": "Linux",
+    "repository": "/work"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 6698,
+  "group": 6698,
+  "cleanup": {
+    "status": "session-signalled",
+    "signals": [],
+    "groupSignals": [],
+    "parentReaped": true,
+    "session": 6698,
+    "allowanceSeconds": 8.0,
+    "discovery": {
+      "status": "available",
+      "truncated": false
+    },
+    "groups": [
+      6698
+    ],
+    "seconds": 0.083,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "boundary": "admitted Linux session; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "/work/Docs/Tasks/ci-reliability/phase-3/scenario-dslDeferred.log",
+      "retainedBytes": 405,
+      "observedBytes": 405,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T13:03:37.300280+00:00",
+  "endMonotonic": 75723.758490093,
+  "elapsedSeconds": 0.348,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}

@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "status": "failed",
+  "name": "failed-debugger",
+  "stage": "phase-1-fault-injection",
+  "operation": "focusedTest",
+  "arguments": [
+    "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+    "-c",
+    "import time; time.sleep(60)"
+  ],
+  "start": "2026-11-12T04:57:29.811775+00:00",
+  "startMonotonic": 317457.324125458,
+  "deadlineMonotonic": 317458.22412545804,
+  "executionLimitSeconds": 0.9,
+  "cleanupAllowanceSeconds": 8.0,
+  "paths": {
+    "output": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/Docs/Tasks/ci-reliability/phase-1/faults/failed-debugger.log",
+    "stdout": null,
+    "diagnostics": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/Docs/Tasks/ci-reliability/phase-1/faults/failed-debugger.diagnostics.jsonl",
+    "receipt": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/Docs/Tasks/ci-reliability/phase-1/faults/failed-debugger.receipt.json"
+  },
+  "identity": {
+    "executionID": "55117c72-59d2-402c-8ded-589d19705ad0",
+    "supervisorPID": 54297,
+    "host": "Pokemon-GO-Plus",
+    "system": "Darwin",
+    "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase1"
+  },
+  "exitCode": -15,
+  "signal": 15,
+  "timeoutCategory": "execution",
+  "pid": 54582,
+  "group": 54582,
+  "error": "Command '('/Library/Frameworks/Python.framework/Versions/3.14/bin/python3', '-c', 'import time; time.sleep(60)')' timed out after 0.9 seconds",
+  "errorType": "TimeoutExpired",
+  "cleanup": {
+    "status": "group-signalled",
+    "signals": [
+      "SIGTERM"
+    ],
+    "parentReaped": true,
+    "allowanceSeconds": 8.0,
+    "seconds": 0.005,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "/Users/carsonrau/Developer/DiscordKit-ci-phase1/Docs/Tasks/ci-reliability/phase-1/faults/failed-debugger.log",
+      "retainedBytes": 96,
+      "observedBytes": 96,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T04:57:30.716940+00:00",
+  "endMonotonic": 317458.229318416,
+  "elapsedSeconds": 0.905,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}

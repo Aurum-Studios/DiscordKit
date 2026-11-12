@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "name": "supervisor-final-focused",
+  "stage": "phase-3-supervisor-regression",
+  "operation": "localHelperCheck",
+  "arguments": [
+    "/usr/bin/python3",
+    "-m",
+    "unittest",
+    "test_linux_ci.LinuxSessionTests",
+    "test_linux_ci.SupervisorEvidenceTests.test_truncated_process_listing_never_claims_verified_group_gone",
+    "test_linux_ci.SupervisorEvidenceTests.test_unavailable_linux_session_verification_fails_closed"
+  ],
+  "start": "2026-11-12T13:09:33.104041+00:00",
+  "startMonotonic": 76079.562044628,
+  "deadlineMonotonic": 76109.562044628,
+  "executionLimitSeconds": 30,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "operation",
+  "paths": {
+    "output": "/work/Docs/Tasks/ci-reliability/phase-3/supervisor-final-focused.log",
+    "stdout": null,
+    "diagnostics": "/work/Docs/Tasks/ci-reliability/phase-3/supervisor-final-focused.diagnostics.jsonl",
+    "receipt": "/work/Docs/Tasks/ci-reliability/phase-3/supervisor-final-focused.receipt.json"
+  },
+  "identity": {
+    "executionID": "5dec8283-8648-45d3-8e0f-5de3988f24d2",
+    "supervisorPID": 7199,
+    "host": "213b31596900",
+    "system": "Linux",
+    "repository": "/work"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 7205,
+  "group": 7205,
+  "cleanup": {
+    "status": "session-signalled",
+    "signals": [],
+    "groupSignals": [],
+    "parentReaped": true,
+    "session": 7205,
+    "allowanceSeconds": 8.0,
+    "discovery": {
+      "status": "available",
+      "truncated": false
+    },
+    "groups": [
+      7205
+    ],
+    "seconds": 0.084,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "verificationMalformedRows": 0,
+    "boundary": "admitted Linux session; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "/work/Docs/Tasks/ci-reliability/phase-3/supervisor-final-focused.log",
+      "retainedBytes": 363,
+      "observedBytes": 363,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T13:09:37.571074+00:00",
+  "endMonotonic": 76084.029319114,
+  "elapsedSeconds": 4.467,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}

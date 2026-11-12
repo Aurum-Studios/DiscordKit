@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "status": "failed",
+  "name": "peer-red",
+  "stage": "phase3-peer-red",
+  "operation": "pythonRegression",
+  "arguments": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "Tools/DiscordKitLoadTests/scripts",
+    "-p",
+    "test_local_peer.py",
+    "-k",
+    "LocalPeerShutdownTests",
+    "-v"
+  ],
+  "start": "2026-11-12T12:50:18.740715+00:00",
+  "startMonotonic": 74925.198682958,
+  "deadlineMonotonic": 74955.198682958,
+  "executionLimitSeconds": 30,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "operation",
+  "paths": {
+    "output": "/work/Docs/Tasks/ci-reliability/phase-3/peer-red.log",
+    "stdout": null,
+    "diagnostics": "/work/Docs/Tasks/ci-reliability/phase-3/peer-red.diagnostics.jsonl",
+    "receipt": "/work/Docs/Tasks/ci-reliability/phase-3/peer-red.receipt.json"
+  },
+  "identity": {
+    "executionID": "9d59d98f-fa1c-4386-b0de-f3c6f3036f25",
+    "supervisorPID": 5540,
+    "host": "213b31596900",
+    "system": "Linux",
+    "repository": "/work"
+  },
+  "exitCode": 1,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 5546,
+  "group": 5546,
+  "error": "Command '('python3', '-m', 'unittest', 'discover', '-s', 'Tools/DiscordKitLoadTests/scripts', '-p', 'test_local_peer.py', '-k', 'LocalPeerShutdownTests', '-v')' returned non-zero exit status 1.",
+  "errorType": "CalledProcessError",
+  "cleanup": {
+    "status": "group-signalled",
+    "signals": [],
+    "parentReaped": true,
+    "allowanceSeconds": 8.0,
+    "seconds": 0.03,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "/work/Docs/Tasks/ci-reliability/phase-3/peer-red.log",
+      "retainedBytes": 2990,
+      "observedBytes": 2990,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T12:50:22.591487+00:00",
+  "endMonotonic": 74929.049692481,
+  "elapsedSeconds": 3.851,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}

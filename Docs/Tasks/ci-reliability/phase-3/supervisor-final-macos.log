@@ -1,0 +1,6 @@
+/Library/Frameworks/Python.framework/Versions/3.14/bin/python3 -m unittest test_linux_ci.LinuxExecutionTests test_linux_ci.SupervisorEvidenceTests
+............................s
+----------------------------------------------------------------------
+Ran 29 tests in 7.977s
+
+OK (skipped=1)
