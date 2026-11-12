@@ -1,0 +1,30 @@
+{
+  "flags": [
+    "insufficient-observed-memory-headroom-fallback-one"
+  ],
+  "jobs": 1,
+  "limits": {
+    "cpu": 14,
+    "memory": 1,
+    "policy": 2,
+    "requested": 64
+  },
+  "memoryPolicy": {
+    "assurance": "initial conservative scheduling assumptions; compiler peaks unmeasured",
+    "bytesPerCompiler": 4294967296,
+    "reserveBytes": 2147483648
+  },
+  "observed": {
+    "affinityCount": null,
+    "availableMemoryBytes": 1962885120,
+    "cpuCount": 14,
+    "memorySources": [
+      "darwin-free-plus-speculative-pages"
+    ]
+  },
+  "policyCompilerJobs": 2,
+  "reasons": [
+    "memory-cap"
+  ],
+  "requestedJobs": 64
+}

@@ -1,0 +1,53 @@
+{
+  "baseline": [
+    {
+      "name": "Documentation",
+      "nativeBuildJobCount": 0,
+      "nativeTestJobCount": 0,
+      "observedCompletedDownloadArchiveBytes": 0,
+      "runID": 43146954594,
+      "storedArchiveBytes": 775922078,
+      "wholeWorkflowJobCount": 7,
+      "wholeWorkflowMixedTestsRestoreSeconds": 9.0,
+      "wholeWorkflowRoundedRunnerMinutesKnown": 21,
+      "wholeWorkflowRunnerSecondsKnown": 982.0,
+      "wholeWorkflowSeparateRestoreSeconds": 16.0,
+      "wholeWorkflowSetupSeconds": 344.0,
+      "wholeWorkflowWallSeconds": null,
+      "wireBytes": null,
+      "workflowTotalDownloadedBytes": null
+    },
+    {
+      "name": "Offline certification",
+      "nativeBuildJobCount": 24,
+      "nativeTestJobCount": 101,
+      "observedCompletedDownloadArchiveBytes": 3191057466,
+      "runID": 43146954720,
+      "storedArchiveBytes": 10743621569,
+      "wholeWorkflowJobCount": 152,
+      "wholeWorkflowMixedTestsRestoreSeconds": 5800.0,
+      "wholeWorkflowRoundedRunnerMinutesKnown": 430,
+      "wholeWorkflowRunnerSecondsKnown": 21441.0,
+      "wholeWorkflowSeparateRestoreSeconds": 17.0,
+      "wholeWorkflowSetupSeconds": 8444.0,
+      "wholeWorkflowWallSeconds": null,
+      "wireBytes": null,
+      "workflowTotalDownloadedBytes": null
+    }
+  ],
+  "kind": "planned-native-topology-versus-retained-baseline",
+  "limitations": [
+    "Planned counts cover native build/test groups, not the whole workflow.",
+    "Baseline suite helper timings include restore/discovery/tests and are not isolated runtime.",
+    "Run completion timestamps are absent; workflow wall time remains unavailable.",
+    "Archive bytes are not transfer bytes; observed downloads cover only a retained subset.",
+    "Post-change setup/restore/bytes/runner minutes/wall time require authorized hosted measurement."
+  ],
+  "plannedNative": {
+    "buildJobs": 24,
+    "testGroupJobs": 28,
+    "totalBuildAndTestJobs": 52
+  },
+  "postChangeMeasurements": null,
+  "schemaVersion": 1
+}

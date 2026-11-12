@@ -400,3 +400,24 @@ Python/browser tests, six existing Linux-only skips, all source/workflow/mainten
 checks, 16 tested input hashes and 41 retained check artifacts. The
 [actual-blob commit receipt](phase-6/commit-receipt.json) verifies those objects;
 the completion follow-up changes documentation only.
+
+## Phase 7 local grouped-suite and resource acceptance
+
+Prepared from Phase 6 handoff `e47b506c` on isolated `ci/phase-7-suite-groups`.
+[Execution contracts](phase-7/IMPLEMENTATION.md), [final validation](phase-7/validation.json),
+[scheduling comparison](phase-7/scheduling-comparison.json) and [review](phase-7/review.json)
+retain exact tested inputs, helper/fault results and initial resource assumptions.
+Four root groups, one consumer group and separate packages retain 28 native test
+jobs versus 101 baseline jobs; 24 producers remain. Full coverage now requires
+immutable per-group structured leaves matching the entire selected producer
+inventory, with one predeclared optional native-oracle exclusion. Omitted, empty,
+wrong-filter, failed, missing, duplicate and unexpectedly skipped work fails.
+
+A real nested SIGALRM leak found during local fault testing was repaired; expired
+parent deadlines cannot leak a one-microsecond asynchronous timer during unwind.
+Build/runtime waves cap separately at two; compiler CPU/affinity/memory admission
+also applies to fixtures. Smaller existing Linux pools are an initial measured-
+baseline scheduling choice, not hosted capacity qualification. Post-change time,
+bytes, runner minutes and spend remain unknown. No native build/test, hosted or
+paid execution, remote write, publication, runner/billing mutation or live Discord
+operation occurred. All native rollout remains contained pending Phase 10/11.

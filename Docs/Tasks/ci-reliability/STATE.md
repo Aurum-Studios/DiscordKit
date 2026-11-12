@@ -36,7 +36,7 @@ is claimed. See [BOOTSTRAP.md](BOOTSTRAP.md) for the zero-paid execution sheet.
 | 4 — Compatibility receipts | Complete; local helper acceptance | `4590c5d76c1024d8eec5132a1be343220577cccf` | [270 helpers, six existing Linux-only skips](phase-4/validation.json), [review](phase-4/review.json), [v2 contracts and execution sheet](phase-4/IMPLEMENTATION.md) |
 | 5 — Transfer and partial reruns | Implemented; local helper acceptance; hosted proof pending Phase 11 | `d466d50bc153f2799a33e200d574569958905295` | [Contracts and execution sheet](phase-5/IMPLEMENTATION.md); [314 passed, six existing skips](phase-5/validation.json), [review](phase-5/review.json) |
 | 6 — Preflight and canaries | Implemented; local helper acceptance; native expansion contained | `666f1371224fbe5bda03ec7b54be14a083bb6b09` | [Contracts and execution sheet](phase-6/IMPLEMENTATION.md); [validation](phase-6/validation.json), [independent review](phase-6/review.json); hosted proof remains Phase 11 |
-| 7 — Suite groups and resources | Not started | Pending | Pending coverage/cost comparison |
+| 7 — Suite groups and resources | Implemented; local helper acceptance; hosted measurements pending Phase 11 | Current phase implementation; see commit receipt | [Grouped suites, leaf coverage and resources](phase-7/IMPLEMENTATION.md); [validation](phase-7/validation.json), [review](phase-7/review.json) |
 | 8 — Verified provisioning | Not started | Pending | Pending cold/cache evidence |
 | 9 — Shared documentation inputs | Not started | Pending | Pending invocation-count/trust proof |
 | 10 — Spend admission | Not started | Pending | Pending |
@@ -183,6 +183,25 @@ verifies actual Git blobs. This completion follow-up changes documentation only.
 The next implementation phase is Phase 7. Phase 3 native x64 acceptance and
 Phase 11 real runner/rerun/check-context/branch-protection qualification remain open.
 
+## Phase 7 handoff
+
+Owner Codex `/root` implemented deterministic root grouping, batched consumers,
+structured leaf receipts, immutable full-inventory reconciliation, explicit core/
+remaining producer waves and CPU/affinity/memory compiler admission on
+`ci/phase-7-suite-groups`, sibling `DiscordKit-ci-phase7`, base `e47b506c`.
+[Execution contracts](phase-7/IMPLEMENTATION.md), [validation](phase-7/validation.json),
+[comparison](phase-7/scheduling-comparison.json) and [review](phase-7/review.json)
+retain actual local acceptance and qualification limits. A nested transport timer
+leak found during fault validation is repaired with deterministic cleanup regressions.
+Original planning changes and all earlier worktrees remain preserved.
+
+The prepared topology has 24 producers and 28 test groups versus baseline 24/101.
+Post-change runtime, transfer bytes, runner minutes and savings remain unmeasured.
+No native Swift execution, hosted/paid job, remote write, billing/pool mutation,
+publication or live runtime occurred. Current native rollout stays contained.
+Phase 3 native x64 acceptance and Phase 11 hosted/cost/rerun acceptance stay open.
+Phase 8 is the next authorized implementation stage when requested.
+
 ## Outstanding execution decisions
 
 - Paid execution remains unauthorized: experiment/workflow allowances are USD 0,
@@ -198,7 +217,9 @@ Phase 11 real runner/rerun/check-context/branch-protection qualification remain 
   based on `b190a963`; its [local execution sheet](phase-5/IMPLEMENTATION.md) keeps
   all paid allowances at zero. Phase 6 owner is Codex `/root` on
   `ci/phase-6-preflight-canaries`, sibling `DiscordKit-ci-phase6`, base `b759a25e`;
-  its local execution sheet likewise keeps paid allowances at zero. Phases 7 through
+  its local execution sheet likewise keeps paid allowances at zero. Phase 7 owner
+  is Codex `/root` on `ci/phase-7-suite-groups`, sibling `DiscordKit-ci-phase7`,
+  base `e47b506c`; its local sheet retains zero paid execution. Phases 8 through
   11 ownership/paid experiment sheets are not assigned/authorized.
 
 These do not prevent beginning local preparation/helper implementation. Missing

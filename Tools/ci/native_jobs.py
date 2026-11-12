@@ -32,6 +32,9 @@ import time
 import linux_ci
 import native_receipts as receipts
 import platform_probe
+import native_resources
+import suite_groups
+import test_results
 
 
 PLATFORMS = linux_ci.PLATFORMS
@@ -52,8 +55,8 @@ MAX_METADATA_BYTES = 16 * 1024 * 1024
 MAX_SELECTION_BYTES = 64 * 1024 * 1024
 IDENTIFIER = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
 BUILD_JOB_SECONDS = 150 * 60
-TEST_JOB_SECONDS = 75 * 60
-AUDIT_JOB_SECONDS = 45 * 60
+TEST_JOB_SECONDS = 105 * 60
+AUDIT_JOB_SECONDS = 60 * 60
 PACKAGING_IDENTITY_SECONDS = 600
 
 
@@ -168,13 +171,13 @@ def active_targets(targets, native_platform):
 def runner_entry(native_platform, large):
     """Select the configured native pool; the available macOS pool has five cores."""
     if native_platform == "macos-arm64":
-        return {"platform": native_platform, "group": "MacOS-26-5", "jobs": 5, "shell": "bash"}
+        return {"platform": native_platform, "group": "MacOS-26-5", "jobs": 2, "shell": "bash"}
     if native_platform not in PLATFORMS:
         raise ValueError("unsupported native platform")
     windows = native_platform == "windows-x64"
     size = 64 if large else 8
     return {"platform": native_platform, "group": f"{'Windows' if windows else 'Linux'}-x64-{size}",
-            "jobs": size, "shell": "pwsh" if windows else "bash"}
+            "jobs": 2, "shell": "pwsh" if windows else "bash"}
 
 
 def matrices(root_targets, native_platform=None):
@@ -193,13 +196,19 @@ def matrices(root_targets, native_platform=None):
         for component in COMPONENTS:
             if component in TIMING_PACKAGES and component not in timing_components:
                 continue
-            builds.append({**runner_entry(native_platform, True), "component": component})
-        for suite in active_targets(sorted(root_targets), native_platform):
-            tests.append({**runner_entry(native_platform, False), "component": "root", "suite": suite})
+            # Retained compile steps for tooling/timing-support are lightweight;
+            # qualify this smaller existing Linux pool separately before rollout.
+            large = component not in ("tooling", "timing-support")
+            builds.append({**runner_entry(native_platform, large), "component": component})
+        for group in suite_groups.root_groups(active_targets(sorted(root_targets), native_platform), native_platform):
+            if not group["suites"]:
+                continue
+            tests.append({**runner_entry(native_platform, False), "component": "root",
+                          "suite": group["suite"], "suites": group["suites"]})
         for component in ("macros", "extensions", "tooling", "load", "benchmarks", *timing_components):
-            tests.append({**runner_entry(native_platform, False), "component": component, "suite": component})
-        for suite in CONSUMER_SUITES:
-            tests.append({**runner_entry(native_platform, False), "component": "consumers", "suite": suite})
+            tests.append({**runner_entry(native_platform, False), "component": component, "suite": component, "suites": [component]})
+        tests.append({**runner_entry(native_platform, False), "component": "consumers",
+                      "suite": "consumers", "suites": list(CONSUMER_SUITES)})
     if len(builds) > 256 or len(tests) > 256:
         raise ValueError("native scheduling exceeds GitHub's matrix limit; partition the workflow")
     return {"include": builds}, {"include": tests}
@@ -289,7 +298,10 @@ def build_profile(component):
                              if "--configuration" in command else "debug" for command in commands})
     return {"component": component, "packages": sorted({command[command.index("--package-path") + 1]
                                                        for command in commands}),
-            "testPackages": package_tests(component), "configurations": configurations, "commands": commands}
+            "testPackages": package_tests(component), "configurations": configurations, "commands": commands,
+            "testExclusions": {".": {"DiscordMLSTests.MLSNativeDAVEInteropTests/initialCandidateAcceptedByMLSpp(_:)":
+                "Opt-in MLS++ oracle requires DISCORDKIT_DAVE_INTEROP_EXECUTABLE; separate native qualification."}}
+                if component == "root" else {}}
 
 
 def compatibility_identity(repository, component, native_platform, **options):
@@ -298,14 +310,9 @@ def compatibility_identity(repository, component, native_platform, **options):
 
 
 def bounded_jobs(requested):
-    """Cap a positive job request at CPUs visible to this process, respecting Linux affinity."""
-    if type(requested) is not int or requested <= 0:
-        raise ValueError("jobs must be a positive integer")
-    available = os.cpu_count() or 1
-    if hasattr(os, "sched_getaffinity"):
-        with suppress(OSError):
-            available = len(os.sched_getaffinity(0))
-    return max(1, min(requested, available))
+    """Admit compiler processes using policy, CPU affinity and available memory."""
+    return native_resources.compiler_admission(requested,
+        policy_cap=execution_policy()["concurrency"]["compilerJobsPerProcess"])["jobs"]
 
 
 def swift_command(name, verb, package, jobs, *arguments, operation=None):
@@ -575,14 +582,16 @@ def restore_archive(repository, component, native_platform, archive, output, *, 
 
 def compile_component(repository, component, native_platform, jobs, output, archive):
     """Compile and seal inventories within one shared elapsed budget, without retrying."""
-    jobs = bounded_jobs(jobs)
     policy = execution_policy()
+    admission = native_resources.compiler_admission(jobs,
+        policy_cap=policy["concurrency"]["compilerJobsPerProcess"])
+    jobs = admission["jobs"]
     budget = compilation_budget(component, policy)
     validate_enclosing_budget(budget, BUILD_JOB_SECONDS, packaging=True, policy=policy)
     started = time.monotonic()
     deadline = started + budget
     compile_deadline = started + policy["componentCompileSeconds"][component]
-    report = {"status": "running", "component": component, "jobs": jobs, "commands": [],
+    report = {"status": "running", "component": component, "jobs": jobs, "resourceAdmission": admission, "commands": [],
               "aggregateSeconds": budget, "compileAggregateSeconds": policy["componentCompileSeconds"][component],
               "policyID": policy["policyID"], "aggregateScope": "compilation, inventory, identity and archive boundary checks"}
     archive_created = False
@@ -775,53 +784,142 @@ def verify_common_smoke(common):
             raise ValueError("timing smoke histogram has missing observations, loss or inconsistent accounting")
 
 
-def run_tests(repository, component, suite, native_platform, jobs, output, archive, *, selection=None):
-    """Restore an exact compilation and verify/execute one aggregate without rebuilding."""
-    jobs = bounded_jobs(jobs)
+def selected_suites(component, suite, metadata, native_platform, suites=None):
+    """Bind group membership to the deterministic planner; diagnostics select one whole suite."""
+    if component == "root":
+        inventory = metadata.get("tests", {}).get(".", {})
+        known = {row["suite"]: row["suites"] for row in suite_groups.root_groups(sorted(inventory), native_platform)}
+        expected = known.get(suite, [suite] if suite in inventory else None)
+    elif component == "consumers":
+        expected = list(CONSUMER_SUITES) if suite == "consumers" else [suite] if suite in CONSUMER_SUITES else None
+    else:
+        expected = [suite] if suite == component or (component == "tooling" and suite == "audit") else None
+    if not expected or (suites is not None and suites != expected):
+        raise ValueError("suite group does not match its exact compiled/planned selection")
+    return expected
+
+
+def suite_inventory(metadata, component, suite):
+    """Return package-qualified leaves and predeclared exclusions for one whole suite."""
+    package = f"Examples/{suite}" if component == "consumers" else PACKAGES[component]
+    inventory = metadata.get("tests", {}).get(package, {})
+    leaves = inventory.get(suite, []) if component == "root" else [leaf for names in inventory.values() for leaf in names]
+    if suite == "audit" or component == "consumers" and suite not in CONSUMER_TESTS:
+        leaves = []
+    declared = metadata["compatibility"]["build"].get("testExclusions", {}).get(package, {})
+    exclusions = {leaf: reason for leaf, reason in declared.items() if leaf in leaves}
+    return package, sorted(leaves), exclusions
+
+
+def run_tests(repository, component, suite, native_platform, jobs, output, archive, *, selection=None, suites=None):
+    """Restore once; discover each graph once; execute bounded whole suites and seal leaf coverage."""
+    admission = native_resources.compiler_admission(jobs,
+        policy_cap=execution_policy()["concurrency"]["compilerJobsPerProcess"])
+    jobs = admission["jobs"]
+    write_json(output / "group-coverage.json", {"formatVersion": 1, "status": "failed",
+        "component": component, "suite": suite, "failureStage": "restore",
+        "suiteResults": [{"suite": name, "status": "not-run"} for name in suites or [suite]]})
     metadata = restore_archive(repository, component, native_platform, archive, output, selection=selection)
     with (output / "restored.json").open() as stream:
         restored = receipts.read_json(stream)
     consumer = restored["consumer"]
     consumer.update(selectedScope={"component": component, "suite": suite}, status="running")
-    report = {"status": "running", "component": component, "suite": suite, "jobs": jobs, "commands": [],
-              "compatibility": metadata["compatibility"], "producer": metadata["producer"], "consumer": consumer,
-              "aggregateScope": "post-restore discovery, tests, smokes and final identity"}
-    with execution_report(output, report):
-        policy = execution_policy()
-        report["policyID"] = policy["policyID"]
-        commands = test_commands(component, suite, jobs, metadata)
-        needs_discovery = suite != "audit" and (component != "consumers" or suite in CONSUMER_TESTS)
-        budget = (sum(command.timeout for command in commands)
-                  + (policy["deadlinesSeconds"]["discovery"] if needs_discovery else 0))
-        if suite == "audit":
-            budget = policy["deadlinesSeconds"]["localHelperCheck"]
-        report["aggregateSeconds"] = budget
-        validate_enclosing_budget(budget, AUDIT_JOB_SECONDS if suite == "audit" else TEST_JOB_SECONDS, policy=policy)
-        deadline = time.monotonic() + budget
-        if needs_discovery:
-            consumer["discovery"] = "running"
-            package = f"Examples/{suite}" if component == "consumers" else PACKAGES[component]
-            discovery = swift_command("verify-discovery", "test", package, jobs, "list", "--skip-build")
-            log = execute_commands([discovery], repository, output, report, capture_stdout=True, deadline=deadline)[0]
-            inventory = metadata["tests"][package]
-            if discovered_tests(log.read_text(errors="replace"), sorted(inventory)) != inventory:
-                consumer["discovery"] = "failed"
-                raise ValueError("restored tests differ from the compiled test inventory")
-            consumer.update(discovery="passed", inventorySHA256=receipts.digest(inventory))
-        else:
-            consumer["discovery"] = "not-applicable"
-        if component == "benchmarks":
-            (repository / ".build/dsl-measurements").mkdir(parents=True, exist_ok=True)
-        if component in TIMING_PRODUCTS:
-            (repository / ".build/timing-smoke" / component).mkdir(parents=True, exist_ok=True)
-            report["numericalQualification"] = "informational shared-runner smoke; no baseline comparison or product SLO"
-        execute_commands(commands, repository, output, report, deadline=deadline)
-        verify_timing_smokes(repository, commands)
-        if receipts.digest(compatibility_identity(repository, component, native_platform, deadline=deadline, output=output, report=report)) != receipts.digest(metadata["compatibility"]):
-            raise ValueError("tracked source or compiler changed during test execution")
-        if receipts.execution_identity(repository) != consumer["execution"]:
-            raise ValueError("consumer execution identity changed during tests")
-        remaining_seconds(deadline, budget)
+    report = {"status": "running", "component": component, "suite": suite, "jobs": jobs,
+              "resourceAdmission": admission, "commands": [], "compatibility": metadata["compatibility"],
+              "producer": metadata["producer"], "consumer": consumer,
+              "aggregateScope": "post-restore discovery, whole suites, smokes and final identity"}
+    coverage = {"formatVersion": 1, "status": "failed", "component": component, "suite": suite,
+        "suites": [], "platform": native_platform, "sourceCommit": metadata["compatibility"]["identity"]["commit"],
+        "execution": consumer["execution"], "producer": metadata["producer"],
+        "compatibility": metadata["compatibility"], "inventory": metadata["tests"],
+        "inventorySHA256": receipts.digest(metadata["tests"]), "expectedLeaves": [],
+        "executedLeaves": [], "excludedLeaves": {}, "suiteResults": []}
+    try:
+        with execution_report(output, report):
+            policy = execution_policy()
+            report["policyID"] = policy["policyID"]
+            names = selected_suites(component, suite, metadata, native_platform, suites)
+            coverage["suites"] = names
+            planned = []
+            packages = {}
+            for name in names:
+                package, leaves, exclusions = suite_inventory(metadata, component, name)
+                row = {"suite": name, "status": "not-run", "expectedLeaves": [package + "::" + leaf for leaf in leaves],
+                       "executedLeaves": [], "excludedLeaves": {package + "::" + leaf: reason for leaf, reason in exclusions.items()},
+                       "result": None}
+                coverage["suiteResults"].append(row)
+                coverage["expectedLeaves"].extend(row["expectedLeaves"])
+                coverage["excludedLeaves"].update(row["excludedLeaves"])
+                commands = test_commands(component, name, jobs, metadata)
+                if leaves:
+                    packages[package] = metadata["tests"][package]
+                planned.append((name, package, leaves, exclusions, commands, row))
+            coverage["expectedLeaves"].sort()
+            if len(coverage["expectedLeaves"]) != len(set(coverage["expectedLeaves"])):
+                raise ValueError("duplicate selected test leaf across group suites")
+            budget = sum(command.timeout for *_, commands, row in planned for command in commands)
+            budget += len(packages) * policy["deadlinesSeconds"]["discovery"] + 120
+            if suite == "audit":
+                budget = policy["deadlinesSeconds"]["localHelperCheck"]
+            report["aggregateSeconds"] = budget
+            enclosing = AUDIT_JOB_SECONDS if suite == "audit" else TEST_JOB_SECONDS
+            validate_enclosing_budget(budget, enclosing, policy=policy)
+            # Resolve + archive download + diagnostics + dedicated leaf receipt.
+            transfers = 3 if suite == "audit" else 4
+            reserve = (policy["reservesSeconds"]["setup"] * 2
+                       + policy["reservesSeconds"]["diagnostics"] + policy["reservesSeconds"]["cleanup"]
+                       + transfers * policy["deadlinesSeconds"]["transportTotal"])
+            report["workflowReserveSeconds"] = reserve
+            if budget + reserve > enclosing:
+                raise ValueError("whole-suite group and transport/restore reserves exceed workflow deadline")
+            deadline = time.monotonic() + budget
+            consumer["discovery"] = "running" if packages else "not-applicable"
+            for index, (package, inventory) in enumerate(packages.items()):
+                discovery = swift_command(f"verify-discovery-{index}", "test", package, jobs, "list", "--skip-build")
+                log = execute_commands([discovery], repository, output, report, capture_stdout=True, deadline=deadline)[0]
+                if discovered_tests(log.read_text(errors="replace"), sorted(inventory)) != inventory:
+                    consumer["discovery"] = "failed"
+                    raise ValueError("restored tests differ from the compiled test inventory")
+            if packages:
+                consumer.update(discovery="passed", inventorySHA256=receipts.digest(packages))
+            if component == "benchmarks":
+                (repository / ".build/dsl-measurements").mkdir(parents=True, exist_ok=True)
+            if component in TIMING_PRODUCTS:
+                (repository / ".build/timing-smoke" / component).mkdir(parents=True, exist_ok=True)
+                report["numericalQualification"] = "informational shared-runner smoke; no baseline comparison or product SLO"
+            for index, (name, package, leaves, exclusions, commands, row) in enumerate(planned):
+                row["status"] = "running"
+                write_json(output / "group-coverage.json", coverage)
+                try:
+                    for command in commands:
+                        if command.arguments[:2] == ("swift", "test"):
+                            event_path = (output / f"{index:02d}-{name}.events.jsonl").resolve()
+                            event_path.unlink(missing_ok=True)
+                            flags = ("--event-stream-version", "6.4", "--event-stream-output-path", str(event_path))
+                            command = linux_ci.Command(f"{name}-{command.name}", (*command.arguments, *flags),
+                                                       command.timeout, operation=command.operation)
+                            execute_commands([command], repository, output, report, deadline=deadline)
+                            row["result"] = test_results.reconcile(leaves, event_path, exclusions=exclusions)
+                            row["executedLeaves"] = [package + "::" + leaf for leaf in row["result"]["executedLeaves"]]
+                            coverage["executedLeaves"].extend(row["executedLeaves"])
+                        else:
+                            execute_commands([command], repository, output, report, deadline=deadline)
+                    verify_timing_smokes(repository, commands)
+                    row["status"] = "passed"
+                except BaseException:
+                    row["status"] = "failed"
+                    raise
+            coverage["executedLeaves"].sort()
+            if set(coverage["executedLeaves"]) | set(coverage["excludedLeaves"]) != set(coverage["expectedLeaves"]):
+                raise ValueError("executed leaf coverage differs from selected inventory")
+            if receipts.digest(compatibility_identity(repository, component, native_platform, deadline=deadline, output=output, report=report)) != receipts.digest(metadata["compatibility"]):
+                raise ValueError("tracked source or compiler changed during test execution")
+            if receipts.execution_identity(repository) != consumer["execution"]:
+                raise ValueError("consumer execution identity changed during tests")
+            remaining_seconds(deadline, budget)
+        coverage["status"] = "passed"
+    finally:
+        write_json(output / "group-coverage.json", coverage)
     return report
 
 
@@ -835,6 +933,7 @@ def main():
     parser.add_argument("--platform", choices=PLATFORMS)
     parser.add_argument("--jobs", type=int, default=2)
     parser.add_argument("--suite")
+    parser.add_argument("--suites-json", help="exact planned whole-suite group membership")
     parser.add_argument("--mode", choices=("full", "diagnostic"), help="scoped workflow plan")
     parser.add_argument("--archive", type=Path)
     parser.add_argument("--selection", type=Path, help="complete immutable artifact resolver index")
@@ -873,12 +972,19 @@ def main():
                     write_json(output / 'scope-plan.json', scoped)
             write_json(output / "build-matrix.json", builds)
             write_json(output / "test-matrix.json", tests)
+            comparison_builds, comparison_tests = builds, tests
+            if arguments.mode:
+                comparison_builds = scoped['all-builds']
+                comparison_tests = {'include': [*scoped['root-tests']['include'], *scoped['tests']['include'],
+                    {'platform': arguments.platform, 'component': 'load', 'suite': 'load'}]}
+            write_json(output / "scheduling-comparison.json", suite_groups.compare_baseline(comparison_builds, comparison_tests))
         elif arguments.operation == "compile":
             compile_component(repository, arguments.component, arguments.platform, arguments.jobs, output, arguments.archive.resolve())
         elif arguments.operation == "restore":
             restore_archive(repository, arguments.component, arguments.platform, arguments.archive.resolve(), output, selection=selection)
         else:
-            run_tests(repository, arguments.component, arguments.suite, arguments.platform, arguments.jobs, output, arguments.archive.resolve(), selection=selection)
+            run_tests(repository, arguments.component, arguments.suite, arguments.platform, arguments.jobs, output, arguments.archive.resolve(), selection=selection,
+                      suites=json.loads(arguments.suites_json) if arguments.suites_json is not None else None)
     except (ValueError, OSError, KeyError, TypeError, AttributeError, RecursionError, tarfile.TarError, subprocess.SubprocessError) as error:
         write_json(output / "failure.json", {"status": "failed", "operation": arguments.operation, "error": str(error)})
         print(f"Native job failed: {error}", file=sys.stderr)

@@ -1,0 +1,584 @@
+{
+  "algorithm": "descending-weight-greedy-lowest-total; module and group name tie-breaks",
+  "baselineHeadSHA": "85eac6f3c1d3b17e53596c49e7438efee366c1b3",
+  "baselineRunID": 43146954720,
+  "limitations": [
+    "Second-resolution retained API timings include restore, discovery and test execution.",
+    "No raw root-suite logs were retained. Weights do not isolate test runtime.",
+    "Unknown suites use the maximum observed platform step as an unmeasured planning weight.",
+    "Windows has no retained qualification; its fallback is the largest observed step across retained platforms."
+  ],
+  "platforms": {
+    "linux-x64": {
+      "fallbackReason": "Maximum observed mixed restore/discovery/test API step on this platform; new-suite runtime unmeasured.",
+      "fallbackWeightSeconds": 93,
+      "suites": {
+        "DiscordActivitiesTests": {
+          "completedAt": "2026-11-12T03:32:16Z",
+          "jobID": 130952646569,
+          "seconds": 13,
+          "source": "jobs-page-2",
+          "startedAt": "2026-11-12T03:32:03Z",
+          "stepNumber": 6
+        },
+        "DiscordApplePlatformTests": {
+          "completedAt": "2026-11-12T03:32:31Z",
+          "jobID": 130952646534,
+          "seconds": 19,
+          "source": "jobs-page-1",
+          "startedAt": "2026-11-12T03:32:12Z",
+          "stepNumber": 6
+        },
+        "DiscordBitsTests": {
+          "completedAt": "2026-11-12T03:32:30Z",
+          "jobID": 130952646644,
+          "seconds": 17,
+          "source": "jobs-page-2",
+          "startedAt": "2026-11-12T03:32:13Z",
+          "stepNumber": 6
+        },
+        "DiscordBotDSLTests": {
+          "completedAt": "2026-11-12T03:32:59Z",
+          "jobID": 130952646605,
+          "seconds": 20,
+          "source": "jobs-page-2",
+          "startedAt": "2026-11-12T03:32:39Z",
+          "stepNumber": 6
+        },
+        "DiscordCacheTests": {
+          "completedAt": "2026-11-12T03:34:02Z",
+          "jobID": 130952646577,
+          "seconds": 17,
+          "source": "jobs-page-2",
+          "startedAt": "2026-11-12T03:33:45Z",
+          "stepNumber": 6
+        },
+        "DiscordCertifiedDevicesTests": {
+          "completedAt": "2026-11-12T03:32:37Z",
+          "jobID": 130952646556,
+          "seconds": 14,
+          "source": "jobs-page-1",
+          "startedAt": "2026-11-12T03:32:23Z",
+          "stepNumber": 6
+        },
+        "DiscordClientTests": {
+          "completedAt": "2026-11-12T03:32:21Z",
+          "jobID": 130952646550,
+          "seconds": 14,
+          "source": "jobs-page-1",
+          "startedAt": "2026-11-12T03:32:07Z",
+          "stepNumber": 6
+        },
+        "DiscordCommandDSLTests": {
+          "completedAt": "2026-11-12T03:32:33Z",
+          "jobID": 130952646754,
+          "seconds": 20,
+          "source": "jobs-page-2",
+          "startedAt": "2026-11-12T03:32:13Z",
+          "stepNumber": 6
+        },
+        "DiscordCommandsTests": {
+          "completedAt": "2026-11-12T03:32:03Z",
+          "jobID": 130952646560,
+          "seconds": 13,
+          "source": "jobs-page-1",
+          "startedAt": "2026-11-12T03:31:50Z",
+          "stepNumber": 6
+        },
+        "DiscordCommerceTests": {
+          "completedAt": "2026-11-12T03:32:50Z",
+          "jobID": 130952646652,
+          "seconds": 22,
+          "source": "jobs-page-2",
+          "startedAt": "2026-11-12T03:32:28Z",
+          "stepNumber": 6
+        },
+        "DiscordCoreTests": {
+          "completedAt": "2026-11-12T03:33:23Z",
+          "jobID": 130952646628,
+          "seconds": 20,
+          "source": "jobs-page-2",
+          "startedAt": "2026-11-12T03:33:03Z",
+          "stepNumber": 6
+        },
+        "DiscordDAVETests": {
+          "completedAt": "2026-11-12T03:32:42Z",
+          "jobID": 130952646717,
+          "seconds": 33,
+          "source": "jobs-page-2",
+          "startedAt": "2026-11-12T03:32:09Z",
+          "stepNumber": 6
+        },
+        "DiscordDSLTests": {
+          "completedAt": "2026-11-12T03:32:32Z",
+          "jobID": 130952646653,
+          "seconds": 17,
+          "source": "jobs-page-2",
+          "startedAt": "2026-11-12T03:32:15Z",
+          "stepNumber": 6
+        },
+        "DiscordGameServicesTests": {
+          "completedAt": "2026-11-12T03:32:45Z",
+          "jobID": 130952646704,
+          "seconds": 18,
+          "source": "jobs-page-2",
+          "startedAt": "2026-11-12T03:32:27Z",
+          "stepNumber": 6
+        },
+        "DiscordGatewayTests": {
+          "completedAt": "2026-11-12T03:33:33Z",
+          "jobID": 130952646721,
+          "seconds": 20,
+          "source": "jobs-page-2",
+          "startedAt": "2026-11-12T03:33:13Z",
+          "stepNumber": 6
+        },
+        "DiscordHTTPTests": {
+          "completedAt": "2026-11-12T03:32:52Z",
+          "jobID": 130952646726,
+          "seconds": 34,
+          "source": "jobs-page-2",
+          "startedAt": "2026-11-12T03:32:18Z",
+          "stepNumber": 6
+        },
+        "DiscordInteractionsTests": {
+          "completedAt": "2026-11-12T03:33:36Z",
+          "jobID": 130952646816,
+          "seconds": 22,
+          "source": "jobs-page-2",
+          "startedAt": "2026-11-12T03:33:14Z",
+          "stepNumber": 6
+        },
+        "DiscordKitTests": {
+          "completedAt": "2026-11-12T03:32:21Z",
+          "jobID": 130952646772,
+          "seconds": 15,
+          "source": "jobs-page-2",
+          "startedAt": "2026-11-12T03:32:06Z",
+          "stepNumber": 6
+        },
+        "DiscordLogHandlersTests": {
+          "completedAt": "2026-11-12T03:32:33Z",
+          "jobID": 130952646873,
+          "seconds": 19,
+          "source": "jobs-page-2",
+          "startedAt": "2026-11-12T03:32:14Z",
+          "stepNumber": 6
+        },
+        "DiscordLoggingTests": {
+          "completedAt": "2026-11-12T03:33:34Z",
+          "jobID": 130952646715,
+          "seconds": 20,
+          "source": "jobs-page-2",
+          "startedAt": "2026-11-12T03:33:14Z",
+          "stepNumber": 6
+        },
+        "DiscordMLSTests": {
+          "completedAt": "2026-11-12T03:32:54Z",
+          "jobID": 130952646702,
+          "seconds": 21,
+          "source": "jobs-page-2",
+          "startedAt": "2026-11-12T03:32:33Z",
+          "stepNumber": 6
+        },
+        "DiscordMediaTests": {
+          "completedAt": "2026-11-12T03:32:23Z",
+          "jobID": 130952646731,
+          "seconds": 23,
+          "source": "jobs-page-2",
+          "startedAt": "2026-11-12T03:32:00Z",
+          "stepNumber": 6
+        },
+        "DiscordModelsTests": {
+          "completedAt": "2026-11-12T03:32:21Z",
+          "jobID": 130952646782,
+          "seconds": 19,
+          "source": "jobs-page-2",
+          "startedAt": "2026-11-12T03:32:02Z",
+          "stepNumber": 6
+        },
+        "DiscordNIOTransportTests": {
+          "completedAt": "2026-11-12T03:32:45Z",
+          "jobID": 130952646675,
+          "seconds": 24,
+          "source": "jobs-page-2",
+          "startedAt": "2026-11-12T03:32:21Z",
+          "stepNumber": 6
+        },
+        "DiscordOAuthTests": {
+          "completedAt": "2026-11-12T03:32:19Z",
+          "jobID": 130952646748,
+          "seconds": 16,
+          "source": "jobs-page-2",
+          "startedAt": "2026-11-12T03:32:03Z",
+          "stepNumber": 6
+        },
+        "DiscordRPCTests": {
+          "completedAt": "2026-11-12T03:32:49Z",
+          "jobID": 130952646751,
+          "seconds": 16,
+          "source": "jobs-page-2",
+          "startedAt": "2026-11-12T03:32:33Z",
+          "stepNumber": 6
+        },
+        "DiscordSocialTests": {
+          "completedAt": "2026-11-12T03:32:30Z",
+          "jobID": 130952646882,
+          "seconds": 19,
+          "source": "jobs-page-2",
+          "startedAt": "2026-11-12T03:32:11Z",
+          "stepNumber": 6
+        },
+        "DiscordTestSupportTests": {
+          "completedAt": "2026-11-12T03:32:29Z",
+          "jobID": 130952646665,
+          "seconds": 17,
+          "source": "jobs-page-2",
+          "startedAt": "2026-11-12T03:32:12Z",
+          "stepNumber": 6
+        },
+        "DiscordTransportTests": {
+          "completedAt": "2026-11-12T03:32:19Z",
+          "jobID": 130952646762,
+          "seconds": 19,
+          "source": "jobs-page-2",
+          "startedAt": "2026-11-12T03:32:00Z",
+          "stepNumber": 6
+        },
+        "DiscordUnixPlatformTests": {
+          "completedAt": "2026-11-12T03:32:42Z",
+          "jobID": 130952646773,
+          "seconds": 21,
+          "source": "jobs-page-2",
+          "startedAt": "2026-11-12T03:32:21Z",
+          "stepNumber": 6
+        },
+        "DiscordVoiceCodecsTests": {
+          "completedAt": "2026-11-12T03:33:45Z",
+          "jobID": 130952646723,
+          "seconds": 93,
+          "source": "jobs-page-2",
+          "startedAt": "2026-11-12T03:32:12Z",
+          "stepNumber": 6
+        },
+        "DiscordVoiceCryptoTests": {
+          "completedAt": "2026-11-12T03:32:35Z",
+          "jobID": 130952646757,
+          "seconds": 16,
+          "source": "jobs-page-2",
+          "startedAt": "2026-11-12T03:32:19Z",
+          "stepNumber": 6
+        },
+        "DiscordVoiceTests": {
+          "completedAt": "2026-11-12T03:32:14Z",
+          "jobID": 130952646809,
+          "seconds": 15,
+          "source": "jobs-page-2",
+          "startedAt": "2026-11-12T03:31:59Z",
+          "stepNumber": 6
+        }
+      }
+    },
+    "macos-arm64": {
+      "fallbackReason": "Maximum observed mixed restore/discovery/test API step on this platform; new-suite runtime unmeasured.",
+      "fallbackWeightSeconds": 101,
+      "suites": {
+        "DiscordActivitiesTests": {
+          "completedAt": "2026-11-12T03:31:01Z",
+          "jobID": 130951993857,
+          "seconds": 31,
+          "source": "jobs-page-1",
+          "startedAt": "2026-11-12T03:30:30Z",
+          "stepNumber": 6
+        },
+        "DiscordApplePlatformTests": {
+          "completedAt": "2026-11-12T03:34:44Z",
+          "jobID": 130951993912,
+          "seconds": 33,
+          "source": "jobs-page-1",
+          "startedAt": "2026-11-12T03:34:11Z",
+          "stepNumber": 6
+        },
+        "DiscordBitsTests": {
+          "completedAt": "2026-11-12T03:30:57Z",
+          "jobID": 130951993908,
+          "seconds": 29,
+          "source": "jobs-page-1",
+          "startedAt": "2026-11-12T03:30:28Z",
+          "stepNumber": 6
+        },
+        "DiscordBotDSLTests": {
+          "completedAt": "2026-11-12T03:31:06Z",
+          "jobID": 130951993891,
+          "seconds": 32,
+          "source": "jobs-page-1",
+          "startedAt": "2026-11-12T03:30:34Z",
+          "stepNumber": 6
+        },
+        "DiscordCacheTests": {
+          "completedAt": "2026-11-12T03:31:04Z",
+          "jobID": 130951993866,
+          "seconds": 29,
+          "source": "jobs-page-1",
+          "startedAt": "2026-11-12T03:30:35Z",
+          "stepNumber": 6
+        },
+        "DiscordCertifiedDevicesTests": {
+          "completedAt": "2026-11-12T03:32:53Z",
+          "jobID": 130951993895,
+          "seconds": 32,
+          "source": "jobs-page-1",
+          "startedAt": "2026-11-12T03:32:21Z",
+          "stepNumber": 6
+        },
+        "DiscordClientTests": {
+          "completedAt": "2026-11-12T03:34:51Z",
+          "jobID": 130951993959,
+          "seconds": 38,
+          "source": "jobs-page-1",
+          "startedAt": "2026-11-12T03:34:13Z",
+          "stepNumber": 6
+        },
+        "DiscordCommandDSLTests": {
+          "completedAt": "2026-11-12T03:31:09Z",
+          "jobID": 130951993896,
+          "seconds": 33,
+          "source": "jobs-page-1",
+          "startedAt": "2026-11-12T03:30:36Z",
+          "stepNumber": 6
+        },
+        "DiscordCommandsTests": {
+          "completedAt": "2026-11-12T03:31:06Z",
+          "jobID": 130951993906,
+          "seconds": 29,
+          "source": "jobs-page-1",
+          "startedAt": "2026-11-12T03:30:37Z",
+          "stepNumber": 6
+        },
+        "DiscordCommerceTests": {
+          "completedAt": "2026-11-12T03:31:15Z",
+          "jobID": 130951993968,
+          "seconds": 40,
+          "source": "jobs-page-1",
+          "startedAt": "2026-11-12T03:30:35Z",
+          "stepNumber": 6
+        },
+        "DiscordCoreTests": {
+          "completedAt": "2026-11-12T03:32:44Z",
+          "jobID": 130951993922,
+          "seconds": 31,
+          "source": "jobs-page-1",
+          "startedAt": "2026-11-12T03:32:13Z",
+          "stepNumber": 6
+        },
+        "DiscordDAVETests": {
+          "completedAt": "2026-11-12T03:33:15Z",
+          "jobID": 130951993890,
+          "seconds": 47,
+          "source": "jobs-page-1",
+          "startedAt": "2026-11-12T03:32:28Z",
+          "stepNumber": 6
+        },
+        "DiscordDSLTests": {
+          "completedAt": "2026-11-12T03:31:13Z",
+          "jobID": 130951994008,
+          "seconds": 34,
+          "source": "jobs-page-1",
+          "startedAt": "2026-11-12T03:30:39Z",
+          "stepNumber": 6
+        },
+        "DiscordFoundationTransportTests": {
+          "completedAt": "2026-11-12T03:33:11Z",
+          "jobID": 130951994032,
+          "seconds": 34,
+          "source": "jobs-page-1",
+          "startedAt": "2026-11-12T03:32:37Z",
+          "stepNumber": 6
+        },
+        "DiscordGameServicesTests": {
+          "completedAt": "2026-11-12T03:31:07Z",
+          "jobID": 130951993932,
+          "seconds": 34,
+          "source": "jobs-page-1",
+          "startedAt": "2026-11-12T03:30:33Z",
+          "stepNumber": 6
+        },
+        "DiscordGatewayTests": {
+          "completedAt": "2026-11-12T03:31:07Z",
+          "jobID": 130951993888,
+          "seconds": 35,
+          "source": "jobs-page-1",
+          "startedAt": "2026-11-12T03:30:32Z",
+          "stepNumber": 6
+        },
+        "DiscordHTTPTests": {
+          "completedAt": "2026-11-12T03:31:24Z",
+          "jobID": 130951993979,
+          "seconds": 47,
+          "source": "jobs-page-1",
+          "startedAt": "2026-11-12T03:30:37Z",
+          "stepNumber": 6
+        },
+        "DiscordInteractionsTests": {
+          "completedAt": "2026-11-12T03:32:48Z",
+          "jobID": 130951993963,
+          "seconds": 33,
+          "source": "jobs-page-1",
+          "startedAt": "2026-11-12T03:32:15Z",
+          "stepNumber": 6
+        },
+        "DiscordKitTests": {
+          "completedAt": "2026-11-12T03:32:54Z",
+          "jobID": 130951994014,
+          "seconds": 31,
+          "source": "jobs-page-1",
+          "startedAt": "2026-11-12T03:32:23Z",
+          "stepNumber": 6
+        },
+        "DiscordLogHandlersTests": {
+          "completedAt": "2026-11-12T03:33:46Z",
+          "jobID": 130951994046,
+          "seconds": 39,
+          "source": "jobs-page-1",
+          "startedAt": "2026-11-12T03:33:07Z",
+          "stepNumber": 6
+        },
+        "DiscordLoggingTests": {
+          "completedAt": "2026-11-12T03:35:07Z",
+          "jobID": 130951994029,
+          "seconds": 32,
+          "source": "jobs-page-1",
+          "startedAt": "2026-11-12T03:34:35Z",
+          "stepNumber": 6
+        },
+        "DiscordMLSTests": {
+          "completedAt": "2026-11-12T03:36:44Z",
+          "jobID": 130951994207,
+          "seconds": 35,
+          "source": "jobs-page-1",
+          "startedAt": "2026-11-12T03:36:09Z",
+          "stepNumber": 6
+        },
+        "DiscordMediaTests": {
+          "completedAt": "2026-11-12T03:34:49Z",
+          "jobID": 130951994042,
+          "seconds": 36,
+          "source": "jobs-page-1",
+          "startedAt": "2026-11-12T03:34:13Z",
+          "stepNumber": 6
+        },
+        "DiscordModelsTests": {
+          "completedAt": "2026-11-12T03:32:59Z",
+          "jobID": 130951994049,
+          "seconds": 35,
+          "source": "jobs-page-1",
+          "startedAt": "2026-11-12T03:32:24Z",
+          "stepNumber": 6
+        },
+        "DiscordNIOTransportTests": {
+          "completedAt": "2026-11-12T03:37:36Z",
+          "jobID": 130951994234,
+          "seconds": 46,
+          "source": "jobs-page-1",
+          "startedAt": "2026-11-12T03:36:50Z",
+          "stepNumber": 6
+        },
+        "DiscordOAuthTests": {
+          "completedAt": "2026-11-12T03:34:10Z",
+          "jobID": 130951994184,
+          "seconds": 36,
+          "source": "jobs-page-1",
+          "startedAt": "2026-11-12T03:33:34Z",
+          "stepNumber": 6
+        },
+        "DiscordRPCTests": {
+          "completedAt": "2026-11-12T03:37:27Z",
+          "jobID": 130951994219,
+          "seconds": 32,
+          "source": "jobs-page-1",
+          "startedAt": "2026-11-12T03:36:55Z",
+          "stepNumber": 6
+        },
+        "DiscordSocialTests": {
+          "completedAt": "2026-11-12T03:33:25Z",
+          "jobID": 130951994088,
+          "seconds": 37,
+          "source": "jobs-page-1",
+          "startedAt": "2026-11-12T03:32:48Z",
+          "stepNumber": 6
+        },
+        "DiscordTestSupportTests": {
+          "completedAt": "2026-11-12T03:35:01Z",
+          "jobID": 130951994109,
+          "seconds": 34,
+          "source": "jobs-page-1",
+          "startedAt": "2026-11-12T03:34:27Z",
+          "stepNumber": 6
+        },
+        "DiscordTransportTests": {
+          "completedAt": "2026-11-12T03:35:16Z",
+          "jobID": 130951994083,
+          "seconds": 34,
+          "source": "jobs-page-1",
+          "startedAt": "2026-11-12T03:34:42Z",
+          "stepNumber": 6
+        },
+        "DiscordUnixPlatformTests": {
+          "completedAt": "2026-11-12T03:34:23Z",
+          "jobID": 130951994041,
+          "seconds": 30,
+          "source": "jobs-page-1",
+          "startedAt": "2026-11-12T03:33:53Z",
+          "stepNumber": 6
+        },
+        "DiscordVoiceCodecsTests": {
+          "completedAt": "2026-11-12T03:37:24Z",
+          "jobID": 130951994191,
+          "seconds": 101,
+          "source": "jobs-page-1",
+          "startedAt": "2026-11-12T03:35:43Z",
+          "stepNumber": 6
+        },
+        "DiscordVoiceCryptoTests": {
+          "completedAt": "2026-11-12T03:36:02Z",
+          "jobID": 130951994214,
+          "seconds": 34,
+          "source": "jobs-page-1",
+          "startedAt": "2026-11-12T03:35:28Z",
+          "stepNumber": 6
+        },
+        "DiscordVoiceTests": {
+          "completedAt": "2026-11-12T03:32:59Z",
+          "jobID": 130951994107,
+          "seconds": 35,
+          "source": "jobs-page-1",
+          "startedAt": "2026-11-12T03:32:24Z",
+          "stepNumber": 6
+        }
+      }
+    },
+    "windows-x64": {
+      "fallbackReason": "No retained platform timings; maximum mixed step observed across retained platforms; runtime unmeasured.",
+      "fallbackWeightSeconds": 101,
+      "suites": {}
+    }
+  },
+  "rootGroupNames": [
+    "root-01",
+    "root-02",
+    "root-03",
+    "root-04"
+  ],
+  "schemaVersion": 1,
+  "sources": {
+    "jobs-page-1": {
+      "path": "Docs/Tasks/ci-reliability/baseline/runs/43146954720/jobs-page-1.json",
+      "sha256": "a9a38ec88bd97a6a616ffbf7360305decaf2b3ea1ad6e4fe15eed631fcdda852"
+    },
+    "jobs-page-2": {
+      "path": "Docs/Tasks/ci-reliability/baseline/runs/43146954720/jobs-page-2.json",
+      "sha256": "ea35718ec50e9232fc6174b95cc401cd135d77fd413653c78206ddf40d6a7127"
+    }
+  },
+  "weightKind": "mixed-restore-discovery-test-api-step-seconds"
+}

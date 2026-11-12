@@ -96,12 +96,23 @@ def wall_deadline(seconds):
     previous_timer = signal.getitimer(signal.ITIMER_REAL)
     started = time.monotonic()
     signal.setitimer(signal.ITIMER_REAL, min(seconds, previous_timer[0]) if previous_timer[0] else seconds)
+    failed = True
     try:
         yield
+        failed = False
     finally:
-        signal.setitimer(signal.ITIMER_REAL, max(0.000001, previous_timer[0] - (time.monotonic() - started))
-                         if previous_timer[0] else 0, previous_timer[1])
+        # Stop this scope before restoring its caller. Rearming an already
+        # expired parent for 1us can repeatedly interrupt nested unwinding and
+        # leave SIGALRM armed after the original default handler is restored.
+        signal.setitimer(signal.ITIMER_REAL, 0)
+        remaining = previous_timer[0] - (time.monotonic() - started)
         signal.signal(signal.SIGALRM, previous)
+        if previous_timer[0] and remaining > 0:
+            signal.setitimer(signal.ITIMER_REAL, remaining, previous_timer[1])
+        elif previous_timer[0] and not failed:
+            # An expired enclosing deadline is a synchronous failure, never a
+            # delayed signal delivered to unrelated work after this context.
+            expired(signal.SIGALRM, None)
 
 
 def recover(operation, *, budget=None, attempts=None, description="transfer"):

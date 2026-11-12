@@ -1,0 +1,345 @@
+{
+  "actionlintBinarySHA256": "8db11704dc296f096216db4db65d86cd7f0ebfdf4c38453a1da276b137b88388",
+  "architecture": "arm64",
+  "artifactsSHA256": {
+    "Docs/Tasks/ci-reliability/phase-7/IMPLEMENTATION.md": "f4c63d60f6b7e2b49a72da044f2ab19068a2a2e48ac9ee075ed6774c1676341f",
+    "Docs/Tasks/ci-reliability/phase-7/checks/benchmark-python/00-benchmarks-python.diagnostics.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "Docs/Tasks/ci-reliability/phase-7/checks/benchmark-python/00-benchmarks-python.log": "a8a880a4b5f4f5477cdbd148bacc95c9e999eac6838877451455cc508fdda639",
+    "Docs/Tasks/ci-reliability/phase-7/checks/benchmark-python/00-benchmarks-python.receipt.json": "17e2fd1a4377787f3d33f9f3b8b5ec240cc214ab4ba8fd8b77b9d36dc46c732f",
+    "Docs/Tasks/ci-reliability/phase-7/checks/benchmark-python/01-timing-support-python.diagnostics.jsonl": "7cf115c698e0990b4b33d87a926195104a2a73d8daa26b1a591de47da21a3ca0",
+    "Docs/Tasks/ci-reliability/phase-7/checks/benchmark-python/01-timing-support-python.log": "9f43db537d14cabc34e29fe91f07128b795c403d0e5f9297bb6d5f2f5e4fa8da",
+    "Docs/Tasks/ci-reliability/phase-7/checks/benchmark-python/01-timing-support-python.receipt.json": "5e154fc085d5c437e40e3d1f5d461c6816f1d2b7a034415ac79c9a53488652dc",
+    "Docs/Tasks/ci-reliability/phase-7/checks/benchmark-python/02-foundation-timing-python.diagnostics.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "Docs/Tasks/ci-reliability/phase-7/checks/benchmark-python/02-foundation-timing-python.log": "c9eca8c4716fb8001bec5154e16c75efbeef3c9cdde6a8e10b735b3fa775b8ec",
+    "Docs/Tasks/ci-reliability/phase-7/checks/benchmark-python/02-foundation-timing-python.receipt.json": "94f83cfc2d741c2b8e9bbd5dc56a72e3f90c7b27e00fefa9309e576d5def8dbb",
+    "Docs/Tasks/ci-reliability/phase-7/checks/benchmark-python/commands.json": "e3e0fe627d2b67179db771479a33f61b613848d0d3794a820d5f83f5c2987a82",
+    "Docs/Tasks/ci-reliability/phase-7/checks/browser/00-browser.diagnostics.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "Docs/Tasks/ci-reliability/phase-7/checks/browser/00-browser.log": "f0da29c648cd88931b9de749de828febb300a812bd5238ff5c041fb3ba00d103",
+    "Docs/Tasks/ci-reliability/phase-7/checks/browser/00-browser.receipt.json": "cd63a2c5052015500986f1a536d70333b1fa804afae0cfadae5a66746e8aa83f",
+    "Docs/Tasks/ci-reliability/phase-7/checks/browser/commands.json": "bebe72d5183cfad21dd7a84216051b99683065195952173ea8e30f2c34a74a46",
+    "Docs/Tasks/ci-reliability/phase-7/checks/ci-python/00-ci-python.diagnostics.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "Docs/Tasks/ci-reliability/phase-7/checks/ci-python/00-ci-python.log": "43295de5a73c23855c272a7762056d64a544b67c53e50500bf7585544b3b8922",
+    "Docs/Tasks/ci-reliability/phase-7/checks/ci-python/00-ci-python.receipt.json": "cb18ea14fa8a849241ef20704f25299592fbeb85400995e12c7edb8e92be5877",
+    "Docs/Tasks/ci-reliability/phase-7/checks/ci-python/commands.json": "b9ebbe7af2298c5a0c86671d90a1538add7bcea047a98d3c8f82a1a659a493a1",
+    "Docs/Tasks/ci-reliability/phase-7/checks/maintenance/00-maintenance-freshness.diagnostics.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "Docs/Tasks/ci-reliability/phase-7/checks/maintenance/00-maintenance-freshness.log": "1ca3381f73ca0041e12f360dd10a4f3616bd768897a7c952081489b34acf0582",
+    "Docs/Tasks/ci-reliability/phase-7/checks/maintenance/00-maintenance-freshness.receipt.json": "66b502dcbcf62ca70a9b4c8b016ff20be948ea90760600a7bbee8441e898b08c",
+    "Docs/Tasks/ci-reliability/phase-7/checks/maintenance/commands.json": "8535c34d72ce502587ee067df3cc0ac77194ba23a465356057a5be470670894c",
+    "Docs/Tasks/ci-reliability/phase-7/checks/sdk-install/00-artifact-sdk-install.diagnostics.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "Docs/Tasks/ci-reliability/phase-7/checks/sdk-install/00-artifact-sdk-install.log": "3da4901c9f85013a1f86c92e7d9929011be2b538830d371796adcd309522e934",
+    "Docs/Tasks/ci-reliability/phase-7/checks/sdk-install/00-artifact-sdk-install.receipt.json": "3e5903cf2b6b501e37a9aa83976edb060ae9ec7a6c507541b415cd3b7962f33f",
+    "Docs/Tasks/ci-reliability/phase-7/checks/sdk-install/commands.json": "fdca04d6480cdcbbe5506f296e290e474c3999f281c98ced74bfd4947a2b3a71",
+    "Docs/Tasks/ci-reliability/phase-7/checks/source/00-policy-source-inventory.diagnostics.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "Docs/Tasks/ci-reliability/phase-7/checks/source/00-policy-source-inventory.log": "103d16f557bfd80c331c3efbefa3fc3a49c2766e7da29567d852bea9f0b9ace4",
+    "Docs/Tasks/ci-reliability/phase-7/checks/source/00-policy-source-inventory.receipt.json": "087b526298595bfbe1ec68deabc7cb24adc31c53f73cb7528dd3c516c35f4794",
+    "Docs/Tasks/ci-reliability/phase-7/checks/source/01-documentation-example-snapshots.diagnostics.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "Docs/Tasks/ci-reliability/phase-7/checks/source/01-documentation-example-snapshots.log": "d5da5274e10ecbf43db2abae5556865167f36e9b8f5fb8da052aaaa56ac9f350",
+    "Docs/Tasks/ci-reliability/phase-7/checks/source/01-documentation-example-snapshots.receipt.json": "66474b7fbe014ed2c1677e5028c9af9a760cd35e0510bcc412d648a16c121ca4",
+    "Docs/Tasks/ci-reliability/phase-7/checks/source/commands.json": "3259b94fd6023d878ffb841d362a5d36885ccd8bfc7cefb02761412621dc8667",
+    "Docs/Tasks/ci-reliability/phase-7/checks/tooling-python/00-tooling-python.diagnostics.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "Docs/Tasks/ci-reliability/phase-7/checks/tooling-python/00-tooling-python.log": "6e554421599bda9cdf47e923efac0446e5b1a541f93c13cfd5199fc256bd1dd6",
+    "Docs/Tasks/ci-reliability/phase-7/checks/tooling-python/00-tooling-python.receipt.json": "bf5a1af18f18d8aa1fe687b85de0de42b99adb55413fd5fdcd95e4c4c73cd606",
+    "Docs/Tasks/ci-reliability/phase-7/checks/tooling-python/01-load-python.diagnostics.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "Docs/Tasks/ci-reliability/phase-7/checks/tooling-python/01-load-python.log": "11a0805e37fab4b43673f05ebbffbecd76d3229d59530c684784fd48aaf2f0b0",
+    "Docs/Tasks/ci-reliability/phase-7/checks/tooling-python/01-load-python.receipt.json": "175aef072a055440559460a379280c9dd920c069a45333369a3108fa132db560",
+    "Docs/Tasks/ci-reliability/phase-7/checks/tooling-python/commands.json": "464ebf1c73bd824722a357974fb7047a5c4152dd09581c50d0648ac07bf3feb4",
+    "Docs/Tasks/ci-reliability/phase-7/checks/workflow/00-actionlint.diagnostics.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "Docs/Tasks/ci-reliability/phase-7/checks/workflow/00-actionlint.log": "978927452b46c021c9ab9730835458b9dfe00045b9d00e9d937150997cf47c89",
+    "Docs/Tasks/ci-reliability/phase-7/checks/workflow/00-actionlint.receipt.json": "3d3989d6ae82818019908f447f73a952ebd839d5ec8419559ade3d435174f154",
+    "Docs/Tasks/ci-reliability/phase-7/checks/workflow/commands.json": "c85774343e5ac31db39996c2d1cd63d00d0ef930d8f8c237b03a209595e678e8",
+    "Docs/Tasks/ci-reliability/phase-7/documentation-check.json": "abc2fc935ebc7e7a58b9140b6b0dad2e8257e6b0d0d45ff5e9454e3ce27039f2",
+    "Docs/Tasks/ci-reliability/phase-7/group-plan.json": "d8658c2ff2f9ecf5371d7dae9966f572ca79c039b85116a864e075d2a12d5616",
+    "Docs/Tasks/ci-reliability/phase-7/resource-admission.json": "e4afaa285a8025aa196fcd85f4dd4a43e535ac728baa8ba7a51b5f7863a1ddad",
+    "Docs/Tasks/ci-reliability/phase-7/review.json": "2849c582dfbe88f75634c916fe05d9582b327639abd2272bb55edf986dd145f2",
+    "Docs/Tasks/ci-reliability/phase-7/scheduling-comparison.json": "dcb5b18574b3f2dae9ba940d40d948000decbc40f7ed9e6c3000264ebce96a02"
+  },
+  "base": "e47b506ce4b619e5a055d248f5c42df3b9f68f2a",
+  "branch": "ci/phase-7-suite-groups",
+  "commands": [
+    {
+      "argv": [
+        "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "Tools/DiscordDSLBenchmarks/scripts",
+        "-p",
+        "test_*.py"
+      ],
+      "exitCode": 0,
+      "group": "benchmark-python",
+      "name": "benchmarks-python",
+      "receipt": "checks/benchmark-python/00-benchmarks-python.receipt.json",
+      "seconds": 0.398,
+      "status": "passed"
+    },
+    {
+      "argv": [
+        "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "Tools/DiscordBenchmarkSupport/scripts",
+        "-p",
+        "test_*.py"
+      ],
+      "exitCode": 0,
+      "group": "benchmark-python",
+      "name": "timing-support-python",
+      "receipt": "checks/benchmark-python/01-timing-support-python.receipt.json",
+      "seconds": 31.919,
+      "status": "passed"
+    },
+    {
+      "argv": [
+        "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "Tools/DiscordFoundationBenchmarks/scripts",
+        "-p",
+        "test_*.py"
+      ],
+      "exitCode": 0,
+      "group": "benchmark-python",
+      "name": "foundation-timing-python",
+      "receipt": "checks/benchmark-python/02-foundation-timing-python.receipt.json",
+      "seconds": 0.804,
+      "status": "passed"
+    },
+    {
+      "argv": [
+        "node",
+        "--test",
+        "Browser/DiscordActivityBridge/ActivityBridge.test.mjs",
+        "Browser/DiscordActivityBridge/ActivityHostExample.test.mjs",
+        "Browser/DiscordActivityBridge/ActivityNetwork.test.mjs"
+      ],
+      "exitCode": 0,
+      "group": "browser",
+      "name": "browser",
+      "receipt": "checks/browser/00-browser.receipt.json",
+      "seconds": 0.096,
+      "status": "passed"
+    },
+    {
+      "argv": [
+        "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "Tools/ci",
+        "-p",
+        "test_*.py"
+      ],
+      "exitCode": 0,
+      "group": "ci-python",
+      "name": "ci-python",
+      "receipt": "checks/ci-python/00-ci-python.receipt.json",
+      "seconds": 17.042,
+      "status": "passed"
+    },
+    {
+      "argv": [
+        "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+        "Tools/DiscordKitTools/scripts/release_check.py",
+        "maintenance",
+        "--repository",
+        ".",
+        "--record",
+        "Docs/Release/maintenance.json"
+      ],
+      "exitCode": 0,
+      "group": "maintenance",
+      "name": "maintenance-freshness",
+      "receipt": "checks/maintenance/00-maintenance-freshness.receipt.json",
+      "seconds": 0.061,
+      "status": "passed"
+    },
+    {
+      "argv": [
+        "npm",
+        "ci",
+        "--prefix",
+        "Tools/ci/artifact-sdk",
+        "--ignore-scripts",
+        "--no-audit",
+        "--no-fund"
+      ],
+      "exitCode": 0,
+      "group": "sdk-install",
+      "name": "artifact-sdk-install",
+      "receipt": "checks/sdk-install/00-artifact-sdk-install.receipt.json",
+      "seconds": 1.564,
+      "status": "passed"
+    },
+    {
+      "argv": [
+        "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+        "Tools/ci/scheduling_policy.py",
+        "validate",
+        "--policy",
+        "/Users/carsonrau/Developer/DiscordKit-ci-phase7/Tools/ci/scheduling-policy.v1.json",
+        "--repository",
+        "/Users/carsonrau/Developer/DiscordKit-ci-phase7"
+      ],
+      "exitCode": 0,
+      "group": "source",
+      "name": "policy-source-inventory",
+      "receipt": "checks/source/00-policy-source-inventory.receipt.json",
+      "seconds": 0.066,
+      "status": "passed"
+    },
+    {
+      "argv": [
+        "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+        "Tools/ci/documentation_examples.py",
+        "--repository",
+        "/Users/carsonrau/Developer/DiscordKit-ci-phase7"
+      ],
+      "exitCode": 0,
+      "group": "source",
+      "name": "documentation-example-snapshots",
+      "receipt": "checks/source/01-documentation-example-snapshots.receipt.json",
+      "seconds": 0.057,
+      "status": "passed"
+    },
+    {
+      "argv": [
+        "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "Tools/DiscordKitTools/scripts",
+        "-p",
+        "test_*.py"
+      ],
+      "exitCode": 0,
+      "group": "tooling-python",
+      "name": "tooling-python",
+      "receipt": "checks/tooling-python/00-tooling-python.receipt.json",
+      "seconds": 5.251,
+      "status": "passed"
+    },
+    {
+      "argv": [
+        "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "Tools/DiscordKitLoadTests/scripts",
+        "-p",
+        "test_*.py"
+      ],
+      "exitCode": 0,
+      "group": "tooling-python",
+      "name": "load-python",
+      "receipt": "checks/tooling-python/01-load-python.receipt.json",
+      "seconds": 8.198,
+      "status": "passed"
+    },
+    {
+      "argv": [
+        "actionlint",
+        ".github/workflows/ci.yml",
+        ".github/workflows/documentation.yml",
+        ".github/workflows/native-platform.yml",
+        ".github/workflows/release.yml",
+        ".github/workflows/timing-comparison.yml",
+        ".github/workflows/timing-periodic.yml",
+        ".github/workflows/upstream-review.yml"
+      ],
+      "exitCode": 0,
+      "group": "workflow",
+      "name": "actionlint",
+      "receipt": "checks/workflow/00-actionlint.receipt.json",
+      "seconds": 0.014,
+      "status": "passed"
+    }
+  ],
+  "inputsSHA256": {
+    ".github/workflows/ci.yml": "dcd05db0db7bdf0f5d6f622c6ee721a4eb2552fcd1490ff1f5f2fe7467b9cf93",
+    ".github/workflows/native-platform.yml": "e8b217e98db47792446b343fc876bf2eae8ac639bd13a094719879a9e17fd349",
+    "Tools/ci/artifact_index.py": "170901937a7c65865f27a1d1a1a193870883ad662ca1aa0d1a73decfb4278e44",
+    "Tools/ci/artifact_transfer.py": "ec764bad1d985bbda2ada3b5dd3903b12029d76092eb07ae6e3e908c2d407022",
+    "Tools/ci/native_jobs.py": "b1cb5c3ea75348fb2089d25f65cef2a4ced77887706b16882d15cb1b4a5f6e96",
+    "Tools/ci/native_resources.py": "1d68d77ea7af9fbadc05dac304bb5d8b080fae4286902aad5b30288c096e020a",
+    "Tools/ci/scheduling-policy.v1.json": "fb2ed8c5a03f2d8c05bd1be09a8cdfe2fa5c320f89e533a448b4c1ee44e1c994",
+    "Tools/ci/scheduling_policy.py": "12edc3601b9430fb3bcd3ebbf57f61c54d2d5f35b53e3fc23d3f5d611bf40879",
+    "Tools/ci/suite-groups.v1.json": "4338638a2d9e2ae8f59083517c67966723042d97f1d9b669b6d6dc401dfe843d",
+    "Tools/ci/suite_groups.py": "fc7765ab56bf6c6d3b4ebff81c48cbb9f075ba9a0037456494a2fe7da039c36e",
+    "Tools/ci/test_artifact_index.py": "7c8fe05ac926b528879da2f9c944384d1aebe550cf6a39b291ae2229f859e4b5",
+    "Tools/ci/test_artifact_transfer.py": "883c60af031a88c6df91ef0256c43339054184a17ab024de9d2cedbce6fe3e65",
+    "Tools/ci/test_artifact_workflows.py": "44590b00c07c786f60edb6acd6739e3a27d9be2f695b5d6002786db29fc54a03",
+    "Tools/ci/test_native_groups.py": "774f39bcf0b13305bd221f4bb372f0ffac4972ba96b08c55636ab847802922ad",
+    "Tools/ci/test_native_jobs.py": "e7539da4836e4fb6e44685deea5742a60b834b98de58fcf0c27081ba10bb2c65",
+    "Tools/ci/test_native_resources.py": "d320a54ae42e892e501485a9f71f2f3e12c825ed9a890d2fc171be591d5c0d7f",
+    "Tools/ci/test_results.py": "6d94f8246b5d3bfbeb660626fa0cb4f6a3892e7725529fd327e9348ac1488580",
+    "Tools/ci/test_scheduling_policy.py": "87a4a695b2644e39ffc9b508bce8639d1837090681df4c81c5053694d8eb77d0",
+    "Tools/ci/test_suite_groups.py": "8c38b1194e76060e111f991e132ae7d82d30edc582b879ad1f6edf1b4e222fe5",
+    "Tools/ci/test_test_results.py": "6a84a5653b86843c3698dfa6821f48cd331fe2addea381e39bf0c39fb280b691",
+    "Tools/ci/test_workflow_coverage.py": "47bf1cc6afbc5a6291aee490b0db2eff0574e8fcb9dbbe770f7bda511c5b95a2",
+    "Tools/ci/test_workflow_scope.py": "64daf3f224bc360924721844bdc5d62784f90c79d1a726f2527092ead133b363",
+    "Tools/ci/workflow_coverage.py": "0e4a3403e422e7622f8c6efc078c5c5c2a1eafca001b54ad6aeec69163e8b7ea",
+    "Tools/ci/workflow_scope.py": "fc2587fc4f2f493872f4106872052884769c31472c28f140e483c3651ba37149"
+  },
+  "limits": [
+    "Six existing Linux-only CI tests skipped on macOS",
+    "No native Swift build/test execution",
+    "No hosted/paid execution or remote write",
+    "Phase 3 native x64 acceptance remains open",
+    "Post-change time/bytes/runner minutes/cost and native partial-rerun proof remain Phase 11"
+  ],
+  "owner": "Codex /root",
+  "platform": "Darwin",
+  "python": "3.14.0",
+  "schemaVersion": 1,
+  "status": "passed-local-helper-acceptance",
+  "syntaxCheck": "py_compile and embedded Python AST passed",
+  "testSuites": {
+    "benchmarks-python": {
+      "discovered": 33,
+      "passed": 33,
+      "skipped": 0
+    },
+    "browser": {
+      "discovered": 38,
+      "passed": 38,
+      "skipped": 0
+    },
+    "ci-python": {
+      "discovered": 454,
+      "passed": 448,
+      "skipped": 6
+    },
+    "foundation-timing-python": {
+      "discovered": 3,
+      "passed": 3,
+      "skipped": 0
+    },
+    "load-python": {
+      "discovered": 56,
+      "passed": 56,
+      "skipped": 0
+    },
+    "timing-support-python": {
+      "discovered": 47,
+      "passed": 47,
+      "skipped": 0
+    },
+    "tooling-python": {
+      "discovered": 236,
+      "passed": 236,
+      "skipped": 0
+    }
+  },
+  "totalPassed": 861,
+  "totalSkipped": 6,
+  "workflowLint": "actionlint 1.7.12; all seven workflow definitions passed"
+}

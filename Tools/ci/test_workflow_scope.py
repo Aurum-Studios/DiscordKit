@@ -59,8 +59,15 @@ class WorkflowScopeTests(unittest.TestCase):
                 builds, tests=native_jobs.matrices(policy['inventory']['rootTargets'],platform)
                 self.assertEqual({row['component'] for row in planned['all-builds']['include']},
                                  {row['component'] for row in builds['include']})
-                self.assertEqual({(row['component'],row['suite']) for row in planned['tests']['include']} | {('load','load')},
-                                 {(row['component'],row['suite']) for row in tests['include']})
+                self.assertEqual({(row['component'], suite) for row in
+                                  planned['root-tests']['include'] + planned['tests']['include'] for suite in row['suites']} | {('load','load')},
+                                 {(row['component'], suite) for row in tests['include'] for suite in row['suites']})
+                self.assertEqual(len(planned['root-tests']['include']), 4)
+                consumers = [row for row in planned['tests']['include'] if row['component'] == 'consumers']
+                self.assertEqual(len(consumers), 1)
+                self.assertEqual(consumers[0]['suites'], list(native_jobs.CONSUMER_SUITES))
+                self.assertEqual({row['component'] for row in planned['core-builds']['include']}, scope.CORE_COMPONENTS)
+                self.assertFalse(scope.CORE_COMPONENTS & {row['component'] for row in planned['builds']['include']})
                 self.assertNotIn('load', {row['component'] for row in planned['builds']['include']})
                 ids=[row['id'] for row in planned['coverage']['entries']]
                 self.assertEqual(ids.count('build/load'),1)
@@ -74,7 +81,9 @@ class WorkflowScopeTests(unittest.TestCase):
     def test_scoped_package_does_not_expand_into_unselected_work(self):
         planned=self.plan('diagnostic', component='root',suite='DiscordBitsTests')
         self.assertEqual([row['component'] for row in planned['all-builds']['include']],['load','root'])
-        self.assertEqual([row['suite'] for row in planned['tests']['include']],['DiscordBitsTests'])
+        self.assertEqual([row['suite'] for row in planned['root-tests']['include']],['DiscordBitsTests'])
+        self.assertEqual(planned['root-tests']['include'][0]['suites'], ['DiscordBitsTests'])
+        self.assertFalse(planned['has-tests'])
         ids={row['id'] for row in planned['coverage']['entries']}
         self.assertFalse(ids & {'audit','export','apple','api'})
         self.assertFalse(any(item.startswith('fixture/') for item in ids))
@@ -86,7 +95,9 @@ class WorkflowScopeTests(unittest.TestCase):
             self.assertFalse(planned['has-tests'])
             self.assertEqual(len(planned['all-builds']['include']),1)
         planned=self.plan('diagnostic',component='root')
-        self.assertTrue(planned['has-builds'])
+        self.assertTrue(planned['has-core-builds'])
+        self.assertFalse(planned['has-builds'])
+        self.assertFalse(planned['has-root-tests'])
         self.assertFalse(planned['has-tests'])
 
     def test_empty_discovery_or_evaluated_inventory_drift_cannot_plan(self):
@@ -118,7 +129,10 @@ class WorkflowScopeTests(unittest.TestCase):
             job['steps'].append({'name': entry.get('stepName', 'Run'),
                          'status': 'completed', 'conclusion': 'success'})
         rows = list(jobs.values())
-        return coverage.validate_jobs(manifest, rows, head_sha='a'*40)
+        proofs = {entry['id']: {'artifactID': str(1000 + i), 'artifactDigest': 'sha256:' + 'b'*64,
+                    'artifactName': coverage.evidence_prefix(entry['testCoverage'], manifest, manifest['runAttempt']) + '-t1',
+                    'receiptSHA256': 'c'*64} for i, entry in enumerate(manifest['entries']) if 'testCoverage' in entry}
+        return coverage.validate_jobs(manifest, rows, head_sha='a'*40, test_evidence=proofs)
 
     def test_full_gate_requires_both_exact_platform_summaries_and_every_shared_row(self):
         results={name:{'result':'success'} for name in ('scope','source','helpers','maintenance','native-linux','native-macos')}
@@ -184,7 +198,7 @@ class WorkflowGraphTests(unittest.TestCase):
             self.assertNotIn('needs: [native-',block)
 
     def test_every_expensive_wave_is_behind_canary(self):
-        for job in ('build-remaining','resolve','tests','audit','fixtures','public-api','apple-compilation'):
+        for job in ('build-core','build-remaining','resolve','tests-root','tests','audit','fixtures','public-api','apple-compilation'):
             block=self.job(self.native,job)
             self.assertRegex(block,r'needs: [^\n]*canary')
         self.assertIn('needs: [plan, build]',self.job(self.native,'canary'))
@@ -192,6 +206,16 @@ class WorkflowGraphTests(unittest.TestCase):
         self.assertIn('--component load --suite load',self.job(self.native,'canary'))
         self.assertIn('needs: coverage',self.job(self.native,'package'))
         self.assertIn("if: inputs.mode == 'full'",self.job(self.native,'package'))
+
+    def test_component_waves_allow_root_runtime_and_core_audits_before_remaining_builds(self):
+        for job in ('tests-root', 'audit', 'public-api'):
+            block = self.job(self.native, job)
+            self.assertIn('build-core', block.split('runs-on:', 1)[0])
+            self.assertNotIn('build-remaining', block.split('runs-on:', 1)[0])
+        self.assertIn('tests-root', self.job(self.native, 'tests').split('runs-on:', 1)[0])
+        for job in ('canary', 'tests-root', 'tests'):
+            self.assertIn('test-coverage-', self.job(self.native, job))
+            self.assertIn('group-coverage.json', self.job(self.native, job))
 
     def test_scope_check_names_and_concurrency_do_not_collide(self):
         concurrency=self.ci.split('concurrency:',1)[1].split('\nenv:',1)[0]

@@ -66,7 +66,7 @@ flowchart LR
 
 | Target | Platform and runtime suite group | Build and compiler fixture group |
 | --- | --- | --- |
-| Linux x64 / Ubuntu 24.04 | `Linux-x64-8` | `Linux-x64-64` |
+| Linux x64 / Ubuntu 24.04 | `Linux-x64-8` | `Linux-x64-64`; tooling/timing-support use `Linux-x64-8` |
 | macOS ARM64 / macOS 26 | `MacOS-26-5` | `MacOS-26-5` |
 
 Each platform probes its actual OS, architecture, Swift 6.4.1 compiler/target and
@@ -82,8 +82,22 @@ exclude load; a diagnostic adds only its requested component/suite after the
 explicit load canary prerequisite. No diagnostic automatically expands to full.
 Root suites retain exact module filters and `--skip-build --no-parallel`;
 compiler-positive/negative fixtures and native audits retain their existing work.
-Both remaining build and runtime matrices cap in-flight jobs at two. Phase 7
-still owns grouping, memory-aware resource admission and executed-leaf accounting.
+[Phase 7](Tasks/ci-reliability/phase-7/IMPLEMENTATION.md) replaces individual jobs
+with four deterministic root groups, one batched consumer group and separate
+package groups per platform (28 test groups total). Restore and discovery are
+shared within each group; every whole root module retains its own bounded process.
+Structured Swift Testing results must reconcile the selected producer leaves,
+including the single predeclared optional MLS++ exclusion. Dedicated immutable
+result artifacts are independently checked at each coverage barrier. XCTest
+inventory fails explicitly pending a supported serial structured adapter.
+
+The core producer wave unlocks root groups, tooling audits and API conversion
+before remaining builds finish. Compiler waves and runtime group waves each cap
+in-flight jobs at two. Compiler processes additionally obey policy, CPU affinity
+and observed memory bounds. Tooling/timing-support initially use the existing
+smaller Linux pool; their hosted capacity and measured savings remain pending.
+Runtime group jobs allow 105 minutes and audits 60 minutes including bounded
+restore/transfer reserves; per-suite process limits remain unchanged.
 
 The expected-coverage manifest lists every probe, plan, producer, suite, fixture,
 audit, API/Apple check and applicable export. Authenticated same-run API evidence

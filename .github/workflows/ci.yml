@@ -138,9 +138,9 @@ jobs:
       suite: ${{ inputs.suite || '' }}
       platform: linux-x64
       runner-group: Linux-x64-8
-      jobs: 8
+      jobs: 2
       build-group: Linux-x64-64
-      build-jobs: 64
+      build-jobs: 2
       shell: bash
 
   native-macos:
@@ -154,9 +154,9 @@ jobs:
       suite: ${{ inputs.suite || '' }}
       platform: macos-arm64
       runner-group: MacOS-26-5
-      jobs: 5
+      jobs: 2
       build-group: MacOS-26-5
-      build-jobs: 5
+      build-jobs: 2
       shell: bash
 
   complete:

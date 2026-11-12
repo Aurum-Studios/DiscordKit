@@ -128,6 +128,8 @@ def _validate_policy(policy):
             "compilerJobsPerProcess"}, "missing concurrency bounds")
     for name, value in policy["concurrency"].items():
         integer(value, name)
+    require(all(value <= 2 for value in policy["concurrency"].values()),
+            "initial build, runtime group and compiler concurrency cannot exceed two")
     require(set(policy["retentionDays"]) == {"compiledArtifacts", "diagnosticArtifacts", "baselineArtifacts"},
             "missing artifact retention")
     for name, value in policy["retentionDays"].items():
@@ -261,7 +263,8 @@ def plan_scope(policy, mode, *, platform=None, component=None, suite=None, repos
             tests.extend(test_matrix["include"])
         if mode == "diagnostic":
             builds = [entry for entry in builds if entry["component"] == component]
-            tests = [entry for entry in tests if entry["component"] == component and entry["suite"] == suite]
+            tests = [dict(entry, suite=suite, suites=[suite]) for entry in tests
+                     if entry["component"] == component and suite in entry["suites"]]
             require(suite is None or tests, "suite is not scheduled for the selected component/platform")
         for entry in builds:
             entry["id"] = f"build/{entry['platform']}/{entry['component']}"

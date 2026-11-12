@@ -1,0 +1,92 @@
+{
+  "commands": [
+    {
+      "arguments": [
+        "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+        "Tools/DiscordKitTools/scripts/release_check.py",
+        "maintenance",
+        "--repository",
+        ".",
+        "--record",
+        "Docs/Release/maintenance.json"
+      ],
+      "diagnostics": "00-maintenance-freshness.diagnostics.jsonl",
+      "execution": {
+        "arguments": [
+          "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+          "Tools/DiscordKitTools/scripts/release_check.py",
+          "maintenance",
+          "--repository",
+          ".",
+          "--record",
+          "Docs/Release/maintenance.json"
+        ],
+        "cleanup": {
+          "allowanceSeconds": 8.0,
+          "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed",
+          "groupState": "gone",
+          "parentReaped": true,
+          "remainingProcesses": [],
+          "seconds": 0.004,
+          "signals": [],
+          "status": "group-signalled",
+          "verification": "available",
+          "verificationMalformedRows": 0,
+          "verificationTruncated": false
+        },
+        "cleanupAllowanceSeconds": 8.0,
+        "deadlineMonotonic": 355010.117539416,
+        "deadlineSource": "aggregate",
+        "diagnosticsTruncated": false,
+        "elapsedSeconds": 0.061,
+        "end": "2026-11-12T15:18:22.826622+00:00",
+        "endMonotonic": 354710.178364125,
+        "executionLimitSeconds": 300,
+        "exitCode": 0,
+        "group": 26857,
+        "identity": {
+          "executionID": "415a2b9e-091c-4019-852c-8023361e977f",
+          "host": "Pokemon-GO-Plus",
+          "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase7",
+          "supervisorPID": 26836,
+          "system": "Darwin"
+        },
+        "lastObservedTest": null,
+        "name": "maintenance-freshness",
+        "operation": "localHelperCheck",
+        "outputs": [
+          {
+            "observedBytes": 291,
+            "path": "Docs/Tasks/ci-reliability/phase-7/checks/maintenance/00-maintenance-freshness.log",
+            "retainedBytes": 291,
+            "truncated": false
+          }
+        ],
+        "paths": {
+          "diagnostics": "Docs/Tasks/ci-reliability/phase-7/checks/maintenance/00-maintenance-freshness.diagnostics.jsonl",
+          "output": "Docs/Tasks/ci-reliability/phase-7/checks/maintenance/00-maintenance-freshness.log",
+          "receipt": "Docs/Tasks/ci-reliability/phase-7/checks/maintenance/00-maintenance-freshness.receipt.json",
+          "stdout": null
+        },
+        "pid": 26857,
+        "readerThreads": 0,
+        "schemaVersion": 1,
+        "signal": null,
+        "stage": "maintenance-freshness",
+        "start": "2026-11-12T15:18:22.766020+00:00",
+        "startMonotonic": 354710.117743916,
+        "status": "passed",
+        "timeoutCategory": null
+      },
+      "executionReceipt": "00-maintenance-freshness.receipt.json",
+      "log": "00-maintenance-freshness.log",
+      "name": "maintenance-freshness",
+      "operation": "localHelperCheck",
+      "seconds": 0.061,
+      "status": "passed",
+      "timeoutSeconds": 300
+    }
+  ],
+  "seconds": 0.062,
+  "status": "passed"
+}

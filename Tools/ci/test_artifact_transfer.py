@@ -156,6 +156,72 @@ class ArtifactTransferTests(unittest.TestCase):
                 time.sleep(1)
         self.assertLess(time.monotonic() - started, 0.5)
 
+    def test_nested_expired_deadline_never_rearms_a_delayed_alarm(self):
+        previous = object()
+        calls = []
+        def handler(number, value):
+            calls.append(("handler", value))
+            return previous
+        def timer(kind, seconds, interval=0):
+            calls.append(("timer", seconds, interval))
+        with patch.object(transfer.signal, "signal", side_effect=handler), \
+             patch.object(transfer.signal, "getitimer", return_value=(1.0, 0.0)), \
+             patch.object(transfer.signal, "setitimer", side_effect=timer), \
+             patch.object(transfer.time, "monotonic", side_effect=[10.0, 12.0]), \
+             self.assertRaisesRegex(transfer.TransferError, "timed out"):
+            with transfer.wall_deadline(5):
+                pass
+        self.assertEqual(calls[1:], [("timer", 1.0, 0), ("timer", 0, 0), ("handler", previous)])
+
+    def test_nested_deadline_restores_handler_before_rearming_live_parent(self):
+        previous = object()
+        calls = []
+        def handler(number, value):
+            calls.append(("handler", value))
+            return previous
+        def timer(kind, seconds, interval=0):
+            calls.append(("timer", seconds, interval))
+        with patch.object(transfer.signal, "signal", side_effect=handler), \
+             patch.object(transfer.signal, "getitimer", return_value=(5.0, 0.5)), \
+             patch.object(transfer.signal, "setitimer", side_effect=timer), \
+             patch.object(transfer.time, "monotonic", side_effect=[10.0, 12.0]):
+            with transfer.wall_deadline(10):
+                pass
+        self.assertEqual(calls[-3:], [("timer", 0, 0), ("handler", previous), ("timer", 3.0, 0.5)])
+
+    def test_expired_parent_cleanup_preserves_primary_failure(self):
+        with patch.object(transfer.signal, "signal"), \
+             patch.object(transfer.signal, "getitimer", return_value=(1.0, 0.0)), \
+             patch.object(transfer.signal, "setitimer") as timer, \
+             patch.object(transfer.time, "monotonic", side_effect=[10.0, 12.0]), \
+             self.assertRaisesRegex(RuntimeError, "primary failure"):
+            with transfer.wall_deadline(5):
+                raise RuntimeError("primary failure")
+        self.assertEqual([call.args[1] for call in timer.call_args_list], [1.0, 0])
+
+    def test_real_nested_timeouts_leave_no_alarm_or_handler_in_following_work(self):
+        # Isolate SIGALRM's default process-termination behavior from unittest.
+        script = """import signal, time
+import artifact_transfer as transfer
+original = signal.getsignal(signal.SIGALRM)
+for iteration in range(30):
+    try:
+        with transfer.wall_deadline(0.002):
+            with transfer.wall_deadline(1):
+                with transfer.wall_deadline(1):
+                    time.sleep(1)
+    except transfer.TransferError:
+        pass
+    assert signal.getitimer(signal.ITIMER_REAL) == (0.0, 0.0)
+    assert signal.getsignal(signal.SIGALRM) == original
+    time.sleep(0.001)
+print('nested cleanup passed')
+"""
+        result = subprocess.run([sys.executable, "-c", script], cwd=Path(transfer.__file__).parent,
+                                capture_output=True, text=True, timeout=5)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout.strip(), "nested cleanup passed")
+
     def test_upload_final_identity_mismatch_is_fatal(self):
         with tempfile.TemporaryDirectory() as temporary:
             path = Path(temporary) / "payload.zip"

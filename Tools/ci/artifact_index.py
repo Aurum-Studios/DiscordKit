@@ -78,7 +78,9 @@ def validate_native_metadata(metadata, execution, component, platform, source_co
         identity = metadata["compatibility"]["identity"]
         if identity["commit"] != source_commit or identity["platform"] != platform:
             raise ValueError("artifact source revision or platform differs")
-        if producer["execution"]["jobID"] not in ({"build"} if component == "load" else {"build", "build-remaining"}):
+        if producer["execution"]["jobID"] not in ({"build"} if component == "load" else
+                {"build", "build-core"} if component in ("root", "macros", "extensions", "tooling") else
+                {"build", "build-remaining"}):
             raise ValueError("native artifact producer must be the build job")
         receipts.validate_metadata(metadata, metadata["compatibility"], producer["execution"],
                                    component, metadata["buildRoots"])

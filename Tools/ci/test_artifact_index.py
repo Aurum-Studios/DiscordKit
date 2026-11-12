@@ -65,10 +65,10 @@ class ArtifactIndexTests(unittest.TestCase):
 
     def test_remaining_wave_preserves_producer_job_identity(self):
         envelope = self.client.receipts['201'][1]
-        envelope['metadata']['producer']['execution']['jobID'] = 'build-remaining'
+        envelope['metadata']['producer']['execution']['jobID'] = 'build-core'
         resolved = index.resolve(self.client, execution=self.execution, platform='linux-x64',
                                  components=['root'], source_commit='a'*40)
-        self.assertEqual(resolved['components']['root']['producer']['execution']['jobID'], 'build-remaining')
+        self.assertEqual(resolved['components']['root']['producer']['execution']['jobID'], 'build-core')
 
     def test_remaining_wave_cannot_supply_the_load_canary(self):
         self.add_producer(component='load', artifact_id='102', receipt_id='202')

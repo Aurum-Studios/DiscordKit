@@ -23,6 +23,19 @@ import unittest
 from unittest.mock import patch
 
 import native_jobs as jobs
+from test_test_results import successful
+
+
+def emit_events(command, leaves=("CoreTests.Suite/test()",)):
+    """Model only the pinned compiler boundary; production reconciliation remains real."""
+    if "--event-stream-output-path" in command.arguments:
+        path = Path(command.arguments[command.arguments.index("--event-stream-output-path") + 1])
+        records = successful(leaves[0])
+        for leaf in leaves[1:]:
+            from test_test_results import definition, event
+            records.insert(0, definition(leaf))
+            records[-1:-1] = [event("testStarted", leaf), event("testEnded", leaf)]
+        path.write_text("".join(json.dumps(row) + "\n" for row in records))
 
 
 class NativePlanTests(unittest.TestCase):
@@ -47,17 +60,17 @@ class NativePlanTests(unittest.TestCase):
             self.assertEqual({entry["component"] for entry in build_entries}, expected_components)
             self.assertEqual({entry["component"] for entry in test_entries if entry["component"] in jobs.TIMING_PACKAGES},
                              set() if native_platform == "windows-x64" else set(jobs.TIMING_PACKAGES))
-            self.assertEqual({entry["suite"] for entry in test_entries if entry["component"] == "root"},
+            self.assertEqual({suite for entry in test_entries if entry["component"] == "root" for suite in entry["suites"]},
                              expected_modules[native_platform])
-            self.assertEqual({entry["suite"] for entry in test_entries if entry["component"] == "consumers"},
+            self.assertEqual({suite for entry in test_entries if entry["component"] == "consumers" for suite in entry["suites"]},
                              set(jobs.CONSUMER_TESTS) | set(jobs.CONSUMER_SMOKES))
             self.assertNotIn("release", {entry["component"] for entry in test_entries})
             for entry in build_entries + test_entries:
                 self.assertEqual(entry["shell"], "pwsh" if native_platform == "windows-x64" else "bash")
                 if native_platform == "macos-arm64":
-                    self.assertEqual((entry["group"], entry["jobs"]), ("MacOS-26-5", 5))
+                    self.assertEqual((entry["group"], entry["jobs"]), ("MacOS-26-5", 2))
                 elif entry in build_entries:
-                    self.assertTrue(entry["group"].endswith("-64"))
+                    self.assertTrue(entry["group"].endswith("-8" if entry["component"] in ("tooling", "timing-support") else "-64"))
                 else:
                     self.assertTrue(entry["group"].endswith("-8"))
         self.assertEqual(len({(entry["platform"], entry["component"], entry["suite"]) for entry in tests["include"]}), len(tests["include"]))
@@ -104,14 +117,13 @@ class NativePlanTests(unittest.TestCase):
             builds, tests = jobs.matrices(modules, native_platform)
             timing_count = 0 if native_platform == "windows-x64" else len(jobs.TIMING_PACKAGES)
             self.assertEqual(len(builds["include"]), len(jobs.COMPONENTS) - len(jobs.TIMING_PACKAGES) + timing_count)
-            self.assertEqual(len(tests["include"]), len(modules) + 5 + timing_count + len(jobs.CONSUMER_SUITES))
-            with self.subTest(platform=native_platform), self.assertRaisesRegex(ValueError, "matrix limit"):
-                jobs.matrices([f"Module{number}Tests" for number in range(256)], native_platform)
+            self.assertEqual(len(tests["include"]), 4 + 5 + timing_count + 1)
+            larger = jobs.matrices([f"Module{number}Tests" for number in range(256)], native_platform)
+            self.assertEqual(len(larger[1]["include"]), len(tests["include"]))
 
     def test_matrix_rejects_duplicate_empty_invalid_or_oversized_partitions(self):
         """Invalid discovery must fail before GitHub silently drops or truncates jobs."""
-        for modules in ([], ["CoreTests", "CoreTests"], ["CoreTests|OtherTests"],
-                        [f"Module{number}Tests" for number in range(90)]):
+        for modules in ([], ["CoreTests", "CoreTests"], ["CoreTests|OtherTests"]):
             with self.subTest(modules=modules[:2]), self.assertRaises(ValueError):
                 jobs.matrices(modules)
 
@@ -225,7 +237,9 @@ class NativePlanTests(unittest.TestCase):
 
     def test_job_limit_obeys_visible_cpu_affinity(self):
         """Large host CPU counts cannot override a constrained execution allocation."""
-        with patch.object(jobs.os, "cpu_count", return_value=64), patch.object(jobs.os, "sched_getaffinity", return_value={1, 2}, create=True):
+        with (patch.object(jobs.os, "cpu_count", return_value=64),
+              patch.object(jobs.os, "sched_getaffinity", return_value={1, 2}, create=True),
+              patch.object(jobs.native_resources, "observed_memory", return_value={"availableMemoryBytes": 16 * 1024**3, "memorySources": ["fixture"]})):
             self.assertEqual(jobs.bounded_jobs(64), 2)
             self.assertEqual(jobs.bounded_jobs(1), 1)
         for requested in (0, -1, True):
@@ -653,6 +667,7 @@ class NativeArtifactTests(unittest.TestCase):
         deadlines = []
 
         def compiler(command, repository, log, *, stdout_log=None, deadline=None):
+            emit_events(command)
             """Model split diagnostics while production discovery, planning and transport remain real."""
             calls.append(command.arguments)
             deadlines.append((command.name, deadline))
@@ -688,10 +703,10 @@ class NativeArtifactTests(unittest.TestCase):
                              "CoreTests.Suite/test()\n")
         self.assertEqual(sum(arguments[1] == "build" for arguments in calls), 1)
         self.assertTrue(all("--skip-build" in arguments for arguments in calls if arguments[1] == "test"))
-        test_deadlines = [deadline for name, deadline in deadlines if name in ("verify-discovery", "tests")]
+        test_deadlines = [deadline for name, deadline in deadlines if name in ("verify-discovery-0", "CoreTests-tests")]
         self.assertEqual(len(test_deadlines), 2)
         self.assertEqual(test_deadlines[0], test_deadlines[1])
-        self.assertEqual(report["aggregateSeconds"], 360)
+        self.assertEqual(report["aggregateSeconds"], 480)
         self.assertEqual(report["compatibility"]["identity"], self.current)
         self.assertEqual(report["consumer"]["execution"], self.execution)
         self.assertEqual(report["consumer"]["selectedProducer"], metadata["producer"]["execution"])
@@ -713,6 +728,7 @@ class NativeArtifactTests(unittest.TestCase):
         cases.append(("compiler-argv", self.current, changed_profile))
 
         def executor(command, repository, log, *, stdout_log=None, deadline=None):
+            emit_events(command)
             log.write_text("passed\n")
             if stdout_log is not None:
                 stdout_log.write_text("CoreTests.Suite/test()\n")
@@ -745,6 +761,7 @@ class NativeArtifactTests(unittest.TestCase):
         calls = []
 
         def executor(command, repository, log, *, stdout_log=None, deadline=None):
+            emit_events(command)
             calls.append(command.arguments)
             self.assertEqual(command.arguments[:2], ("swift", "test"))
             self.assertIn("--skip-build", command.arguments)
@@ -875,6 +892,7 @@ class NativeArtifactTests(unittest.TestCase):
         generated = self.repository / ".build/out/symbolgraph/Library.symbols.json"
 
         def compiler(command, repository, log, *, stdout_log=None, deadline=None):
+            emit_events(command)
             """Produce build outputs and documentation inputs at their actual archive locations."""
             calls.append(command.name)
             deadlines[command.name] = deadline
@@ -961,6 +979,7 @@ class NativeArtifactTests(unittest.TestCase):
     def test_compilation_rejects_required_runtime_type_drift_before_sealing(self):
         """Python's bool/int/float equality cannot conceal changed required facts at the producer boundary."""
         def compiler(command, repository, log, *, stdout_log=None, deadline=None):
+            emit_events(command)
             log.write_text("passed\n")
             if stdout_log is not None:
                 stdout_log.write_text("CoreTests.Suite/test()\n")
@@ -979,6 +998,7 @@ class NativeArtifactTests(unittest.TestCase):
     def test_empty_inventory_failure_preserves_failed_component_report(self):
         """A passing discovery process with no leaves fails the entire component and emits no archive."""
         def compiler(command, repository, log, *, stdout_log=None, deadline=None):
+            emit_events(command)
             log.write_text("passed but no test leaves\n")
             if stdout_log is not None:
                 stdout_log.write_text("")

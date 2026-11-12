@@ -97,6 +97,12 @@ jobs:
       group: ${{ inputs.runner-group }}
     timeout-minutes: 25
     outputs:
+      build-concurrency: ${{ steps.plan.outputs.build-concurrency }}
+      runtime-concurrency: ${{ steps.plan.outputs.runtime-concurrency }}
+      core-builds: ${{ steps.plan.outputs.core-builds }}
+      root-tests: ${{ steps.plan.outputs.root-tests }}
+      has-core-builds: ${{ steps.plan.outputs.has-core-builds }}
+      has-root-tests: ${{ steps.plan.outputs.has-root-tests }}
       builds: ${{ steps.plan.outputs.builds }}
       tests: ${{ steps.plan.outputs.tests }}
       all-builds: ${{ steps.plan.outputs.all-builds }}
@@ -235,11 +241,19 @@ jobs:
             .build/timing-smoke/load
           retention-days: 14
           receipt: ${{ runner.temp }}/canary-transfer.json
+      - name: Retain canary executed leaf coverage
+        if: always()
+        uses: ./.github/actions/upload-evidence
+        with:
+          name: test-coverage-${{ inputs.platform }}-load-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          paths: .build/canary-ci/group-coverage.json
+          retention-days: 14
+          receipt: ${{ runner.temp }}/canary-coverage-transfer.json
 
-  build-remaining:
+  build-core:
     name: ${{ matrix.component && format('Builds / {0} / {1}', matrix.platform, matrix.component) || 'No remaining builds' }}
     needs: [plan, canary]
-    if: needs.plan.outputs.has-builds == 'true'
+    if: needs.plan.outputs.has-core-builds == 'true'
     runs-on:
       group: ${{ matrix.group }}
     timeout-minutes: 150
@@ -248,7 +262,56 @@ jobs:
         shell: ${{ matrix.shell }}
     strategy:
       fail-fast: false
-      max-parallel: 2
+      max-parallel: ${{ fromJSON(needs.plan.outputs.build-concurrency) }}
+      matrix: ${{ fromJSON(needs.plan.outputs.core-builds) }}
+    steps:
+      - name: Enable Windows checkout long paths
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: git config --system core.longpaths true
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-native
+      - name: Compile selected products and tests without running suites
+        run: >-
+          python Tools/ci/native_jobs.py compile --component ${{ matrix.component }}
+          --platform ${{ matrix.platform }} --jobs ${{ matrix.jobs }}
+          --output .build/build-ci/${{ matrix.platform }}-${{ matrix.component }}
+          --archive "${{ runner.temp }}/compiled/${{ matrix.platform }}-${{ matrix.component }}.tar.gz"
+      - name: Verify generated source and dependency pins remain unchanged
+        run: git diff --exit-code
+      - name: Share compiled products with independent test jobs
+        uses: ./.github/actions/upload-evidence
+        with:
+          name: compiled-${{ matrix.platform }}-${{ matrix.component }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          paths: ${{ runner.temp }}/compiled/${{ matrix.platform }}-${{ matrix.component }}.tar.gz
+          retention-days: 2
+          receipt: ${{ runner.temp }}/compiled-transfer.json
+          producer-metadata: .build/build-ci/${{ matrix.platform }}-${{ matrix.component }}/compilation.json
+          producer-receipt-name: compiled-receipt-${{ matrix.platform }}-${{ matrix.component }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+      - name: Retain build diagnostics
+        if: always()
+        uses: ./.github/actions/upload-evidence
+        with:
+          name: build-evidence-${{ matrix.platform }}-${{ matrix.component }}-${{ github.run_id }}-${{ github.run_attempt }}
+          paths: .build/build-ci/${{ matrix.platform }}-${{ matrix.component }}
+          retention-days: 14
+          receipt: ${{ runner.temp }}/transfer-${{ github.job }}-${{ strategy.job-index }}.json
+
+  build-remaining:
+    name: ${{ matrix.component && format('Builds / {0} / {1}', matrix.platform, matrix.component) || 'No remaining builds' }}
+    needs: [plan, canary, build-core]
+    if: always() && needs.canary.result == 'success' && (needs.build-core.result == 'success' || needs.build-core.result == 'skipped') && needs.plan.outputs.has-builds == 'true'
+    runs-on:
+      group: ${{ matrix.group }}
+    timeout-minutes: 150
+    defaults:
+      run:
+        shell: ${{ matrix.shell }}
+    strategy:
+      fail-fast: false
+      max-parallel: ${{ fromJSON(needs.plan.outputs.build-concurrency) }}
       matrix: ${{ fromJSON(needs.plan.outputs.builds) }}
     steps:
       - name: Enable Windows checkout long paths
@@ -287,8 +350,8 @@ jobs:
 
   resolve:
     name: Resolve immutable producers
-    needs: [plan, build, build-remaining, canary]
-    if: needs.plan.outputs.has-builds == 'true'
+    needs: [plan, build, build-core, build-remaining, canary]
+    if: always() && needs.canary.result == 'success' && (needs.build-core.result == 'success' || needs.build-core.result == 'skipped') && (needs.build-remaining.result == 'success' || needs.build-remaining.result == 'skipped') && (needs.plan.outputs.has-core-builds == 'true' || needs.plan.outputs.has-builds == 'true')
     runs-on:
       group: ${{ inputs.runner-group }}
     timeout-minutes: 15
@@ -312,20 +375,20 @@ jobs:
                           '--components-json', os.environ['EXPECTED_BUILDS'],
                           '--output', '.build/resolved-producers.json'], check=True)
 
-  tests:
+  tests-root:
     name: ${{ matrix.suite && format('Tests / {0}', matrix.suite) || 'No remaining suites' }}
-    needs: [plan, canary, build-remaining, resolve]
-    if: needs.plan.outputs.has-tests == 'true'
+    needs: [plan, canary, build-core]
+    if: needs.plan.outputs.has-root-tests == 'true'
     runs-on:
       group: ${{ matrix.group }}
-    timeout-minutes: 75
+    timeout-minutes: 105
     defaults:
       run:
         shell: ${{ matrix.shell }}
     strategy:
       fail-fast: false
-      max-parallel: 2
-      matrix: ${{ fromJSON(needs.plan.outputs.tests) }}
+      max-parallel: ${{ fromJSON(needs.plan.outputs.runtime-concurrency) }}
+      matrix: ${{ fromJSON(needs.plan.outputs.root-tests) }}
     steps:
       - name: Enable Windows checkout long paths
         if: runner.os == 'Windows'
@@ -340,10 +403,12 @@ jobs:
           platform: ${{ matrix.platform }}
           components-json: '["${{ matrix.component }}"]'
           destination: ${{ runner.temp }}/compiled
-      - name: Run only the selected suite without rebuilding
+      - name: Run selected complete suites without rebuilding
+        env:
+          NATIVE_SUITES: ${{ toJSON(matrix.suites) }}
         run: >-
           python Tools/ci/native_jobs.py test --component ${{ matrix.component }}
-          --suite ${{ matrix.suite }} --platform ${{ matrix.platform }} --jobs ${{ matrix.jobs }}
+          --suite ${{ matrix.suite }} --suites-json "$NATIVE_SUITES" --platform ${{ matrix.platform }} --jobs ${{ matrix.jobs }}
           --archive "${{ runner.temp }}/compiled/${{ matrix.platform }}-${{ matrix.component }}.tar.gz"
           --selection .build/artifact-index.json
           --output .build/test-ci/${{ matrix.platform }}-${{ matrix.suite }}
@@ -360,14 +425,83 @@ jobs:
             .build/timing-smoke/${{ matrix.component }}
           retention-days: 14
           receipt: ${{ runner.temp }}/transfer-${{ github.job }}-${{ strategy.job-index }}.json
+      - name: Retain exact executed leaf coverage
+        if: always()
+        uses: ./.github/actions/upload-evidence
+        with:
+          name: test-coverage-${{ matrix.platform }}-${{ matrix.suite }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          paths: .build/test-ci/${{ matrix.platform }}-${{ matrix.suite }}/group-coverage.json
+          retention-days: 14
+          receipt: ${{ runner.temp }}/test-coverage-transfer.json
+
+
+  tests:
+    name: ${{ matrix.suite && format('Tests / {0}', matrix.suite) || 'No remaining suites' }}
+    needs: [plan, canary, build-core, build-remaining, tests-root]
+    if: always() && needs.canary.result == 'success' && (needs.build-core.result == 'success' || needs.build-core.result == 'skipped') && (needs.build-remaining.result == 'success' || needs.build-remaining.result == 'skipped') && (needs.tests-root.result == 'success' || needs.tests-root.result == 'skipped') && needs.plan.outputs.has-tests == 'true'
+    runs-on:
+      group: ${{ matrix.group }}
+    timeout-minutes: 105
+    defaults:
+      run:
+        shell: ${{ matrix.shell }}
+    strategy:
+      fail-fast: false
+      max-parallel: ${{ fromJSON(needs.plan.outputs.runtime-concurrency) }}
+      matrix: ${{ fromJSON(needs.plan.outputs.tests) }}
+    steps:
+      - name: Enable Windows checkout long paths
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: git config --system core.longpaths true
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-native
+      - uses: ./.github/actions/consume-native
+        with:
+          platform: ${{ matrix.platform }}
+          components-json: '["${{ matrix.component }}"]'
+          destination: ${{ runner.temp }}/compiled
+      - name: Run selected complete suites without rebuilding
+        env:
+          NATIVE_SUITES: ${{ toJSON(matrix.suites) }}
+        run: >-
+          python Tools/ci/native_jobs.py test --component ${{ matrix.component }}
+          --suite ${{ matrix.suite }} --suites-json "$NATIVE_SUITES" --platform ${{ matrix.platform }} --jobs ${{ matrix.jobs }}
+          --archive "${{ runner.temp }}/compiled/${{ matrix.platform }}-${{ matrix.component }}.tar.gz"
+          --selection .build/artifact-index.json
+          --output .build/test-ci/${{ matrix.platform }}-${{ matrix.suite }}
+      - name: Verify generated source and dependency pins remain unchanged
+        run: git diff --exit-code
+      - name: Retain selected suite evidence
+        if: always()
+        uses: ./.github/actions/upload-evidence
+        with:
+          name: test-evidence-${{ matrix.platform }}-${{ matrix.suite }}-${{ github.run_id }}-${{ github.run_attempt }}
+          paths: |
+            .build/test-ci/${{ matrix.platform }}-${{ matrix.suite }}
+            .build/dsl-measurements/runtime-smoke.json
+            .build/timing-smoke/${{ matrix.component }}
+          retention-days: 14
+          receipt: ${{ runner.temp }}/transfer-${{ github.job }}-${{ strategy.job-index }}.json
+      - name: Retain exact executed leaf coverage
+        if: always()
+        uses: ./.github/actions/upload-evidence
+        with:
+          name: test-coverage-${{ matrix.platform }}-${{ matrix.suite }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          paths: .build/test-ci/${{ matrix.platform }}-${{ matrix.suite }}/group-coverage.json
+          retention-days: 14
+          receipt: ${{ runner.temp }}/test-coverage-transfer.json
+
 
   audit:
     name: Documentation, inventory, generation and release audits
-    needs: [canary, build-remaining, resolve]
+    needs: [canary, build-core]
     if: inputs.mode == 'full'
     runs-on:
       group: ${{ inputs.runner-group }}
-    timeout-minutes: 45
+    timeout-minutes: 60
     defaults:
       run:
         shell: ${{ inputs.shell }}
@@ -403,7 +537,7 @@ jobs:
 
   fixtures:
     name: Compiler fixtures / ${{ matrix.suite }}
-    needs: [canary, build-remaining, resolve]
+    needs: [plan, canary, build-core, build-remaining]
     if: inputs.mode == 'full'
     # These suites compile positive and intentionally invalid consumers.
     # Keep their compiler work on the large pools rather than the runtime pool.
@@ -415,6 +549,7 @@ jobs:
         shell: ${{ inputs.shell }}
     strategy:
       fail-fast: false
+      max-parallel: ${{ fromJSON(needs.plan.outputs.build-concurrency) }}
       matrix:
         suite: [dsl_compile_fixtures, dsl_extension_fixtures]
     steps:
@@ -427,16 +562,29 @@ jobs:
           persist-credentials: false
       - uses: ./.github/actions/setup-native
       - name: Require positive builds and exact negative compiler diagnostics
-        run: >-
-          python Tools/ci/${{ matrix.suite }}.py --repository .
-          --jobs ${{ inputs.build-jobs }} --timeout 1200
+        shell: python
+        env:
+          FIXTURE_SUITE: ${{ matrix.suite }}
+          COMPILER_JOBS: ${{ inputs.build-jobs }}
+        run: |
+          import json, os, subprocess, sys
+          from pathlib import Path
+          sys.path.insert(0, 'Tools/ci')
+          import native_resources, scheduling_policy
+          admission = native_resources.compiler_admission(int(os.environ['COMPILER_JOBS']),
+              policy_cap=scheduling_policy.load_policy()['concurrency']['compilerJobsPerProcess'])
+          Path('.build').mkdir(exist_ok=True)
+          Path('.build/fixture-resources.json').write_text(json.dumps(admission, indent=2) + '\n')
+          print(json.dumps({'compilerAdmission': admission}, sort_keys=True), flush=True)
+          subprocess.run([sys.executable, 'Tools/ci/' + os.environ['FIXTURE_SUITE'] + '.py',
+                          '--repository', '.', '--jobs', str(admission['jobs']), '--timeout', '1200'], check=True)
       - name: Verify generated source and dependency pins remain unchanged
         run: git diff --exit-code
 
   public-api:
     name: Public API and DocC / macOS ARM
     if: inputs.mode == 'full' && inputs.platform == 'macos-arm64'
-    needs: [canary, build-remaining, resolve]
+    needs: [canary, build-core]
     runs-on:
       group: MacOS-26-5
     timeout-minutes: 165
@@ -513,7 +661,7 @@ jobs:
   apple-compilation:
     name: Build Apple minima / device and simulator modules
     if: inputs.mode == 'full' && inputs.platform == 'macos-arm64'
-    needs: canary
+    needs: [canary, build-core, build-remaining, fixtures]
     runs-on:
       group: MacOS-26-5
     timeout-minutes: 45
@@ -544,7 +692,7 @@ jobs:
   coverage:
     name: Verify platform coverage before source export
     if: always()
-    needs: [platform, plan, build, canary, build-remaining, resolve, tests, audit, fixtures, public-api, apple-compilation]
+    needs: [platform, plan, build, canary, build-core, build-remaining, resolve, tests-root, tests, audit, fixtures, public-api, apple-compilation]
     runs-on:
       group: ${{ inputs.runner-group }}
     timeout-minutes: 25
@@ -617,7 +765,7 @@ jobs:
   complete:
     name: Platform validation passed
     if: always()
-    needs: [platform, plan, build, canary, build-remaining, resolve, tests, audit, fixtures, public-api, apple-compilation, coverage, package]
+    needs: [platform, plan, build, canary, build-core, build-remaining, resolve, tests-root, tests, audit, fixtures, public-api, apple-compilation, coverage, package]
     runs-on:
       group: ${{ inputs.runner-group }}
     timeout-minutes: 35

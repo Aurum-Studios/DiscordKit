@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "name": "policy-source-inventory",
+  "stage": "preflight-source",
+  "operation": "localHelperCheck",
+  "arguments": [
+    "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+    "Tools/ci/scheduling_policy.py",
+    "validate",
+    "--policy",
+    "/Users/carsonrau/Developer/DiscordKit-ci-phase7/Tools/ci/scheduling-policy.v1.json",
+    "--repository",
+    "/Users/carsonrau/Developer/DiscordKit-ci-phase7"
+  ],
+  "start": "2026-11-12T15:17:55.365120+00:00",
+  "startMonotonic": 354682.717041041,
+  "deadlineMonotonic": 354982.716557333,
+  "executionLimitSeconds": 300,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "aggregate",
+  "paths": {
+    "output": "/Users/carsonrau/Developer/DiscordKit-ci-phase7/Docs/Tasks/ci-reliability/phase-7/checks/source/00-policy-source-inventory.log",
+    "stdout": null,
+    "diagnostics": "/Users/carsonrau/Developer/DiscordKit-ci-phase7/Docs/Tasks/ci-reliability/phase-7/checks/source/00-policy-source-inventory.diagnostics.jsonl",
+    "receipt": "/Users/carsonrau/Developer/DiscordKit-ci-phase7/Docs/Tasks/ci-reliability/phase-7/checks/source/00-policy-source-inventory.receipt.json"
+  },
+  "identity": {
+    "executionID": "7e1c8f55-2d83-4720-b4e0-ca078bf956f1",
+    "supervisorPID": 23603,
+    "host": "Pokemon-GO-Plus",
+    "system": "Darwin",
+    "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase7"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 23657,
+  "group": 23657,
+  "cleanup": {
+    "status": "group-signalled",
+    "signals": [],
+    "parentReaped": true,
+    "allowanceSeconds": 8.0,
+    "seconds": 0.004,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "verificationMalformedRows": 0,
+    "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "/Users/carsonrau/Developer/DiscordKit-ci-phase7/Docs/Tasks/ci-reliability/phase-7/checks/source/00-policy-source-inventory.log",
+      "retainedBytes": 478,
+      "observedBytes": 478,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T15:17:55.430198+00:00",
+  "endMonotonic": 354682.782142208,
+  "elapsedSeconds": 0.065,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}

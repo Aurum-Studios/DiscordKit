@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "name": "documentation-example-snapshots",
+  "stage": "preflight-source",
+  "operation": "localHelperCheck",
+  "arguments": [
+    "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+    "Tools/ci/documentation_examples.py",
+    "--repository",
+    "/Users/carsonrau/Developer/DiscordKit-ci-phase7"
+  ],
+  "start": "2026-11-12T15:17:55.431142+00:00",
+  "startMonotonic": 354682.783069791,
+  "deadlineMonotonic": 354982.716557333,
+  "executionLimitSeconds": 300,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "aggregate",
+  "paths": {
+    "output": "/Users/carsonrau/Developer/DiscordKit-ci-phase7/Docs/Tasks/ci-reliability/phase-7/checks/source/01-documentation-example-snapshots.log",
+    "stdout": null,
+    "diagnostics": "/Users/carsonrau/Developer/DiscordKit-ci-phase7/Docs/Tasks/ci-reliability/phase-7/checks/source/01-documentation-example-snapshots.diagnostics.jsonl",
+    "receipt": "/Users/carsonrau/Developer/DiscordKit-ci-phase7/Docs/Tasks/ci-reliability/phase-7/checks/source/01-documentation-example-snapshots.receipt.json"
+  },
+  "identity": {
+    "executionID": "00e1a115-57de-4396-a037-816ce8236aea",
+    "supervisorPID": 23603,
+    "host": "Pokemon-GO-Plus",
+    "system": "Darwin",
+    "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase7"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 23667,
+  "group": 23667,
+  "cleanup": {
+    "status": "group-signalled",
+    "signals": [],
+    "parentReaped": true,
+    "allowanceSeconds": 8.0,
+    "seconds": 0.004,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "verificationMalformedRows": 0,
+    "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "/Users/carsonrau/Developer/DiscordKit-ci-phase7/Docs/Tasks/ci-reliability/phase-7/checks/source/01-documentation-example-snapshots.log",
+      "retainedBytes": 193,
+      "observedBytes": 193,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T15:17:55.488230+00:00",
+  "endMonotonic": 354682.840172208,
+  "elapsedSeconds": 0.057,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}

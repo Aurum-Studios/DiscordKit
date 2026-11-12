@@ -42,6 +42,9 @@ def authorize(mode):
                          'a separately reviewed bounded bootstrap probe is required')
 
 
+CORE_COMPONENTS = frozenset(('root', 'macros', 'extensions', 'tooling'))
+
+
 def platform_plan(mode, platform, *, component=None, suite=None, repository=ROOT,
                   commit, run_id, run_attempt):
     """Partition the load canary once; all other jobs follow only its own platform."""
@@ -54,27 +57,36 @@ def platform_plan(mode, platform, *, component=None, suite=None, repository=ROOT
     # Every scope explicitly includes the same complete load round trip. Its tests
     # and smokes are canonical once, never replayed in the remaining matrix.
     canary = {**native_jobs.runner_entry(platform, True), 'component': 'load'}
-    remaining_builds = [row for row in builds if row['component'] != 'load']
+    core_builds = [row for row in builds if row['component'] in CORE_COMPONENTS]
+    remaining_builds = [row for row in builds if row['component'] not in CORE_COMPONENTS | {'load'}]
     remaining_tests = [row for row in tests if row['component'] != 'load']
-    all_builds = [canary, *remaining_builds]
+    all_builds = [canary, *core_builds, *remaining_builds]
+    root_tests = [row for row in remaining_tests if row['component'] == 'root']
+    other_tests = [row for row in remaining_tests if row['component'] != 'root']
     prefix = PREFIXES[platform] + ' / '
     entries = []
-    def entry(identifier, name, step=None):
+    def entry(identifier, name, step=None, test=None):
         row = {'id': identifier, 'jobName': prefix + name}
         if step:
             row['stepName'] = step
+        if test is not None:
+            row['testCoverage'] = {'platform': platform, 'component': test['component'],
+                                   'suite': test['suite'], 'suites': test['suites'],
+                                   'jobID': ('canary' if test['component'] == 'load' else
+                                             'tests-root' if test['component'] == 'root' else 'tests')}
         entries.append(row)
     entry('probe', 'Platform check', 'Check native host, compiler, linker and runtime')
     entry('plan', 'Plan platform builds and suites', 'Discover owned test targets and assign runner sizes')
     for row in all_builds:
         entry('build/' + row['component'], f"Builds / {platform} / {row['component']}",
               'Share compiled products with independent test jobs')
-    entry('canary/load', 'Canary / load tests and smokes', 'Run complete load suite and existing smokes')
-    if remaining_builds:
+    entry('canary/load', 'Canary / load tests and smokes', 'Run complete load suite and existing smokes',
+          {'component': 'load', 'suite': 'load', 'suites': ['load']})
+    if core_builds or remaining_builds:
         entry('resolve', 'Resolve immutable producers', 'Reconcile every expected component without matrix outputs')
     for row in remaining_tests:
         entry('suite/' + row['component'] + '/' + row['suite'], 'Tests / ' + row['suite'],
-              'Run only the selected suite without rebuilding')
+              'Run selected complete suites without rebuilding', row)
     if mode == 'full':
         entry('audit', 'Documentation, inventory, generation and release audits', 'Run audits using the compiled tooling executable')
         for fixture in ('dsl_compile_fixtures', 'dsl_extension_fixtures'):
@@ -88,9 +100,14 @@ def platform_plan(mode, platform, *, component=None, suite=None, repository=ROOT
             entry('apple', 'Build Apple minima / device and simulator modules', 'Emit selected modules with installed Xcode SDKs')
     manifest = {'schemaVersion': 1, 'mode': mode, 'platform': platform, 'commit': commit,
                 'runID': str(run_id), 'runAttempt': str(run_attempt), 'entries': entries}
-    return {'builds': {'include': remaining_builds}, 'tests': {'include': remaining_tests},
+    limits = scheduling_policy.load_policy()['concurrency']
+    return {'build-concurrency': limits['buildsPerPlatform'],
+            'runtime-concurrency': limits['runtimeGroupsPerPlatform'],
+            'core-builds': {'include': core_builds}, 'builds': {'include': remaining_builds},
+            'root-tests': {'include': root_tests}, 'tests': {'include': other_tests},
             'all-builds': {'include': all_builds}, 'coverage': manifest,
-            'has-builds': bool(remaining_builds), 'has-tests': bool(remaining_tests)}
+            'has-core-builds': bool(core_builds), 'has-builds': bool(remaining_builds),
+            'has-root-tests': bool(root_tests), 'has-tests': bool(other_tests)}
 
 
 def shared_manifest(*, commit, run_id, run_attempt):

@@ -95,7 +95,7 @@ class SchedulingPolicyTests(unittest.TestCase):
             scope = scheduling.plan_scope(self.policy, "full")
         self.assertEqual([call.args[1] for call in matrices.call_args_list], ["linux-x64", "macos-arm64"])
         self.assertEqual(len(scope["nativeBuilds"]), 24)
-        self.assertEqual(len(scope["nativeSuites"]), 101)
+        self.assertEqual(len(scope["nativeSuites"]), 28)
         self.assertEqual({entry["platform"] for entry in scope["nativeBuilds"] + scope["nativeSuites"]},
                          set(self.policy["platforms"]))
         self.assertEqual(len({entry["id"] for entry in scope["nativeBuilds"]}), len(scope["nativeBuilds"]))

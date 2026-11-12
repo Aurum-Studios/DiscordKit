@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "policyID": "ci-reliability-phase-0-v1",
-  "status": "Phase 1 native process deadlines active; scheduling and paid admission remain planning-only",
+  "status": "Phase 7 grouped execution, complete leaf receipts and resource bounds active locally; paid admission remains contained",
   "modes": {
     "preflight": {
       "certifying": false
@@ -243,12 +243,12 @@
     "localNativeCompilations": 0
   },
   "limits": [
-    "Native helpers consume operation and aggregate process deadlines in Phase 1. Scheduling, concurrency, retention and paid admission changes remain preparation for later phases.",
+    "Native process limits, suite grouping and policy concurrency caps are implemented through Phase 7. Hosted capacity and paid admission remain unqualified.",
     "The native scope API delegates builds and suites to the existing planner; it does not inventory shared/native gates or documentation jobs for a complete workflow cost plan.",
     "Declared root target inventory is source anchored, not evaluated SwiftPM inventory or discovered/executed test-leaf coverage.",
     "Published runner list rates do not verify account pricing, configured runner mappings, storage charges, transfer charges or an invoice.",
     "No paid execution, automatic spend admission, workflow expansion, retry, push or dispatch is authorized.",
-    "Component compilation limits are elapsed aggregate ceilings, including symbol-graph compilation. Consumers are capped at 5400 seconds so inventory, packaging/identity and paid-time reserves fit the unchanged 120-minute workflow build deadline. Cold-build capacity remains unqualified.",
-    "Upload reserves are placeholders, not a validated transport budget: later enclosing job plans must include all applicable 420-second transport totals, bounded attempts, cleanup and other operations."
+    "Component compilation limits are elapsed aggregate ceilings, including symbol-graph compilation. Consumers are capped at 5400 seconds so inventory, packaging/identity and paid-time reserves fit the 150-minute workflow build deadline. Cold-build capacity remains unqualified.",
+    "Grouped consumers budget setup, separate 600-second restore, diagnostics/cleanup and four bounded 420-second transfers inside 105-minute job envelopes. Audit has three transfers and a 60-minute envelope; hosted capacity remains unqualified."
   ]
 }

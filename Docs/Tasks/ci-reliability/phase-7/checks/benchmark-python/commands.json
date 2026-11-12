@@ -1,0 +1,278 @@
+{
+  "aggregateSeconds": 300,
+  "certifying": false,
+  "commands": [
+    {
+      "arguments": [
+        "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "Tools/DiscordDSLBenchmarks/scripts",
+        "-p",
+        "test_*.py"
+      ],
+      "diagnostics": "00-benchmarks-python.diagnostics.jsonl",
+      "execution": {
+        "arguments": [
+          "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "Tools/DiscordDSLBenchmarks/scripts",
+          "-p",
+          "test_*.py"
+        ],
+        "cleanup": {
+          "allowanceSeconds": 8.0,
+          "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed",
+          "groupState": "gone",
+          "parentReaped": true,
+          "remainingProcesses": [],
+          "seconds": 0.004,
+          "signals": [],
+          "status": "group-signalled",
+          "verification": "available",
+          "verificationMalformedRows": 0,
+          "verificationTruncated": false
+        },
+        "cleanupAllowanceSeconds": 8.0,
+        "deadlineMonotonic": 354982.7169555,
+        "deadlineSource": "aggregate",
+        "diagnosticsTruncated": false,
+        "elapsedSeconds": 0.398,
+        "end": "2026-11-12T15:17:55.763260+00:00",
+        "endMonotonic": 354683.115199458,
+        "executionLimitSeconds": 300,
+        "exitCode": 0,
+        "group": 23658,
+        "identity": {
+          "executionID": "50c99416-3127-48b9-84a6-a3beae447a9b",
+          "host": "Pokemon-GO-Plus",
+          "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase7",
+          "supervisorPID": 23601,
+          "system": "Darwin"
+        },
+        "lastObservedTest": null,
+        "name": "benchmarks-python",
+        "operation": "localHelperCheck",
+        "outputs": [
+          {
+            "observedBytes": 390,
+            "path": "/Users/carsonrau/Developer/DiscordKit-ci-phase7/Docs/Tasks/ci-reliability/phase-7/checks/benchmark-python/00-benchmarks-python.log",
+            "retainedBytes": 390,
+            "truncated": false
+          }
+        ],
+        "paths": {
+          "diagnostics": "/Users/carsonrau/Developer/DiscordKit-ci-phase7/Docs/Tasks/ci-reliability/phase-7/checks/benchmark-python/00-benchmarks-python.diagnostics.jsonl",
+          "output": "/Users/carsonrau/Developer/DiscordKit-ci-phase7/Docs/Tasks/ci-reliability/phase-7/checks/benchmark-python/00-benchmarks-python.log",
+          "receipt": "/Users/carsonrau/Developer/DiscordKit-ci-phase7/Docs/Tasks/ci-reliability/phase-7/checks/benchmark-python/00-benchmarks-python.receipt.json",
+          "stdout": null
+        },
+        "pid": 23658,
+        "readerThreads": 0,
+        "schemaVersion": 1,
+        "signal": null,
+        "stage": "preflight-benchmark-python",
+        "start": "2026-11-12T15:17:55.365614+00:00",
+        "startMonotonic": 354682.717533708,
+        "status": "passed",
+        "timeoutCategory": null
+      },
+      "executionReceipt": "00-benchmarks-python.receipt.json",
+      "log": "00-benchmarks-python.log",
+      "name": "benchmarks-python",
+      "operation": "localHelperCheck",
+      "seconds": 0.398,
+      "status": "passed",
+      "timeoutSeconds": 300
+    },
+    {
+      "arguments": [
+        "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "Tools/DiscordBenchmarkSupport/scripts",
+        "-p",
+        "test_*.py"
+      ],
+      "diagnostics": "01-timing-support-python.diagnostics.jsonl",
+      "execution": {
+        "arguments": [
+          "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "Tools/DiscordBenchmarkSupport/scripts",
+          "-p",
+          "test_*.py"
+        ],
+        "cleanup": {
+          "allowanceSeconds": 8.0,
+          "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed",
+          "groupState": "gone",
+          "parentReaped": true,
+          "remainingProcesses": [],
+          "seconds": 0.004,
+          "signals": [],
+          "status": "group-signalled",
+          "verification": "available",
+          "verificationMalformedRows": 0,
+          "verificationTruncated": false
+        },
+        "cleanupAllowanceSeconds": 8.0,
+        "deadlineMonotonic": 354982.7169555,
+        "deadlineSource": "aggregate",
+        "diagnosticsTruncated": false,
+        "elapsedSeconds": 31.919,
+        "end": "2026-11-12T15:18:27.683141+00:00",
+        "endMonotonic": 354715.034844416,
+        "executionLimitSeconds": 300,
+        "exitCode": 0,
+        "group": 23730,
+        "identity": {
+          "executionID": "594cbbc2-4cda-4985-800c-1d566a9ed7e3",
+          "host": "Pokemon-GO-Plus",
+          "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase7",
+          "supervisorPID": 23601,
+          "system": "Darwin"
+        },
+        "lastObservedTest": null,
+        "name": "timing-support-python",
+        "operation": "localHelperCheck",
+        "outputs": [
+          {
+            "observedBytes": 359,
+            "path": "/Users/carsonrau/Developer/DiscordKit-ci-phase7/Docs/Tasks/ci-reliability/phase-7/checks/benchmark-python/01-timing-support-python.log",
+            "retainedBytes": 359,
+            "truncated": false
+          }
+        ],
+        "paths": {
+          "diagnostics": "/Users/carsonrau/Developer/DiscordKit-ci-phase7/Docs/Tasks/ci-reliability/phase-7/checks/benchmark-python/01-timing-support-python.diagnostics.jsonl",
+          "output": "/Users/carsonrau/Developer/DiscordKit-ci-phase7/Docs/Tasks/ci-reliability/phase-7/checks/benchmark-python/01-timing-support-python.log",
+          "receipt": "/Users/carsonrau/Developer/DiscordKit-ci-phase7/Docs/Tasks/ci-reliability/phase-7/checks/benchmark-python/01-timing-support-python.receipt.json",
+          "stdout": null
+        },
+        "pid": 23730,
+        "readerThreads": 0,
+        "schemaVersion": 1,
+        "signal": null,
+        "stage": "preflight-benchmark-python",
+        "start": "2026-11-12T15:17:55.764248+00:00",
+        "startMonotonic": 354683.116173583,
+        "status": "passed",
+        "timeoutCategory": null
+      },
+      "executionReceipt": "01-timing-support-python.receipt.json",
+      "log": "01-timing-support-python.log",
+      "name": "timing-support-python",
+      "operation": "localHelperCheck",
+      "seconds": 31.919,
+      "status": "passed",
+      "timeoutSeconds": 300
+    },
+    {
+      "arguments": [
+        "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "Tools/DiscordFoundationBenchmarks/scripts",
+        "-p",
+        "test_*.py"
+      ],
+      "diagnostics": "02-foundation-timing-python.diagnostics.jsonl",
+      "execution": {
+        "arguments": [
+          "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "Tools/DiscordFoundationBenchmarks/scripts",
+          "-p",
+          "test_*.py"
+        ],
+        "cleanup": {
+          "allowanceSeconds": 8.0,
+          "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed",
+          "groupState": "gone",
+          "parentReaped": true,
+          "remainingProcesses": [],
+          "seconds": 0.004,
+          "signals": [],
+          "status": "group-signalled",
+          "verification": "available",
+          "verificationMalformedRows": 0,
+          "verificationTruncated": false
+        },
+        "cleanupAllowanceSeconds": 8.0,
+        "deadlineMonotonic": 354982.7169555,
+        "deadlineSource": "aggregate",
+        "diagnosticsTruncated": false,
+        "elapsedSeconds": 0.803,
+        "end": "2026-11-12T15:18:28.487592+00:00",
+        "endMonotonic": 354715.8392955,
+        "executionLimitSeconds": 300,
+        "exitCode": 0,
+        "group": 27258,
+        "identity": {
+          "executionID": "d0c55b35-6095-42b3-9931-6d5a2a04d6c2",
+          "host": "Pokemon-GO-Plus",
+          "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase7",
+          "supervisorPID": 23601,
+          "system": "Darwin"
+        },
+        "lastObservedTest": null,
+        "name": "foundation-timing-python",
+        "operation": "localHelperCheck",
+        "outputs": [
+          {
+            "observedBytes": 245,
+            "path": "/Users/carsonrau/Developer/DiscordKit-ci-phase7/Docs/Tasks/ci-reliability/phase-7/checks/benchmark-python/02-foundation-timing-python.log",
+            "retainedBytes": 245,
+            "truncated": false
+          }
+        ],
+        "paths": {
+          "diagnostics": "/Users/carsonrau/Developer/DiscordKit-ci-phase7/Docs/Tasks/ci-reliability/phase-7/checks/benchmark-python/02-foundation-timing-python.diagnostics.jsonl",
+          "output": "/Users/carsonrau/Developer/DiscordKit-ci-phase7/Docs/Tasks/ci-reliability/phase-7/checks/benchmark-python/02-foundation-timing-python.log",
+          "receipt": "/Users/carsonrau/Developer/DiscordKit-ci-phase7/Docs/Tasks/ci-reliability/phase-7/checks/benchmark-python/02-foundation-timing-python.receipt.json",
+          "stdout": null
+        },
+        "pid": 27258,
+        "readerThreads": 0,
+        "schemaVersion": 1,
+        "signal": null,
+        "stage": "preflight-benchmark-python",
+        "start": "2026-11-12T15:18:27.684132+00:00",
+        "startMonotonic": 354715.035819708,
+        "status": "passed",
+        "timeoutCategory": null
+      },
+      "executionReceipt": "02-foundation-timing-python.receipt.json",
+      "log": "02-foundation-timing-python.log",
+      "name": "foundation-timing-python",
+      "operation": "localHelperCheck",
+      "seconds": 0.804,
+      "status": "passed",
+      "timeoutSeconds": 300
+    }
+  ],
+  "deadlineMonotonic": 354982.7169555,
+  "group": "benchmark-python",
+  "operation": "group",
+  "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase7",
+  "schemaVersion": 1,
+  "seconds": 33.124,
+  "stage": "preflight",
+  "status": "passed"
+}
