@@ -48,3 +48,26 @@ full certification and a same-run artifact at the current default-branch revisio
 Local validation and code input hashes are recorded in [recovery-validation.json](recovery-validation.json).
 Hosted native tests, the complete toolchain and publication remain unqualified
 until the new run finishes successfully.
+
+## Follow-up gates before native execution
+
+The repair at `9166fcf4cde8766f341474efe487c69849e9ccda` passed hosted bootstrap
+and artifact retention in 21 seconds, followed by successful maintenance, browser,
+tooling and benchmark helper checks. Full run `43269359753` and push preflight
+`43269343066` then failed before native scheduling on two independent checks:
+
+- Hosted actionlint invokes ShellCheck, which was absent locally. SC2016 flagged
+  literal Markdown backticks inside the release-summary format. The format now
+  escapes those backticks in double quotes and produces identical Markdown.
+  Official ShellCheck 0.11.0 was downloaded to ignored local tooling and verified
+  against its release asset SHA256. All seven workflows pass with it enabled.
+- The usage-report integration test loaded active authorization and inherited
+  GitHub identity, but asserted that admission must be rejected. Local execution
+  had no hosted identity and therefore hid the assumption. The test now supplies
+  explicit dated policies and local/hosted identities, tests rejected and admitted
+  plans, and verifies identical results with unrelated ambient GitHub variables.
+  No admission or usage-report product logic was relaxed.
+
+The next repaired push retains automatic preflight, followed by an explicitly
+dispatched full publishing run under the same recovery request and unchanged
+budget bounds. These preceding attempts started no paid native jobs.

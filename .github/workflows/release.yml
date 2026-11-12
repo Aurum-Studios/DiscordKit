@@ -106,5 +106,5 @@ jobs:
             --version "$RELEASE_VERSION" --commit "$RELEASE_COMMIT"
       - name: Record published release
         run: |
-          printf 'Published **DiscordKit %s** from commit `%s`.\n' \
+          printf "Published **DiscordKit %s** from commit \`%s\`.\n" \
             "$RELEASE_VERSION" "$RELEASE_COMMIT" >> "$GITHUB_STEP_SUMMARY"

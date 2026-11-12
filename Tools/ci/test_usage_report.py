@@ -5,6 +5,9 @@
 
 """Offline usage reconciliation and bounded read-only API fixtures."""
 
+from contextlib import redirect_stdout
+from datetime import date
+import io
 import json
 import os
 from pathlib import Path
@@ -252,15 +255,51 @@ class UsageReportTests(unittest.TestCase):
 
     def test_actual_engine_plan_can_be_reported_offline(self):
         import spend_admission
+        as_of = date(2026, 11, 12)
         source = {"commit": "a" * 40, "sourceSHA256": "b" * 64, "dependencyPinsSHA256": {}}
-        plan = spend_admission.make_plan("preflight", source=source)
-        report = usage_report.reconcile(plan, [])
-        self.assertEqual(report["status"], "incomplete")
-        self.assertEqual(report["planStatus"], "rejected")
-        with tempfile.TemporaryDirectory() as temporary:
-            root = Path(temporary)
-            (root / "plan.json").write_text(json.dumps(plan))
-            self.assertEqual(usage_report.main(["--plan", str(root / "plan.json"), "--output", str(root / "usage.json")]), 0)
+        # Keep the real execution planner, while authorization and execution facts
+        # are explicit fixtures independent of the machine running this test.
+        policy = spend_admission.load_policy()
+        policy["authorization"] = {"enabled": True, "repository": "Aurum-Studios/DiscordKit",
+                                   "maximumRunAttempts": 1}
+        for rate in policy["runnerRates"].values():
+            rate.update(usdPerMinute="0.01", verifiedOn=as_of.isoformat(),
+                        billingMappingVerified=True, mappingAssurance="offline synthetic mapping")
+        for charge in policy["additionalCharges"].values():
+            charge.update(applicability="not-applicable", maximumUnitsPerJobAttempt="0", usdPerUnit="0",
+                          verifiedOn=as_of.isoformat(), evidence="offline synthetic included usage")
+        policy["allowances"].update(workflowUSD="10000", experimentUSD="10000", safetyUSD="0",
+                                    maximumPaidJobs=1000, maximumPaidMinutes=1000000, maximumPaidAttempts=1)
+        local = {key: "local" for key in spend_admission.IDENTITY_FIELDS}
+        local.update(repository=str(Path.cwd()), ref="", headRef="", baseRef="", defaultBranch="")
+        hosted = {"repository": "Aurum-Studios/DiscordKit", "repositoryID": "1",
+                  "workflowRef": "Aurum-Studios/DiscordKit/.github/workflows/ci.yml@refs/heads/main",
+                  "workflowSHA": source["commit"], "event": "workflow_dispatch", "ref": "refs/heads/main",
+                  "headRef": "", "baseRef": "", "runID": "42", "runAttempt": "1", "defaultBranch": "main"}
+        ambient_hosted = {"GITHUB_ACTIONS": "true", "GITHUB_REPOSITORY": "other/Repository",
+                          "GITHUB_REPOSITORY_ID": "999", "GITHUB_RUN_ID": "999", "GITHUB_RUN_ATTEMPT": "3",
+                          "GITHUB_EVENT_NAME": "push", "GITHUB_REF": "refs/heads/other"}
+        snapshots = {}
+        for ambient in ({}, ambient_hosted):
+            for name, identity, expected_status in (("local", local, "rejected"), ("hosted", hosted, "admitted")):
+                with self.subTest(ambient_hosted=bool(ambient), identity=name), \
+                        patch.dict(os.environ, ambient, clear=True):
+                    plan = spend_admission.make_plan("preflight", source=source, identity=identity,
+                                                     policy=policy, as_of=as_of)
+                    report = usage_report.reconcile(plan, [])
+                    self.assertEqual(report["status"], "incomplete")
+                    self.assertEqual(report["planStatus"], expected_status)
+                    self.assertEqual(report["planAdmitted"], expected_status == "admitted")
+                    self.assertEqual(plan["identity"], identity)
+                    if name in snapshots:
+                        self.assertEqual(plan, snapshots[name])
+                    snapshots[name] = plan
+                    with tempfile.TemporaryDirectory() as temporary, redirect_stdout(io.StringIO()):
+                        root = Path(temporary)
+                        (root / "plan.json").write_text(json.dumps(plan))
+                        self.assertEqual(usage_report.main(["--plan", str(root / "plan.json"),
+                                                           "--output", str(root / "usage.json")]), 0)
+                        self.assertEqual(json.loads((root / "usage.json").read_text()), report)
 
 
 class FakeClient:

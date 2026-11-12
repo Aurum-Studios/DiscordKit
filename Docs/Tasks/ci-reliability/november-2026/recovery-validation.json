@@ -79,7 +79,9 @@
     "Tools/ci/spend_admission.py": "08ab27619845b5dada0ee269c8c3b3fccbe9371cf9b651f808e4624bb618c30d",
     "Tools/ci/test_spend_admission.py": "e1a7b6f754f90c478a2ae73dba4830d41466b9bb1a9a4b920c69e062b3d33e5f",
     "Tools/ci/admission.v1.json": "546ac0a9dad914db246b0ec8b211a5176e08deb511d20e2f5141a54355357fd6",
-    ".github/workflows/ci.yml": "825270015a01637eb85cb45ed6bfdc66a43bf5b5174389edc4bf1350dde08257"
+    ".github/workflows/ci.yml": "825270015a01637eb85cb45ed6bfdc66a43bf5b5174389edc4bf1350dde08257",
+    ".github/workflows/release.yml": "56722eee82576d4d439602938e40a9c531a6f8649b749e25531df1ba963be207",
+    "Tools/ci/test_usage_report.py": "0c4e1d5bea5cca33663df55cb8024d5a40738ac2d46e6bfe9ef0950543731fe5"
   },
   "nextRun": {
     "mode": "full",
@@ -101,5 +103,49 @@
       "spendAdmission": 22
     },
     "reviewed": "Exact-ID retries, shared deadlines, no reupload, strict immutable/auth checks, fresh source identity, complete retained plans."
+  },
+  "followup": {
+    "observedAt": "2026-11-12T17:29:47.873372+00:00",
+    "source": "9166fcf4cde8766f341474efe487c69849e9ccda",
+    "fullRun": 43269359753,
+    "preflightRun": 43269343066,
+    "bootstrap": "success: 21 seconds including artifact retention",
+    "failedChecks": [
+      "release.yml ShellCheck SC2016 for literal Markdown backticks",
+      "usage-report integration test inherited active GitHub authorization and assumed rejection"
+    ],
+    "successfulChecks": [
+      "maintenance",
+      "browser",
+      "tooling-python",
+      "benchmark-python"
+    ],
+    "validation": {
+      "ciPythonHostedEnvironment": {
+        "python": "python3",
+        "exitCode": 0,
+        "elapsedSeconds": 18.403,
+        "context": "Simulated full GitHub Actions identity and admission environment; native macOS host",
+        "log": ".build/ci-recovery-2026-11-12/ci-python-hosted-environment.log"
+      },
+      "ciPythonDiscovered": 621,
+      "ciPythonPassed": 615,
+      "ciPythonSkipped": 6,
+      "usageReportFocusedTests": 25,
+      "actionlint": "1.7.12 with explicit ShellCheck 0.11.0: all seven workflow files passed",
+      "shellcheckArtifactVerification": {
+        "officialRelease": "https://github.com/koalaman/shellcheck/releases/tag/v0.11.0",
+        "asset": "https://github.com/koalaman/shellcheck/releases/download/v0.11.0/shellcheck-v0.11.0.darwin.aarch64.tar.xz",
+        "archiveSHA256": "56affdd8de5527894dca6dc3d7e0a99a873b0f004d7aabc30ae407d3f48b0a79",
+        "checksumVerified": true,
+        "binarySHA256": "61c17246d69f012cd458ae82f244c46023dac75d1b69733ca1cc7d28fb270fd7",
+        "installedPath": "/Users/carsonrau/Developer/DiscordKit/.build/tools/shellcheck"
+      },
+      "releaseSummary": "Bash execution preserves exact original Markdown output"
+    },
+    "limitations": [
+      "The hosted environment is simulated on macOS; six Linux-specific tests remain skipped locally.",
+      "Hosted native execution and publication still await the new exact-revision run."
+    ]
   }
 }
