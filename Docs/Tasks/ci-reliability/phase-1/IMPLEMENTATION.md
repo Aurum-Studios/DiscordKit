@@ -150,5 +150,8 @@ boundaries and the enclosing job timeout; a blocked filesystem operation is not
 hard-cancelled by Python. Probe/ptrace availability and cold-build capacity need
 later platform evidence; no hosted or Linux qualification follows from these tests.
 
-The scoped implementation commit and final documentation-only receipt are recorded
-in [STATE.md](../STATE.md) after the actual implementation SHA exists.
+Implementation commit `1bc5de45a6dbeef1ab31bd7f6fbbe85b69771600` contains the
+tested executable inputs and retained receipts. Its seven source/configuration/test
+hashes match [validation.json](validation.json). A documentation-only follow-up
+records that actual SHA and marks Phase 1 complete in [STATE.md](../STATE.md);
+executable inputs and the 53-file evidence manifest remain unchanged.

@@ -168,8 +168,8 @@ remain incomplete.
   `5808ce32d867622ff6952d0f2057768a8a257f14` contains the tested executable inputs,
   retained evidence and initial execution sheet. This documentation-only ledger
   follow-up records that actual commit; the tested input hashes remain unchanged.
-  Phase 0's exit criteria are satisfied. [STATE.md](STATE.md) leaves all later
-  phases not started, and paid jobs/minutes/attempts and allowances remain zero.
+  Phase 0's exit criteria were satisfied. At that checkpoint the ledger left
+  all later phases not started, with paid jobs/minutes/attempts and allowances zero.
 
 
 ## Phase 1 supervision — November 12, 2026 UTC
@@ -225,5 +225,8 @@ remain incomplete.
   Linux/macOS native qualification, publication, push, dispatch or runtime repair
   is claimed. The Linux blocked owner and event-hub regression remain later phases.
 - Static/link/hash/diff and preservation checks are recorded in the validation
-  receipt. The scoped implementation commit is recorded by the subsequent
-  documentation-only completion receipt, after its actual SHA exists.
+  receipt. Implementation commit
+  `1bc5de45a6dbeef1ab31bd7f6fbbe85b69771600` contains the tested inputs and retained
+  receipts. This documentation-only follow-up records that actual SHA after
+  verifying all seven tested input hashes against it. Phase 1's local exit criteria
+  are satisfied; [STATE.md](STATE.md) marks only Phases 0 and 1 complete.

@@ -11,14 +11,15 @@ Plan: [PLAN.md](PLAN.md). Evidence: [EVIDENCE.md](EVIDENCE.md).
 Starting source: `85eac6f3c1d3b17e53596c49e7438efee366c1b3`.
 Phase 0 is complete at implementation commit
 `5808ce32d867622ff6952d0f2057768a8a257f14` on `ci/phase-0-baseline`.
-Phase 1 local acceptance passed; its commit receipt is pending the scoped commit.
+Phase 1 is complete at implementation commit
+`1bc5de45a6dbeef1ab31bd7f6fbbe85b69771600` on `ci/phase-1-supervision`.
 No native check, paid execution, external configuration change or publication
 is claimed. See [BOOTSTRAP.md](BOOTSTRAP.md) for the zero-paid execution sheet.
 
 | Phase | Status | Implementation commit | Acceptance evidence |
 | --- | --- | --- | --- |
 | 0 — Baseline and initial limits | Complete; local preparation only | `5808ce32d867622ff6952d0f2057768a8a257f14` | [212 helper tests](baseline/validation.json), [retained capture](baseline/CAPTURE.md), [usage baseline](baseline/COST.md), [zero-paid sheet](BOOTSTRAP.md); hash/link/diff checks passed |
-| 1 — Process supervision | Local acceptance passed; commit receipt pending | Pending | [231 helper tests](phase-1/validation.json), [nine retained fault specimens](phase-1/faults/results.json), [independent review](phase-1/review/results.json), [implementation and limits](phase-1/IMPLEMENTATION.md) |
+| 1 — Process supervision | Complete; local helper acceptance only | `1bc5de45a6dbeef1ab31bd7f6fbbe85b69771600` | [231 helper tests](phase-1/validation.json), [nine retained fault specimens](phase-1/faults/results.json), [independent review](phase-1/review/results.json), [implementation and limits](phase-1/IMPLEMENTATION.md) |
 | 2 — Event-hub accounting | Not started | Pending | Pending red/green regression |
 | 3 — Linux hang repair | Not started | Pending | Cause unresolved |
 | 4 — Compatibility receipts | Not started | Pending | Pending |
@@ -39,13 +40,14 @@ Codex `/root`, base `a74d58a754048ff4058c64a2d75b5bb3b21d04e0`.
 seven executable/configuration/test files. [Implementation notes](phase-1/IMPLEMENTATION.md)
 retain the execution sheet, command/aggregate bounds, review and qualification limits.
 The Phase 0 checkout and the original checkout's four planning files are preserved.
+The implementation commit contains the tested inputs and all retained receipts.
+This completion receipt changes documentation only; the seven tested input hashes
+match the implementation commit and remain unchanged.
 
-1. Commit the tested owned changes; record the actual SHA in a documentation-only
-   follow-up before marking Phase 1 complete.
-2. Subsequent authorized sessions can prepare Phases 2 and 4 independently.
+1. Subsequent authorized sessions can prepare Phases 2 and 4 independently.
    Phase 3 uses this supervisor for diagnosis; its Linux blocked owner remains
    unresolved. No later phase starts as part of Phase 1 completion.
-3. Re-read source/worktree/process state, existing receipts and zero-paid limits
+2. Re-read source/worktree/process state, existing receipts and zero-paid limits
    before the next implementation. Native experiments still require a concrete
    allowed scope and execution allowance; helper acceptance supplies neither.
 
