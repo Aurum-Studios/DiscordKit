@@ -1,0 +1,51 @@
+{
+  "observedAt": "2026-11-12T17:12:16.584602+00:00",
+  "scope": {
+    "mode": "full",
+    "publish-documentation": true,
+    "qualification-fault": false,
+    "maximumRunAttempts": 1
+  },
+  "supersededRuns": [
+    {
+      "id": 43266128710,
+      "scope": "push preflight"
+    },
+    {
+      "id": 43266180795,
+      "scope": "full without publication"
+    }
+  ],
+  "policySHA256": "8a70d8ecad73dde942e4cdfb31cc62e4aeef874b2857d10d810d06ce0c4abe72",
+  "validation": {
+    "sourceIdentity": "synthetic; actual current policies and workflow sources",
+    "admitted": true,
+    "nativeEnabled": true,
+    "allJobGuardsAdmitted": 82,
+    "totals": {
+      "runnerUSD": "722.990",
+      "storageUSD": "0",
+      "transferUSD": "0",
+      "safetyUSD": "0.00",
+      "maximumUSD": "722.990",
+      "maximumMinutes": 7805,
+      "maximumJobs": 82,
+      "maximumAttempts": 1,
+      "allowanceUSD": "723.00",
+      "remainingUSD": "0.010",
+      "includedEntryReserveUSD": "722.990"
+    },
+    "spendAdmissionTestsPassed": 19,
+    "publicationTestsPassed": 30
+  },
+  "pages": {
+    "url": "https://aurum-studios.github.io/DiscordKit/",
+    "build_type": "workflow",
+    "https_enforced": true
+  },
+  "limitations": [
+    "Publication requires successful full certification and immutable same-run site.",
+    "Provider monthly Actions budget remains USD 50; no completion guarantee.",
+    "The default branch must remain at the dispatched revision through publication."
+  ]
+}

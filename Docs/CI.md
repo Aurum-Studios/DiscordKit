@@ -39,8 +39,8 @@ November 30, 2026 UTC and records a USD 50 remaining compute allocation, verifie
 runner mappings and included non-compute usage. The repository Actions budget
 has stop usage enabled at USD 50; scheduled timing remains active within that
 provider backstop. [The November allocation and read-back](Tasks/ci-reliability/november-2026/BUDGET.md)
-explain per-run limits, included usage and billing limitations. One manually monitored full certification attempt is separately authorized with a
-USD 723 source reservation. The monthly provider stop-usage budget remains USD 50
+explain per-run limits, included usage and billing limitations. One replacement full certification attempt with Pages publication is authorized
+with a USD 723 source reservation. The monthly provider stop-usage budget remains USD 50
 and can block the run. Automatic scope remains preflight. Repository
 variables or dispatch fields cannot grant paid execution. Documentation site preparation shares full CI inputs; Pages publication remains
 contained behind full certification and an explicit publication request.
@@ -454,8 +454,9 @@ permissions; it has no Pages permission. The
 [Documentation workflow](../.github/workflows/documentation.yml) has only a manual
 trigger and requests the ordinary full CI workflow at the selected ref. It has no
 separate compiler/conversion graph. Its own current-attempt spend guard precedes
-dispatch. Only one full certification dispatch is currently authorized by the
-operator; do not use a separate documentation request to launch another.
+dispatch. Only the replacement full certification dispatch with Pages enabled is currently
+authorized by the operator; do not use a separate documentation request to launch
+another.
 Publication still requires successful full certification and an explicit request.
 
 Pages upload and deployment run in a separate job only when a manual request sets

@@ -55,7 +55,11 @@ The operator additionally authorized **one full certification attempt**, monitor
 manually, with a USD 723 source reservation covering the USD 722.99 timeout
 ceiling. Manual native expansion is enabled; automatic push/PR scope remains
 preflight. Diagnostic experiment allowance stays USD 50. No automatic test/build
-reruns or publication are authorized. The monthly provider budget stays USD 50
+reruns are authorized. The non-publishing full run and duplicate push preflight
+were cancelled at the operator request. One replacement full run now includes
+GitHub Pages publication after successful certification. Its additional free
+standard-Ubuntu publication job raises the envelope to 82 jobs / 7,805 minutes
+without changing the USD 722.99 cost ceiling. The monthly provider budget stays USD 50
 and can block the full run before completion. Fresh planning and every CI job guard reject an
 expired source authorization; per-run reservations do not form a monthly ledger.
 
@@ -72,7 +76,9 @@ three Sunday timing runs could exceed USD 50 together, so later jobs may be
 blocked by the provider budget. The Linux diagnostic exceeds its USD 50 experiment allowance. The authorized full
 run fits its separate USD 723 source reservation, but can be stopped by the
 USD 50 monthly provider budget. Launching it does not establish native
-qualification or complete Phase 11; inspect terminal results and artifacts. Manual releases/publication remain separate actions.
+qualification or complete Phase 11; inspect terminal results and artifacts. GitHub release publication remains a
+separate action. Keep the default branch at this revision until the Pages
+publication guard has finished.
 
 Sources checked November 12, 2026: [runner pricing](https://docs.github.com/en/billing/reference/actions-runner-pricing),
 [Actions billing](https://docs.github.com/en/billing/concepts/product-billing/github-actions),
@@ -82,3 +88,8 @@ and [budget API](https://docs.github.com/en/rest/billing/budgets).
 [Local validation](validation.json) records 1,018 passing helper/browser tests,
 six existing Linux-only skips, source/workflow checks and all 81 full-plan guards.
 These checks do not establish hosted native qualification.
+
+[Publication authorization](publication-authorization.json) records the replacement
+scope and successful admission of all 82 job guards. The replacement commit skips
+the automatic push workflow; its explicit full dispatch still runs all required
+checks and publication.

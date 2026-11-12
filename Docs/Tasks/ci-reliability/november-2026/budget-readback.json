@@ -28,7 +28,7 @@
     "additionalPaidNonComputeUSD": "0.00",
     "nonComputeFunding": "remaining included enterprise usage per operator",
     "scheduledTiming": "retain schedule, subject to repository stop-usage budget",
-    "fullCertification": "One manually monitored full attempt explicitly authorized; USD 723 source reservation, no rerun or publication; provider monthly limit unchanged at USD 50."
+    "fullCertification": "One replacement full attempt with Pages publication explicitly authorized; cancel prior non-publishing full and duplicate preflight; USD 723 source reservation, no automatic rerun; provider monthly limit unchanged at USD 50."
   },
   "limitations": [
     "New budget starts at zero consumed; earlier November usage is outside this new remaining allowance.",
