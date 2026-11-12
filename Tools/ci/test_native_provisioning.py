@@ -162,6 +162,82 @@ class ProvisioningTests(unittest.TestCase):
                 self.assertRaisesRegex(ValueError, "symbolic link"):
             provisioning.prepare("auto", link, self.root / "plan.json")
 
+    def test_macos_selected_sdk_survives_prepare_provision_and_probe(self):
+        import platform_probe
+        for explicit in (False, True):
+            with self.subTest(explicit=explicit), tempfile.TemporaryDirectory(dir=self.root) as temporary:
+                directory = Path(temporary)
+                default_sdk, override_sdk = directory / "Default.sdk", directory / "Override.sdk"
+                default_sdk.mkdir()
+                override_sdk.mkdir()
+                selected = override_sdk if explicit else default_sdk
+                environment = {"ImageOS": "macos26", "ImageVersion": "20261102.0473.1"}
+                if explicit:
+                    environment["SDKROOT"] = str(override_sdk)
+                outputs = {("xcode-select", "-p"): "/Applications/Xcode.app/Contents/Developer",
+                           ("xcodebuild", "-version"): "Xcode 26.6\nBuild version 17F113",
+                           ("xcrun", "--sdk", "macosx", "--show-sdk-path"): str(default_sdk),
+                           ("xcrun", "--sdk", "macosx", "--show-sdk-version"): "26.5",
+                           ("xcrun", "--sdk", "macosx", "--show-sdk-build-version"): "25F70"}
+                binary = Path.home() / "Library/Developer/Toolchains" / self.policy["platforms"][
+                    "macos-arm64"]["toolchainDirectory"] / "usr/bin"
+                version = "Apple Swift version 6.4.1 (swift-6.4.1-RELEASE)\nTarget: arm64-apple-macosx26.0"
+                info = {"compilerVersion": version.splitlines()[0], "target": {"triple": "arm64-apple-macosx26.0"},
+                        "paths": {"runtimeResourcePath": str(binary.parent / "lib/swift"),
+                                  "runtimeLibraryPaths": [str(binary.parent / "lib/swift/macosx")]}}
+                compiler_sdk_roots = []
+                def run(plan, name, arguments, **keywords):
+                    if name.startswith(("prepare-sdk-", "verify-sdk-")):
+                        return outputs[tuple(arguments)]
+                    if name == "verify-distribution-signature":
+                        return APPLE_STATUS
+                    compiler_sdk_roots.append(os.environ.get("SDKROOT"))
+                    if name == "compiler-version":
+                        return version
+                    if name == "compiler-target":
+                        return json.dumps(info)
+                    raise AssertionError(name)
+                github_env = directory / "github-env"
+                with patch.dict(os.environ, environment, clear=True), \
+                        patch.object(provisioning, "load_policy", return_value=self.policy), \
+                        patch.object(provisioning, "native_platform", return_value="macos-arm64"), \
+                        patch.object(provisioning.platform, "system", return_value="Darwin"), \
+                        patch.object(provisioning.platform, "machine", return_value="arm64"), \
+                        patch.object(provisioning, "run_command", side_effect=run), \
+                        patch.object(provisioning, "download_distribution", side_effect=lambda plan, policy: self.fixture(plan)), \
+                        patch.object(provisioning, "install_distribution", return_value=binary), \
+                        patch.object(platform_probe.shutil, "which", side_effect=lambda name: str(binary / name)):
+                    plan = provisioning.prepare("auto", directory / "setup", directory / "plan.json",
+                                                github_env=github_env)
+                    self.assertEqual(github_env.read_text(), f"SDKROOT={selected}\n")
+                    self.assertEqual(plan["image"]["xcode"]["sdkRootOverride"], str(selected))
+                    self.assertEqual(plan["cacheKey"], provisioning.compatibility_key(
+                        self.policy, "macos-arm64", plan["image"]))
+                    # The next Actions step is a new process: only GITHUB_ENV
+                    # propagates the selected SDK, not prepare's in-process edit.
+                    os.environ.pop("SDKROOT", None)
+                    os.environ.update(line.split("=", 1) for line in github_env.read_text().splitlines())
+                    record = provisioning.provision(plan, github_env=github_env)
+                    os.environ.update(line.split("=", 1) for line in github_env.read_text().splitlines())
+                    verified = platform_probe.verified_provisioning_facts("macos-arm64", version, info,
+                        lambda arguments: outputs[tuple(arguments)] + "\r\n")
+                self.assertEqual(record["status"], "passed")
+                self.assertEqual(compiler_sdk_roots, [str(selected)] * 2)
+                self.assertEqual(verified["cacheKey"], plan["cacheKey"])
+
+    def test_macos_prepare_rejects_invalid_explicit_sdk_before_export(self):
+        for value in ("relative.sdk", str(self.root / "missing.sdk"), " "):
+            with self.subTest(value=value), tempfile.TemporaryDirectory(dir=self.root) as temporary:
+                directory = Path(temporary)
+                github_env = directory / "github-env"
+                with patch.dict(os.environ, {"ImageOS": "macos26", "ImageVersion": "20261102.0473.1",
+                                            "SDKROOT": value}, clear=True), \
+                        patch.object(provisioning, "native_platform", return_value="macos-arm64"), \
+                        patch.object(provisioning, "run_command", return_value="SDK fact"), \
+                        self.assertRaisesRegex(ValueError, "SDKROOT"):
+                    provisioning.prepare("auto", directory / "setup", directory / "plan.json", github_env=github_env)
+                self.assertFalse(github_env.exists())
+
     def test_prepared_plan_rejects_policy_change_expiry_and_wrong_actual_host(self):
         path = self.root / "plan.json"
         provisioning.write_json(path, self.plan)

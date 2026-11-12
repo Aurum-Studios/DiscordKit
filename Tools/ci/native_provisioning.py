@@ -200,7 +200,7 @@ def compatibility_key(policy, target, facts):
     return f"discordkit-swift-v{policy['cacheSchemaVersion']}-{target}-{hashlib.sha256(canonical(identity)).hexdigest()}"
 
 
-def prepare(target, root, output, *, github_output=None):
+def prepare(target, root, output, *, github_output=None, github_env=None):
     """Start the shared allowance before prerequisite setup and cache transport."""
     policy = load_policy()
     target = native_platform(target)
@@ -227,6 +227,19 @@ def prepare(target, root, output, *, github_output=None):
         return run_command(plan, f"prepare-sdk-{count}", arguments, maximum=30)
 
     plan["image"] = image_facts(target, query)
+    if target == "macos-arm64":
+        # Standalone signed toolchains need the Xcode SDK explicitly, including
+        # direct swiftc consumers. Select it before sealing the cache identity.
+        xcode = plan["image"]["xcode"]
+        sdk = required(xcode["sdkRootOverride"] if xcode["sdkRootOverride"] is not None
+                       else xcode["sdkPath"], "SDKROOT")
+        if not Path(sdk).is_absolute() or not Path(sdk).is_dir():
+            raise ValueError("SDKROOT must identify an existing absolute macOS SDK directory")
+        os.environ["SDKROOT"] = sdk
+        xcode["sdkRootOverride"] = sdk
+        if github_env:
+            with github_env.open("a") as stream:
+                stream.write(f"SDKROOT={sdk}\n")
     plan["cacheKey"] = compatibility_key(policy, target, plan["image"])
     write_json(output, plan)
     write_json(Path(plan["receiptPath"]), {"schemaVersion": 1, "status": "prepared",
@@ -484,6 +497,7 @@ def main():
     prepare_parser.add_argument("--root", type=Path, required=True)
     prepare_parser.add_argument("--output", type=Path, required=True)
     prepare_parser.add_argument("--github-output", type=Path)
+    prepare_parser.add_argument("--github-env", type=Path)
     for name in ("provision", "run"):
         action = actions.add_parser(name)
         action.add_argument("--plan", type=Path, required=True)
@@ -497,7 +511,8 @@ def main():
     arguments = parser.parse_args()
     try:
         if arguments.action == "prepare":
-            prepare(arguments.platform, arguments.root, arguments.output, github_output=arguments.github_output)
+            prepare(arguments.platform, arguments.root, arguments.output, github_output=arguments.github_output,
+                    github_env=arguments.github_env)
         else:
             plan = load_plan(arguments.plan)
             if arguments.action == "run":

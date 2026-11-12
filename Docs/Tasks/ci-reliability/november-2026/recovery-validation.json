@@ -84,9 +84,11 @@
     "Tools/ci/test_usage_report.py": "0c4e1d5bea5cca33663df55cb8024d5a40738ac2d46e6bfe9ef0950543731fe5",
     "Tools/ci/native_jobs.py": "8a98f176bd4505f6dae056c7ad94fec39c64d7d8ba54ddd1a0d17ad62882d96a",
     "Tools/ci/test_native_jobs.py": "1c7ead1fbd74e2cf54cb92c28b671d612ad5c8d1cc917faebe73792518e13f7c",
-    "Tools/ci/native_provisioning.py": "8b91dc237347c49d6b901494a23bccfcd2b0e6efc76a09b7759f91222481e9ab",
-    "Tools/ci/test_native_provisioning.py": "9dac05cb7cdcc1e094f035f50ec2001597888d81dc7f17a756038e3fbec53613",
-    "Tools/ci/test_platform_probe.py": "eb6fc8ebd50118247e8e604c190eb66f1633ecf18ad1a9d7421419bda1d84c0b"
+    "Tools/ci/native_provisioning.py": "273c819b0e0c4e8e21872f59bfeb5b5b68af1bb6f1cf9149ecf431da88346aa9",
+    "Tools/ci/test_native_provisioning.py": "efda7ed14d0ffe93716655dbcff51b25c1789e9df8369dbd85ed7d097ec18ce5",
+    "Tools/ci/test_platform_probe.py": "eb6fc8ebd50118247e8e604c190eb66f1633ecf18ad1a9d7421419bda1d84c0b",
+    ".github/actions/setup-native/action.yml": "d940894cb646f21de6407a57e0607741282ffeb43620de4bbf852e70899149a6",
+    "Tools/ci/test_provisioning_workflow.py": "2a2bbc908604ba8d463d366ec61558a3de0841d1346381cad96f8f94c6da2ed8"
   },
   "nextRun": {
     "mode": "full",
@@ -190,6 +192,109 @@
     "limitations": [
       "Local full suite simulates GitHub context on macOS; six Linux-specific cases still skip locally.",
       "Next exact-source hosted native certification and publication remain pending."
+    ]
+  },
+  "sdkSelectionFollowup": {
+    "observedAt": "2026-11-12T17:48:04.866324+00:00",
+    "source": "cda0e4011979ca88b51fce19741dd94781f34d63",
+    "preflightRun": {
+      "id": 43271580103,
+      "conclusion": "success"
+    },
+    "fullRun": {
+      "id": 43271591600,
+      "conclusion": "cancelled",
+      "reason": "Pinned macOS swiftc probe could not import Foundation without an SDK"
+    },
+    "linuxProbe": "passed",
+    "linuxPlan": "passed",
+    "macosReceipt": "passed",
+    "macosProbe": "failed at real compilation before SDK selection fix",
+    "validation": {
+      "ciPython": {
+        "exitCode": 0,
+        "elapsedSeconds": 18.873,
+        "context": "Simulated full GitHub Actions identity/admission on macOS; SDKROOT propagation fix",
+        "log": ".build/ci-recovery-2026-11-12/ci-python-sdkroot-fix.log"
+      },
+      "discovered": 630,
+      "passed": 624,
+      "skipped": 6,
+      "focused": {
+        "provisioning": 26,
+        "workflowShell": 6,
+        "platformProbe": 21
+      },
+      "actionlint": "1.7.12 with explicit ShellCheck 0.11.0: all seven workflow files passed",
+      "localSDKRoundtrip": {
+        "status": "passed",
+        "qualification": "local current compiler only; no hosted or pinned Swift 6.4.1 qualification",
+        "compiler": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+        "swiftVersion": "Apple Swift version 6.4 (swiftlang-6.4.0.34.1 clang-2100.3.34.1)\nTarget: arm64-apple-macosx27.0.0",
+        "SDKROOT": "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX27.0.sdk",
+        "commands": [
+          {
+            "name": "direct-compile",
+            "arguments": [
+              "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+              "/var/folders/3j/5mxmxjxn1z98m1c1y32z64zh0000gn/T/discordkit-sdkroot-3zla4kae/probe.swift",
+              "-o",
+              "/var/folders/3j/5mxmxjxn1z98m1c1y32z64zh0000gn/T/discordkit-sdkroot-3zla4kae/probe"
+            ],
+            "status": "passed",
+            "elapsedSeconds": 1.007,
+            "stdout": "",
+            "stderr": ""
+          },
+          {
+            "name": "direct-runtime",
+            "arguments": [
+              "/var/folders/3j/5mxmxjxn1z98m1c1y32z64zh0000gn/T/discordkit-sdkroot-3zla4kae/probe"
+            ],
+            "status": "passed",
+            "elapsedSeconds": 0.077,
+            "stdout": "DiscordKit native probe passed\n",
+            "stderr": ""
+          },
+          {
+            "name": "swiftpm-build",
+            "arguments": [
+              "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swift",
+              "build",
+              "--package-path",
+              "/var/folders/3j/5mxmxjxn1z98m1c1y32z64zh0000gn/T/discordkit-sdkroot-3zla4kae/package",
+              "--scratch-path",
+              "/var/folders/3j/5mxmxjxn1z98m1c1y32z64zh0000gn/T/discordkit-sdkroot-3zla4kae/package/.build",
+              "--disable-sandbox",
+              "--jobs",
+              "2"
+            ],
+            "status": "passed",
+            "elapsedSeconds": 6.918,
+            "stdout": "Building for debugging...\n[Planning deferred tasks]\n[19\u2009/\u200924]\n[20\u2009/\u200925] SDKRootProbe-product\n[25\u2009/\u200961]\n[29\u2009/\u200961]\n[32\u2009/\u200961]\n[37\u2009/\u200961]\n[39\u2009/\u200961]\n[43\u2009/\u200961]\n[46\u2009/\u200961]\n[50\u2009/\u200961]\n[51\u2009/\u200961]\n[53\u2009/\u200961]\n[54\u2009/\u200961]\n[57\u2009/\u200961] SDKRootProbe-product\n[59\u2009/\u200961] SDKRootProbe-product\nBuild complete! (5.71 sec)\n",
+            "stderr": ""
+          },
+          {
+            "name": "swiftpm-runtime",
+            "arguments": [
+              "/var/folders/3j/5mxmxjxn1z98m1c1y32z64zh0000gn/T/discordkit-sdkroot-3zla4kae/package/.build/debug/SDKRootProbe"
+            ],
+            "status": "passed",
+            "elapsedSeconds": 0.074,
+            "stdout": "DiscordKit native probe passed\n",
+            "stderr": ""
+          }
+        ]
+      }
+    },
+    "independentReview": {
+      "blockingFindings": 0,
+      "scope": "SDKROOT selected before exact receipt/cache identity and propagated to compiler consumers; cross-SDK explicit arguments preserved; no compiler/signature/image relaxation. Independent GitHub environment lifecycle review passed; fixture clears process-local SDKROOT before applying exported file; 32 provisioning/workflow tests passed after improvement."
+    },
+    "limitations": [
+      "Local compiler/SDK differs from pinned hosted Swift 6.4.1; actual hosted compile/link/runtime must pass.",
+      "Six Linux-only helper cases skip on local macOS.",
+      "Full certification and same-run documentation publication remain pending."
     ]
   }
 }

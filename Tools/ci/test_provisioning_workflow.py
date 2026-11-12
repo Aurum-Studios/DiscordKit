@@ -37,7 +37,8 @@ class ProvisioningWorkflowTests(unittest.TestCase):
             (directory / 'python3').symlink_to(shim)
             environment = {**os.environ, 'PATH': str(directory) + os.pathsep + os.environ['PATH'],
                            'RECORDED_COMMANDS': str(commands), 'NATIVE_PROFILE': profile,
-                           'RUNNER_TEMP': str(directory), 'GITHUB_OUTPUT': str(directory / 'output')}
+                           'RUNNER_TEMP': str(directory), 'GITHUB_OUTPUT': str(directory / 'output'),
+                           'GITHUB_ENV': str(directory / 'environment')}
             results = [subprocess.run(['bash', '-e', '-c', block], env=environment,
                                       capture_output=True, text=True, timeout=10)
                        for block in shell_blocks()[:2]]
@@ -51,6 +52,8 @@ class ProvisioningWorkflowTests(unittest.TestCase):
         self.assertEqual(rows[0][:4], ['Tools/ci/native_provisioning.py', 'prepare', '--platform', 'auto'])
         self.assertIn('--root', rows[0])
         self.assertIn('provisioning shell $ ', rows[0][rows[0].index('--root') + 1])
+        self.assertIn('--github-env', rows[0])
+        self.assertIn('provisioning shell $ ', rows[0][rows[0].index('--github-env') + 1])
         for command in rows[1:]:
             self.assertEqual(command[:2], ['Tools/ci/native_provisioning.py', 'run'])
             self.assertIn('--plan', command)

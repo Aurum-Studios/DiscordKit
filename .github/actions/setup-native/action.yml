@@ -29,7 +29,7 @@ runs:
         python3 Tools/ci/native_provisioning.py prepare --platform auto \
           --root "$RUNNER_TEMP/native-provisioning" \
           --output "$RUNNER_TEMP/native-provisioning-plan.json" \
-          --github-output "$GITHUB_OUTPUT"
+          --github-output "$GITHUB_OUTPUT" --github-env "$GITHUB_ENV"
     - uses: actions/setup-python@v6
       with:
         python-version: '3.12'

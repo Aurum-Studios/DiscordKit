@@ -100,3 +100,34 @@ The next push runs normal preflight and a new explicit full publishing dispatch
 under the same recovery request. The signed compiler download and all native
 compatibility checks remain enforced. Successful preflight and a Linux probe
 still do not certify the entire native toolchain or publish documentation.
+
+## macOS SDK selection for the pinned compiler
+
+At source `cda0e4011979ca88b51fce19741dd94781f34d63`, push preflight
+`43271580103` completed successfully. Full run `43271591600` passed the shared
+checks, Linux platform probe and Linux planning. The macOS receipt now verified
+successfully, but the pinned compiler's real probe compilation failed to import
+Foundation because no SDK had been selected. That failed run was cancelled.
+
+macOS preparation now selects the observed Xcode macOS SDK before computing the
+image/cache identity and exports it through `GITHUB_ENV` for every subsequent
+step. A valid explicit `SDKROOT` is preserved; missing, relative or invalid SDK
+directories reject. Provisioning, compiler metadata, direct `swiftc`, SwiftPM,
+runtime tests and documentation consumers therefore inherit the same selected
+SDK. Apple cross-SDK compilation retains its existing explicit `-sdk` arguments.
+The authenticated Swift distribution and exact compatibility checks remain
+unchanged; no substitution of Xcode's compiler is made in hosted CI.
+
+Regression tests replay prepare, exported environment, provisioning and probe
+receipt validation with both default and explicit SDK selection. The existing
+composite-action shell execution fixture checks the new environment-file
+argument. All 630 CI helper tests completed locally with 624 passed and six
+existing Linux-only skips in a simulated GitHub Actions context. All seven
+workflows passed actionlint with ShellCheck enabled. A real local Foundation
+compile/link/run and a tiny SwiftPM build/run passed using the installed Apple
+Swift 6.4 compiler and SDK 27.0; these are local checks, not qualification of the
+hosted pinned Swift 6.4.1 distribution.
+
+The next push retains automatic preflight and launches one full publishing run.
+Successful hosted native certification and publication remain pending. Budget
+amounts, stop-usage behavior and the authorized workflow envelope are unchanged.
