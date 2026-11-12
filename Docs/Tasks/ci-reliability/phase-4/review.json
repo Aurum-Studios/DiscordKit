@@ -1,0 +1,26 @@
+{
+  "blockingFindings": [],
+  "independentReviewers": [
+    "receipt_review",
+    "platform_identity",
+    "receipt_tests"
+  ],
+  "inputSHA256": {
+    "Tools/ci/native_jobs.py": "f2fb2285143a66484c3beb0617a10dc203c16f958be1330a1da7dcf9945feccf",
+    "Tools/ci/native_receipts.py": "ac7317e349a733f69426de5d7acc000c11ba0a7e91cf517b7bd05b3d89f83ec1",
+    "Tools/ci/platform_probe.py": "35ebf62859cc54bfa2376e03f6ea3398592aee96089545df780c07a507922f04",
+    "Tools/ci/test_native_jobs.py": "37a5021a3b85260933c4ba7de977aa1ff85db880122e61ac2aacaaa515d033ab",
+    "Tools/ci/test_native_receipts.py": "4258ddfc4c268808c39a9575dcb60ceca5134578d18c0afc91c3023c48e4a213",
+    "Tools/ci/test_platform_probe.py": "6669664184eeeb9a15c5378db2f946837a8b3f378d79e598f71c734c4e3221c9"
+  },
+  "owner": "Codex /root integration review",
+  "resolvedFindings": [
+    "Separate terminal consumer failure/results from producer status, including invalid selected suite.",
+    "Use canonical JSON digests at restore, post-compile and post-test boundaries to reject bool/int/float substitutions.",
+    "Reject archive-created and existing link ancestors, normalized aliases, unsafe link targets and overwrite attempts before extraction.",
+    "Validate artifact IDs before extraction; retain per-component API restore/identity evidence.",
+    "Replace unsupported sw_vers -plist with supported productVersion/buildVersion metadata queries."
+  ],
+  "reviewLimits": "Local Python helpers and source review; no pinned native compile, hosted image, cross-runner restore or external artifact authentication.",
+  "status": "passed"
+}

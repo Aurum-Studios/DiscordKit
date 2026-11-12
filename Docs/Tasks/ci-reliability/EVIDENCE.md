@@ -320,3 +320,28 @@ Phases 2 through 11 remained incomplete; later entries record subsequent work.
   checked against the actual Git blob before this documentation-only follow-up.
   The [commit receipt](phase-3/commit-receipt.json) records that verification; the
   native acceptance gate remains open.
+
+## Phase 4 — Compatibility and provenance contracts
+
+- [Implementation plan and local execution sheet](phase-4/IMPLEMENTATION.md) retain
+  owner, branch/base, exact compatibility policy and all qualification boundaries.
+  V2 separates compatibility, producer and consumer records; same-attempt admission
+  remains enforced. Unknown required fields and legacy v1 require regeneration.
+- [Validation](phase-4/validation.json) records **270 CI helper tests: 264 passed,
+  six existing Linux-only skips**, with a supervised 300-second deadline and clean
+  process/reader cleanup. Successful compile/restore/test orchestration is exercised
+  through real tar transport and a controlled compiler boundary; no native compiler
+  or test suite is executed. Read-only host metadata checks confirm command availability.
+- [Retained red](phase-4/exact-types-red.log) and [green](phase-4/exact-types-green.log)
+  prove exact JSON-type enforcement at final compatibility checks. Other regressions
+  cover source/pins/flags/platform/compiler/SDK/path drift, failed/foreign producer
+  scope, empty/duplicate inventories, corrupt/unsafe archives, per-job provenance,
+  malformed artifact IDs and terminal failed consumers.
+- [Review](phase-4/review.json) records resolved findings and no remaining blocker.
+  Per-component restoration receipts preserve all API producers. Existing callers
+  use local archive content addresses; caller-supplied immutable IDs are labeled
+  honestly. Authenticated GitHub resolution, earlier attempts and partial reruns
+  remain Phase 5 work. No workflow or source-export/release barrier changed.
+- Paid jobs/minutes/attempts/spend remain **0 / 0 / 0 / USD 0.00**; no push, dispatch,
+  native qualification, publication or live Discord claim. The implementation
+  commit and verified Git blobs will be recorded in the completion follow-up.

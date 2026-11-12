@@ -4,12 +4,11 @@
 # Copyright (c) 2026 Aurum Studios.
 # https://aurum-studios.com
 
-"""Compile native graphs once and run independent suites from exact-attempt artifacts.
+"""Compile native graphs once and consume versioned compatibility/provenance receipts.
 
-SwiftPM embeds absolute source and build paths. Artifact consumers therefore require
-the same checkout path, native platform, Swift toolchain, source bytes and workflow
-attempt as the producer. Tests always use --skip-build; a missing executable or an
-empty module selection is a failure rather than an invitation to rebuild.
+SwiftPM requires exact source, pins, flags, paths and native runtime identity.
+Producer and consumer execution records are separate; Phase 4 still admits only
+the same run/attempt. Tests always use --skip-build and nonempty exact inventories.
 """
 
 from contextlib import contextmanager, suppress
@@ -31,6 +30,8 @@ import tempfile
 import time
 
 import linux_ci
+import native_receipts as receipts
+import platform_probe
 
 
 PLATFORMS = linux_ci.PLATFORMS
@@ -109,6 +110,14 @@ def execution_report(output, report):
         report["status"] = "passed"
     finally:
         report["seconds"] = round(time.monotonic() - started, 3)
+        if "consumer" in report:
+            consumer = report["consumer"]
+            consumer.update(status=report["status"], completedAt=receipts.utc_now(), executionResults=report["commands"])
+            if consumer["discovery"] == "running":
+                consumer["discovery"] = "failed"
+            if "error" in report:
+                consumer["error"] = report["error"]
+            write_json(output / "consumer.json", consumer)
         write_json(output / "commands.json", report)
 
 
@@ -202,6 +211,7 @@ def source_identity(repository, *, deadline=None, output=None, report=None):
     names = metadata_output(["git", "ls-files", "-z"], repository, binary=True,
                             deadline=deadline, output=output, report=report).split(b"\0")
     digest = hashlib.sha256()
+    pins = {}
     for name in sorted(set(name for name in names if name)):
         remaining_seconds(deadline, 30)
         path = repository / os.fsdecode(name)
@@ -209,7 +219,10 @@ def source_identity(repository, *, deadline=None, output=None, report=None):
         if path.is_symlink():
             digest.update(b"link\0" + os.fsencode(os.readlink(path)))
         elif path.is_file():
-            digest.update(b"file\0" + bytes.fromhex(file_digest(path)))
+            file_hash = file_digest(path)
+            digest.update(b"file\0" + bytes.fromhex(file_hash))
+            if path.name == "Package.resolved":
+                pins[os.fsdecode(name)] = file_hash
         elif not path.exists():
             digest.update(b"deleted")
         else:
@@ -218,7 +231,7 @@ def source_identity(repository, *, deadline=None, output=None, report=None):
     assigned = os.environ.get("GITHUB_SHA")
     if assigned and assigned != revision:
         raise ValueError("checkout does not match the executing GitHub SHA")
-    return {"commit": revision, "sourceSHA256": digest.hexdigest()}
+    return {"commit": revision, "sourceSHA256": digest.hexdigest(), "dependencyPinsSHA256": pins}
 
 
 def file_digest(path):
@@ -228,7 +241,7 @@ def file_digest(path):
 
 
 def identity(repository, native_platform, *, deadline=None, output=None, report=None):
-    """Reject incompatible hosts and snapshot exact source, compiler and workflow-attempt facts."""
+    """Reject incompatible hosts and snapshot exact source, pins, compiler and runtime facts."""
     if report is None:
         if output is None:
             with tempfile.TemporaryDirectory(prefix="discordkit-identity-") as directory:
@@ -244,32 +257,43 @@ def identity(repository, native_platform, *, deadline=None, output=None, report=
     system, machine = platform.system(), platform.machine().lower()
     if system != expected_system or machine not in expected_machines:
         raise ValueError("actual host does not match the selected native platform")
-    version = metadata_output(["swift", "--version"], repository, deadline=deadline, output=output, report=report).strip()
-    if not re.search(rf"\bSwift version {re.escape(linux_ci.SWIFT_VERSION)}(?:\s|$)", version):
-        raise ValueError(f"expected Swift {linux_ci.SWIFT_VERSION}")
-    target = json.loads(metadata_output(["swift", "-print-target-info"], repository,
-                                       deadline=deadline, output=output, report=report))["target"]["triple"]
     expected_os = {"linux-x64": "Linux", "macos-arm64": "macOS", "windows-x64": "Windows"}[native_platform]
     expected_architecture = "ARM64" if native_platform == "macos-arm64" else "X64"
     for variable, expected in (("RUNNER_OS", expected_os), ("RUNNER_ARCH", expected_architecture)):
         if variable in os.environ and os.environ[variable] != expected:
             raise ValueError(f"assigned {variable} does not match the selected native platform")
-    target_parts = target.lower().split("-")
-    target_architecture = target_parts[0]
-    target_family = {"linux-x64": "linux", "macos-arm64": "macosx", "windows-x64": "windows"}[native_platform]
-    if (target_architecture not in expected_machines
-            or not any(part.startswith(target_family) for part in target_parts)):
-        raise ValueError("Swift target does not match the selected native platform")
-    if native_platform == "linux-x64":
-        release = platform.freedesktop_os_release()
-        if release.get("ID") != "ubuntu" or release.get("VERSION_ID") != "24.04":
-            raise ValueError("native Linux artifacts require Ubuntu 24.04")
+    facts = platform_probe.build_compatibility_facts(repository, native_platform,
+        query=lambda arguments: metadata_output(arguments, repository, deadline=deadline, output=output, report=report))
+    report["informationalBuildFacts"] = facts["informational"]
     return {**source_identity(repository, deadline=deadline, output=output, report=report),
             "repository": str(repository.resolve()), "platform": native_platform,
             "system": system, "machine": "arm64" if machine in ("arm64", "aarch64") else "x64",
-            "swiftVersion": version, "swiftTarget": target, "buildSystem": "native",
-            "runID": os.environ.get("GITHUB_RUN_ID", "local"),
-            "runAttempt": os.environ.get("GITHUB_RUN_ATTEMPT", "local")}
+            "swiftVersion": facts["exact"]["swiftVersion"], "swiftTarget": facts["exact"]["swiftTarget"],
+            "buildSystem": "native", "runtime": facts["exact"], "buildEnvironment": build_environment()}
+
+
+def build_environment():
+    """Record supported build-affecting overrides exactly; never dump arbitrary environment values."""
+    return {name: os.environ.get(name) for name in (
+        "SWIFTNIO_STRICT", "SWIFT_EXEC", "SWIFT_EXEC_MANIFEST", "SWIFT_FLAGS", "SWIFTC_FLAGS",
+        "SWIFT_BUILD_FLAGS", "SWIFTPM_BUILD_FLAGS", "TOOLCHAINS", "SDKROOT", "DEVELOPER_DIR",
+        "MACOSX_DEPLOYMENT_TARGET", "CC", "CXX", "CFLAGS", "CPPFLAGS", "CXXFLAGS", "LDFLAGS",
+        "PKG_CONFIG_PATH", "LIBRARY_PATH", "CPATH", "C_INCLUDE_PATH", "CPLUS_INCLUDE_PATH")}
+
+
+def build_profile(component):
+    """Bind semantic commands/configurations while normalizing only the CPU resource count."""
+    commands = [list(command.arguments) for command in compile_commands(component, 1)]
+    configurations = sorted({command[command.index("--configuration") + 1]
+                             if "--configuration" in command else "debug" for command in commands})
+    return {"component": component, "packages": sorted({command[command.index("--package-path") + 1]
+                                                       for command in commands}),
+            "testPackages": package_tests(component), "configurations": configurations, "commands": commands}
+
+
+def compatibility_identity(repository, component, native_platform, **options):
+    """Keep execution provenance out of every compatibility comparison, including final checks."""
+    return {"identity": identity(repository, native_platform, **options), "build": build_profile(component)}
 
 
 def bounded_jobs(requested):
@@ -473,36 +497,66 @@ def create_archive(repository, component, archive, metadata, excluded=()):
     return metadata
 
 
-def restore_archive(repository, component, native_platform, archive, output, *, deadline=None):
+def restore_archive(repository, component, native_platform, archive, output, *, deadline=None, artifact_id=None):
     """Validate the whole transport before extracting into an identical clean native checkout."""
     restore_seconds = execution_policy()["reservesSeconds"]["setup"]
     deadline = deadline if deadline is not None else time.monotonic() + restore_seconds
-    current = identity(repository, native_platform, output=output / "identity", deadline=deadline)
+    current = compatibility_identity(repository, component, native_platform, output=output / "identity" / component, deadline=deadline)
+    execution = receipts.execution_identity(repository)
+    archive_digest = file_digest(archive)
+    remaining_seconds(deadline, restore_seconds)
+    if artifact_id is not None and not re.fullmatch(r"[1-9][0-9]*", artifact_id):
+        raise ValueError("immutable artifact ID must be a positive GitHub artifact ID")
     with tarfile.open(archive, "r:gz") as transport:
         members = transport.getmembers()
         manifests = [member for member in members if member.name == METADATA]
         if len(manifests) != 1 or not manifests[0].isfile() or not 0 < manifests[0].size <= MAX_METADATA_BYTES:
             raise ValueError("native artifact must contain exactly one bounded compilation receipt")
-        metadata = json.load(transport.extractfile(manifests[0]))
+        metadata = receipts.read_json(transport.extractfile(manifests[0]))
         roots = build_roots(component)
-        if (metadata.get("formatVersion") != 1 or metadata.get("component") != component
-                or metadata.get("status") != "passed" or metadata.get("identity") != current
-                or metadata.get("buildRoots") != roots):
-            raise ValueError("native artifact differs from this source, checkout path, toolchain or workflow attempt")
+        receipts.validate_metadata(metadata, current, execution, component, roots)
         payload, seen = hashlib.sha256(), set()
+        links = {member.name for member in members if member.issym() or member.islnk()}
+        regular = {member.name for member in members if member.isfile()}
+
+        def admitted(path):
+            return any(path == PurePosixPath(root) or PurePosixPath(root) in path.parents for root in roots)
+
         for member in members:
             remaining_seconds(deadline, restore_seconds)
             if member.name == METADATA:
                 continue
             relative = PurePosixPath(member.name)
-            if (relative.is_absolute() or ".." in relative.parts or member.name in seen
-                    or not any(relative == PurePosixPath(root) or PurePosixPath(root) in relative.parents for root in roots)
+            if (relative.is_absolute() or ".." in relative.parts or member.name != relative.as_posix() or member.name in seen
+                    or any(parent.as_posix() in links for parent in relative.parents)
+                    or not admitted(relative)
                     or not (member.isfile() or member.isdir() or member.issym() or member.islnk())):
                 raise ValueError("native artifact contains an unexpected or unsafe member")
             seen.add(member.name)
+            if member.issym() or member.islnk():
+                # Resolve lexically without following links from the archive. Link ancestors
+                # are forbidden, so extraction order cannot redirect a previously safe path.
+                target = PurePosixPath(member.linkname)
+                if target.is_absolute():
+                    raise ValueError("native artifact contains an unsafe link")
+                target = relative.parent / target if member.issym() else target
+                parts = []
+                for part in target.parts:
+                    if part == "..":
+                        if not parts:
+                            raise ValueError("native artifact contains an unsafe link")
+                        parts.pop()
+                    elif part != ".":
+                        parts.append(part)
+                target = PurePosixPath(*parts)
+                if (not admitted(target) or any(parent.as_posix() in links for parent in target.parents)
+                        or target.as_posix() in links
+                        or (member.islnk() and target.as_posix() not in regular)):
+                    raise ValueError("native artifact contains an unsafe or dangling link")
             tarfile.data_filter(member, repository)
             destination = repository / Path(*relative.parts)
-            if destination.is_symlink() or (destination.exists() and not (destination.is_dir() and member.isdir())):
+            if any(parent.is_symlink() for parent in (destination, *destination.parents)
+                   if parent == repository or repository in parent.parents) or (destination.exists() and not (destination.is_dir() and member.isdir())):
                 raise ValueError("native artifact would overwrite an existing build output")
             with transport.extractfile(member) if member.isfile() else suppress() as stream:
                 member_digest(payload, member, stream)
@@ -511,9 +565,10 @@ def restore_archive(repository, component, native_platform, archive, output, *, 
         remaining_seconds(deadline, restore_seconds)
         transport.extractall(repository, members=[member for member in members if member.name != METADATA], filter="data")
     remaining_seconds(deadline, restore_seconds)
-    archive_digest = file_digest(archive)
-    remaining_seconds(deadline, restore_seconds)
-    write_json(output / "restored.json", {"status": "passed", "archiveSHA256": archive_digest, **metadata})
+    consumer = receipts.consumer_receipt(execution, metadata["producer"], archive_digest, artifact_id)
+    restored = {**metadata, "archiveSHA256": archive_digest, "consumer": consumer}
+    write_json(output / f"restored-{component}.json", restored)
+    write_json(output / "restored.json", restored)
     return metadata
 
 
@@ -530,10 +585,12 @@ def compile_component(repository, component, native_platform, jobs, output, arch
               "aggregateSeconds": budget, "compileAggregateSeconds": policy["componentCompileSeconds"][component],
               "policyID": policy["policyID"], "aggregateScope": "compilation, inventory, identity and archive boundary checks"}
     archive_created = False
+    started_at = receipts.utc_now()
     with execution_report(output, report):
         try:
-            original = identity(repository, native_platform, deadline=compile_deadline, output=output, report=report)
-            report["identity"] = original
+            original = compatibility_identity(repository, component, native_platform, deadline=compile_deadline, output=output, report=report)
+            execution = receipts.execution_identity(repository)
+            report.update(compatibility=original, execution=execution)
             execute_commands(compile_commands(component, jobs), repository, output, report, deadline=compile_deadline)
             if native_platform == "macos-arm64" and component in ("root", "macros", "extensions"):
                 # Symbol emission can compile again and shares the component compilation budget.
@@ -552,17 +609,21 @@ def compile_component(repository, component, native_platform, jobs, output, arch
                 log = execute_commands([command], repository, output, report, capture_stdout=True,
                                        deadline=discovery_deadline)[0]
                 inventories[package] = discovered_tests(log.read_text(errors="replace"), expected)
-            if identity(repository, native_platform, deadline=deadline, output=output, report=report) != original:
+            if receipts.digest(compatibility_identity(repository, component, native_platform, deadline=deadline, output=output, report=report)) != receipts.digest(original):
                 raise ValueError("source or compiler identity changed during compilation")
-            metadata = {"formatVersion": 1, "status": "passed", "component": component,
-                        "identity": original, "tests": inventories}
+            if receipts.execution_identity(repository) != execution:
+                raise ValueError("producer execution identity changed during compilation")
+            metadata = {"formatVersion": receipts.VERSION, "status": "passed", "component": component,
+                        "compatibility": original, "producer": receipts.producer_receipt(execution, inventories, started_at),
+                        "tests": inventories}
             remaining_seconds(deadline, budget)
             metadata = create_archive(repository, component, archive, metadata, excluded=(output,))
             archive_created = True
             remaining_seconds(deadline, budget)
             report.update(archiveSHA256=file_digest(archive), payloadSHA256=metadata["payloadSHA256"])
             remaining_seconds(deadline, budget)
-            write_json(output / "compilation.json", metadata)
+            receipts.validate_metadata(metadata, original, execution, component, build_roots(component))
+            write_json(output / "compilation.json", {**metadata, "archiveSHA256": report["archiveSHA256"]})
         except BaseException:
             if archive_created:
                 archive.unlink(missing_ok=True)
@@ -573,7 +634,7 @@ def compile_component(repository, component, native_platform, jobs, output, arch
 def test_commands(component, suite, jobs, metadata):
     """Plan only existing compiled test executables and offline consumer/benchmark runs."""
     if component == "tooling" and suite == "audit":
-        commands = linux_ci.commands("audit", Path(metadata["identity"]["repository"]), jobs)
+        commands = linux_ci.commands("audit", Path(metadata["compatibility"]["identity"]["repository"]), jobs)
         return [linux_ci.Command(command.name, (*command.arguments[:2], "--skip-build",
                     *(("--build-system", "native") if "--build-system" not in command.arguments else ()), *command.arguments[2:]),
                     execution_policy()["deadlinesSeconds"]["timingSmoke"], operation="timingSmoke")
@@ -713,31 +774,41 @@ def verify_common_smoke(common):
             raise ValueError("timing smoke histogram has missing observations, loss or inconsistent accounting")
 
 
-def run_tests(repository, component, suite, native_platform, jobs, output, archive):
+def run_tests(repository, component, suite, native_platform, jobs, output, archive, *, artifact_id=None):
     """Restore an exact compilation and verify/execute one aggregate without rebuilding."""
     jobs = bounded_jobs(jobs)
-    metadata = restore_archive(repository, component, native_platform, archive, output)
-    policy = execution_policy()
-    commands = test_commands(component, suite, jobs, metadata)
-    needs_discovery = suite != "audit" and (component != "consumers" or suite in CONSUMER_TESTS)
-    budget = (sum(command.timeout for command in commands)
-              + (policy["deadlinesSeconds"]["discovery"] if needs_discovery else 0))
-    if suite == "audit":
-        # Many short source checks share one helper-check budget, not one per report.
-        budget = policy["deadlinesSeconds"]["localHelperCheck"]
-    validate_enclosing_budget(budget, AUDIT_JOB_SECONDS if suite == "audit" else TEST_JOB_SECONDS, policy=policy)
-    deadline = time.monotonic() + budget
+    metadata = restore_archive(repository, component, native_platform, archive, output, artifact_id=artifact_id)
+    with (output / "restored.json").open() as stream:
+        restored = receipts.read_json(stream)
+    consumer = restored["consumer"]
+    consumer.update(selectedScope={"component": component, "suite": suite}, status="running")
     report = {"status": "running", "component": component, "suite": suite, "jobs": jobs, "commands": [],
-              "aggregateSeconds": budget, "identity": metadata["identity"], "policyID": policy["policyID"],
+              "compatibility": metadata["compatibility"], "producer": metadata["producer"], "consumer": consumer,
               "aggregateScope": "post-restore discovery, tests, smokes and final identity"}
     with execution_report(output, report):
+        policy = execution_policy()
+        report["policyID"] = policy["policyID"]
+        commands = test_commands(component, suite, jobs, metadata)
+        needs_discovery = suite != "audit" and (component != "consumers" or suite in CONSUMER_TESTS)
+        budget = (sum(command.timeout for command in commands)
+                  + (policy["deadlinesSeconds"]["discovery"] if needs_discovery else 0))
+        if suite == "audit":
+            budget = policy["deadlinesSeconds"]["localHelperCheck"]
+        report["aggregateSeconds"] = budget
+        validate_enclosing_budget(budget, AUDIT_JOB_SECONDS if suite == "audit" else TEST_JOB_SECONDS, policy=policy)
+        deadline = time.monotonic() + budget
         if needs_discovery:
+            consumer["discovery"] = "running"
             package = f"Examples/{suite}" if component == "consumers" else PACKAGES[component]
             discovery = swift_command("verify-discovery", "test", package, jobs, "list", "--skip-build")
             log = execute_commands([discovery], repository, output, report, capture_stdout=True, deadline=deadline)[0]
             inventory = metadata["tests"][package]
             if discovered_tests(log.read_text(errors="replace"), sorted(inventory)) != inventory:
+                consumer["discovery"] = "failed"
                 raise ValueError("restored tests differ from the compiled test inventory")
+            consumer.update(discovery="passed", inventorySHA256=receipts.digest(inventory))
+        else:
+            consumer["discovery"] = "not-applicable"
         if component == "benchmarks":
             (repository / ".build/dsl-measurements").mkdir(parents=True, exist_ok=True)
         if component in TIMING_PRODUCTS:
@@ -745,8 +816,10 @@ def run_tests(repository, component, suite, native_platform, jobs, output, archi
             report["numericalQualification"] = "informational shared-runner smoke; no baseline comparison or product SLO"
         execute_commands(commands, repository, output, report, deadline=deadline)
         verify_timing_smokes(repository, commands)
-        if identity(repository, native_platform, deadline=deadline, output=output, report=report) != metadata["identity"]:
+        if receipts.digest(compatibility_identity(repository, component, native_platform, deadline=deadline, output=output, report=report)) != receipts.digest(metadata["compatibility"]):
             raise ValueError("tracked source or compiler changed during test execution")
+        if receipts.execution_identity(repository) != consumer["execution"]:
+            raise ValueError("consumer execution identity changed during tests")
         remaining_seconds(deadline, budget)
     return report
 
@@ -762,6 +835,7 @@ def main():
     parser.add_argument("--jobs", type=int, default=2)
     parser.add_argument("--suite")
     parser.add_argument("--archive", type=Path)
+    parser.add_argument("--artifact-id", help="selected immutable GitHub artifact ID; resolver validation is Phase 5")
     arguments = parser.parse_args()
     if arguments.operation != "plan" and (not arguments.component or not arguments.platform or not arguments.archive):
         parser.error("compile, restore and test require --component, --platform and --archive")
@@ -778,9 +852,9 @@ def main():
         elif arguments.operation == "compile":
             compile_component(repository, arguments.component, arguments.platform, arguments.jobs, output, arguments.archive.resolve())
         elif arguments.operation == "restore":
-            restore_archive(repository, arguments.component, arguments.platform, arguments.archive.resolve(), output)
+            restore_archive(repository, arguments.component, arguments.platform, arguments.archive.resolve(), output, artifact_id=arguments.artifact_id)
         else:
-            run_tests(repository, arguments.component, arguments.suite, arguments.platform, arguments.jobs, output, arguments.archive.resolve())
+            run_tests(repository, arguments.component, arguments.suite, arguments.platform, arguments.jobs, output, arguments.archive.resolve(), artifact_id=arguments.artifact_id)
     except (ValueError, OSError, KeyError, TypeError, AttributeError, RecursionError, tarfile.TarError, subprocess.SubprocessError) as error:
         write_json(output / "failure.json", {"status": "failed", "operation": arguments.operation, "error": str(error)})
         print(f"Native job failed: {error}", file=sys.stderr)

@@ -1,0 +1,29 @@
+/Library/Frameworks/Python.framework/Versions/3.14/bin/python3 -m unittest test_native_jobs.NativeArtifactTests.test_final_compatibility_change_fails_after_successful_restored_tests
+FF
+======================================================================
+FAIL: test_final_compatibility_change_fails_after_successful_restored_tests (test_native_jobs.NativeArtifactTests.test_final_compatibility_change_fails_after_successful_restored_tests) (field='runtime-version-bool')
+Post-test checks still reject changed source, environment, SDK and semantic compiler flags.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/carsonrau/Developer/DiscordKit-ci-phase4/Tools/ci/test_native_jobs.py", line 692, in test_final_compatibility_change_fails_after_successful_restored_tests
+    redirect_stdout(io.StringIO()), self.assertRaisesRegex(ValueError, "changed")):
+                                    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_final_compatibility_change_fails_after_successful_restored_tests (test_native_jobs.NativeArtifactTests.test_final_compatibility_change_fails_after_successful_restored_tests)
+Post-test checks still reject changed source, environment, SDK and semantic compiler flags.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/carsonrau/Developer/DiscordKit-ci-phase4/Tools/ci/test_native_jobs.py", line 695, in test_final_compatibility_change_fails_after_successful_restored_tests
+    self.assertEqual(report["status"], "failed")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'passed' != 'failed'
+- passed
++ failed
+
+
+----------------------------------------------------------------------
+Ran 1 test in 0.034s
+
+FAILED (failures=2)

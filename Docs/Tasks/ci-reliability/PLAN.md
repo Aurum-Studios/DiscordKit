@@ -12,7 +12,9 @@ Status: phased implementation plan. Phase 0 is complete as local preparation at
 local helper implementation at `1bc5de45a6dbeef1ab31bd7f6fbbe85b69771600`.
 Phase 2 is complete as local Swift implementation at
 `4dbb085521f1977dc40ea5b8818edb9d61cd2f9f`.
-Phases 3 through 11 remain proposed.
+Phase 3 is implemented with local emulated acceptance; native x64 acceptance remains open.
+Phase 4 receipt contracts are implemented for local helper acceptance; see
+[the implementation](phase-4/IMPLEMENTATION.md). Phases 5 through 11 remain proposed.
 See [STATE.md](STATE.md) for the
 commit-backed completion record and [BOOTSTRAP.md](BOOTSTRAP.md) for execution limits.
 Source inspected: `85eac6f3c1d3b17e53596c49e7438efee366c1b3`.

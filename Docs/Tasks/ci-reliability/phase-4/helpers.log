@@ -1,0 +1,12 @@
+/Library/Frameworks/Python.framework/Versions/3.14/bin/python3 -m unittest discover -s Tools/ci -p 'test_*.py'
+....................................................Built 4 public-module archives into /var/folders/3j/5mxmxjxn1z98m1c1y32z64zh0000gn/T/documentation test de3scn7s/.build/site export
+.Built 4 public-module archives into /var/folders/3j/5mxmxjxn1z98m1c1y32z64zh0000gn/T/tmp_4zvvp4h/site
+..Built 4 public-module archives into /var/folders/3j/5mxmxjxn1z98m1c1y32z64zh0000gn/T/tmpsjks1538/site
+...Built 4 public-module archives into /var/folders/3j/5mxmxjxn1z98m1c1y32z64zh0000gn/T/tmpl99o31tg/site
+.................................................Published v1.2.37 from abcdef0123abcdef0123abcdef0123abcdef0123
+.Published v1.2.37 from abcdef0123abcdef0123abcdef0123abcdef0123
+.................................sssss.....................s......................................................................................................
+----------------------------------------------------------------------
+Ran 270 tests in 12.065s
+
+OK (skipped=6)

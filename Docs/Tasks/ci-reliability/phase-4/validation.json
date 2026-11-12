@@ -1,0 +1,174 @@
+{
+  "base": "9f26e10c00c6562f1fd51ce03e2067edcad971c9",
+  "branch": "ci/phase-4-compatibility",
+  "executions": {
+    "exact-types-green": {
+      "cleanup": {
+        "allowanceSeconds": 8.0,
+        "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed",
+        "groupState": "gone",
+        "parentReaped": true,
+        "remainingProcesses": [],
+        "seconds": 0.004,
+        "signals": [],
+        "status": "group-signalled",
+        "verification": "available",
+        "verificationMalformedRows": 0,
+        "verificationTruncated": false
+      },
+      "command": [
+        "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+        "-m",
+        "unittest",
+        "test_native_jobs.NativeArtifactTests.test_final_compatibility_change_fails_after_successful_restored_tests",
+        "test_native_jobs.NativeArtifactTests.test_compilation_rejects_required_runtime_type_drift_before_sealing"
+      ],
+      "elapsedSeconds": 0.125,
+      "exitCode": 0,
+      "log": "exact-types-green.log",
+      "receipt": "exact-types-green.receipt.json",
+      "status": "passed"
+    },
+    "exact-types-red": {
+      "cleanup": {
+        "allowanceSeconds": 8.0,
+        "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed",
+        "groupState": "gone",
+        "parentReaped": true,
+        "remainingProcesses": [],
+        "seconds": 0.004,
+        "signals": [],
+        "status": "group-signalled",
+        "verification": "available",
+        "verificationMalformedRows": 0,
+        "verificationTruncated": false
+      },
+      "command": [
+        "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+        "-m",
+        "unittest",
+        "test_native_jobs.NativeArtifactTests.test_final_compatibility_change_fails_after_successful_restored_tests"
+      ],
+      "elapsedSeconds": 0.118,
+      "exitCode": 1,
+      "log": "exact-types-red.log",
+      "receipt": "exact-types-red.receipt.json",
+      "status": "failed"
+    },
+    "helpers": {
+      "cleanup": {
+        "allowanceSeconds": 8.0,
+        "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed",
+        "groupState": "gone",
+        "parentReaped": true,
+        "remainingProcesses": [],
+        "seconds": 0.003,
+        "signals": [],
+        "status": "group-signalled",
+        "verification": "available",
+        "verificationMalformedRows": 0,
+        "verificationTruncated": false
+      },
+      "command": [
+        "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "Tools/ci",
+        "-p",
+        "test_*.py"
+      ],
+      "elapsedSeconds": 12.24,
+      "exitCode": 0,
+      "log": "helpers.log",
+      "receipt": "helpers.receipt.json",
+      "status": "passed"
+    },
+    "policy": {
+      "cleanup": {
+        "allowanceSeconds": 8.0,
+        "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed",
+        "groupState": "gone",
+        "parentReaped": true,
+        "remainingProcesses": [],
+        "seconds": 0.004,
+        "signals": [],
+        "status": "group-signalled",
+        "verification": "available",
+        "verificationMalformedRows": 0,
+        "verificationTruncated": false
+      },
+      "command": [
+        "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+        "Tools/ci/scheduling_policy.py",
+        "validate"
+      ],
+      "elapsedSeconds": 0.063,
+      "exitCode": 0,
+      "log": "policy.log",
+      "receipt": "policy.receipt.json",
+      "status": "passed"
+    }
+  },
+  "inputSHA256": {
+    "Tools/ci/native_jobs.py": "f2fb2285143a66484c3beb0617a10dc203c16f958be1330a1da7dcf9945feccf",
+    "Tools/ci/native_receipts.py": "ac7317e349a733f69426de5d7acc000c11ba0a7e91cf517b7bd05b3d89f83ec1",
+    "Tools/ci/platform_probe.py": "35ebf62859cc54bfa2376e03f6ea3398592aee96089545df780c07a507922f04",
+    "Tools/ci/test_native_jobs.py": "37a5021a3b85260933c4ba7de977aa1ff85db880122e61ac2aacaaa515d033ab",
+    "Tools/ci/test_native_receipts.py": "4258ddfc4c268808c39a9575dcb60ceca5134578d18c0afc91c3023c48e4a213",
+    "Tools/ci/test_platform_probe.py": "6669664184eeeb9a15c5378db2f946837a8b3f378d79e598f71c734c4e3221c9"
+  },
+  "phase": 4,
+  "qualification": {
+    "artifactResolver": "phase5 pending",
+    "hosted": false,
+    "localPythonHelpers": true,
+    "nativeCompilation": false,
+    "nativeSwiftTesting": false,
+    "paid": false,
+    "phase3NativeX64Acceptance": "pending",
+    "remoteWrites": false
+  },
+  "static": {
+    "gitDiffCheck": "passed",
+    "markdownLinksChecked": 160,
+    "originalCheckoutPreserved": true,
+    "pythonSyntax": "passed"
+  },
+  "status": "passed-local-helper-acceptance",
+  "tests": {
+    "discovered": 270,
+    "failed": 0,
+    "focusedNativeReceiptTests": 51,
+    "passed": 264,
+    "platformFactsTests": 17,
+    "skipped": [
+      {
+        "reason": "Linux session ownership covers distinct child groups",
+        "test": "test_linux_ci.LinuxSessionTests.test_exited_parent_cannot_leave_separate_groups_holding_output"
+      },
+      {
+        "reason": "Linux session ownership covers distinct child groups",
+        "test": "test_linux_ci.LinuxSessionTests.test_malformed_session_rows_cannot_claim_an_empty_session"
+      },
+      {
+        "reason": "Linux session ownership covers distinct child groups",
+        "test": "test_linux_ci.LinuxSessionTests.test_sigterm_cleans_separate_child_and_grandchild_groups"
+      },
+      {
+        "reason": "Linux session ownership covers distinct child groups",
+        "test": "test_linux_ci.LinuxSessionTests.test_success_cleans_separate_groups_without_inherited_output"
+      },
+      {
+        "reason": "Linux session ownership covers distinct child groups",
+        "test": "test_linux_ci.LinuxSessionTests.test_timeout_cleans_separate_child_and_grandchild_groups"
+      },
+      {
+        "reason": "Linux cleanup requires verified session enumeration",
+        "test": "test_linux_ci.SupervisorEvidenceTests.test_unavailable_linux_session_verification_fails_closed"
+      }
+    ]
+  },
+  "validationScriptSHA256": "6add327f499669d8685f862837c1d30fae80b8e1e51cbd4aa0aef83796a9e6b8"
+}

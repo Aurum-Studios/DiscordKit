@@ -25,7 +25,7 @@ is claimed. See [BOOTSTRAP.md](BOOTSTRAP.md) for the zero-paid execution sheet.
 | 1 — Process supervision | Complete; local helper acceptance only | `1bc5de45a6dbeef1ab31bd7f6fbbe85b69771600` | [231 helper tests](phase-1/validation.json), [nine retained fault specimens](phase-1/faults/results.json), [independent review](phase-1/review/results.json), [implementation and limits](phase-1/IMPLEMENTATION.md) |
 | 2 — Event-hub accounting | Complete; local macOS Swift acceptance | `4dbb085521f1977dc40ea5b8818edb9d61cd2f9f` | [Red/green, 23 load + 21 runtime tests, four CLI checks](phase-2/validation.json), [independent review](phase-2/review.json), [implementation and limits](phase-2/IMPLEMENTATION.md) |
 | 3 — Linux hang repair | Implemented and locally tested; native x64 acceptance pending | `69a21b325c4eaa6181eb31dcc7e78ab083ac6411` | [Stack-supported peer repair, red/green and whole-package checks](phase-3/IMPLEMENTATION.md); [native gate](phase-3/NATIVE-ACCEPTANCE.md) remains open |
-| 4 — Compatibility receipts | Not started | Pending | Pending |
+| 4 — Compatibility receipts | Implemented; local helper acceptance passed; commit receipt pending | Pending local commit | [270 helpers, six existing Linux-only skips](phase-4/validation.json), [review](phase-4/review.json), [v2 contracts and execution sheet](phase-4/IMPLEMENTATION.md) |
 | 5 — Transfer and partial reruns | Not started | Pending | Pending local and hosted proof |
 | 6 — Preflight and canaries | Not started | Pending | Pending |
 | 7 — Suite groups and resources | Not started | Pending | Pending coverage/cost comparison |
@@ -98,6 +98,25 @@ Phase 3 remains pending native acceptance; the [next action](phase-3/NATIVE-ACCE
 requires a verified native host/access or a separately authorized bounded hosted
 probe. No later phase, push, dispatch, publication or paid execution occurred.
 
+## Phase 4 handoff
+
+Owner Codex `/root` implemented receipt version 2 on `ci/phase-4-compatibility`,
+sibling `DiscordKit-ci-phase4`, based on `9f26e10c` (Phase 3 handoff).
+[Contracts and execution plan](phase-4/IMPLEMENTATION.md) define exact compatibility,
+separate successful producer provenance, and terminal consumer results. Same-run,
+same-attempt scope remains enforced. V1 requires regeneration. Immutable artifact
+resolution and earlier-attempt recovery remain Phase 5 work.
+
+[Validation](phase-4/validation.json) records 270 CI helper tests: 264 passed and six
+existing Linux-only tests skipped on macOS, plus retained red/green exact-type
+regressions and policy/hash/link checks. [Independent review](phase-4/review.json)
+has no remaining blockers. Metadata command availability was checked read-only on
+the host; its Swift 6.4 compiler does not qualify pinned Swift 6.4.1. No native
+compilation, hosted CI, paid execution, workflow mutation, push or publication occurred.
+The original planning edits and earlier worktrees remain preserved. The actual
+implementation commit will be recorded by a documentation-only follow-up after
+Git blob/hash verification; until then this entry is not marked complete.
+
 ## Outstanding execution decisions
 
 - Paid execution remains unauthorized: experiment/workflow allowances are USD 0,
@@ -108,7 +127,7 @@ probe. No later phase, push, dispatch, publication or paid execution occurred.
 - Operator-selected repository budget amount/scope and authorization to configure it.
 - Phase 0 uses `ci/phase-0-baseline` in sibling `DiscordKit-ci-phase0`, owner
   Codex `/root`, base `85eac6f3c1d3b17e53596c49e7438efee366c1b3`.
-  Phase 1 through Phase 3 ownership and local-only sheets are recorded above. Phases 4
+  Phase 1 through Phase 4 ownership and local-only sheets are recorded above. Phases 5
   through 11 owners and paid experiment sheets are not assigned/authorized.
 
 These do not prevent beginning local preparation/helper implementation. Missing

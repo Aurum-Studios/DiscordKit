@@ -114,16 +114,25 @@ Every consumer job installs its matching compiler/runtime prerequisites too.
 
 [The native job helper](../Tools/ci/native_jobs.py) transports each compilation in
 a tar archive, retaining executable permissions, resources, symlinks and filenames
-that cannot be uploaded individually. The archive receipt binds payload hashes,
-tracked source contents, exact commit, workflow run and attempt, native platform,
-compiler version/target, build engine and absolute checkout path. Consumers check
-the whole archive before extraction and refuse mismatches or existing build
-outputs. Compiled Swift tests embed absolute source paths, so each platform's
-small and large runner images must provide the same checkout path and compatible
-OS/SDK/runtime. A different path fails explicitly instead of silently rebuilding
-on the small runner. Artifacts are local to the same workflow attempt and expire
-after two days. Reruns must use **Re-run all jobs** so the new attempt produces
-matching compilation artifacts.
+that cannot be uploaded individually. The [version-2 receipt contract](Tasks/ci-reliability/phase-4/IMPLEMENTATION.md)
+separates exact build compatibility from producer and consumer execution provenance.
+Compatibility binds tracked source/commit, explicit pin digests, semantic build
+commands/configuration, platform/architecture, compiler/target, native build engine,
+canonical checkout path and exact OS/runtime/image/Xcode/SDK facts. Image release
+URLs and runner names are informational. Producer records retain workflow/run/job/
+attempt and trust scope, successful stages, inventory seal and timestamps. Consumers
+retain their own identity, selected producer, archive digest, artifact identity,
+discovery, selected suite and terminal results. Legacy v1 requires regeneration.
+
+Consumers validate the entire payload and safe members/links before extraction and
+refuse mismatches or existing build outputs. Compiled Swift tests embed absolute
+source paths, so each platform's runner images must provide the same checkout path
+and exact required OS/SDK/runtime inputs. A different path fails explicitly instead
+of silently rebuilding. Artifacts remain local to the same workflow attempt and
+expire after two days. Use **Re-run all jobs** for matching fresh artifacts. Phase 4
+retains same-attempt admission; authenticated immutable artifact resolution and
+partial reruns remain Phase 5 work. Existing callers record a local content address
+until the resolver supplies a verified immutable GitHub artifact ID.
 
 All compile/test/run commands enforce committed dependency pins and explicit
 positive job limits; the helper caps requests to CPUs visible to the process.

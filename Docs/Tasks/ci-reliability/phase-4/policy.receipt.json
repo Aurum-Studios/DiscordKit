@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "name": "phase4-policy",
+  "stage": "phase4",
+  "operation": "localHelperCheck",
+  "arguments": [
+    "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+    "Tools/ci/scheduling_policy.py",
+    "validate"
+  ],
+  "start": "2026-11-12T13:56:11.500925+00:00",
+  "startMonotonic": 349778.895218583,
+  "deadlineMonotonic": 349838.895218583,
+  "executionLimitSeconds": 60,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "operation",
+  "paths": {
+    "output": "/Users/carsonrau/Developer/DiscordKit-ci-phase4/Docs/Tasks/ci-reliability/phase-4/policy.log",
+    "stdout": null,
+    "diagnostics": "/Users/carsonrau/Developer/DiscordKit-ci-phase4/Docs/Tasks/ci-reliability/phase-4/policy.diagnostics.jsonl",
+    "receipt": "/Users/carsonrau/Developer/DiscordKit-ci-phase4/Docs/Tasks/ci-reliability/phase-4/policy.receipt.json"
+  },
+  "identity": {
+    "executionID": "b99cad0a-de79-4447-8376-ff0cb98f5ef5",
+    "supervisorPID": 62923,
+    "host": "Pokemon-GO-Plus",
+    "system": "Darwin",
+    "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase4"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 62924,
+  "group": 62924,
+  "cleanup": {
+    "status": "group-signalled",
+    "signals": [],
+    "parentReaped": true,
+    "allowanceSeconds": 8.0,
+    "seconds": 0.004,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "verificationMalformedRows": 0,
+    "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "/Users/carsonrau/Developer/DiscordKit-ci-phase4/Docs/Tasks/ci-reliability/phase-4/policy.log",
+      "retainedBytes": 325,
+      "observedBytes": 325,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T13:56:11.564152+00:00",
+  "endMonotonic": 349778.958491666,
+  "elapsedSeconds": 0.063,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}
