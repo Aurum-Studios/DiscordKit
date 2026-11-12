@@ -1,0 +1,611 @@
+{
+  "formatVersion": 1,
+  "observedAtUTC": "2026-11-12T19:22:51.181192+00:00",
+  "status": "local checks passed; shared runner pin awaits approval; hosted certification pending",
+  "sourceHEAD": "d54e0e8b33184bc08e1a9a23d73a7f4835b7027d",
+  "remoteMainReadback": "d54e0e8b33184bc08e1a9a23d73a7f4835b7027d",
+  "commitCreated": false,
+  "pushPerformed": false,
+  "newHostedRunDispatched": false,
+  "publicationPerformed": false,
+  "cancelledFailedRun": {
+    "id": 43281310149,
+    "status": "completed",
+    "conclusion": "cancelled"
+  },
+  "helperGroups": {
+    "macos": {
+      "ciPythonDiscovered": 650,
+      "ciPythonPassed": 644,
+      "ciPythonSkipped": 6,
+      "otherPythonPassed": 375,
+      "browserPassed": 38,
+      "totalPassed": 1057,
+      "scope": "local simulated GitHub identity; no hosted execution",
+      "evidence": "macos-ci-helpers-complete/commands.json"
+    },
+    "linux": {
+      "ciPythonDiscovered": 650,
+      "ciPythonPassed": 650,
+      "ciPythonSkipped": 0,
+      "otherPythonPassed": 375,
+      "browserPassed": 38,
+      "totalPassed": 1063,
+      "scope": "local simulated GitHub identity; no hosted execution",
+      "evidence": "linux-ci-helpers-complete/commands.json"
+    }
+  },
+  "nativeHandoff": {
+    "qualification": "local offline native compiler handoff; not hosted qualification",
+    "status": "passed",
+    "swiftVersion": "Swift version 6.4.1 (swift-6.4.1-RELEASE)\nTarget: x86_64-unknown-linux-gnu",
+    "sourceCommit": "d54e0e8b33184bc08e1a9a23d73a7f4835b7027d",
+    "producerInventory": {
+      ".": {
+        "CoreTests": [
+          "CoreTests.parameterized(_:)",
+          "CoreTests.resourceRoundtrip()"
+        ]
+      }
+    },
+    "expectedLeaves": [
+      ".::CoreTests.parameterized(_:)",
+      ".::CoreTests.resourceRoundtrip()"
+    ],
+    "executedLeaves": [
+      ".::CoreTests.parameterized(_:)",
+      ".::CoreTests.resourceRoundtrip()"
+    ],
+    "suiteResults": [
+      {
+        "excludedLeaves": {},
+        "executedLeaves": [
+          ".::CoreTests.parameterized(_:)",
+          ".::CoreTests.resourceRoundtrip()"
+        ],
+        "expectedLeaves": [
+          ".::CoreTests.parameterized(_:)",
+          ".::CoreTests.resourceRoundtrip()"
+        ],
+        "result": {
+          "counts": {
+            "cases": 3,
+            "excluded": 0,
+            "executed": 2,
+            "expected": 2,
+            "passed": 2
+          },
+          "eventStreamVersion": "6.4.0",
+          "excludedLeaves": {},
+          "executedLeaves": [
+            "CoreTests.parameterized(_:)",
+            "CoreTests.resourceRoundtrip()"
+          ],
+          "expectedLeaves": [
+            "CoreTests.parameterized(_:)",
+            "CoreTests.resourceRoundtrip()"
+          ],
+          "formatVersion": 1,
+          "framework": "swift-testing",
+          "leaves": {
+            "CoreTests.parameterized(_:)": {
+              "caseCount": 2,
+              "outcome": "passed",
+              "parameterized": true
+            },
+            "CoreTests.resourceRoundtrip()": {
+              "caseCount": 1,
+              "outcome": "passed",
+              "parameterized": false
+            }
+          },
+          "runCount": 1,
+          "status": "passed"
+        },
+        "status": "passed",
+        "suite": "CoreTests"
+      }
+    ],
+    "consumerGuardPreserved": true,
+    "producerConsumerIdentityEqual": true,
+    "archiveBytes": 416671,
+    "elapsedSeconds": 70.15706241900625
+  },
+  "linuxABI": {
+    "nativeELFs": 109,
+    "resolvedLibraries": 101,
+    "installedPackages": 50,
+    "nativeTools": 4,
+    "finalSupervisedObservationSeconds": [
+      8.484,
+      8.62,
+      8.737,
+      8.651
+    ],
+    "metadataLimitSeconds": 30,
+    "weeklyLabelReplayIsHostedQualification": false
+  },
+  "admission": {
+    "guardsChecked": 82,
+    "allGuardsAdmitted": true,
+    "totals": {
+      "runnerUSD": "722.990",
+      "storageUSD": "0",
+      "transferUSD": "0",
+      "safetyUSD": "0.00",
+      "maximumUSD": "722.990",
+      "maximumMinutes": 7805,
+      "maximumJobs": 82,
+      "maximumAttempts": 1,
+      "allowanceUSD": "723.00",
+      "remainingUSD": "0.010",
+      "includedEntryReserveUSD": "722.990"
+    },
+    "scope": "local simulation at recorded source snapshot",
+    "sourceSnapshotNote": "Current tracked working-tree inputs include uncommitted edits. Newly untracked helper file digests are separately retained below; the final committed source will have a new source identity.",
+    "policyChanged": false
+  },
+  "product": {
+    "scope": "Bounded comprehensive local product/build/audit checks before another push or hosted run; no hosted qualification or publication.",
+    "hostCompiler": "Apple Swift version 6.4 (swiftlang-6.4.0.34.1 clang-2100.3.34.1)\nTarget: arm64-apple-macosx27.0.0",
+    "headAtCheck": "d54e0e8b33184bc08e1a9a23d73a7f4835b7027d",
+    "SDKROOT": "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX27.0.sdk",
+    "packageResolvedSHA256": "dd6c86faf979e3b991553d84ae0b378105629a3a010d71f842ed84dda9bf263c",
+    "completedLocalChecksPassed": true,
+    "fullHostedCertification": false,
+    "componentCount": 12,
+    "components": [
+      {
+        "component": "root",
+        "status": "passed",
+        "qualification": "current-source existing native debug graph, actual local Apple Swift6.4 tests/events; no pinned hosted6.4.1 qualification",
+        "testCounts": {
+          "expected": 2709,
+          "executed": 2709,
+          "passed": 2709,
+          "excluded": 1,
+          "cases": 9328
+        },
+        "excludedLeaves": {
+          "DiscordMLSTests.MLSNativeDAVEInteropTests/initialCandidateAcceptedByMLSpp(_:)": "Opt-in MLS++ oracle requires DISCORDKIT_DAVE_INTEROP_EXECUTABLE; separate native qualification."
+        },
+        "evidence": [
+          "root-tests.json"
+        ]
+      },
+      {
+        "component": "load",
+        "status": "passed",
+        "engine": "native",
+        "qualification": "current-source incremental native tests",
+        "testCounts": {
+          "expected": 161,
+          "executed": 161,
+          "passed": 161,
+          "excluded": 0,
+          "cases": 528
+        },
+        "evidence": [
+          "package-tests.json"
+        ],
+        "currentSourceNativeReleaseProductBuild": "passed",
+        "productionOfflineSmokes": "passed",
+        "smokeEvidence": "smokes.json"
+      },
+      {
+        "component": "macros",
+        "status": "passed",
+        "engine": "native",
+        "qualification": "current-source incremental native tests",
+        "testCounts": {
+          "expected": 34,
+          "executed": 34,
+          "passed": 34,
+          "excluded": 0,
+          "cases": 124
+        },
+        "evidence": [
+          "package-tests.json"
+        ],
+        "strictCompilerFixtures": 26,
+        "fixtureStatus": "passed",
+        "fixtureEvidence": "macro-fixtures-production.json"
+      },
+      {
+        "component": "extensions",
+        "status": "passed",
+        "engine": "native",
+        "qualification": "current-source incremental native tests",
+        "testCounts": {
+          "expected": 6,
+          "executed": 6,
+          "passed": 6,
+          "excluded": 0,
+          "cases": 6
+        },
+        "evidence": [
+          "package-tests.json"
+        ],
+        "strictCompilerFixtures": 3,
+        "fixtureStatus": "passed",
+        "fixtureEvidence": "fixtures.json:suites[dsl-extensions]"
+      },
+      {
+        "component": "tooling",
+        "status": "passed",
+        "engine": "native",
+        "qualification": "current-source incremental native tests",
+        "testCounts": {
+          "expected": 106,
+          "executed": 106,
+          "passed": 106,
+          "excluded": 0,
+          "cases": 645
+        },
+        "evidence": [
+          "package-tests.json"
+        ]
+      },
+      {
+        "component": "timing-support",
+        "status": "passed",
+        "engine": "swiftbuild",
+        "qualification": "retained SwiftBuild test executable; no current native debug build",
+        "testCounts": {
+          "expected": 68,
+          "executed": 68,
+          "passed": 68,
+          "excluded": 0,
+          "cases": 68
+        },
+        "evidence": [
+          "package-tests.json"
+        ]
+      },
+      {
+        "component": "timing",
+        "status": "passed",
+        "engine": "swiftbuild",
+        "qualification": "retained SwiftBuild test executable; no current native debug build",
+        "testCounts": {
+          "expected": 9,
+          "executed": 9,
+          "passed": 9,
+          "excluded": 0,
+          "cases": 30
+        },
+        "evidence": [
+          "package-tests.json"
+        ],
+        "currentSourceNativeReleaseProductBuild": "passed",
+        "productionOfflineSmokes": "passed",
+        "smokeEvidence": "smokes.json"
+      },
+      {
+        "component": "foundation",
+        "status": "passed",
+        "engine": "swiftbuild",
+        "qualification": "retained SwiftBuild test executable; no current native debug build",
+        "testCounts": {
+          "expected": 23,
+          "executed": 23,
+          "passed": 23,
+          "excluded": 0,
+          "cases": 23
+        },
+        "evidence": [
+          "package-tests.json"
+        ],
+        "currentSourceNativeReleaseProductBuild": "passed",
+        "productionOfflineSmokes": "passed",
+        "smokeEvidence": "smokes.json"
+      },
+      {
+        "component": "media",
+        "status": "passed",
+        "engine": "swiftbuild",
+        "qualification": "retained SwiftBuild test executable; no current native debug build",
+        "testCounts": {
+          "expected": 25,
+          "executed": 25,
+          "passed": 25,
+          "excluded": 0,
+          "cases": 25
+        },
+        "evidence": [
+          "package-tests.json"
+        ],
+        "currentSourceNativeReleaseProductBuild": "passed",
+        "productionOfflineSmokes": "passed",
+        "smokeEvidence": "smokes.json"
+      },
+      {
+        "component": "benchmarks",
+        "status": "passed",
+        "engine": "swiftbuild",
+        "qualification": "retained SwiftBuild test executable; no current native debug build",
+        "testCounts": {
+          "expected": 24,
+          "executed": 24,
+          "passed": 24,
+          "excluded": 0,
+          "cases": 24
+        },
+        "evidence": [
+          "package-tests.json"
+        ],
+        "currentSourceNativeReleaseProductBuild": "passed",
+        "productionOfflineSmokes": "passed",
+        "smokeEvidence": "smokes.json"
+      },
+      {
+        "component": "consumers",
+        "status": "partial-local-validation",
+        "qualification": "Retained local SwiftBuild executables only; no current-source native build qualification",
+        "offlineSmokesPassed": [
+          "LoggingApp",
+          "CommandsApp",
+          "DSLCommands",
+          "DSLBot",
+          "VoiceBot",
+          "SocialApp"
+        ],
+        "unavailableOfflineSmoke": "DSLEvents",
+        "retainedLoggingAppTestCounts": {
+          "expected": 4,
+          "executed": 4,
+          "passed": 4,
+          "excluded": 0,
+          "cases": 4
+        },
+        "nativeTestGraphsAbsent": [
+          "LoggingApp",
+          "CommandsApp",
+          "DSLCommands",
+          "DSLEvents",
+          "DSLBot",
+          "ActivityHost"
+        ],
+        "evidence": [
+          "consumer-smokes.json",
+          "consumer-logging-tests.json"
+        ]
+      },
+      {
+        "component": "release",
+        "status": "not-built",
+        "qualification": "No existing native optimized root/macros/extensions graph; not cold rebuilt within available local disk/cache capacity",
+        "packages": [
+          ".",
+          "Packages/DiscordDSLMacros",
+          "Packages/DiscordDSLExtensions"
+        ],
+        "releaseGraphAndReports": "passed in audits.json",
+        "evidence": [
+          "audits.json"
+        ]
+      }
+    ],
+    "crossComponentChecks": [
+      {
+        "check": "Current-source tooling build and all11 production audit operations",
+        "status": "passed",
+        "evidence": "audits.json"
+      },
+      {
+        "check": "Strict DocC curation,32tutorial snapshots,36public module archives and3merged archives",
+        "status": "passed",
+        "evidence": "docc.json"
+      },
+      {
+        "check": "All8 API baseline comparisons",
+        "status": "passed",
+        "evidence": [
+          "api-checks.json (root6 + macros1)",
+          "api-extensions-refreshed.json (fresh extension graphs)"
+        ]
+      },
+      {
+        "check": "72 selected Apple module emissions over9SDKs through new exact pin guard",
+        "status": "passed",
+        "evidence": "apple-selected-modules-final.json"
+      },
+      {
+        "check": "Apple resolver CLI accepts force-resolved-versions before resolve; pin rewrite regressions reject both resolution/compilation mutations",
+        "status": "passed",
+        "evidence": [
+          "apple-resolve-option-probe.json",
+          "apple-pin-regression-after.log"
+        ]
+      }
+    ],
+    "supersededResults": [
+      {
+        "evidence": "api-checks.json: api-extensions failed",
+        "cause": "Retained November5 extension graphs predated November11 reviewed baseline",
+        "replacement": "Fresh current-source incremental extension graphs + api-extensions-refreshed.json passed"
+      },
+      {
+        "evidence": "fixtures.json: dsl-macros failed",
+        "cause": "Existing scratch tree retained SwiftPM prebuilt dependency metadata; strict direct-import check incorrectly rejected a declared import",
+        "replacement": "Unchanged production strict flags with existing source-built clean cache; macro-fixtures-production.json 26/26 passed"
+      },
+      {
+        "evidence": "macro-fixtures-diagnostic.json",
+        "qualification": "Diagnostic-only warn flags also passed26fixtures; final qualification uses the separate production strict run"
+      }
+    ],
+    "limits": [
+      "Local compiler is AppleSwift6.4, not the hosted pinned Swift6.4.1.",
+      "Five supplementary suite executions and consumer executables use retained SwiftBuild output, explicitly separated from current native builds.",
+      "No cold graphs, new SwiftSyntax clone, native consumer build or full optimized library build was started.",
+      "No Git commit, push, workflow dispatch or publication occurred in this validation task."
+    ]
+  },
+  "sharedRunnerPin": {
+    "status": "prepared only; no PATCH performed",
+    "count": 9,
+    "groups": [
+      "Linux-x64-8",
+      "Linux-x64-64"
+    ],
+    "currentImageID": "2306",
+    "proposedImageID": "2295",
+    "proposedImage": "Ubuntu 24.04",
+    "alsoAffects": [
+      "MiniCarson"
+    ],
+    "plan": "runner-image-update-plan.json"
+  },
+  "limits": [
+    "Local macOS compiler is Apple Swift 6.4; hosted pinned Swift 6.4.1 remains to be qualified.",
+    "Linux helper and real fixture execution used local Ubuntu24.04 x64 under emulation, not GitHub runners.",
+    "Fresh native consumer packages and full optimized root/macros/extensions producer graphs were not cold rebuilt locally.",
+    "Full hosted platform coverage, sealed export and actual publication remain pending.",
+    "Monthly provider budget and per-run authorization are unchanged; estimates are not an invoice.",
+    "Validation JSON excludes its own hash to avoid a circular seal; untracked new helpers are explicitly hashed below."
+  ],
+  "inputSHA256": {
+    ".github/actions/artifact-transfer/action.yml": "0c7b2e1ece9794daabb42f5d865d3fe344079862018875e54eade84036e1cbb7",
+    ".github/actions/consume-native/action.yml": "d178975d3e8f06be7a9ea14c5a0958cfcc401b9ac5a4c528a166b46ec4b6a6e5",
+    ".github/actions/setup-artifact-sdk/action.yml": "27effdbe43483ca334f4ce278332eac4b2f4c1bbe193fe7a04a81bf5975ac8e4",
+    ".github/actions/setup-native/action.yml": "04b44d0342640490d7f1cd1aaabf1ac0ba1439a53bbabfadcbd430a55e541333",
+    ".github/actions/upload-evidence/action.yml": "d68b6f569d3b4e1b1afc338c609e894ca3c112860dd5744ffad8b58547140783",
+    ".github/workflows/ci.yml": "825270015a01637eb85cb45ed6bfdc66a43bf5b5174389edc4bf1350dde08257",
+    ".github/workflows/documentation.yml": "112803748bb37522a4367c7a55c58e9cb317951bb9263e0c5b60afbf39f50b20",
+    ".github/workflows/native-platform.yml": "6ec081519c86f75296ef53acbcf09e3b4bda8af7a4bb64370613a68a03bf5af8",
+    ".github/workflows/release.yml": "56722eee82576d4d439602938e40a9c531a6f8649b749e25531df1ba963be207",
+    ".github/workflows/timing-comparison.yml": "f7ad1b9b9beb2f8f8a2e9d032be9d3bab85dd420cb6c16a292c322b7c534c0e2",
+    ".github/workflows/timing-periodic.yml": "d1806a1ae9463b2ac19e52282a719e0ed568149b0282f513c51b44a54e340aef",
+    ".github/workflows/upstream-review.yml": "9acd8d9771f63c3f6dce4e1367aa82f132553d8e7c95b450d329d907f8921d8e",
+    "Docs/CI.md": "ddbd9215f1085edb80c05f6d5364792c49bb49b2bddc377d9081dc285090ca83",
+    "Docs/Tasks/ci-reliability/november-2026/FULL-AUDIT.md": "1692970aaaeb9682a6a8d18735d9a2da0e6ce0fbf751010f4cbf0c8851634521",
+    "Docs/Tasks/ci-reliability/november-2026/ROOT-RECOVERY.md": "75a05cf32f62f7c8a2625fc8f4c90a086be75744a366a6a24eabbdcaf3b46118",
+    "Docs/Tasks/ci-reliability/november-2026/runner-image-update-plan.json": "5109b8c61a75e8bcdb7de37ea09d0b389ebae18aca6badc38456ec170c99f2f4",
+    "Package.resolved": "dd6c86faf979e3b991553d84ae0b378105629a3a010d71f842ed84dda9bf263c",
+    "Package.swift": "d6822bdd8a38ecf262d0f22625f8c57699c4f720f77c8aa4f531d9d895f6e23e",
+    "Tools/ci/admission.v1.json": "546ac0a9dad914db246b0ec8b211a5176e08deb511d20e2f5141a54355357fd6",
+    "Tools/ci/artifact-sdk/package-lock.json": "68e8bdedfd42d320964c488a117851c5fc9ed01efdd1313cab0d0dcabcc27b2a",
+    "Tools/ci/artifact-sdk/package.json": "6ba48945dbdca96f6b6540b5c23a5529699ad45c684dfeae267b9b620cc41dcd",
+    "Tools/ci/artifact-sdk/upload.mjs": "2d9c2388c8a8afa76d7f7d322458b42b4063fbbc95f895064171fceb0529932c",
+    "Tools/ci/artifact_index.py": "170901937a7c65865f27a1d1a1a193870883ad662ca1aa0d1a73decfb4278e44",
+    "Tools/ci/artifact_transfer.py": "0c75b3ba12ecc1991e6f5be6eb72f5affc4d3801153beb993ded138a6a4e62c7",
+    "Tools/ci/baseline_usage.py": "c65f53b81bc8abfe9a138301957af9888ef7fff4600cada97dc15c03261b8177",
+    "Tools/ci/build_docc.py": "23da2166bcecbcbce2bf29fce24afe33cd45a1baef98907b4cb0185e6d1466ac",
+    "Tools/ci/build_documentation_site.py": "9c02069357ac09cf017f8764cd8ec83804c7c4c61008bb2a6ad8d5c69dcedb34",
+    "Tools/ci/compile_apple.py": "5f4f6061838cb22443fbdd52477024951ef1c775790d7ad1c845a0f31d928201",
+    "Tools/ci/curate_docc.py": "758c336443def6f9df09d8d3e14241d93a197c9885dd9f1e8d379946525d2634",
+    "Tools/ci/documentation_examples.py": "5287657d4b000b80b2d372c32a7d6eb86c70a9d44da5f9fa87c4fd3067bc502f",
+    "Tools/ci/documentation_inputs.py": "a19df48b184e25eb11b3e690f26b3ccba2d61d54b4d97ee84a2c2e1e971824c5",
+    "Tools/ci/documentation_publication.py": "67772582728f7e1696ea786fbc08fadcf476fb5b77d1f13a90ffe4143b6b065d",
+    "Tools/ci/documentation_workflow.py": "921e1dba0a2cf8579d3c96635cc47cd353c501b91a673fd9df03782aa421add5",
+    "Tools/ci/dsl_compile_fixtures.py": "4369b08f31c49674e3136991c2fd99ef31819da3b08d210f6f8c33faee4b5930",
+    "Tools/ci/dsl_extension_fixtures.py": "88f40b6f94c442007fb3c66c9c645bd338b13921eac711f24e8b02ad89e3b6d7",
+    "Tools/ci/emit_symbol_graphs.py": "602e57ecdf182aff8d18632a3472bc2343031d35213adeaa3cb332585dc00fd6",
+    "Tools/ci/execution_plan.py": "5025ddc41342738535a7e2685e7cae8ae634c31d65eb00fc587e42bcad3419fd",
+    "Tools/ci/github_release.py": "1a04177c8d3ea591c0160b909f4f8cf2d4ab6c4e23198ba0ab9907409050098d",
+    "Tools/ci/linux_ci.py": "6ea21e44f99a50404cf425f3729427a57519b39c85b6dec08dc911190e4672fe",
+    "Tools/ci/linux_runtime.py": "4c0d15c35dee0d764f718317673a039e05cb66d707e81f4214528f3ca3de30be",
+    "Tools/ci/live_rest_smoke.py": "59e8d438f7a8c726ea6411f2107e3a37d8a860a1550bb77c2b4e2f37afe71211",
+    "Tools/ci/native_jobs.py": "052de2141cd6237057295b323a18132c271a1bead332d01774e567c4469e1a54",
+    "Tools/ci/native_provisioning.py": "273c819b0e0c4e8e21872f59bfeb5b5b68af1bb6f1cf9149ecf431da88346aa9",
+    "Tools/ci/native_receipts.py": "4444c21bb7b8a6b3dac4bf6b943c97c2d50b18fdd04fa845832606de0413f9c0",
+    "Tools/ci/native_resources.py": "1d68d77ea7af9fbadc05dac304bb5d8b080fae4286902aad5b30288c096e020a",
+    "Tools/ci/package_release.py": "8c66a437dd35de59a1468ff320445ddccf73d1765c0aa882d6e635e1716c9582",
+    "Tools/ci/package_source.py": "77ef10b6fe8c26ab794c0b5f0e50fac0f324906d74ef0ea36049c0607bcf421e",
+    "Tools/ci/platform_probe.py": "ee8bc6a8dd2dc0b7e402c5f766171358ebf9fbc146641d67216377e9d30b0b1a",
+    "Tools/ci/preflight.py": "e072db87724cba7342edd7751df4a342bba5176916f588e203c34e612b98c738",
+    "Tools/ci/provisioning-policy.v1.json": "8406fdf84def5a1bd8c3cb225dba2d5c1321eff676acf81956fa546126c6ffff",
+    "Tools/ci/qualification_evidence.py": "1eba578d5ae19a6b1a54a8c982db5f9b92a2b834de4e02cd591df7ea1320cbc9",
+    "Tools/ci/qualification_fault.py": "be9a6a5151df1361f18b4941e521fa670c52578eabdcbcb2e2812a6fe90b487b",
+    "Tools/ci/qualify_android.py": "30377d571dfb7770901292ab7b0c0316a130ea906914e1bb3eb5876f22689324",
+    "Tools/ci/review_upstream.py": "cd52f47704df1e557a6e5c7878fccdf7abae7c3d6bd36e07e322fbf11620c43f",
+    "Tools/ci/rollout.v1.json": "8b5ef4cf946e2df11bb7cc3570627a2193bfd4224b9c738f9e254491710bb624",
+    "Tools/ci/scheduling-policy.v1.json": "fb2ed8c5a03f2d8c05bd1be09a8cdfe2fa5c320f89e533a448b4c1ee44e1c994",
+    "Tools/ci/scheduling_policy.py": "12edc3601b9430fb3bcd3ebbf57f61c54d2d5f35b53e3fc23d3f5d611bf40879",
+    "Tools/ci/spend_admission.py": "08ab27619845b5dada0ee269c8c3b3fccbe9371cf9b651f808e4624bb618c30d",
+    "Tools/ci/suite-groups.v1.json": "4338638a2d9e2ae8f59083517c67966723042d97f1d9b669b6d6dc401dfe843d",
+    "Tools/ci/suite_groups.py": "fc7765ab56bf6c6d3b4ebff81c48cbb9f075ba9a0037456494a2fe7da039c36e",
+    "Tools/ci/test_artifact_index.py": "7c8fe05ac926b528879da2f9c944384d1aebe550cf6a39b291ae2229f859e4b5",
+    "Tools/ci/test_artifact_transfer.py": "e1b7b44e5435f2d7fa91a9e568ad6464d959fb5c9355b8bb1451a2abe196b053",
+    "Tools/ci/test_artifact_workflows.py": "14329a45cf712920b8cea5b198299ca4987f5d795714a72f52ccb31c3f618bb2",
+    "Tools/ci/test_baseline_usage.py": "946fbc52ed1e0895ff86e8b8dc4dcdbd8b6663fbd7c52ab0435e64dabf4443d8",
+    "Tools/ci/test_ci_helpers.py": "2a5dc1a7061307a4f7f4c586e8d17c5cae940c700d005c5e5db59bc4a5dbf045",
+    "Tools/ci/test_curate_docc.py": "65011fdeb45854ca76a5e839d55fb820cce2a4d75060c571355d1844abe3e8d3",
+    "Tools/ci/test_documentation_inputs.py": "50b5ececac295f00a99efac1661247a16048af0c1a85483bacc0aa41c4080c68",
+    "Tools/ci/test_documentation_publication.py": "fa1a31dd9d2474008cca91eb33dcf54902a00eba4d5c3cb8d8fab0a86a15c974",
+    "Tools/ci/test_documentation_site.py": "6fbbf5fab49d857764f52c9b206650fdddee71423755e8fba52ae6083f3a5c5a",
+    "Tools/ci/test_documentation_workflow.py": "138629025657829a839ff51a74542db12474121a88d9683a6603b73799e53f45",
+    "Tools/ci/test_dsl_compile_fixtures.py": "2515f4d8fd5da0ff321a0d3a9ef21498451ddb45b9bbc2996596c645ce76e774",
+    "Tools/ci/test_dsl_extension_fixtures.py": "1ee12a9e3a698cd46a492320b7b3be944a2a889bbb677148c027a68497a26f05",
+    "Tools/ci/test_emit_symbol_graphs.py": "5794b84e20412e96193f00a11fab7203bd2596a178eb0fc3708f3b750e9796f7",
+    "Tools/ci/test_execution_plan.py": "a59475f36ebbdbb06f56cdea6ad88e61d72a1c10208c30b1e122a57aa5ee66c5",
+    "Tools/ci/test_github_release.py": "eecaea91344278e8f786abe6f0755616e8477bc03b026a0d2159d9373431d330",
+    "Tools/ci/test_linux_ci.py": "19d8099a4a7f1c7ce001c4c49f60e61dd38457ebe78edb9d69794fba8d56ab6d",
+    "Tools/ci/test_linux_runtime.py": "c71f1c12aae459ef7d6d3f7e1889c40620e406a278f60078a634c755d7f680d1",
+    "Tools/ci/test_native_groups.py": "774f39bcf0b13305bd221f4bb372f0ffac4972ba96b08c55636ab847802922ad",
+    "Tools/ci/test_native_jobs.py": "17a96ca177fc10bb6593a17e6a2c719e16a1fc27ffd93d2f30fb5a95b186c55c",
+    "Tools/ci/test_native_provisioning.py": "efda7ed14d0ffe93716655dbcff51b25c1789e9df8369dbd85ed7d097ec18ce5",
+    "Tools/ci/test_native_receipts.py": "829f50d63680269935fbcb463959cc3535aa7c7a48fffe924831fd7878c792c0",
+    "Tools/ci/test_native_resources.py": "d320a54ae42e892e501485a9f71f2f3e12c825ed9a890d2fc171be591d5c0d7f",
+    "Tools/ci/test_package_release.py": "5e69c7e7d1d66e2571b2b7abe10d3130dc15ee891e5b1e30d91968e5540004d5",
+    "Tools/ci/test_package_source.py": "c054bead7990375660cebaf07c6ea144c61ea2829bc9b0a215c60ccce1ba7873",
+    "Tools/ci/test_platform_probe.py": "99e9256a906be55e8f5fe443b5f62d7b60bc7fcca91e23590c61664c7488071c",
+    "Tools/ci/test_preflight.py": "e988af96a033f000a0d204df2fe45fc002c6abffa6d876c0b996a2650d479e03",
+    "Tools/ci/test_provisioning_workflow.py": "6f46ad58703e3361f1da7d2e865e3101f5445777cc4250413f98cf3cc0bf5e87",
+    "Tools/ci/test_qualification_evidence.py": "50bb4a1d4f634d38a077eba0029dddafa0744e2febf5894d01299ae478f3a9f6",
+    "Tools/ci/test_qualification_fault.py": "4517e77dbee69d780b72bf6e01bc9defa1b8e5b6e2c5214ed8a1b14f542db191",
+    "Tools/ci/test_results.py": "6d94f8246b5d3bfbeb660626fa0cb4f6a3892e7725529fd327e9348ac1488580",
+    "Tools/ci/test_scheduling_policy.py": "87a4a695b2644e39ffc9b508bce8639d1837090681df4c81c5053694d8eb77d0",
+    "Tools/ci/test_spend_admission.py": "e1a7b6f754f90c478a2ae73dba4830d41466b9bb1a9a4b920c69e062b3d33e5f",
+    "Tools/ci/test_suite_groups.py": "8c38b1194e76060e111f991e132ae7d82d30edc582b879ad1f6edf1b4e222fe5",
+    "Tools/ci/test_test_results.py": "6a84a5653b86843c3698dfa6821f48cd331fe2addea381e39bf0c39fb280b691",
+    "Tools/ci/test_timing_jobs.py": "ba8059cc34dded17a30ee1e3b6c27c48cb5700aaf592152829fec49a5dd87021",
+    "Tools/ci/test_usage_report.py": "0c4e1d5bea5cca33663df55cb8024d5a40738ac2d46e6bfe9ef0950543731fe5",
+    "Tools/ci/test_workflow_coverage.py": "47bf1cc6afbc5a6291aee490b0db2eff0574e8fcb9dbbe770f7bda511c5b95a2",
+    "Tools/ci/test_workflow_scope.py": "5d2b76288fbe1c32ddb309447870009b17576377e6aa3f0c2b9a8f7e7f27002f",
+    "Tools/ci/timing_jobs.py": "77e12267272e2de36b52c382c0176dd5a33ba6039b9ff4507fdcad4942446eaf",
+    "Tools/ci/usage_report.py": "49d52281257fcfa52997ee61366cdd7817a6a9bdbaa0f663b7a8142da4c5294f",
+    "Tools/ci/workflow_coverage.py": "0e4a3403e422e7622f8c6efc078c5c5c2a1eafca001b54ad6aeec69163e8b7ea",
+    "Tools/ci/workflow_scope.py": "0505084b7da8a574b69f2b9e5c72de9cd13ad22f5f08bc1e500a6e04eb2f66ef"
+  },
+  "localEvidenceRoot": ".build/ci-complete-audit-2026-11-12",
+  "evidenceSHA256": {
+    "macos-ci-helpers-complete/commands.json": "4ce0949c6db2844afa7106d860bf6fd2ea24eab665cf736869613a016b37e992",
+    "macos-ci-helpers-complete.log": "6a502f57b72e99a0773055e73c1ee8e5d5d430f3ca48fc45ae638ffa25351f2e",
+    "linux-ci-helpers-complete/commands.json": "ceedd21ebcaace0c54e2de84fc8d2fff287bd6c7cc5f7cf005dbaef800a42166",
+    "linux-ci-helpers-complete.log": "5dfde077bd247839ea4e7ce3624885041ab95246bc2288f817c4b1f997973622",
+    "preflight-source-final/commands.json": "f4320277bb6af75916efcfb00ff966d9df53779afae13218da998d1adcc141d0",
+    "actionlint-final.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "preflight-tooling-python/commands.json": "daec5b0cc40042bed658dec96ab0ee0540fcb60628b58191799b0a6b587b1be2",
+    "preflight-benchmark-python/commands.json": "0c7021e05054c5be332deed0df11569a0dcc3e29098f54c56f3d8e1ccf8cba07",
+    "preflight-browser/commands.json": "14387fcdb78f1def1fe30c04ae2658bb0b4cad3fcead65fef7e2490545826fb1",
+    "linux-preflight-tooling/commands.json": "bdc4569ddd2db0b0f901a4032b931d386992185de68806d3604ac8d1b5711381",
+    "linux-preflight-benchmark/commands.json": "b87231bff529a868e6bc420d07b870e4482de007e33b7a2425ab1c4c83c3dff9",
+    "linux-preflight-browser/commands.json": "21d523054549e725d4c09a7dfe62e2ee133f24bcd725e341c903deb0b97a3776",
+    "live-native-handoff-final/roundtrip.json": "c827e10f99102cfc2c855d901c0b2fbcf58098df4af92e1008949d55e5430bd6",
+    "linux-runtime-observed-final.json": "c90e6b15bd484ad295166c5adecc2253a745b52a1c01e0903e9fd4cf627aa20e",
+    "linux-runtime-hosted-label-replay.json": "59fc21dd6305b948b208262904c168d675505a6b55f41fc846f89417e45500f8",
+    "linux-runtime-supervised/measurement.json": "a719f12f83cf4bd0fcad10fe3737d3ea639744b3ee79576ab6ffe67e7c09fae8",
+    "node-validation.json": "5c23f4137c7611d1b0389115aeba4d60929c97a7a22a8709f277e39c3630a822",
+    "plan-validation.json": "033a877bbc0188940e1f170abd2e5ea827ba4ec2a57ed40617a4bded5bd4fa89",
+    "independent-review.json": "bae5efe4576f976120818b6d08fd7aaa3775abb5a4d51a148daa553f96263c31",
+    "run-final.json": "36c945daea71739dfbd9f7b5edba5d7f44ea6ab1ff6e18dd00349b2f9d283336",
+    "jobs-final.json": "94573e058da2a2adf8914eb89644c77c586826fe499ca98842c723a85ee69bf3",
+    "macos-load-build-job.json": "c76de5d3c1c3d7e6538fb19f744d584fddbde86b7f2c40a8c03f855025951481",
+    "linux-load-canary.log": "a963b0916ecda49c2af7ac8b39ed6eb08a682a5b46b7998d251f66605696c989",
+    "product/validation-summary.json": "b67e5403a4f06fa301a6b6fcd4cf5571b856fb6ad1fc5b73e248d765efc14564",
+    "product/root-tests.json": "d9cfe748118357e07f9237785df4924a0fdc8b5c5867a933d324e99d62a10e9d",
+    "product/package-tests.json": "4005d6c89a808cfb6c8b5c9cd1e22a04b1983e3a0b5d00f1423439e3f6efe088",
+    "product/macro-fixtures-production.json": "264a35ff4f239b239976ea9a55edec42076d4093ee2278fe9c1f2fced344040c",
+    "product/fixtures.json": "72a9422d9f1b4c23851a96b2fa4a14926b311d81aec41e84a82a180323863b8a",
+    "product/audits.json": "703f4ebaf4fdc0e8885a137da5a25ea65c6f7f0aae4af74a4c70d4a4de0c0f77",
+    "product/docc.json": "7988c4b0126d62c48396485d65df8b0432fd5926c164d94cf503b44e62d05744",
+    "product/api-checks.json": "49f466e3aff045eb014fe2747e1adac3584bda1b5496dcbb7c1a69a2e3e92902",
+    "product/api-extensions-refreshed.json": "3dbc4ad9eab920c34bdd3404c9062b964243c492c7eadd6a527c37ae3cb6fabd",
+    "product/apple-selected-modules-final.json": "108fc5c407b2981ba4d47119ddd81ff990fedae5cf44e0757fe7b7ba331bf266",
+    "product/apple-resolve-option-probe.json": "530d57196e4a0694d11e3499c4cb3d0a305ad4a2abf7ac781a309d9d8009cbb4",
+    "product/smokes.json": "6fecfd89e0492d1ed04144304e84267be94c98605a4d4d02366e544bcf89ccf4",
+    "product/consumer-smokes.json": "68679df708a1133b0f1c452338058b38e41bf5ec1a023cface740e239f586d0f"
+  }
+}

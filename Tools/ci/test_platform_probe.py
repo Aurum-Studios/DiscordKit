@@ -110,7 +110,7 @@ class BuildCompatibilityFactsTests(unittest.TestCase):
 
     def facts(self, target="linux-x64", *, environment=None, overrides=None,
               target_info=None, system_release="fixture-kernel", system_version="fixture-build",
-              distribution=None, query=None):
+              distribution=None, query=None, linux_abi=None):
         """Inject native observations while keeping metadata command arguments literal."""
         system, architecture, triple = {
             "linux-x64": ("Linux", "x86_64", "x86_64-unknown-linux-gnu"),
@@ -134,6 +134,8 @@ class BuildCompatibilityFactsTests(unittest.TestCase):
             ("xcrun", "--sdk", "macosx", "--show-sdk-path"): "/Applications/Xcode.app/SDKs/MacOSX26.1.sdk",
             ("xcrun", "--sdk", "macosx", "--show-sdk-version"): "26.1",
             ("xcrun", "--sdk", "macosx", "--show-sdk-build-version"): "25B78",
+            (platform_probe.sys.executable, str(Path(platform_probe.__file__).with_name("linux_runtime.py"))):
+                json.dumps(linux_abi if linux_abi is not None else self.linux_abi()),
         }
         outputs.update(overrides or {})
 
@@ -153,19 +155,35 @@ class BuildCompatibilityFactsTests(unittest.TestCase):
                     distribution if distribution is not None else {"ID": "ubuntu", "VERSION_ID": "24.04"})):
             return platform_probe.build_compatibility_facts(Path.cwd(), target, query=query or observe)
 
+    @staticmethod
+    def linux_abi():
+        """Complete observed ABI data without consulting this test host's packages."""
+        packages = {name + ':amd64': '1.0-1' for name in (
+            'libc6', 'libc6-dev', 'libgcc-13-dev', 'libstdc++-13-dev', 'linux-libc-dev')}
+        return {'schemaVersion': 1, 'architecture': 'x86_64', 'elfClass': 64,
+                'toolchainRoot': '/toolchain', 'toolchainELFCount': 2,
+                'librarySearchPaths': {'inherited': None, 'sharedLibraries': ['/toolchain/usr/lib']},
+                'toolchainELFSHA256': 'a' * 64, 'dependencyGraphSHA256': 'b' * 64,
+                'libraries': {'/usr/lib/libc.so.6': {'sha256': 'c' * 64, 'packages': ['libc6:amd64']}},
+                'packages': packages, 'nativeTools': {
+                    'clang': {'path': '/toolchain/usr/bin/clang', 'sha256': 'd' * 64, 'packages': []},
+                    'ld': {'path': '/usr/bin/ld', 'sha256': 'e' * 64, 'packages': ['libc6:amd64']}}}
+
     def test_linux_runtime_and_compiler_target_have_exact_observed_facts(self):
         """Exact compiler/runtime facts are present even on an unmanaged local image."""
         facts = self.facts()
         exact = facts["exact"]
-        self.assertEqual(exact["policyVersion"], 1)
+        self.assertEqual(exact["policyVersion"], 2)
         self.assertEqual(exact["osRuntime"], {"distributionID": "ubuntu", "distributionVersion": "24.04",
                                            "libc": "ldd (Ubuntu GLIBC 2.39-0ubuntu8.7) 2.39"})
         self.assertEqual(exact["swiftTarget"], "x86_64-unknown-linux-gnu")
         self.assertEqual(exact["image"], {"kind": "unmanaged"})
         self.assertIsNone(exact["xcode"])
+        self.assertEqual(exact['linuxABI'], self.linux_abi())
+        self.assertEqual(exact['swiftDistribution'], {'kind': 'unmanaged'})
 
-    def test_image_os_and_version_are_exact_but_release_url_and_runner_are_informational(self):
-        """Changing image IDs invalidates compatibility; diagnostic labels do not."""
+    def test_linux_weekly_image_version_is_diagnostic_but_image_os_and_abi_are_exact(self):
+        """Weekly tools can vary only while the actual native ABI closure is identical."""
         environment = {"GITHUB_ACTIONS": "true", "ImageOS": "ubuntu24", "ImageVersion": "20261110.1",
                        "ImageRelease": "https://example.invalid/image/first", "RUNNER_NAME": "producer"}
         producer = self.facts(environment=environment)
@@ -174,7 +192,29 @@ class BuildCompatibilityFactsTests(unittest.TestCase):
         self.assertEqual(producer["exact"], consumer["exact"])
         self.assertNotEqual(producer["informational"], consumer["informational"])
         changed = self.facts(environment={**environment, "ImageVersion": "20261111.1"})
-        self.assertNotEqual(producer["exact"], changed["exact"])
+        self.assertEqual(producer["exact"], changed["exact"])
+        self.assertNotEqual(producer['informational']['observedImageVersion'],
+                            changed['informational']['observedImageVersion'])
+        self.assertNotEqual(producer['exact'], self.facts(environment={**environment, 'ImageOS': 'other'})['exact'])
+        for field in ('toolchainELFSHA256', 'dependencyGraphSHA256'):
+            abi = self.linux_abi()
+            abi[field] = 'f' * 64
+            self.assertNotEqual(producer['exact'], self.facts(environment=environment, linux_abi=abi)['exact'])
+
+    def test_other_platforms_retain_exact_weekly_image_version_and_legacy_policy(self):
+        """The Linux ABI policy does not change macOS SDK or Windows image identity."""
+        for target in ('macos-arm64', 'windows-x64'):
+            with self.subTest(target=target):
+                first = self.facts(target, environment={'ImageOS': 'fixture', 'ImageVersion': '1'})['exact']
+                second = self.facts(target, environment={'ImageOS': 'fixture', 'ImageVersion': '2'})['exact']
+                self.assertEqual(first['policyVersion'], 1)
+                self.assertNotEqual(first, second)
+
+    def test_linux_partial_or_legacy_abi_facts_fail_closed(self):
+        """A weekly image number never substitutes for missing ABI evidence."""
+        for value in ({}, {'schemaVersion': 0}, []):
+            with self.subTest(value=value), self.assertRaises(ValueError):
+                self.facts(linux_abi=value)
 
     def test_missing_partial_or_placeholder_hosted_image_fails_closed(self):
         """Hosted runners cannot borrow the explicit local unmanaged-image policy."""

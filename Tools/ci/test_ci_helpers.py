@@ -5,6 +5,7 @@
 
 """Deterministic planning tests for CI commands; no compiler or network needed."""
 
+import hashlib
 import json
 import subprocess
 import tempfile
@@ -278,10 +279,51 @@ class CIHelpersTests(unittest.TestCase):
                                                    Path("cache with spaces"), disable_sandbox=True)
         self.assertEqual(command, ["swift", "package", "--package-path", "repository with spaces",
                                    "--scratch-path", "scratch with spaces", "--cache-path", "cache with spaces",
-                                   "--disable-sandbox", "resolve"])
+                                   "--disable-sandbox", "--force-resolved-versions", "resolve"])
         minimal = compile_apple.resolution_command(Path("repo"), Path("scratch"))
         self.assertNotIn("--cache-path", minimal)
         self.assertNotIn("--disable-sandbox", minimal)
+
+    def test_apple_resolution_and_compilation_preserve_exact_dependency_pins(self):
+        """Pin rewrites cannot be accepted by revalidating only the newly resolved checkout."""
+        for mutation in ("resolution", "compilation", None):
+            with self.subTest(mutation=mutation), tempfile.TemporaryDirectory() as temporary:
+                repository = Path(temporary)
+                resolved = repository / "Package.resolved"
+                original = b'{"pins": [], "version": 3}\n'
+                resolved.write_bytes(original)
+                checkout = repository / "logging"
+                source = checkout / "Sources/Logging/Logger.swift"
+                source.parent.mkdir(parents=True)
+                source.write_text("public struct Logger {}\n")
+                report = repository / "apple-compile.json"
+                calls = []
+
+                def execute(command, **options):
+                    """Model a resolver or compiler rewriting the existing pin file."""
+                    calls.append(command)
+                    stage = "resolution" if command[:2] == ["swift", "package"] else "compilation"
+                    if stage == mutation:
+                        resolved.write_bytes(b'{"pins": [], "version": 99}\n')
+                    return subprocess.CompletedProcess(command, 0)
+
+                arguments = ["compile_apple.py", "--repository", str(repository),
+                             "--sdk", "macosx", "--output", str(report)]
+                with patch("sys.argv", arguments), patch.object(compile_apple, "MODULES", ["Logging"]), \
+                        patch.object(compile_apple, "resolved_logging", return_value=(checkout, {"identity": "swift-log"})), \
+                        patch("compile_apple.subprocess.run", side_effect=execute), \
+                        patch("compile_apple.subprocess.check_output", return_value="fixture\n"):
+                    if mutation:
+                        with self.assertRaisesRegex(ValueError, "Package[.]resolved changed"):
+                            compile_apple.main()
+                        self.assertFalse(report.exists())
+                    else:
+                        compile_apple.main()
+                        self.assertEqual(resolved.read_bytes(), original)
+                        self.assertEqual(json.loads(report.read_text())["packageResolvedSHA256"],
+                                         hashlib.sha256(original).hexdigest())
+                if mutation == "resolution":
+                    self.assertEqual(len(calls), 1)
 
     def test_apple_logging_requires_resolved_source_and_matching_checkout(self):
         """Missing, stale or escaping checkouts cannot claim compilation of the pinned dependency."""

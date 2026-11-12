@@ -26,6 +26,20 @@ import native_jobs as jobs
 from test_test_results import successful
 
 
+def linux_abi_fixture():
+    """Keep complete native ABI observations independent of this test host's tools and packages."""
+    return {'schemaVersion': 1, 'architecture': 'x86_64', 'elfClass': 64,
+            'toolchainRoot': '/toolchain', 'toolchainELFCount': 2,
+            'librarySearchPaths': {'inherited': None, 'sharedLibraries': ['/toolchain/usr/lib']},
+            'toolchainELFSHA256': 'a' * 64, 'dependencyGraphSHA256': 'b' * 64,
+            'libraries': {'/usr/lib/libc.so.6': {'sha256': 'c' * 64, 'packages': ['libc6:amd64']}},
+            'packages': {name + ':amd64': '1.0-1' for name in
+                         ('libc6', 'libc6-dev', 'libgcc-13-dev', 'libstdc++-13-dev', 'linux-libc-dev')},
+            'nativeTools': {
+                'clang': {'path': '/toolchain/usr/bin/clang', 'sha256': 'd' * 64, 'packages': []},
+                'ld': {'path': '/usr/bin/ld', 'sha256': 'e' * 64, 'packages': ['libc6:amd64']}}}
+
+
 def emit_events(command, leaves=("CoreTests.Suite/test()",)):
     """Model only the pinned compiler boundary; production reconciliation remains real."""
     if "--event-stream-output-path" in command.arguments:
@@ -467,6 +481,49 @@ class NativeArtifactTests(unittest.TestCase):
             with self.subTest(field=field), patch.object(jobs, "identity", return_value=changed), self.assertRaises(ValueError):
                 jobs.restore_archive(self.repository, "root", "linux-x64", self.archive, self.output)
             self.assertFalse(self.binary.exists())
+
+    def test_linux_abi_mismatch_preserves_exact_expected_observed_diagnosis_before_restore(self):
+        """Different native library bytes reject reuse and identify the exact escaped compatibility path."""
+        self.current["runtime"].update(policyVersion=2, linuxABI=linux_abi_fixture(),
+                                       image={"kind": "runner-image", "os": "ubuntu24"})
+        self.seal()
+        observed = copy.deepcopy(self.current)
+        observed["runtime"]["linuxABI"]["libraries"]["/usr/lib/libc.so.6"]["sha256"] = "f" * 64
+        path = "/identity/runtime/linuxABI/libraries/~1usr~1lib~1libc.so.6/sha256"
+        with patch.object(jobs, "identity", return_value=observed), \
+                self.assertRaisesRegex(ValueError, path):
+            jobs.restore_archive(self.repository, "root", "linux-x64", self.archive, self.output)
+        mismatch = json.loads((self.output / "compatibility-mismatch.json").read_text())
+        self.assertEqual(mismatch["status"], "rejected")
+        self.assertFalse(mismatch["comparisonTruncated"])
+        self.assertEqual(mismatch["differences"], [{"path": path,
+            "pathTruncated": False, "expected": {"present": True, "json": json.dumps("c" * 64), "truncated": False},
+            "observed": {"present": True, "json": json.dumps("f" * 64), "truncated": False}}])
+        self.assertFalse(self.binary.exists())
+        self.assertFalse((self.output / "restored.json").exists())
+
+    def test_compatibility_diagnosis_bounds_paths_values_and_count_without_changing_admission(self):
+        """Diagnostic previews remain bounded and distinguish missing keys from explicit null."""
+        key = "a/" + "x" * 2048
+        left = {key: {str(index): "expected" * 1024 for index in range(64)}}
+        right = {key: {str(index): "observed" * 1024 for index in range(64)}}
+        mismatch = jobs.compatibility_mismatch(left, right)
+        self.assertEqual(len(mismatch["differences"]), 32)
+        self.assertTrue(mismatch["comparisonTruncated"])
+        self.assertLess(len(json.dumps(mismatch)), 128 * 1024)
+        for row in mismatch["differences"]:
+            self.assertTrue(row["path"].startswith("/a~1"))
+            self.assertEqual(len(row["path"]), 1024)
+            self.assertTrue(row["pathTruncated"])
+            for side in ("expected", "observed"):
+                self.assertEqual(len(row[side]["json"]), 1024)
+                self.assertTrue(row[side]["truncated"])
+        missing = jobs.compatibility_mismatch({"a~b/c": None}, {})["differences"]
+        self.assertEqual(missing[0]["path"], "/a~0b~1c")
+        self.assertEqual(missing[0]["expected"]["json"], "null")
+        self.assertEqual(missing[0]["observed"], {"present": False})
+        typed = jobs.compatibility_mismatch({"value": [1]}, {"value": [True]})
+        self.assertEqual(len(typed["differences"]), 1)
 
     def test_dependency_flags_sdk_and_runtime_facts_require_exact_compatibility(self):
         """Pins, build inputs and nested toolchain/runtime facts are mandatory exact identities."""
@@ -949,15 +1006,19 @@ class NativeArtifactTests(unittest.TestCase):
     def test_aggregate_timeout_stops_serial_commands_without_retry(self):
         """An aggregate deadline interrupts the next process despite its longer per-command limit."""
         sentinel = self.root / "must-not-run"
-        commands = [jobs.linux_ci.Command("first", (sys.executable, "-c", "print('first passed')"), 5),
-                    jobs.linux_ci.Command("stuck", (sys.executable, "-c", "import time; time.sleep(10)"), 5),
+        started_child = self.root / "stuck-started"
+        commands = [jobs.linux_ci.Command("first", (sys.executable, "-c", "print('first passed')"), 0.5),
+                    jobs.linux_ci.Command("stuck", (sys.executable, "-c",
+                        "from pathlib import Path; import time; Path(__import__('sys').argv[1]).touch(); time.sleep(10)",
+                        str(started_child)), 5),
                     jobs.linux_ci.Command("never", (sys.executable, "-c",
                         "from pathlib import Path; Path(__import__('sys').argv[1]).touch()", str(sentinel)), 5)]
         report = {"status": "running", "commands": []}
         started = time.monotonic()
         with self.assertRaises(subprocess.TimeoutExpired), redirect_stdout(io.StringIO()):
-            jobs.execute_commands(commands, self.repository, self.output, report, deadline=started + 0.5)
+            jobs.execute_commands(commands, self.repository, self.output, report, deadline=started + 2)
         self.assertLess(time.monotonic() - started, 5)
+        self.assertTrue(started_child.exists(), "the aggregate must expire during the second process")
         self.assertFalse(sentinel.exists())
         self.assertEqual([record["name"] for record in report["commands"]], ["first", "stuck"])
         self.assertEqual([record["status"] for record in report["commands"]], ["passed", "failed"])
@@ -1130,6 +1191,7 @@ class NativeSourceTests(unittest.TestCase):
         """A correct host kernel cannot conceal a cross compiler, wrong assigned pool or Ubuntu image."""
         from contextlib import ExitStack
 
+        abi = linux_abi_fixture()
         for target, assigned, distribution, accepted in (
                 ("x86_64-unknown-linux-gnu", {"RUNNER_OS": "Linux", "RUNNER_ARCH": "X64"}, "24.04", True),
                 ("aarch64-unknown-linux-gnu", {}, "24.04", False),
@@ -1155,12 +1217,17 @@ class NativeSourceTests(unittest.TestCase):
                         return json.dumps(target_info)
                     if arguments == ["ldd", "--version"]:
                         return "ldd (Ubuntu GLIBC 2.39) 2.39\n"
+                    if arguments == [sys.executable, str(Path(jobs.platform_probe.__file__).with_name("linux_runtime.py"))]:
+                        return json.dumps(abi)
                     raise AssertionError(f"unexpected identity query: {arguments!r}")
 
                 stack.enter_context(patch.object(jobs, "metadata_output", side_effect=query))
                 stack.enter_context(patch.dict(os.environ, assigned, clear=True))
                 if accepted:
-                    self.assertEqual(jobs.identity(Path.cwd(), "linux-x64")["swiftTarget"], target)
+                    observed = jobs.identity(Path.cwd(), "linux-x64")
+                    self.assertEqual(observed["swiftTarget"], target)
+                    self.assertEqual(observed["runtime"]["policyVersion"], 2)
+                    self.assertEqual(observed["runtime"]["linuxABI"], abi)
                 else:
                     with self.assertRaises(ValueError):
                         jobs.identity(Path.cwd(), "linux-x64")

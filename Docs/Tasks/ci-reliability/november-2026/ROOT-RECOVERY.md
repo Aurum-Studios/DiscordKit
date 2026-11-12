@@ -7,6 +7,12 @@ https://aurum-studios.com
 
 # November 12 Linux root consumer recovery
 
+This records the recovery implemented in `d54e0e8b`. Its subsequent full run
+again rejected a mixed weekly image pair. The
+[comprehensive follow-up](FULL-AUDIT.md) replaces Linux's weekly-version
+compatibility rule with exact observed compiler/runtime inputs and records the
+checks completed before another push. The evidence below remains historical.
+
 [Full publishing run 43275033751](https://github.com/Aurum-Studios/DiscordKit/actions/runs/43275033751)
 at `7d226ce42382ad136559f8139f4483c371d49555` passed both load canaries and
 advanced through core compilation into the root consumers. All four Linux root

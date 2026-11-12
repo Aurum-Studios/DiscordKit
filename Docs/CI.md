@@ -165,8 +165,17 @@ that cannot be uploaded individually. The [version-2 receipt contract](Tasks/ci-
 separates exact build compatibility from producer and consumer execution provenance.
 Compatibility binds tracked source/commit, explicit pin digests, semantic build
 commands/configuration, platform/architecture, compiler/target, native build engine,
-canonical checkout path and exact OS/runtime/image/Xcode/SDK facts. Image release
-URLs and runner names are informational. Producer records retain workflow/run/job/
+canonical checkout path and exact OS/runtime/Xcode/SDK facts. Linux compatibility
+policy v2 compares the active compiler's native ELF bytes, resolved runtime library
+and loader bytes, installed package versions, common manifest CRT packages and
+native compiler/linker inputs. The Ubuntu release, image OS, kernel and authenticated
+Swift distribution remain exact. Linux's weekly image version is retained as
+diagnostic provenance; unrelated image tools do not determine compiled-artifact
+compatibility. Other platforms retain exact image versions. Compiler cache keys
+still include the full image version on every platform, and each provisioning
+receipt must match its own current image. Legacy Linux compatibility identities
+require fresh producers. Image release URLs and runner names are informational.
+Producer records retain workflow/run/job/
 attempt and trust scope, successful stages, inventory seal and timestamps. Consumers
 retain their own identity, selected producer, archive digest, artifact identity,
 discovery, selected suite and terminal results. Legacy v1 requires regeneration.
@@ -182,10 +191,14 @@ component index from successful producer jobs, immutable GitHub artifact IDs and
 API SHA256 digests. Every consumer resolves again in its current job and records
 its own attempt plus the selected producer attempt. An earlier successful attempt
 is admitted only within this run, source revision, workflow and trust scope, after
-exact compatibility, full archive and inventory checks. No matrix job output is
+exact compatibility, full archive and inventory checks. Compatibility rejection
+also retains a bounded report of differing fields and expected/observed values
+before extraction; diagnostics do not change admission. No matrix job output is
 used as a component-to-artifact map.
 
-**Re-run failed jobs** can reuse those successful producers without rebuilding.
+**Re-run failed jobs** can reuse those successful producers without rebuilding
+when the current spend policy authorizes that attempt. November's one-attempt
+authorization rejects attempt 2; a new full run requires fresh admission and producers.
 Compiled artifacts and their producer receipts expire after two days; the planned
 retry window is at most 48 hours and ends at actual API expiry. Missing/expired
 artifacts require an explicitly scheduled fresh producer. An invalid selection,
@@ -558,8 +571,9 @@ unknown storage/transfer liability, excess cost or exhausted attempts reject wor
 
 Every job checks current source, policy, scope, runner group and attempt after
 minimal checkout and before provisioning. Partial consumer reruns cannot reuse a
-successful earlier admission output or reset their allowance. The native rollout
-remains closed independently. Pushes validate only the maintained default branch
+successful earlier admission output or reset their allowance. Native expansion
+has a separate rollout switch; the November authorization enables manual native
+scope while keeping automatic mode at preflight. Pushes validate only the maintained default branch
 `main`; PR and explicit manual runs remain, avoiding branch-push/PR duplicates.
 
 The bootstrap and aggregation expose JSON and step summaries for planned maxima,
@@ -570,7 +584,9 @@ unknown. Estimates are neither invoices nor exact provider-enforced dollar caps.
 Checkout occurs before refusal, and the source guard cannot cap arbitrarily many
 separately started rejected jobs or share allowance across workflow run IDs.
 
-The [operator checklist](Tasks/ci-reliability/phase-10/OPERATOR-BUDGET.md) prepares a
-concrete USD 50/month repository Actions backstop proposal with stop usage and
-75/90/100 alerts. It awaits operator selection, explicit authorization and complete
-read-back. No billing configuration or paid execution is claimed.
+The [operator checklist](Tasks/ci-reliability/phase-10/OPERATOR-BUDGET.md) retains
+the historical budget preparation steps. The subsequent
+[November allocation and provider read-back](Tasks/ci-reliability/november-2026/BUDGET.md)
+records the configured USD 50 repository Actions budget with stop usage enabled,
+the separately authorized full-run timeout reservation, and observed hosted runs.
+Local plans do not attest provider settings or replace the monthly budget.

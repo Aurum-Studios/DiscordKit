@@ -530,6 +530,31 @@ def create_archive(repository, component, archive, metadata, excluded=()):
     return metadata
 
 
+def compatibility_mismatch(expected, observed):
+    """Explain exact identity rejection with finite JSON-pointer paths and value previews."""
+    rows, pending = [], [("", expected, observed)]
+    missing = object()
+
+    def preview(value):
+        """Keep large or unexpected identity fields out of unbounded diagnostic records."""
+        if value is missing:
+            return {"present": False}
+        encoded = json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
+        return {"present": True, "json": encoded[:1024], "truncated": len(encoded) > 1024}
+
+    while pending and len(rows) < 32:
+        path, left, right = pending.pop()
+        if isinstance(left, dict) and isinstance(right, dict):
+            for key in sorted(set(left) | set(right), reverse=True):
+                token = key.replace("~", "~0").replace("/", "~1")
+                pending.append((path + "/" + token, left.get(key, missing), right.get(key, missing)))
+        elif (left is missing or right is missing or receipts.digest(left) != receipts.digest(right)):
+            rows.append({"path": path[:1024], "pathTruncated": len(path) > 1024,
+                         "expected": preview(left), "observed": preview(right)})
+    return {"formatVersion": 1, "status": "rejected", "maximumDifferences": 32,
+            "comparisonTruncated": bool(pending), "differences": rows}
+
+
 def restore_archive(repository, component, native_platform, archive, output, *, deadline=None, selection=None):
     """Validate the whole transport before extracting into an identical clean native checkout."""
     restore_seconds = execution_policy()["reservesSeconds"]["setup"]
@@ -545,8 +570,16 @@ def restore_archive(repository, component, native_platform, archive, output, *, 
             raise ValueError("native artifact must contain exactly one bounded compilation receipt")
         metadata = receipts.read_json(transport.extractfile(manifests[0]))
         roots = build_roots(component)
-        receipts.validate_metadata(metadata, current, execution, component, roots,
-                                   selection=selection, archive_sha256=archive_digest)
+        try:
+            receipts.validate_metadata(metadata, current, execution, component, roots,
+                                       selection=selection, archive_sha256=archive_digest)
+        except ValueError as error:
+            if str(error).startswith("native artifact compatibility differs"):
+                mismatch = compatibility_mismatch(metadata["compatibility"], current)
+                write_json(output / "compatibility-mismatch.json", mismatch)
+                paths = ", ".join(row["path"] for row in mismatch["differences"][:8])
+                raise ValueError(f"{error}: {paths}; see compatibility-mismatch.json") from error
+            raise
         consumer = receipts.consumer_receipt(execution, metadata["producer"], archive_digest,
                                              selection=selection, metadata=metadata)
         payload, seen = hashlib.sha256(), set()

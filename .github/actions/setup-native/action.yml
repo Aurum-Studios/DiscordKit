@@ -47,7 +47,7 @@ runs:
         # compiler/linker headers and CRT dependencies in the runtime profile.
         packages=(binutils ca-certificates curl git gnupg2 libc6-dev libcurl4t64
           libedit2 libgcc-13-dev libpython3.12t64 libsqlite3-0 libstdc++-13-dev
-          libxml2 libz3-4 python3 tzdata unzip zlib1g)
+          libxml2 libz3-4 linux-libc-dev python3 tzdata unzip zlib1g)
         if [[ "$NATIVE_PROFILE" == build ]]; then
           packages+=(clang libcurl4-openssl-dev
             libncurses-dev libpython3-dev libxml2-dev

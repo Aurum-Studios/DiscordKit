@@ -1,0 +1,741 @@
+{
+  "formatVersion": 1,
+  "status": "prepared-only; no external mutations",
+  "observedAtUTC": "2026-11-12T19:06:07.330181+00:00",
+  "organization": "Aurum-Studios",
+  "scope": "Nine shared organization Linux runner pools; also used by MiniCarson",
+  "requiresUserDecision": "Changing all nine shared pools affects projects beyond DiscordKit. Obtain approval before PATCH.",
+  "reason": "Pin Ubuntu 24.04 during the active ubuntu-latest migration to Ubuntu 26.04. DiscordKit native provisioning requires Ubuntu 24.04.",
+  "proposedImage": {
+    "id": "2295",
+    "platform": "linux-x64",
+    "size_gb": 75,
+    "display_name": "Ubuntu 24.04",
+    "source": "github"
+  },
+  "reviewedReferences": [
+    "https://github.blog/changelog/2026-09-17-ubuntu-26-generally-available-and-latest-migration/",
+    "https://docs.github.com/en/rest/actions/hosted-runners#update-a-github-hosted-runner-for-an-organization"
+  ],
+  "groups": [
+    {
+      "id": 31,
+      "name": "Linux-x64-8",
+      "visibility": "all",
+      "allowsPublicRepositories": true,
+      "restrictedToWorkflows": false,
+      "selectedWorkflows": []
+    },
+    {
+      "id": 32,
+      "name": "Linux-x64-64",
+      "visibility": "all",
+      "allowsPublicRepositories": true,
+      "restrictedToWorkflows": false,
+      "selectedWorkflows": []
+    }
+  ],
+  "indexedWorkflowUsage": [
+    {
+      "group": "Linux-x64-8",
+      "count": 8,
+      "incomplete": false,
+      "matches": [
+        {
+          "repository": "Aurum-Studios/DiscordKit",
+          "path": ".github/workflows/release.yml",
+          "url": "https://github.com/Aurum-Studios/DiscordKit/blob/d54e0e8b33184bc08e1a9a23d73a7f4835b7027d/.github/workflows/release.yml"
+        },
+        {
+          "repository": "Aurum-Studios/DiscordKit",
+          "path": ".github/workflows/upstream-review.yml",
+          "url": "https://github.com/Aurum-Studios/DiscordKit/blob/d54e0e8b33184bc08e1a9a23d73a7f4835b7027d/.github/workflows/upstream-review.yml"
+        },
+        {
+          "repository": "Aurum-Studios/MiniCarson",
+          "path": ".github/workflows/ci.yml",
+          "url": "https://github.com/Aurum-Studios/MiniCarson/blob/3ed48fc836edf2a15b20cff7405a7ec8112ff36d/.github/workflows/ci.yml"
+        },
+        {
+          "repository": "Aurum-Studios/MiniCarson",
+          "path": ".github/workflows/validation.yml",
+          "url": "https://github.com/Aurum-Studios/MiniCarson/blob/3ed48fc836edf2a15b20cff7405a7ec8112ff36d/.github/workflows/validation.yml"
+        },
+        {
+          "repository": "Aurum-Studios/DiscordKit",
+          "path": ".github/workflows/ci.yml",
+          "url": "https://github.com/Aurum-Studios/DiscordKit/blob/d54e0e8b33184bc08e1a9a23d73a7f4835b7027d/.github/workflows/ci.yml"
+        },
+        {
+          "repository": "Aurum-Studios/MiniCarson",
+          "path": ".github/workflows/youtrack-recovery.yml",
+          "url": "https://github.com/Aurum-Studios/MiniCarson/blob/3ed48fc836edf2a15b20cff7405a7ec8112ff36d/.github/workflows/youtrack-recovery.yml"
+        },
+        {
+          "repository": "Aurum-Studios/MiniCarson",
+          "path": ".github/workflows/integration.yml",
+          "url": "https://github.com/Aurum-Studios/MiniCarson/blob/3ed48fc836edf2a15b20cff7405a7ec8112ff36d/.github/workflows/integration.yml"
+        },
+        {
+          "repository": "Aurum-Studios/MiniCarson",
+          "path": ".github/workflows/linux-offline.yml",
+          "url": "https://github.com/Aurum-Studios/MiniCarson/blob/3ed48fc836edf2a15b20cff7405a7ec8112ff36d/.github/workflows/linux-offline.yml"
+        }
+      ]
+    },
+    {
+      "group": "Linux-x64-64",
+      "count": 3,
+      "incomplete": false,
+      "matches": [
+        {
+          "repository": "Aurum-Studios/DiscordKit",
+          "path": ".github/workflows/ci.yml",
+          "url": "https://github.com/Aurum-Studios/DiscordKit/blob/d54e0e8b33184bc08e1a9a23d73a7f4835b7027d/.github/workflows/ci.yml"
+        },
+        {
+          "repository": "Aurum-Studios/MiniCarson",
+          "path": ".github/workflows/validation.yml",
+          "url": "https://github.com/Aurum-Studios/MiniCarson/blob/3ed48fc836edf2a15b20cff7405a7ec8112ff36d/.github/workflows/validation.yml"
+        },
+        {
+          "repository": "Aurum-Studios/MiniCarson",
+          "path": ".github/workflows/linux-offline.yml",
+          "url": "https://github.com/Aurum-Studios/MiniCarson/blob/3ed48fc836edf2a15b20cff7405a7ec8112ff36d/.github/workflows/linux-offline.yml"
+        }
+      ]
+    }
+  ],
+  "updates": [
+    {
+      "runnerID": 42,
+      "runnerName": "Linux-x64-8-a",
+      "runnerGroupID": 31,
+      "currentImage": {
+        "id": "2306",
+        "size_gb": 75,
+        "display_name": "Ubuntu Latest (24.04)",
+        "source": "github",
+        "version": "latest"
+      },
+      "before": {
+        "id": 42,
+        "name": "Linux-x64-8-a",
+        "image_details": {
+          "id": "2306",
+          "size_gb": 75,
+          "display_name": "Ubuntu Latest (24.04)",
+          "source": "github",
+          "version": "latest"
+        },
+        "platform": "linux-x64",
+        "runner_group_id": 31,
+        "maximum_runners": 50,
+        "machine_size_details": {
+          "id": "8-core",
+          "cpu_cores": 8,
+          "memory_gb": 32,
+          "storage_gb": 300
+        },
+        "public_ip_enabled": false,
+        "public_ips": [],
+        "last_active_on": "2026-11-12T18:37:40.503Z",
+        "status": "Ready",
+        "image_gen": false
+      },
+      "request": {
+        "method": "PATCH",
+        "path": "/orgs/Aurum-Studios/actions/hosted-runners/42",
+        "body": {
+          "image_source": "github",
+          "image_id": "2295"
+        }
+      },
+      "verification": {
+        "method": "GET",
+        "path": "/orgs/Aurum-Studios/actions/hosted-runners/42",
+        "expectedImageID": "2295",
+        "expectedImageSource": "github",
+        "expectedImageDisplayName": "Ubuntu 24.04",
+        "preserveFields": [
+          "id",
+          "name",
+          "runner_group_id",
+          "machine_size_details",
+          "maximum_runners",
+          "public_ip_enabled",
+          "public_ips",
+          "image_gen"
+        ]
+      },
+      "rollbackIfSeparatelyApproved": {
+        "method": "PATCH",
+        "path": "/orgs/Aurum-Studios/actions/hosted-runners/42",
+        "body": {
+          "image_source": "github",
+          "image_id": "2306"
+        }
+      }
+    },
+    {
+      "runnerID": 44,
+      "runnerName": "linux-x64-8-b",
+      "runnerGroupID": 31,
+      "currentImage": {
+        "id": "2306",
+        "size_gb": 75,
+        "display_name": "Ubuntu Latest (24.04)",
+        "source": "github",
+        "version": "latest"
+      },
+      "before": {
+        "id": 44,
+        "name": "linux-x64-8-b",
+        "image_details": {
+          "id": "2306",
+          "size_gb": 75,
+          "display_name": "Ubuntu Latest (24.04)",
+          "source": "github",
+          "version": "latest"
+        },
+        "platform": "linux-x64",
+        "runner_group_id": 31,
+        "maximum_runners": 50,
+        "machine_size_details": {
+          "id": "8-core",
+          "cpu_cores": 8,
+          "memory_gb": 32,
+          "storage_gb": 300
+        },
+        "public_ip_enabled": false,
+        "public_ips": [],
+        "last_active_on": "2026-11-10T01:50:53.5914428Z",
+        "status": "Ready",
+        "image_gen": false
+      },
+      "request": {
+        "method": "PATCH",
+        "path": "/orgs/Aurum-Studios/actions/hosted-runners/44",
+        "body": {
+          "image_source": "github",
+          "image_id": "2295"
+        }
+      },
+      "verification": {
+        "method": "GET",
+        "path": "/orgs/Aurum-Studios/actions/hosted-runners/44",
+        "expectedImageID": "2295",
+        "expectedImageSource": "github",
+        "expectedImageDisplayName": "Ubuntu 24.04",
+        "preserveFields": [
+          "id",
+          "name",
+          "runner_group_id",
+          "machine_size_details",
+          "maximum_runners",
+          "public_ip_enabled",
+          "public_ips",
+          "image_gen"
+        ]
+      },
+      "rollbackIfSeparatelyApproved": {
+        "method": "PATCH",
+        "path": "/orgs/Aurum-Studios/actions/hosted-runners/44",
+        "body": {
+          "image_source": "github",
+          "image_id": "2306"
+        }
+      }
+    },
+    {
+      "runnerID": 45,
+      "runnerName": "linux-x64-8-c",
+      "runnerGroupID": 31,
+      "currentImage": {
+        "id": "2306",
+        "size_gb": 75,
+        "display_name": "Ubuntu Latest (24.04)",
+        "source": "github",
+        "version": "latest"
+      },
+      "before": {
+        "id": 45,
+        "name": "linux-x64-8-c",
+        "image_details": {
+          "id": "2306",
+          "size_gb": 75,
+          "display_name": "Ubuntu Latest (24.04)",
+          "source": "github",
+          "version": "latest"
+        },
+        "platform": "linux-x64",
+        "runner_group_id": 31,
+        "maximum_runners": 50,
+        "machine_size_details": {
+          "id": "8-core",
+          "cpu_cores": 8,
+          "memory_gb": 32,
+          "storage_gb": 300
+        },
+        "public_ip_enabled": false,
+        "public_ips": [],
+        "last_active_on": "2026-11-10T01:51:21.0416686Z",
+        "status": "Ready",
+        "image_gen": false
+      },
+      "request": {
+        "method": "PATCH",
+        "path": "/orgs/Aurum-Studios/actions/hosted-runners/45",
+        "body": {
+          "image_source": "github",
+          "image_id": "2295"
+        }
+      },
+      "verification": {
+        "method": "GET",
+        "path": "/orgs/Aurum-Studios/actions/hosted-runners/45",
+        "expectedImageID": "2295",
+        "expectedImageSource": "github",
+        "expectedImageDisplayName": "Ubuntu 24.04",
+        "preserveFields": [
+          "id",
+          "name",
+          "runner_group_id",
+          "machine_size_details",
+          "maximum_runners",
+          "public_ip_enabled",
+          "public_ips",
+          "image_gen"
+        ]
+      },
+      "rollbackIfSeparatelyApproved": {
+        "method": "PATCH",
+        "path": "/orgs/Aurum-Studios/actions/hosted-runners/45",
+        "body": {
+          "image_source": "github",
+          "image_id": "2306"
+        }
+      }
+    },
+    {
+      "runnerID": 46,
+      "runnerName": "linux-x64-8-d",
+      "runnerGroupID": 31,
+      "currentImage": {
+        "id": "2306",
+        "size_gb": 75,
+        "display_name": "Ubuntu Latest (24.04)",
+        "source": "github",
+        "version": "latest"
+      },
+      "before": {
+        "id": 46,
+        "name": "linux-x64-8-d",
+        "image_details": {
+          "id": "2306",
+          "size_gb": 75,
+          "display_name": "Ubuntu Latest (24.04)",
+          "source": "github",
+          "version": "latest"
+        },
+        "platform": "linux-x64",
+        "runner_group_id": 31,
+        "maximum_runners": 50,
+        "machine_size_details": {
+          "id": "8-core",
+          "cpu_cores": 8,
+          "memory_gb": 32,
+          "storage_gb": 300
+        },
+        "public_ip_enabled": false,
+        "public_ips": [],
+        "last_active_on": "2026-11-10T01:51:43.5479702Z",
+        "status": "Ready",
+        "image_gen": false
+      },
+      "request": {
+        "method": "PATCH",
+        "path": "/orgs/Aurum-Studios/actions/hosted-runners/46",
+        "body": {
+          "image_source": "github",
+          "image_id": "2295"
+        }
+      },
+      "verification": {
+        "method": "GET",
+        "path": "/orgs/Aurum-Studios/actions/hosted-runners/46",
+        "expectedImageID": "2295",
+        "expectedImageSource": "github",
+        "expectedImageDisplayName": "Ubuntu 24.04",
+        "preserveFields": [
+          "id",
+          "name",
+          "runner_group_id",
+          "machine_size_details",
+          "maximum_runners",
+          "public_ip_enabled",
+          "public_ips",
+          "image_gen"
+        ]
+      },
+      "rollbackIfSeparatelyApproved": {
+        "method": "PATCH",
+        "path": "/orgs/Aurum-Studios/actions/hosted-runners/46",
+        "body": {
+          "image_source": "github",
+          "image_id": "2306"
+        }
+      }
+    },
+    {
+      "runnerID": 48,
+      "runnerName": "linux-x64-8-e",
+      "runnerGroupID": 31,
+      "currentImage": {
+        "id": "2306",
+        "size_gb": 75,
+        "display_name": "Ubuntu Latest (24.04)",
+        "source": "github",
+        "version": "latest"
+      },
+      "before": {
+        "id": 48,
+        "name": "linux-x64-8-e",
+        "image_details": {
+          "id": "2306",
+          "size_gb": 75,
+          "display_name": "Ubuntu Latest (24.04)",
+          "source": "github",
+          "version": "latest"
+        },
+        "platform": "linux-x64",
+        "runner_group_id": 31,
+        "maximum_runners": 50,
+        "machine_size_details": {
+          "id": "8-core",
+          "cpu_cores": 8,
+          "memory_gb": 32,
+          "storage_gb": 300
+        },
+        "public_ip_enabled": false,
+        "public_ips": [],
+        "last_active_on": "2026-11-10T01:53:12.666565Z",
+        "status": "Ready",
+        "image_gen": false
+      },
+      "request": {
+        "method": "PATCH",
+        "path": "/orgs/Aurum-Studios/actions/hosted-runners/48",
+        "body": {
+          "image_source": "github",
+          "image_id": "2295"
+        }
+      },
+      "verification": {
+        "method": "GET",
+        "path": "/orgs/Aurum-Studios/actions/hosted-runners/48",
+        "expectedImageID": "2295",
+        "expectedImageSource": "github",
+        "expectedImageDisplayName": "Ubuntu 24.04",
+        "preserveFields": [
+          "id",
+          "name",
+          "runner_group_id",
+          "machine_size_details",
+          "maximum_runners",
+          "public_ip_enabled",
+          "public_ips",
+          "image_gen"
+        ]
+      },
+      "rollbackIfSeparatelyApproved": {
+        "method": "PATCH",
+        "path": "/orgs/Aurum-Studios/actions/hosted-runners/48",
+        "body": {
+          "image_source": "github",
+          "image_id": "2306"
+        }
+      }
+    },
+    {
+      "runnerID": 49,
+      "runnerName": "linux-x64-8-f",
+      "runnerGroupID": 31,
+      "currentImage": {
+        "id": "2306",
+        "size_gb": 75,
+        "display_name": "Ubuntu Latest (24.04)",
+        "source": "github",
+        "version": "latest"
+      },
+      "before": {
+        "id": 49,
+        "name": "linux-x64-8-f",
+        "image_details": {
+          "id": "2306",
+          "size_gb": 75,
+          "display_name": "Ubuntu Latest (24.04)",
+          "source": "github",
+          "version": "latest"
+        },
+        "platform": "linux-x64",
+        "runner_group_id": 31,
+        "maximum_runners": 50,
+        "machine_size_details": {
+          "id": "8-core",
+          "cpu_cores": 8,
+          "memory_gb": 32,
+          "storage_gb": 300
+        },
+        "public_ip_enabled": false,
+        "public_ips": [],
+        "last_active_on": "2026-11-10T01:56:35.6422295Z",
+        "status": "Ready",
+        "image_gen": false
+      },
+      "request": {
+        "method": "PATCH",
+        "path": "/orgs/Aurum-Studios/actions/hosted-runners/49",
+        "body": {
+          "image_source": "github",
+          "image_id": "2295"
+        }
+      },
+      "verification": {
+        "method": "GET",
+        "path": "/orgs/Aurum-Studios/actions/hosted-runners/49",
+        "expectedImageID": "2295",
+        "expectedImageSource": "github",
+        "expectedImageDisplayName": "Ubuntu 24.04",
+        "preserveFields": [
+          "id",
+          "name",
+          "runner_group_id",
+          "machine_size_details",
+          "maximum_runners",
+          "public_ip_enabled",
+          "public_ips",
+          "image_gen"
+        ]
+      },
+      "rollbackIfSeparatelyApproved": {
+        "method": "PATCH",
+        "path": "/orgs/Aurum-Studios/actions/hosted-runners/49",
+        "body": {
+          "image_source": "github",
+          "image_id": "2306"
+        }
+      }
+    },
+    {
+      "runnerID": 52,
+      "runnerName": "linux-x64-64-a",
+      "runnerGroupID": 32,
+      "currentImage": {
+        "id": "2306",
+        "size_gb": 75,
+        "display_name": "Ubuntu Latest (24.04)",
+        "source": "github",
+        "version": "latest"
+      },
+      "before": {
+        "id": 52,
+        "name": "linux-x64-64-a",
+        "image_details": {
+          "id": "2306",
+          "size_gb": 75,
+          "display_name": "Ubuntu Latest (24.04)",
+          "source": "github",
+          "version": "latest"
+        },
+        "platform": "linux-x64",
+        "runner_group_id": 32,
+        "maximum_runners": 50,
+        "machine_size_details": {
+          "id": "64-core",
+          "cpu_cores": 64,
+          "memory_gb": 256,
+          "storage_gb": 2040
+        },
+        "public_ip_enabled": false,
+        "public_ips": [],
+        "last_active_on": "2026-11-12T18:38:41.9827745Z",
+        "status": "Ready",
+        "image_gen": false
+      },
+      "request": {
+        "method": "PATCH",
+        "path": "/orgs/Aurum-Studios/actions/hosted-runners/52",
+        "body": {
+          "image_source": "github",
+          "image_id": "2295"
+        }
+      },
+      "verification": {
+        "method": "GET",
+        "path": "/orgs/Aurum-Studios/actions/hosted-runners/52",
+        "expectedImageID": "2295",
+        "expectedImageSource": "github",
+        "expectedImageDisplayName": "Ubuntu 24.04",
+        "preserveFields": [
+          "id",
+          "name",
+          "runner_group_id",
+          "machine_size_details",
+          "maximum_runners",
+          "public_ip_enabled",
+          "public_ips",
+          "image_gen"
+        ]
+      },
+      "rollbackIfSeparatelyApproved": {
+        "method": "PATCH",
+        "path": "/orgs/Aurum-Studios/actions/hosted-runners/52",
+        "body": {
+          "image_source": "github",
+          "image_id": "2306"
+        }
+      }
+    },
+    {
+      "runnerID": 53,
+      "runnerName": "linux-x64-64-b",
+      "runnerGroupID": 32,
+      "currentImage": {
+        "id": "2306",
+        "size_gb": 75,
+        "display_name": "Ubuntu Latest (24.04)",
+        "source": "github",
+        "version": "latest"
+      },
+      "before": {
+        "id": 53,
+        "name": "linux-x64-64-b",
+        "image_details": {
+          "id": "2306",
+          "size_gb": 75,
+          "display_name": "Ubuntu Latest (24.04)",
+          "source": "github",
+          "version": "latest"
+        },
+        "platform": "linux-x64",
+        "runner_group_id": 32,
+        "maximum_runners": 50,
+        "machine_size_details": {
+          "id": "64-core",
+          "cpu_cores": 64,
+          "memory_gb": 256,
+          "storage_gb": 2040
+        },
+        "public_ip_enabled": false,
+        "public_ips": [],
+        "last_active_on": "2026-11-10T02:00:57.0252766Z",
+        "status": "Ready",
+        "image_gen": false
+      },
+      "request": {
+        "method": "PATCH",
+        "path": "/orgs/Aurum-Studios/actions/hosted-runners/53",
+        "body": {
+          "image_source": "github",
+          "image_id": "2295"
+        }
+      },
+      "verification": {
+        "method": "GET",
+        "path": "/orgs/Aurum-Studios/actions/hosted-runners/53",
+        "expectedImageID": "2295",
+        "expectedImageSource": "github",
+        "expectedImageDisplayName": "Ubuntu 24.04",
+        "preserveFields": [
+          "id",
+          "name",
+          "runner_group_id",
+          "machine_size_details",
+          "maximum_runners",
+          "public_ip_enabled",
+          "public_ips",
+          "image_gen"
+        ]
+      },
+      "rollbackIfSeparatelyApproved": {
+        "method": "PATCH",
+        "path": "/orgs/Aurum-Studios/actions/hosted-runners/53",
+        "body": {
+          "image_source": "github",
+          "image_id": "2306"
+        }
+      }
+    },
+    {
+      "runnerID": 54,
+      "runnerName": "linux-x64-64-c",
+      "runnerGroupID": 32,
+      "currentImage": {
+        "id": "2306",
+        "size_gb": 75,
+        "display_name": "Ubuntu Latest (24.04)",
+        "source": "github",
+        "version": "latest"
+      },
+      "before": {
+        "id": 54,
+        "name": "linux-x64-64-c",
+        "image_details": {
+          "id": "2306",
+          "size_gb": 75,
+          "display_name": "Ubuntu Latest (24.04)",
+          "source": "github",
+          "version": "latest"
+        },
+        "platform": "linux-x64",
+        "runner_group_id": 32,
+        "maximum_runners": 50,
+        "machine_size_details": {
+          "id": "64-core",
+          "cpu_cores": 64,
+          "memory_gb": 256,
+          "storage_gb": 2040
+        },
+        "public_ip_enabled": false,
+        "public_ips": [],
+        "last_active_on": "2026-11-10T02:01:25.6481023Z",
+        "status": "Ready",
+        "image_gen": false
+      },
+      "request": {
+        "method": "PATCH",
+        "path": "/orgs/Aurum-Studios/actions/hosted-runners/54",
+        "body": {
+          "image_source": "github",
+          "image_id": "2295"
+        }
+      },
+      "verification": {
+        "method": "GET",
+        "path": "/orgs/Aurum-Studios/actions/hosted-runners/54",
+        "expectedImageID": "2295",
+        "expectedImageSource": "github",
+        "expectedImageDisplayName": "Ubuntu 24.04",
+        "preserveFields": [
+          "id",
+          "name",
+          "runner_group_id",
+          "machine_size_details",
+          "maximum_runners",
+          "public_ip_enabled",
+          "public_ips",
+          "image_gen"
+        ]
+      },
+      "rollbackIfSeparatelyApproved": {
+        "method": "PATCH",
+        "path": "/orgs/Aurum-Studios/actions/hosted-runners/54",
+        "body": {
+          "image_source": "github",
+          "image_id": "2306"
+        }
+      }
+    }
+  ]
+}

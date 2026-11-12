@@ -58,7 +58,7 @@ def resolution_command(repository, scratch, cache=None, disable_sandbox=False):
         command += ["--cache-path", str(cache)]
     if disable_sandbox:
         command.append("--disable-sandbox")
-    return [*command, "resolve"]
+    return [*command, "--force-resolved-versions", "resolve"]
 
 
 def resolved_logging(repository, scratch):
@@ -99,14 +99,18 @@ def main():
     parser.add_argument("--skip-resolve", action="store_true", help="Use an existing verified checkout without network resolution")
     arguments = parser.parse_args()
     repository = arguments.repository.resolve()
+    resolved = repository / "Package.resolved"
+    original_pins = resolved.read_bytes()
     swiftpm_scratch = arguments.scratch_path.resolve() if arguments.scratch_path else repository / ".build"
     if not arguments.skip_resolve:
         subprocess.run(resolution_command(repository, swiftpm_scratch, arguments.cache_path,
                                           arguments.disable_sandbox), check=True)
+    if resolved.read_bytes() != original_pins:
+        raise ValueError("Package.resolved changed during Apple dependency resolution")
     logging_checkout, pin = resolved_logging(repository, swiftpm_scratch)
     report = {"scope": "Selected-module device/simulator compile only; no runtime or full-package qualification",
               "modules": MODULES, "platforms": [], "sourceSHA256": {}, "dependencySourceSHA256": {},
-              "loggingDependency": pin}
+              "loggingDependency": pin, "packageResolvedSHA256": hashlib.sha256(original_pins).hexdigest()}
     report["swiftVersion"] = subprocess.check_output(["swiftc", "--version"], text=True).strip()
     with tempfile.TemporaryDirectory(prefix="discordkit-apple-compile-") as scratch:
         for name in arguments.sdk or DESTINATIONS:
@@ -124,6 +128,8 @@ def main():
                 subprocess.run(compiler_command(module, sources, DESTINATIONS[name], sdk,
                                                 output, Path(scratch) / "cache"), check=True)
             report["platforms"].append({"sdk": name, "target": DESTINATIONS[name], "modules": len(MODULES)})
+    if resolved.read_bytes() != original_pins:
+        raise ValueError("Package.resolved changed during selected Apple compilation")
     arguments.output.parent.mkdir(parents=True, exist_ok=True)
     arguments.output.write_text(json.dumps(report, indent=2) + "\n")
     print(f"Compiled {len(MODULES) * len(report['platforms'])} selected Apple module emissions")

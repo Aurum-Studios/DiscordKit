@@ -65,8 +65,9 @@ class ProvisioningWorkflowTests(unittest.TestCase):
         _, build = self.execute_profile('build')
         self.assertTrue(all(result.returncode == 0 for result in results))
         runtime, build = runtime[-1], build[-1]
-        for dependency in ('libc6-dev', 'libgcc-13-dev', 'libstdc++-13-dev', 'libpython3.12t64'):
+        for dependency in ('libc6-dev', 'libgcc-13-dev', 'libstdc++-13-dev', 'linux-libc-dev', 'libpython3.12t64'):
             self.assertIn(dependency, runtime)
+            self.assertIn(dependency, build)
         for dependency in ('clang', 'libcurl4-openssl-dev', 'libxml2-dev', 'libz3-dev', 'pkg-config'):
             self.assertNotIn(dependency, runtime)
             self.assertIn(dependency, build)

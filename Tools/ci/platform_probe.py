@@ -17,6 +17,7 @@ import subprocess
 import sys
 import tempfile
 
+import linux_runtime
 from linux_ci import PLATFORMS, SWIFT_VERSION, metadata_query, native_preflight
 
 
@@ -34,8 +35,9 @@ def verified_provisioning_facts(native_platform, swift_version, target_info, que
     Local unmanaged callers retain their existing compatibility contract. A job
     supplied with a provisioning receipt must prove its successful authenticated
     install still owns Swift on PATH and matches the current image and policy.
-    These transport/provenance facts remain informational: cold and cache-hit
-    installations produce the same exact Phase 4 build compatibility identity.
+    Cold and cache-hit installations prove the same authenticated distribution.
+    Linux binds that distribution and signer into its exact runtime contract;
+    cache transport state remains informational.
     """
     receipt_path = os.environ.get("DISCORDKIT_PROVISIONING_RECEIPT")
     if receipt_path is None:
@@ -95,8 +97,9 @@ def build_compatibility_facts(repository, native_platform, *, query=None):
 
     Every value under ``exact`` requires equality, including kernel release/version,
     distribution/libc or OS runtime version, compiler target/runtime paths, image
-    ImageOS/ImageVersion and macOS Xcode/SDK facts. No version ranges are inferred.
-    ImageRelease URLs, runner names/environment and Python are informational only.
+    ImageOS and macOS Xcode/SDK facts. Linux additionally compares its complete
+    native ELF/runtime closure instead of unrelated weekly image build numbers.
+    Other platforms retain exact ImageVersion. No version ranges are inferred.
     Hosted execution requires an assigned image; local unmanaged hosts have an
     explicit image kind and still require the complete native OS/runtime identity.
 
@@ -167,6 +170,9 @@ def build_compatibility_facts(repository, native_platform, *, query=None):
              "swiftVersion": swift_version, "swiftTarget": triple, "swiftTargetInfo": target_info,
              "image": image, "xcode": None}
     if native_platform == "linux-x64":
+        exact["policyVersion"] = 2
+        if "version" in image:
+            del image["version"]
         distribution = platform.freedesktop_os_release()
         identifier = required_text(distribution.get("ID"), "Linux distribution ID")
         version = required_text(distribution.get("VERSION_ID"), "Linux distribution VERSION_ID")
@@ -177,6 +183,11 @@ def build_compatibility_facts(repository, native_platform, *, query=None):
             raise ValueError("required GNU libc runtime identity is unavailable")
         exact["osRuntime"] = {"distributionID": identifier, "distributionVersion": version,
                               "libc": libc}
+        try:
+            exact["linuxABI"] = linux_runtime.validate_facts(json.loads(text(
+                [sys.executable, str(Path(__file__).with_name("linux_runtime.py"))])))
+        except (TypeError, json.JSONDecodeError) as error:
+            raise ValueError("required native Linux ABI facts are unavailable or malformed") from error
     elif native_platform == "macos-arm64":
         exact["osRuntime"] = {"productVersion": text(["sw_vers", "-productVersion"]),
                               "buildVersion": text(["sw_vers", "-buildVersion"])}
@@ -197,9 +208,15 @@ def build_compatibility_facts(repository, native_platform, *, query=None):
                      "runnerName": os.environ.get("RUNNER_NAME"),
                      "runnerEnvironment": os.environ.get("RUNNER_ENVIRONMENT"),
                      "pythonVersion": platform.python_version()}
+    if native_platform == "linux-x64":
+        informational["observedImageVersion"] = image_version
     provisioning = verified_provisioning_facts(native_platform, swift_version, target_info, query)
     if provisioning is not None:
         informational["provisioning"] = provisioning
+    if native_platform == "linux-x64":
+        exact["swiftDistribution"] = ({"kind": "authenticated", "sha256": provisioning["distributionSHA256"],
+                                      "signer": provisioning["signer"]}
+                                     if provisioning is not None else {"kind": "unmanaged"})
     return {"exact": exact, "informational": informational}
 
 
