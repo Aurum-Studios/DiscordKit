@@ -30,6 +30,8 @@ hosted performance and complete native acceptance remain Phase 11.
 Phase 8 has local helper/signature acceptance at implementation commit
 `db705cb6dade43da579d555461f3f36a13586b48` on `ci/phase-8-provisioning`;
 hosted cold/hit compatibility and savings remain Phase 11.
+Phase 9 has local shared-documentation helper and real synthetic DocC acceptance at
+`b6fe729d61f7355cd8bcfc9ab4dcd93d020f2467` on `ci/phase-9-documentation`; hosted proof remains Phase 11.
 No hosted qualification, paid execution, external configuration change or publication
 is claimed. See [BOOTSTRAP.md](BOOTSTRAP.md) for the zero-paid execution sheet.
 
@@ -44,7 +46,7 @@ is claimed. See [BOOTSTRAP.md](BOOTSTRAP.md) for the zero-paid execution sheet.
 | 6 — Preflight and canaries | Implemented; local helper acceptance; native expansion contained | `666f1371224fbe5bda03ec7b54be14a083bb6b09` | [Contracts and execution sheet](phase-6/IMPLEMENTATION.md); [validation](phase-6/validation.json), [independent review](phase-6/review.json); hosted proof remains Phase 11 |
 | 7 — Suite groups and resources | Implemented; local helper acceptance; hosted measurements pending Phase 11 | `4db6c5e6181d790fd1cd304220059397a501467b` | [Grouped suites, leaf coverage and resources](phase-7/IMPLEMENTATION.md); [validation](phase-7/validation.json), [review](phase-7/review.json) |
 | 8 — Verified provisioning | Implemented; local helper/signature acceptance; hosted measurements pending Phase 11 | `db705cb6dade43da579d555461f3f36a13586b48` | [Verified distribution reuse and profiles](phase-8/IMPLEMENTATION.md); [validation](phase-8/validation.json), [review](phase-8/review.json), [upstream pins](phase-8/upstream/SOURCES.json) |
-| 9 — Shared documentation inputs | Implemented; local helper and real synthetic DocC acceptance; hosted proof pending Phase 11 | Pending implementation commit | [Shared conversions and trust contracts](phase-9/IMPLEMENTATION.md); [validation](phase-9/validation.json), [review](phase-9/review.json), [real DocC counts/routes](phase-9/checks/real-docc/results.json) |
+| 9 — Shared documentation inputs | Implemented; local helper and real synthetic DocC acceptance; hosted proof pending Phase 11 | `b6fe729d61f7355cd8bcfc9ab4dcd93d020f2467` | [Shared conversions and trust contracts](phase-9/IMPLEMENTATION.md); [validation](phase-9/validation.json), [review](phase-9/review.json), [real DocC counts/routes](phase-9/checks/real-docc/results.json) |
 | 10 — Spend admission | Not started | Pending | Pending |
 | 11 — Qualification and rollout | Not started | Pending | Pending exact-final-revision CI |
 
@@ -294,3 +296,8 @@ Actual hosted producer/consumer and partial-rerun proof, pinned Swift 6.4.1
 production documentation conversion, site qualification and measured savings
 remain Phase 11. Phase 10 spending admission remains unimplemented and native
 expansion stays contained. No push, paid execution, dispatch or publication occurred.
+
+Implementation commit `b6fe729d61f7355cd8bcfc9ab4dcd93d020f2467` contains all 13 verified tested
+input blobs and 65 retained manifest artifacts. The [actual-blob commit receipt](phase-9/commit-receipt.json)
+verifies these objects and current bytes. This completion followup changes documentation
+only; executable/test/workflow inputs remain unchanged.
