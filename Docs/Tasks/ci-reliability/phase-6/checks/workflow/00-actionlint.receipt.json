@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "name": "actionlint",
+  "stage": "preflight-workflow",
+  "operation": "localHelperCheck",
+  "arguments": [
+    "actionlint",
+    ".github/workflows/ci.yml",
+    ".github/workflows/documentation.yml",
+    ".github/workflows/native-platform.yml",
+    ".github/workflows/release.yml",
+    ".github/workflows/timing-comparison.yml",
+    ".github/workflows/timing-periodic.yml",
+    ".github/workflows/upstream-review.yml"
+  ],
+  "start": "2026-11-12T14:51:00.515524+00:00",
+  "startMonotonic": 353067.88336825,
+  "deadlineMonotonic": 353367.882892666,
+  "executionLimitSeconds": 300,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "aggregate",
+  "paths": {
+    "output": "/Users/carsonrau/Developer/DiscordKit-ci-phase6/.build/phase6-preflight/workflow-final/00-actionlint.log",
+    "stdout": null,
+    "diagnostics": "/Users/carsonrau/Developer/DiscordKit-ci-phase6/.build/phase6-preflight/workflow-final/00-actionlint.diagnostics.jsonl",
+    "receipt": "/Users/carsonrau/Developer/DiscordKit-ci-phase6/.build/phase6-preflight/workflow-final/00-actionlint.receipt.json"
+  },
+  "identity": {
+    "executionID": "cd8523ec-ea87-49c1-bdfd-b4e4c7e0048e",
+    "supervisorPID": 3389,
+    "host": "Pokemon-GO-Plus",
+    "system": "Darwin",
+    "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase6"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 3429,
+  "group": 3429,
+  "cleanup": {
+    "status": "group-signalled",
+    "signals": [],
+    "parentReaped": true,
+    "allowanceSeconds": 8.0,
+    "seconds": 0.004,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "verificationMalformedRows": 0,
+    "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "/Users/carsonrau/Developer/DiscordKit-ci-phase6/.build/phase6-preflight/workflow-final/00-actionlint.log",
+      "retainedBytes": 256,
+      "observedBytes": 256,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T14:51:00.530645+00:00",
+  "endMonotonic": 353067.898506833,
+  "elapsedSeconds": 0.015,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}

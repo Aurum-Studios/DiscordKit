@@ -381,3 +381,16 @@ Implementation commit `d466d50bc153f2799a33e200d574569958905295` contains the te
 compares each input and artifact against actual committed blobs. This receipt
 follow-up changes documentation only; executable/test/workflow/dependency inputs
 remain byte-for-byte identical to the validated implementation.
+
+## Phase 6 local scoped-preflight and canary acceptance
+
+Prepared from Phase 5 handoff `b759a25e` on isolated `ci/phase-6-preflight-canaries`.
+[Execution plan and implementation](phase-6/IMPLEMENTATION.md),
+[source preflight](phase-6/source-preflight.json), [final validation](phase-6/validation.json)
+and [review](phase-6/review.json) retain ownership, source/artifact hashes and
+actual supervised commands. Every helper group, policy/source snapshot, workflow
+lint and unchanged human maintenance ledger passed locally. Native expansion and
+documentation deployment remain contained pending Phase 10 admission. No native
+Swift, hosted/paid execution, remote write, publication or live runtime was used.
+Real fresh-runner canary, partial rerun, check context and branch-protection proof
+remain Phase 11; Phase 3 native x64 acceptance stays open.

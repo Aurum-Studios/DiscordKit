@@ -17,8 +17,9 @@ Phase 4 is complete as local helper implementation at
 `4590c5d76c1024d8eec5132a1be343220577cccf`; see
 [the implementation](phase-4/IMPLEMENTATION.md). Phase 5 is implemented at `d466d50bc153f2799a33e200d574569958905295` with local
 helper acceptance; its hosted transfer/rerun proof remains Phase 11 work. See
-[the execution plan and contracts](phase-5/IMPLEMENTATION.md). Phases 6 through 11
-remain proposed.
+[the execution plan and contracts](phase-5/IMPLEMENTATION.md). Phase 6 has local
+implementation acceptance; native expansion remains contained pending Phase 10. See
+[scope and canary contracts](phase-6/IMPLEMENTATION.md). Phases 7 through 11 remain proposed.
 See [STATE.md](STATE.md) for the
 commit-backed completion record and [BOOTSTRAP.md](BOOTSTRAP.md) for execution limits.
 Source inspected: `85eac6f3c1d3b17e53596c49e7438efee366c1b3`.

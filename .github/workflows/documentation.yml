@@ -26,8 +26,27 @@ env:
   PYTHONUNBUFFERED: '1'
 
 jobs:
+  preflight:
+    name: Contained documentation source preflight
+    outputs:
+      native-enabled: ${{ steps.rollout.outputs.native-enabled }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Read contained rollout setting
+        id: rollout
+        run: python3 Tools/ci/workflow_scope.py select --mode preflight
+      - name: Validate source-only policy and displayed examples
+        run: python3 Tools/ci/preflight.py source --output .build/documentation-preflight
+
   platform:
     name: Platform checks / macos-arm64
+    needs: preflight
+    # Phase 10 admission and Phase 9 shared documentation inputs precede rollout.
+    if: needs.preflight.outputs.native-enabled == 'true'
     runs-on:
       group: MacOS-26-5
     timeout-minutes: 20

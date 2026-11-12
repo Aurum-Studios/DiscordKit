@@ -28,25 +28,40 @@ qualification remain tracked in the plan.
 
 ## Offline validation
 
-[Offline validation](../.github/workflows/ci.yml) runs on push, pull request and
-manual dispatch with read-only repository permissions and no Discord secrets.
-The workflow calls [the native-platform pipeline](../.github/workflows/native-platform.yml)
-through two explicit jobs: **Linux x64** and **macOS ARM64**.
-Windows CI is excluded because SwiftNIO does not support Windows.
-Separate callers give each platform its own group in GitHub's job viewer, with
-its own build, runtime-suite and compiler-fixture matrices. Each call owns its
-platform check, plan, builds, runtime suites, compiler fixtures, validation and
-source export. No platform waits for another platform's checks or builds:
+[Offline validation](../.github/workflows/ci.yml) retains push, pull-request and
+manual entry points with read-only permissions and no Discord secrets. The
+[Phase 6 implementation](Tasks/ci-reliability/phase-6/IMPLEMENTATION.md) introduces
+explicit `preflight`, `diagnostic` and `full` scope. The checked-in
+[rollout setting](../Tools/ci/rollout.v1.json) selects **preflight** automatically
+and keeps native expansion disabled until reviewed Phase 10 spend admission.
+Manual full/diagnostic requests fail closed under this setting. Repository
+variables or dispatch fields cannot grant paid execution. Documentation's
+independent compilation and Pages deployment are contained too.
+
+A source/policy/workflow job, four balanced Python/browser helper groups and the
+independent human upstream-maintenance freshness check precede native scheduling.
+Helpers use the process supervisor and a shared 300-second group deadline.
+Source checks validate the reviewed manifest bytes/inventory and displayed
+examples; actionlint verifies workflow syntax and expressions. Swift manifest
+evaluation remains a native compiler operation. Compiled inventory/generation/
+parity and documentation audits follow their own sufficient producer.
+
+The prepared native graph retains two explicit, independent **Linux x64** and
+**macOS ARM64** callers. Windows remains excluded. Its execution is contained;
+this diagram describes the gated implementation, not hosted qualification:
 
 ```mermaid
 flowchart LR
-    L[Linux check and builds] --> LT[Linux suites, fixtures and audits]
-    LT --> LP[Linux source export]
-    M[macOS check and builds] --> MT[macOS suites, fixtures, audits, API and Apple SDKs]
-    MT --> MP[macOS source export]
-    LP --> C[Complete certification]
+    H[Shared source, helpers and maintenance] --> L[Linux probe and native plan]
+    H --> M[macOS probe and native plan]
+    L --> LC[Load producer, immutable upload, fresh consumer and smokes]
+    M --> MC[Load producer, immutable upload, fresh consumer and smokes]
+    LC --> LB[Remaining Linux builds, suites, fixtures and audits]
+    MC --> MB[Remaining macOS builds, suites, fixtures, audits, API and Apple SDKs]
+    LB --> LP[Exact coverage, then Linux source export]
+    MB --> MP[Exact coverage, then macOS source export]
+    LP --> C[Fresh full coverage and producer barrier]
     MP --> C
-    H[Shared Python, browser and maintenance checks] --> C
 ```
 
 | Target | Platform and runtime suite group | Build and compiler fixture group |
@@ -54,55 +69,39 @@ flowchart LR
 | Linux x64 / Ubuntu 24.04 | `Linux-x64-8` | `Linux-x64-64` |
 | macOS ARM64 / macOS 26 | `MacOS-26-5` | `MacOS-26-5` |
 
-The `native-linux` and `native-macos` jobs each call one pipeline.
-Each starts with exactly one check of the actual native OS, architecture,
-Swift 6.4.1 compiler and target, then compiles, links and executes an offline
-Foundation JSON roundtrip. A platform check is never multiplied by build
-components, suites or runner sizes. Only that platform's check must pass before
-its builds start. A failed or unfinished platform leaves the other pipeline
-free to build, test, validate and export.
-The macOS ARM pool has five cores and serves both compilation and runtime work.
-Linux uses separate 64-core build and 8-core runtime pools.
+Each platform probes its actual OS, architecture, Swift 6.4.1 compiler/target and
+runtime, then evaluates the root manifest against the reviewed source inventory.
+Its load producer compiles tests and optimized smoke executables once, uploads
+immutable bytes with producer provenance, and a separate consumer job resolves,
+restores and compares complete nonempty discovery before running the entire load
+package and existing REST/loopback smokes. Native receipt, source/path, digest,
+discovery or timeout failure prevents only that platform's broader expansion.
 
-After its platform check, a small native job evaluates the root manifest and plans
-independent builds for the root, macros, extensions, tooling, load tools,
-DSL benchmarks, shared timing support, instrumentation/Foundation/media timing
-harnesses, consumers and optimized library products for that platform. Builds
-use `swift build --build-tests` where applicable and do not execute test suites.
-The DSL benchmark, load and timing harness builds also produce optimized smoke executables. Consumer
-examples keep separate build directories so one example's metadata cannot
-replace another example's test executable. Apple SDK module emissions run in
-this build phase after the macOS platform check.
+The valid load build and complete suite are canonical once. Remaining matrices
+exclude load; a diagnostic adds only its requested component/suite after the
+explicit load canary prerequisite. No diagnostic automatically expands to full.
+Root suites retain exact module filters and `--skip-build --no-parallel`;
+compiler-positive/negative fixtures and native audits retain their existing work.
+Both remaining build and runtime matrices cap in-flight jobs at two. Phase 7
+still owns grouping, memory-aware resource admission and executed-leaf accounting.
 
-Every build for a platform must pass before that platform's test phase starts.
-Apple SDK compilation does not gate runtime suites. Each root Swift test target
-gets its own job; macro, extension, tooling, load and benchmark packages and
-individual offline consumer examples have separate jobs. Runtime suites use
-`swift test --skip-build --no-parallel`, and executable smoke tests use
-`swift run --skip-build`. The helper compares restored test discovery with the
-producer's nonempty inventory before executing a suite, and anchors root filters
-to the exact module. Platform conditionals retain their existing behavior.
+The expected-coverage manifest lists every probe, plan, producer, suite, fixture,
+audit, API/Apple check and applicable export. Authenticated same-run API evidence
+must contain each expected job and required step exactly once with successful
+terminal results. Unexpected canonical build/test rows fail. A fresh full barrier
+checks both platforms and every shared helper row and resolves both complete
+producer indices again. Earlier successful same-run jobs may survive a partial
+failed-job rerun; a newer failed/cancelled replacement cannot fall back to an old
+success. Immutable producer attempts and selected job attempts stay recorded.
 
-No current runtime suite has evidence requiring a large runner. Compiler fixture
-suites are the exception: their positive and negative cases must invoke the
-compiler, so each authoring fixture suite runs as a separate job on the build
-pools. They still require the expected semantic diagnostics; infrastructure
-crashes do not count as successful negative tests. Python tooling, load,
-benchmark, shared timing support, Foundation timing and CI helpers and the browser bridge run as seven independent small
-Linux jobs without native-build dependencies. Source audits run separately on
-each platform and reuse its compiled tooling executable.
-Public API and DocC checks reuse public symbol graphs emitted during the macOS
-root and authoring builds, without recompiling stripped build artifacts.
-The upstream maintenance freshness check remains a separate required job without
-native-build dependencies. These shared checks gate overall certification;
-platform exports depend on their own native validation.
-
-The reusable workflow keeps all `needs` edges within one platform. The two
-caller jobs have no dependencies on each other, so a failed pipeline cannot
-cancel the other. Their internal matrices retain `fail-fast: false`.
-GitHub groups reusable jobs under their caller; see
-[reusable workflow navigation](https://github.blog/news-insights/product-news/improving-navigation-for-github-actions/)
-and [calling reusable workflows](https://docs.github.com/en/actions/how-tos/reuse-automations/reuse-workflows#calling-a-reusable-workflow).
+Only validated full scope creates **Offline certification passed**. Its required
+`Verify full scope and complete coverage` step checks the full source-bound
+manifest; release discovery requires that successful step too. Scoped runs use
+**Preflight scope passed** or **Diagnostic scope passed**, including failure or
+skip paths, and their scope-specific concurrency groups cannot supersede or
+cancel full certification. Full runs still cancel superseded full runs.
+Real GitHub context, branch-protection and fresh-runner/rerun acceptance remain
+Phase 11 work before rollout.
 
 [The shared setup action](../.github/actions/setup-native/action.yml) installs
 Swift 6.4.1, Python 3.12 and Node 24. Linux setup installs the Ubuntu prerequisites
@@ -191,14 +190,14 @@ work shares the execution deadline; silence is diagnostic evidence rather than
 a deadlock verdict. Windows cleanup retains its best-effort helper coverage and
 has no Windows qualification claim. Each job retains diagnostics even after
 failure. The final
-**Offline certification passed** job runs with `always()` and requires both
-platform pipelines, shared helper
-suites and maintenance freshness to pass. Each pipeline has its own final gate
-that rejects failed, cancelled or skipped required jobs; only the explicitly
-macOS-only API/DocC and Apple SDK jobs may be skipped on Linux.
+**Offline certification passed** job is available only for validated full scope.
+It runs its fresh barrier with `always()`, requires both platform groups and all
+shared checks, and rechecks the exact expected job/step coverage and producer
+indices. Scoped runs create their own check context and cannot qualify a release.
 
-Each successful platform exports the clean source revision on push or manual
-dispatch, even if another platform or a shared certification check fails. The
+In full mode, each successful platform exports the clean source revision on push
+or manual dispatch, even if the other platform fails. Shared preflight must pass
+before native scheduling. The
 export waits for that platform's builds, runtime suites, compiler fixtures and
 source audits; macOS also requires its API/DocC and Apple SDK checks. Pull requests
 run the same validation without creating source bundles. Artifacts are named

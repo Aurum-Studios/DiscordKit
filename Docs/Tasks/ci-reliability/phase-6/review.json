@@ -1,0 +1,21 @@
+{
+  "findings": [],
+  "limits": [
+    "No hosted or paid execution",
+    "No native Swift build/test execution",
+    "Phase 11 owns real runner and branch protection acceptance"
+  ],
+  "resolved": [
+    "Successful job with skipped required work step",
+    "Platform API head mismatch",
+    "Unaffected-platform earlier success during partial rerun",
+    "Unknown canonical rows in combined full manifest",
+    "Fresh root evidence retention and enclosing budgets"
+  ],
+  "reviewers": [
+    "coverage_helper",
+    "release_scope"
+  ],
+  "status": "approved",
+  "validation": "Independent read-only architecture review and deterministic regression tests; final complete helper receipt is validation.json"
+}

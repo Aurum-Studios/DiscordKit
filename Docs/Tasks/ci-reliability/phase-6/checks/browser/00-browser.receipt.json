@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "name": "browser",
+  "stage": "preflight-browser",
+  "operation": "localHelperCheck",
+  "arguments": [
+    "node",
+    "--test",
+    "Browser/DiscordActivityBridge/ActivityBridge.test.mjs",
+    "Browser/DiscordActivityBridge/ActivityHostExample.test.mjs",
+    "Browser/DiscordActivityBridge/ActivityNetwork.test.mjs"
+  ],
+  "start": "2026-11-12T14:40:30.840099+00:00",
+  "startMonotonic": 352438.212035083,
+  "deadlineMonotonic": 352738.211714875,
+  "executionLimitSeconds": 300,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "aggregate",
+  "paths": {
+    "output": "/Users/carsonrau/Developer/DiscordKit-ci-phase6/.build/phase6-preflight/browser/00-browser.log",
+    "stdout": null,
+    "diagnostics": "/Users/carsonrau/Developer/DiscordKit-ci-phase6/.build/phase6-preflight/browser/00-browser.diagnostics.jsonl",
+    "receipt": "/Users/carsonrau/Developer/DiscordKit-ci-phase6/.build/phase6-preflight/browser/00-browser.receipt.json"
+  },
+  "identity": {
+    "executionID": "5757d13a-8995-473a-b99d-302c9b20de99",
+    "supervisorPID": 93071,
+    "host": "Pokemon-GO-Plus",
+    "system": "Darwin",
+    "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase6"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 93110,
+  "group": 93110,
+  "cleanup": {
+    "status": "group-signalled",
+    "signals": [],
+    "parentReaped": true,
+    "allowanceSeconds": 8.0,
+    "seconds": 0.004,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "verificationMalformedRows": 0,
+    "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "/Users/carsonrau/Developer/DiscordKit-ci-phase6/.build/phase6-preflight/browser/00-browser.log",
+      "retainedBytes": 4351,
+      "observedBytes": 4351,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T14:40:30.938641+00:00",
+  "endMonotonic": 352438.310594083,
+  "elapsedSeconds": 0.099,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}

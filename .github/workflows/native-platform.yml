@@ -8,7 +8,20 @@ name: Native platform validation
 # Called by CI once per platform; this adds no independently triggered run.
 on:
   workflow_call:
+    outputs:
+      coverage:
+        description: Exact platform coverage observed by the fresh barrier
+        value: ${{ jobs.complete.outputs.coverage }}
     inputs:
+      mode:
+        required: true
+        type: string
+      component:
+        type: string
+        default: ''
+      suite:
+        type: string
+        default: ''
       platform:
         required: true
         type: string
@@ -54,6 +67,15 @@ jobs:
       - uses: actions/checkout@v6
         with:
           persist-credentials: false
+      - name: Require contained rollout admission before native provisioning
+        env:
+          NATIVE_MODE: ${{ inputs.mode }}
+          NATIVE_PLATFORM: ${{ inputs.platform }}
+          NATIVE_COMPONENT: ${{ inputs.component }}
+          NATIVE_SUITE: ${{ inputs.suite }}
+        run: >-
+          python3 Tools/ci/workflow_scope.py authorize --mode "$NATIVE_MODE"
+          --platform "$NATIVE_PLATFORM" --component "$NATIVE_COMPONENT" --suite "$NATIVE_SUITE"
       - uses: ./.github/actions/setup-native
       - name: Check native host, compiler, linker and runtime
         run: >-
@@ -77,6 +99,10 @@ jobs:
     outputs:
       builds: ${{ steps.plan.outputs.builds }}
       tests: ${{ steps.plan.outputs.tests }}
+      all-builds: ${{ steps.plan.outputs.all-builds }}
+      coverage: ${{ steps.plan.outputs.coverage }}
+      has-builds: ${{ steps.plan.outputs.has-builds }}
+      has-tests: ${{ steps.plan.outputs.has-tests }}
     defaults:
       run:
         shell: ${{ inputs.shell }}
@@ -94,16 +120,22 @@ jobs:
         shell: python
         env:
           NATIVE_PLATFORM: ${{ inputs.platform }}
+          NATIVE_MODE: ${{ inputs.mode }}
+          NATIVE_COMPONENT: ${{ inputs.component }}
+          NATIVE_SUITE: ${{ inputs.suite }}
         run: |
           import json, os, subprocess, sys
           from pathlib import Path
           subprocess.run([sys.executable, 'Tools/ci/native_jobs.py', 'plan',
                           '--platform', os.environ['NATIVE_PLATFORM'],
+                          '--mode', os.environ['NATIVE_MODE'],
+                          *(['--component', os.environ['NATIVE_COMPONENT']] if os.environ['NATIVE_COMPONENT'] else []),
+                          *(['--suite', os.environ['NATIVE_SUITE']] if os.environ['NATIVE_SUITE'] else []),
                           '--output', '.build/ci-plan'], check=True)
           with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
-              for key, filename in [('builds', 'build-matrix.json'), ('tests', 'test-matrix.json')]:
-                  matrix = json.loads((Path('.build/ci-plan') / filename).read_text())
-                  output.write(key + '=' + json.dumps(matrix, separators=(',', ':')) + '\n')
+              scoped = json.loads(Path('.build/ci-plan/scope-plan.json').read_text())
+              for key, value in scoped.items():
+                  output.write(key + '=' + json.dumps(value, separators=(',', ':')) + '\n')
       - uses: ./.github/actions/upload-evidence
         with:
           name: ci-plan-${{ inputs.platform }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
@@ -113,7 +145,7 @@ jobs:
 
   build:
     name: Builds / ${{ matrix.platform }} / ${{ matrix.component }}
-    needs: plan
+    needs: [platform, plan]
     runs-on:
       group: ${{ matrix.group }}
     timeout-minutes: 150
@@ -122,6 +154,101 @@ jobs:
         shell: ${{ matrix.shell }}
     strategy:
       fail-fast: false
+      max-parallel: 1
+      matrix:
+        include:
+          - platform: ${{ inputs.platform }}
+            component: load
+            group: ${{ inputs.build-group }}
+            jobs: ${{ inputs.build-jobs }}
+            shell: ${{ inputs.shell }}
+    steps:
+      - name: Enable Windows checkout long paths
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: git config --system core.longpaths true
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-native
+      - name: Compile selected products and tests without running suites
+        run: >-
+          python Tools/ci/native_jobs.py compile --component ${{ matrix.component }}
+          --platform ${{ matrix.platform }} --jobs ${{ matrix.jobs }}
+          --output .build/build-ci/${{ matrix.platform }}-${{ matrix.component }}
+          --archive "${{ runner.temp }}/compiled/${{ matrix.platform }}-${{ matrix.component }}.tar.gz"
+      - name: Verify generated source and dependency pins remain unchanged
+        run: git diff --exit-code
+      - name: Share compiled products with independent test jobs
+        uses: ./.github/actions/upload-evidence
+        with:
+          name: compiled-${{ matrix.platform }}-${{ matrix.component }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          paths: ${{ runner.temp }}/compiled/${{ matrix.platform }}-${{ matrix.component }}.tar.gz
+          retention-days: 2
+          receipt: ${{ runner.temp }}/compiled-transfer.json
+          producer-metadata: .build/build-ci/${{ matrix.platform }}-${{ matrix.component }}/compilation.json
+          producer-receipt-name: compiled-receipt-${{ matrix.platform }}-${{ matrix.component }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+      - name: Retain build diagnostics
+        if: always()
+        uses: ./.github/actions/upload-evidence
+        with:
+          name: build-evidence-${{ matrix.platform }}-${{ matrix.component }}-${{ github.run_id }}-${{ github.run_attempt }}
+          paths: .build/build-ci/${{ matrix.platform }}-${{ matrix.component }}
+          retention-days: 14
+          receipt: ${{ runner.temp }}/transfer-${{ github.job }}-${{ strategy.job-index }}.json
+
+  canary:
+    name: Canary / load tests and smokes
+    needs: [plan, build]
+    runs-on:
+      group: ${{ inputs.runner-group }}
+    timeout-minutes: 75
+    defaults:
+      run:
+        shell: ${{ inputs.shell }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-native
+      - uses: ./.github/actions/consume-native
+        with:
+          platform: ${{ inputs.platform }}
+          components-json: '["load"]'
+          destination: ${{ runner.temp }}/compiled
+      - name: Run complete load suite and existing smokes
+        run: >-
+          python Tools/ci/native_jobs.py test --component load --suite load
+          --platform ${{ inputs.platform }} --jobs ${{ inputs.jobs }}
+          --archive "${{ runner.temp }}/compiled/${{ inputs.platform }}-load.tar.gz"
+          --selection .build/artifact-index.json --output .build/canary-ci
+      - name: Verify generated source and dependency pins remain unchanged
+        run: git diff --exit-code
+      - name: Retain canary receipt and failure diagnostics
+        if: always()
+        uses: ./.github/actions/upload-evidence
+        with:
+          name: canary-${{ inputs.platform }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          paths: |
+            .build/canary-ci
+            .build/artifact-index.json
+            .build/timing-smoke/load
+          retention-days: 14
+          receipt: ${{ runner.temp }}/canary-transfer.json
+
+  build-remaining:
+    name: ${{ matrix.component && format('Builds / {0} / {1}', matrix.platform, matrix.component) || 'No remaining builds' }}
+    needs: [plan, canary]
+    if: needs.plan.outputs.has-builds == 'true'
+    runs-on:
+      group: ${{ matrix.group }}
+    timeout-minutes: 150
+    defaults:
+      run:
+        shell: ${{ matrix.shell }}
+    strategy:
+      fail-fast: false
+      max-parallel: 2
       matrix: ${{ fromJSON(needs.plan.outputs.builds) }}
     steps:
       - name: Enable Windows checkout long paths
@@ -160,7 +287,8 @@ jobs:
 
   resolve:
     name: Resolve immutable producers
-    needs: [plan, build]
+    needs: [plan, build, build-remaining, canary]
+    if: needs.plan.outputs.has-builds == 'true'
     runs-on:
       group: ${{ inputs.runner-group }}
     timeout-minutes: 15
@@ -176,7 +304,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           NATIVE_PLATFORM: ${{ inputs.platform }}
-          EXPECTED_BUILDS: ${{ needs.plan.outputs.builds }}
+          EXPECTED_BUILDS: ${{ needs.plan.outputs.all-builds }}
         run: |
           import os, subprocess, sys
           subprocess.run([sys.executable, 'Tools/ci/artifact_index.py', 'resolve',
@@ -185,8 +313,9 @@ jobs:
                           '--output', '.build/resolved-producers.json'], check=True)
 
   tests:
-    name: Tests / ${{ matrix.suite }}
-    needs: [plan, build, resolve]
+    name: ${{ matrix.suite && format('Tests / {0}', matrix.suite) || 'No remaining suites' }}
+    needs: [plan, canary, build-remaining, resolve]
+    if: needs.plan.outputs.has-tests == 'true'
     runs-on:
       group: ${{ matrix.group }}
     timeout-minutes: 75
@@ -195,6 +324,7 @@ jobs:
         shell: ${{ matrix.shell }}
     strategy:
       fail-fast: false
+      max-parallel: 2
       matrix: ${{ fromJSON(needs.plan.outputs.tests) }}
     steps:
       - name: Enable Windows checkout long paths
@@ -233,7 +363,8 @@ jobs:
 
   audit:
     name: Documentation, inventory, generation and release audits
-    needs: [build, resolve]
+    needs: [canary, build-remaining, resolve]
+    if: inputs.mode == 'full'
     runs-on:
       group: ${{ inputs.runner-group }}
     timeout-minutes: 45
@@ -272,7 +403,8 @@ jobs:
 
   fixtures:
     name: Compiler fixtures / ${{ matrix.suite }}
-    needs: [build, resolve]
+    needs: [canary, build-remaining, resolve]
+    if: inputs.mode == 'full'
     # These suites compile positive and intentionally invalid consumers.
     # Keep their compiler work on the large pools rather than the runtime pool.
     runs-on:
@@ -303,8 +435,8 @@ jobs:
 
   public-api:
     name: Public API and DocC / macOS ARM
-    if: inputs.platform == 'macos-arm64'
-    needs: [build, resolve]
+    if: inputs.mode == 'full' && inputs.platform == 'macos-arm64'
+    needs: [canary, build-remaining, resolve]
     runs-on:
       group: MacOS-26-5
     timeout-minutes: 165
@@ -380,8 +512,8 @@ jobs:
 
   apple-compilation:
     name: Build Apple minima / device and simulator modules
-    if: inputs.platform == 'macos-arm64'
-    needs: platform
+    if: inputs.mode == 'full' && inputs.platform == 'macos-arm64'
+    needs: canary
     runs-on:
       group: MacOS-26-5
     timeout-minutes: 45
@@ -409,17 +541,41 @@ jobs:
           retention-days: 14
           receipt: ${{ runner.temp }}/apple-transfer.json
 
+  coverage:
+    name: Verify platform coverage before source export
+    if: always()
+    needs: [platform, plan, build, canary, build-remaining, resolve, tests, audit, fixtures, public-api, apple-compilation]
+    runs-on:
+      group: ${{ inputs.runner-group }}
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Verify every expected pre-export job and immutable producer
+        env:
+          MANIFEST: ${{ needs.plan.outputs.coverage }}
+          EXPECTED_BUILDS: ${{ needs.plan.outputs.all-builds }}
+          GH_TOKEN: ${{ github.token }}
+        shell: python
+        run: |
+          import json, os, subprocess, sys
+          manifest = json.loads(os.environ['MANIFEST'])
+          manifest['runAttempt'] = os.environ['GITHUB_RUN_ATTEMPT']
+          manifest['entries'] = [row for row in manifest['entries'] if not row['id'].startswith('export')]
+          subprocess.run([sys.executable, 'Tools/ci/workflow_coverage.py', 'certify',
+                          '--manifest-json', json.dumps(manifest), '--output', '.build/pre-export-coverage.json'], check=True)
+          subprocess.run([sys.executable, 'Tools/ci/artifact_index.py', 'resolve',
+                          '--platform', manifest['platform'], '--components-json', os.environ['EXPECTED_BUILDS'],
+                          '--output', '.build/pre-export-producers.json'], check=True)
+
   package:
     name: Export validated platform source
-    needs: [build, tests, audit, fixtures, public-api, apple-compilation]
-    # Non-Apple pipelines intentionally skip the two macOS-only checks.
-    # Override implicit success() so those skips do not suppress their export.
-    if: >-
-      ${{ !cancelled() && needs.build.result == 'success' &&
-          needs.tests.result == 'success' && needs.audit.result == 'success' &&
-          needs.fixtures.result == 'success' &&
-          (inputs.platform != 'macos-arm64' ||
-           (needs.public-api.result == 'success' && needs.apple-compilation.result == 'success')) }}
+    needs: coverage
+    if: inputs.mode == 'full'
     runs-on:
       group: ${{ inputs.runner-group }}
     timeout-minutes: 25
@@ -435,6 +591,15 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup-native
+      - name: Require full scope before source export
+        env:
+          CERTIFICATION_MODE: ${{ inputs.mode }}
+          COVERAGE_RESULT: ${{ needs.coverage.result }}
+        shell: python
+        run: |
+          import os
+          if os.environ['CERTIFICATION_MODE'] != 'full' or os.environ['COVERAGE_RESULT'] != 'success':
+              raise SystemExit('Source export requires complete full platform coverage')
       - name: Package the clean source revision validated on this platform
         if: github.event_name != 'pull_request'
         run: >-
@@ -452,10 +617,12 @@ jobs:
   complete:
     name: Platform validation passed
     if: always()
-    needs: [platform, plan, build, resolve, tests, audit, fixtures, public-api, apple-compilation, package]
+    needs: [platform, plan, build, canary, build-remaining, resolve, tests, audit, fixtures, public-api, apple-compilation, coverage, package]
     runs-on:
       group: ${{ inputs.runner-group }}
-    timeout-minutes: 15
+    timeout-minutes: 35
+    outputs:
+      coverage: ${{ steps.coverage.outputs.coverage }}
     steps:
       - uses: actions/checkout@v6
         with:
@@ -463,28 +630,33 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
-      - name: Require every applicable platform gate to pass
-        shell: python
-        env:
-          RESULTS: ${{ toJSON(needs) }}
-          NATIVE_PLATFORM: ${{ inputs.platform }}
-        run: |
-          import json, os
-          results = json.loads(os.environ['RESULTS'])
-          optional = {'public-api', 'apple-compilation'} if os.environ['NATIVE_PLATFORM'] != 'macos-arm64' else set()
-          failed = {name: value['result'] for name, value in results.items()
-                    if value['result'] != 'success' and not (name in optional and value['result'] == 'skipped')}
-          if failed:
-              raise SystemExit('Platform validation incomplete: ' + json.dumps(failed, sort_keys=True))
-      - name: Verify the complete producer index in this barrier attempt
+      - name: Verify complete platform coverage in this barrier attempt
+        id: coverage
         shell: python
         env:
           GH_TOKEN: ${{ github.token }}
-          NATIVE_PLATFORM: ${{ inputs.platform }}
-          EXPECTED_BUILDS: ${{ needs.plan.outputs.builds }}
+          MANIFEST: ${{ needs.plan.outputs.coverage }}
+          RESULTS: ${{ toJSON(needs) }}
+          EXPECTED_BUILDS: ${{ needs.plan.outputs.all-builds }}
         run: |
-          import os, subprocess, sys
+          import json, os, subprocess, sys
+          results = json.loads(os.environ['RESULTS'])
+          if results['coverage']['result'] != 'success':
+              raise SystemExit('Pre-export coverage did not pass')
+          manifest = json.loads(os.environ['MANIFEST'])
+          manifest['runAttempt'] = os.environ['GITHUB_RUN_ATTEMPT']
           subprocess.run([sys.executable, 'Tools/ci/artifact_index.py', 'resolve',
-                          '--platform', os.environ['NATIVE_PLATFORM'],
-                          '--components-json', os.environ['EXPECTED_BUILDS'],
+                          '--platform', manifest['platform'], '--components-json', os.environ['EXPECTED_BUILDS'],
                           '--output', '.build/barrier-producers.json'], check=True)
+          subprocess.run([sys.executable, 'Tools/ci/workflow_coverage.py', 'certify',
+                          '--manifest-json', json.dumps(manifest), '--output', '.build/platform-coverage.json',
+                          '--github-output'], check=True)
+      - name: Retain final platform coverage and producer selection
+        uses: ./.github/actions/upload-evidence
+        with:
+          name: coverage-${{ inputs.platform }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          paths: |
+            .build/platform-coverage.json
+            .build/barrier-producers.json
+          retention-days: 14
+          receipt: ${{ runner.temp }}/coverage-transfer.json

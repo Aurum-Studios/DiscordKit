@@ -63,6 +63,21 @@ class ArtifactIndexTests(unittest.TestCase):
         self.client = FakeGitHub()
         self.add_producer()
 
+    def test_remaining_wave_preserves_producer_job_identity(self):
+        envelope = self.client.receipts['201'][1]
+        envelope['metadata']['producer']['execution']['jobID'] = 'build-remaining'
+        resolved = index.resolve(self.client, execution=self.execution, platform='linux-x64',
+                                 components=['root'], source_commit='a'*40)
+        self.assertEqual(resolved['components']['root']['producer']['execution']['jobID'], 'build-remaining')
+
+    def test_remaining_wave_cannot_supply_the_load_canary(self):
+        self.add_producer(component='load', artifact_id='102', receipt_id='202')
+        envelope = self.client.receipts['202'][1]
+        envelope['metadata']['producer']['execution']['jobID'] = 'build-remaining'
+        with self.assertRaisesRegex(ValueError, 'producer must be the build job'):
+            index.resolve(self.client, execution=self.execution, platform='linux-x64',
+                          components=['load'], source_commit='a'*40)
+
     def api_artifact(self, artifact_id, name, digest):
         artifact = {"id": int(artifact_id), "name": name, "digest": digest, "expired": False,
                     "workflow_run": {"id": 42, "repository_id": 123, "head_repository_id": 123,

@@ -835,6 +835,7 @@ def main():
     parser.add_argument("--platform", choices=PLATFORMS)
     parser.add_argument("--jobs", type=int, default=2)
     parser.add_argument("--suite")
+    parser.add_argument("--mode", choices=("full", "diagnostic"), help="scoped workflow plan")
     parser.add_argument("--archive", type=Path)
     parser.add_argument("--selection", type=Path, help="complete immutable artifact resolver index")
     arguments = parser.parse_args()
@@ -855,7 +856,21 @@ def main():
         if arguments.operation == "plan":
             report = {"status": "running", "operation": "plan", "commands": []}
             with execution_report(output, report):
-                builds, tests = matrices(dump_targets(repository, output=output, report=report), arguments.platform)
+                targets = dump_targets(repository, output=output, report=report)
+                builds, tests = matrices(targets, arguments.platform)
+                if arguments.mode:
+                    import scheduling_policy
+                    import workflow_scope
+                    policy = scheduling_policy.load_policy()
+                    scheduling_policy.validate_source_inventory(policy, repository)
+                    if sorted(targets) != policy['inventory']['rootTargets']:
+                        raise ValueError('evaluated SwiftPM inventory differs from reviewed source inventory')
+                    scoped = workflow_scope.platform_plan(arguments.mode, arguments.platform,
+                        component=arguments.component, suite=arguments.suite, repository=repository,
+                        commit=os.environ['GITHUB_SHA'], run_id=os.environ['GITHUB_RUN_ID'],
+                        run_attempt=os.environ['GITHUB_RUN_ATTEMPT'])
+                    builds, tests = scoped['builds'], scoped['tests']
+                    write_json(output / 'scope-plan.json', scoped)
             write_json(output / "build-matrix.json", builds)
             write_json(output / "test-matrix.json", tests)
         elif arguments.operation == "compile":

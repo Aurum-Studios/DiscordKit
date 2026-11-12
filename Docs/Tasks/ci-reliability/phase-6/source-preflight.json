@@ -1,0 +1,26 @@
+{
+  "activeValidationProcessPreflight": "No prior Swift/native validation process observed at start; no native execution in this phase.",
+  "architecture": "arm64",
+  "author": "Carson R",
+  "base": "b759a25e89cade3494fd91fb14a00030d4286489",
+  "branch": "ci/phase-6-preflight-canaries",
+  "nativeCompilations": 0,
+  "nativeTestProcesses": 0,
+  "originalPlanningSHA256": {
+    "Docs/CI.md": "52d344b12487a46ec46f3ff0ad7f1c207faf876f937a172473c3f44b7aa81629",
+    "Docs/Tasks/ci-reliability/EVIDENCE.md": "5e1de6b2d0f1259424dafe7e9aae4651a039edd9cceda65a15a0bf7c08f0e476",
+    "Docs/Tasks/ci-reliability/PLAN.md": "2fa145ad46499a1fbe26d272704f825d590fe1937a5f59e2f2f4099431527d83",
+    "Docs/Tasks/ci-reliability/STATE.md": "b2a181246e1c3e323a433be1c0f17d6db36039658e4dde68c19f36302098180d"
+  },
+  "originalStatus": " M Docs/CI.md\n A Docs/Tasks/ci-reliability/EVIDENCE.md\n A Docs/Tasks/ci-reliability/PLAN.md\n A Docs/Tasks/ci-reliability/STATE.md\n",
+  "owner": "Codex /root",
+  "paidAttempts": 0,
+  "paidJobs": 0,
+  "paidMinutes": 0,
+  "phase": 6,
+  "remote": "origin\thttps://github.com/Aurum-Studios/DiscordKit.git (fetch)\norigin\thttps://github.com/Aurum-Studios/DiscordKit.git (push)",
+  "remoteWrites": false,
+  "spendUSD": "0.00",
+  "system": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
+  "worktree": "/Users/carsonrau/Developer/DiscordKit-ci-phase6"
+}

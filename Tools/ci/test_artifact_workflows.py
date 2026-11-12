@@ -86,11 +86,11 @@ class ArtifactWorkflowTests(unittest.TestCase):
         self.assertNotIn('actions/download-artifact', text)
         self.assertNotIn('actions/upload-artifact', text)
         self.assertNotIn('continue-on-error', text)
-        self.assertIn('needs: [plan, build, resolve]', text)
+        self.assertIn('needs: [plan, canary, build-remaining, resolve]', text)
         self.assertIn('name: Builds / ${{ matrix.platform }} / ${{ matrix.component }}', text)
-        self.assertEqual(text.count('--selection .build/artifact-index.json'), 3)
-        self.assertEqual(text.count("'--components-json', os.environ['EXPECTED_BUILDS']"), 2)
-        self.assertIn('if: always()\n    needs: [platform, plan, build, resolve', text)
+        self.assertEqual(text.count('--selection .build/artifact-index.json'), 4)
+        self.assertEqual(text.count("'--components-json', os.environ['EXPECTED_BUILDS']"), 3)
+        self.assertIn('if: always()\n    needs: [platform, plan, build, canary, build-remaining, resolve', text)
         self.assertEqual(text.count('uses: ./.github/actions/upload-evidence'), text.count('          receipt:'))
 
 

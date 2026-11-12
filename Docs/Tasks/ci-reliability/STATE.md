@@ -21,6 +21,8 @@ Phase 4 is complete at implementation commit
 with local Python helper acceptance.
 Phase 5 has local helper acceptance at implementation commit
 `d466d50bc153f2799a33e200d574569958905295` on `ci/phase-5-transfer`; its hosted proof remains Phase 11.
+Phase 6 has local helper acceptance on `ci/phase-6-preflight-canaries`;
+its source remains contained and hosted acceptance stays Phase 11.
 No hosted qualification, paid execution, external configuration change or publication
 is claimed. See [BOOTSTRAP.md](BOOTSTRAP.md) for the zero-paid execution sheet.
 
@@ -32,7 +34,7 @@ is claimed. See [BOOTSTRAP.md](BOOTSTRAP.md) for the zero-paid execution sheet.
 | 3 — Linux hang repair | Implemented and locally tested; native x64 acceptance pending | `69a21b325c4eaa6181eb31dcc7e78ab083ac6411` | [Stack-supported peer repair, red/green and whole-package checks](phase-3/IMPLEMENTATION.md); [native gate](phase-3/NATIVE-ACCEPTANCE.md) remains open |
 | 4 — Compatibility receipts | Complete; local helper acceptance | `4590c5d76c1024d8eec5132a1be343220577cccf` | [270 helpers, six existing Linux-only skips](phase-4/validation.json), [review](phase-4/review.json), [v2 contracts and execution sheet](phase-4/IMPLEMENTATION.md) |
 | 5 — Transfer and partial reruns | Implemented; local helper acceptance; hosted proof pending Phase 11 | `d466d50bc153f2799a33e200d574569958905295` | [Contracts and execution sheet](phase-5/IMPLEMENTATION.md); [314 passed, six existing skips](phase-5/validation.json), [review](phase-5/review.json) |
-| 6 — Preflight and canaries | Not started | Pending | Pending |
+| 6 — Preflight and canaries | Implemented; local helper acceptance; native expansion contained | Pending local implementation commit | [Contracts and execution sheet](phase-6/IMPLEMENTATION.md); [validation](phase-6/validation.json), [independent review](phase-6/review.json); hosted proof remains Phase 11 |
 | 7 — Suite groups and resources | Not started | Pending | Pending coverage/cost comparison |
 | 8 — Verified provisioning | Not started | Pending | Pending cold/cache evidence |
 | 9 — Shared documentation inputs | Not started | Pending | Pending invocation-count/trust proof |
@@ -153,6 +155,30 @@ Phase 3 native x64 acceptance stays open. The next authorized implementation can
 prepare Phase 6 with these bounded transfer interfaces; paid expansion remains
 unauthorized pending admission and an explicit allowance.
 
+## Phase 6 handoff
+
+Owner Codex `/root` implemented scoped preflight and platform canaries on
+`ci/phase-6-preflight-canaries`, sibling `DiscordKit-ci-phase6`, based on
+`b759a25e89cade3494fd91fb14a00030d4286489`. The [execution plan and contracts](phase-6/IMPLEMENTATION.md)
+retain the zero-paid allowance and isolated ownership. The original planning
+bytes match their earlier handoff hashes; earlier worktrees remain preserved.
+
+[Validation](phase-6/validation.json) binds 16 tested source/test/configuration/workflow
+inputs and all retained supervised check logs/receipts. Python, browser, actionlint,
+source inventory, displayed examples and maintenance freshness checks passed locally.
+[Review](phase-6/review.json) records the repaired coverage/partial-rerun findings
+and no remaining blockers. The current rollout permits automatic preflight only;
+full/diagnostic native execution and independent documentation deployment remain
+contained pending reviewed Phase 10 admission. No native Swift execution, paid
+job, push, dispatch, publication, billing/runner change or live Discord operation occurred.
+
+Both platforms retain independent probe → load producer → immutable upload →
+fresh consumer → discovery → complete load tests/smokes before expansion. Canary
+work is counted once; exact full manifests and fresh root API/producer evidence
+protect certification and release. Source export requires full platform coverage.
+The next implementation phase is Phase 7. Phase 3 native x64 acceptance and
+Phase 11 real runner/rerun/check-context/branch-protection qualification remain open.
+
 ## Outstanding execution decisions
 
 - Paid execution remains unauthorized: experiment/workflow allowances are USD 0,
@@ -166,8 +192,10 @@ unauthorized pending admission and an explicit allowance.
   Phase 1 through Phase 4 ownership and local-only sheets are recorded above. Phase 5
   owner is Codex `/root` on `ci/phase-5-transfer`, sibling `DiscordKit-ci-phase5`,
   based on `b190a963`; its [local execution sheet](phase-5/IMPLEMENTATION.md) keeps
-  all paid allowances at zero. Phases 6 through 11 ownership/paid experiment sheets
-  are not assigned/authorized.
+  all paid allowances at zero. Phase 6 owner is Codex `/root` on
+  `ci/phase-6-preflight-canaries`, sibling `DiscordKit-ci-phase6`, base `b759a25e`;
+  its local execution sheet likewise keeps paid allowances at zero. Phases 7 through
+  11 ownership/paid experiment sheets are not assigned/authorized.
 
 These do not prevent beginning local preparation/helper implementation. Missing
 allowances or execution authorization prevent paid scheduling, not source work.
