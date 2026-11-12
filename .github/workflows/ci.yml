@@ -20,6 +20,10 @@ on:
         description: Publish Pages after trusted default-branch full certification
         type: boolean
         default: false
+      qualification-fault:
+        description: Fail the first Linux DiscordBitsTests consumer after tests for a bounded partial-rerun proof
+        type: boolean
+        default: false
       platform:
         description: Diagnostic platform (leave empty for full/preflight)
         type: string
@@ -36,7 +40,7 @@ permissions:
 
 # Full runs supersede only full runs. A diagnostic cannot cancel certification.
 concurrency:
-  group: offline-${{ github.workflow }}-${{ github.ref }}-${{ inputs.mode || 'preflight' }}-${{ inputs.platform || 'all' }}-${{ inputs.component || 'all' }}-${{ inputs.suite || 'all' }}
+  group: offline-${{ github.workflow }}-${{ github.ref }}-${{ inputs.mode || 'preflight' }}-${{ inputs.platform || 'all' }}-${{ inputs.component || 'all' }}-${{ inputs.suite || 'all' }}-${{ inputs.qualification-fault || false }}
   cancel-in-progress: true
 
 env:
@@ -47,6 +51,7 @@ env:
   ADMISSION_COMPONENT: ${{ inputs.component }}
   ADMISSION_SUITE: ${{ inputs.suite }}
   ADMISSION_PUBLICATION: ${{ inputs.publish-documentation || false }}
+  ADMISSION_QUALIFICATION_FAULT: ${{ inputs.qualification-fault || false }}
   ADMISSION_DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
 
 jobs:
@@ -195,6 +200,7 @@ jobs:
       build-jobs: 2
       shell: bash
       publication: ${{ inputs.publish-documentation || false }}
+      qualification-fault: ${{ inputs.qualification-fault || false }}
 
   native-macos:
     name: macOS ARM64
@@ -212,6 +218,7 @@ jobs:
       build-jobs: 2
       shell: bash
       publication: ${{ inputs.publish-documentation || false }}
+      qualification-fault: ${{ inputs.qualification-fault || false }}
 
   documentation-site:
     name: Documentation site from validated archives

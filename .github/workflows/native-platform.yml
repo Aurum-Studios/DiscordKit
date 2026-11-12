@@ -19,6 +19,9 @@ on:
       publication:
         type: boolean
         default: false
+      qualification-fault:
+        type: boolean
+        default: false
       mode:
         required: true
         type: string
@@ -60,6 +63,7 @@ env:
   ADMISSION_COMPONENT: ${{ inputs.component }}
   ADMISSION_SUITE: ${{ inputs.suite }}
   ADMISSION_PUBLICATION: ${{ inputs.publication }}
+  ADMISSION_QUALIFICATION_FAULT: ${{ inputs.qualification-fault }}
   ADMISSION_DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
 
 jobs:
@@ -313,7 +317,6 @@ jobs:
         with:
           name: canary-${{ inputs.platform }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           paths: |
-            |
             .build/spend
             .build/canary-ci
             .build/artifact-index.json
@@ -563,6 +566,12 @@ jobs:
           --archive "${{ runner.temp }}/compiled/${{ matrix.platform }}-${{ matrix.component }}.tar.gz"
           --selection .build/artifact-index.json
           --output .build/test-ci/${{ matrix.platform }}-${{ matrix.suite }}
+      - name: Inject first-attempt diagnostic consumer failure
+        if: inputs.qualification-fault
+        run: >-
+          python3 Tools/ci/qualification_fault.py
+          --consumer .build/test-ci/${{ matrix.platform }}-${{ matrix.suite }}
+          --output .build/test-ci/${{ matrix.platform }}-${{ matrix.suite }}/qualification-fault.json
       - name: Verify generated source and dependency pins remain unchanged
         run: git diff --exit-code
       - name: Summarize local command and transfer receipts
@@ -577,9 +586,9 @@ jobs:
         with:
           name: test-evidence-${{ matrix.platform }}-${{ matrix.suite }}-${{ github.run_id }}-${{ github.run_attempt }}
           paths: |
-            |
             .build/spend
             .build/test-ci/${{ matrix.platform }}-${{ matrix.suite }}
+            .build/artifact-index.json
             .build/dsl-measurements/runtime-smoke.json
             .build/timing-smoke/${{ matrix.component }}
           retention-days: 14
@@ -656,9 +665,9 @@ jobs:
         with:
           name: test-evidence-${{ matrix.platform }}-${{ matrix.suite }}-${{ github.run_id }}-${{ github.run_attempt }}
           paths: |
-            |
             .build/spend
             .build/test-ci/${{ matrix.platform }}-${{ matrix.suite }}
+            .build/artifact-index.json
             .build/dsl-measurements/runtime-smoke.json
             .build/timing-smoke/${{ matrix.component }}
           retention-days: 14
@@ -882,7 +891,6 @@ jobs:
         with:
           name: api-diagnostics-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           paths: |
-            |
             .build/spend
             .build/current-api.json
             .build/current-macros-api.json
@@ -1135,7 +1143,6 @@ jobs:
         with:
           name: coverage-${{ inputs.platform }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           paths: |
-            |
             .build/spend
             .build/platform-coverage.json
             .build/barrier-producers.json

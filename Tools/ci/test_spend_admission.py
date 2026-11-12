@@ -222,6 +222,31 @@ class SpendAdmissionTests(unittest.TestCase):
             guard = self.guard('linux-x64/canary', mode='diagnostic', platform='linux-x64', component='load')
             self.assertFalse(guard['admitted'])
 
+    def test_qualification_fault_is_sealed_and_cannot_expand_or_reset_reservations(self):
+        options = dict(platform='linux-x64', component='root', suite='DiscordBitsTests')
+        ordinary = self.plan('diagnostic', **options)
+        fault = self.plan('diagnostic', qualification_fault=True, **options)
+        self.assertTrue(fault['admitted'])
+        self.assertTrue(fault['selection']['qualificationFault'])
+        self.assertEqual(fault['jobs'], ordinary['jobs'])
+        self.assertEqual(fault['reservations'], ordinary['reservations'])
+        self.assertNotEqual(fault['planSHA256'], ordinary['planSHA256'])
+        second = self.plan('diagnostic', qualification_fault=True,
+                           identity=dict(IDENTITY, runAttempt='2'), **options)
+        self.assertEqual(fault['reservations'], second['reservations'])
+        with patch.object(spend.native_jobs, 'source_identity') as query:
+            with self.assertRaises(ValueError):
+                spend.make_plan('full', qualification_fault=True, policy=self.policy,
+                                as_of=AS_OF, identity=IDENTITY)
+            query.assert_not_called()
+
+    def test_enabled_rollout_still_refuses_checked_in_zero_authorization(self):
+        result = self.plan('diagnostic', platform='linux-x64', component='root',
+                           suite='DiscordBitsTests', qualification_fault=True,
+                           policy=spend.load_policy())
+        self.assertFalse(result['admitted'])
+        self.assertFalse(result['native-enabled'])
+
     def test_documentation_request_is_single_bootstrap_scope_and_full_only_publication(self):
         result = self.plan('documentation-request')
         self.assertEqual([row['id'] for row in result['jobs']], ['documentation-request'])

@@ -1,0 +1,6 @@
+/Library/Frameworks/Python.framework/Versions/3.14/bin/python3 -m unittest discover -s Tools/DiscordFoundationBenchmarks/scripts -p 'test_*.py'
+...
+----------------------------------------------------------------------
+Ran 3 tests in 0.723s
+
+OK

@@ -51,6 +51,19 @@ class WorkflowScopeTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'reviewed Phase 10'):
                 scope.authorize('full')
 
+    def test_manual_rollout_switch_is_distinct_from_paid_admission_and_automatic_scope(self):
+        value = {'schemaVersion': 1, 'automaticMode': 'preflight',
+                 'nativeExpansionEnabled': True, 'spendAdmissionImplemented': True}
+        with patch.object(scope.Path, 'read_text', return_value=json.dumps(value)):
+            self.assertEqual(scope.rollout(), value)
+            with self.assertRaises(ValueError):
+                scope.authorize('full')
+        for changes in ({'nativeExpansionEnabled': 1}, {'schemaVersion': True},
+                        {'automaticMode': 'full'}, {'spendAdmissionImplemented': False}):
+            with patch.object(scope.Path, 'read_text', return_value=json.dumps(dict(value, **changes))):
+                with self.subTest(changes=changes), self.assertRaises(ValueError):
+                    scope.rollout()
+
     def test_full_canonical_partition_equals_previous_complete_matrices(self):
         policy=scheduling_policy.load_policy()
         for platform in scope.PREFIXES:

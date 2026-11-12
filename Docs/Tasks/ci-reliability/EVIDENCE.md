@@ -533,3 +533,34 @@ blobs and 78 retained manifest artifacts. The
 [actual-blob commit receipt](phase-10/commit-receipt.json) verifies committed objects
 and current bytes. This completion follow-up changes documentation only; all
 tested executable/configuration/workflow inputs remain unchanged.
+
+
+## Phase 11 — local qualification preparation, November 12, 2026 UTC
+
+Owner Codex `/root`; isolated branch `ci/phase-11-qualification`, sibling
+`DiscordKit-ci-phase11`, base `d19bb530`. [Source preflight](phase-11/source-preflight.json)
+retains original planning hashes, worktree ownership and unchanged remote main.
+The [local implementation and hosted execution sheet](phase-11/IMPLEMENTATION.md)
+records the fixed deliberate consumer fault, sealed admission, always-retained
+artifact indices, manual rollout schema and exact-source snapshot verification.
+The checked-in rollout and zero authorization remain closed.
+
+[Validation](phase-11/validation.json) records 608 CI helpers (602 passed, six
+existing Linux-only skips), 236 tooling, 56 load-helper, 83 benchmark/support and
+38 browser tests, all terminal and supervised. All seven workflows pass actionlint
+1.7.12; ShellCheck is unavailable. Source inventory and all 32 displayed examples
+pass. [Independent review](phase-11/review.json) additionally passed 65 focused
+checks; its missing-index, extra-native-scope and capture-authentication findings
+are resolved. Native orchestration receipt fixtures use synthetic child execution;
+they do not establish native compatibility or hosted behavior.
+
+[Pure plans](phase-11/checks/planning/results.json) reject hosted admission and
+retain the same bounded graph: Linux fault 17 jobs / 765 maximum runner minutes,
+macOS load 14 / 485, full 81 / 7,780 per attempt. They are timeout ceilings,
+not elapsed usage or an admitted dollar allowance. Current account mappings and
+additional charges remain unknown. No hosted savings comparison is available.
+
+Phase 11 is not complete: required actual native/hosted checks, failed-job rerun,
+exact-final-revision full certification, measured cost and check-protection read-back
+remain pending paid execution authorization. The source changes, local acceptance
+and commit do not qualify release, publication, deployment or live Discord.

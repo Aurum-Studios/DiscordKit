@@ -26,10 +26,14 @@ def execution_jobs(mode, **kwargs):
 
 
 def rollout():
-    """Admission is implemented; native rollout still requires reviewed Phase 11 work."""
+    """Read the reviewed manual rollout switch; spend admission remains independent."""
     value = json.loads(ROLLOUT.read_text())
-    if value != {'schemaVersion': 1, 'automaticMode': 'preflight',
-                 'nativeExpansionEnabled': False, 'spendAdmissionImplemented': True}:
+    if (not isinstance(value, dict)
+            or set(value) != {'schemaVersion', 'automaticMode', 'nativeExpansionEnabled', 'spendAdmissionImplemented'}
+            or type(value['schemaVersion']) is not int or value['schemaVersion'] != 1
+            or value['automaticMode'] != 'preflight'
+            or type(value['nativeExpansionEnabled']) is not bool
+            or value['spendAdmissionImplemented'] is not True):
         raise ValueError('rollout settings require reviewed Phase 10 admission')
     return value
 

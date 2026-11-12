@@ -1,0 +1,6 @@
+/Library/Frameworks/Python.framework/Versions/3.14/bin/python3 -m unittest discover -s Tools/ci -p test_spend_admission.py
+................
+----------------------------------------------------------------------
+Ran 16 tests in 0.100s
+
+OK

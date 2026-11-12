@@ -223,6 +223,7 @@ def money(value):
 
 
 def make_plan(mode, *, platform=None, component=None, suite=None, repository=ROOT, publication=False,
+              qualification_fault=False,
               policy=None, as_of=None, source=None, run_id=None, run_attempt=None, identity=None):
     """Produce disjoint whole-job/attempt reservations from the execution planner.
 
@@ -230,6 +231,9 @@ def make_plan(mode, *, platform=None, component=None, suite=None, repository=ROO
     provisioning. Explicit source/identity arguments support offline fixtures;
     the CLI always derives both from the current checkout and GitHub environment.
     """
+    from qualification_fault import validate_selection
+    validate_selection(enabled=qualification_fault, mode=mode, platform=platform or None,
+                       component=component or None, suite=suite or None, publication=publication)
     policy = copy.deepcopy(load_policy() if policy is None else validate_policy(policy))
     require(mode in MODES, 'unsupported admission mode')
     as_of = datetime.now(timezone.utc).date() if as_of is None else as_of
@@ -317,7 +321,8 @@ def make_plan(mode, *, platform=None, component=None, suite=None, repository=ROO
     result = {'schemaVersion': 1, 'policyID': policy['policyID'], 'policySHA256': digest(policy),
         'plannerSHA256': digest(jobs), 'asOf': as_of.isoformat(), 'mode': mode,
         'selection': {'platform': platform or None, 'component': component or None,
-                      'suite': suite or None, 'publication': publication},
+                      'suite': suite or None, 'publication': publication,
+                      'qualificationFault': qualification_fault},
         'source': source, 'identity': identity, 'runID': identity['runID'], 'runAttempt': current_attempt,
         'admitted': not reasons, 'native-enabled': native_enabled, 'status': 'admitted' if not reasons else 'rejected',
         'reasons': list(dict.fromkeys(reasons)), 'jobs': jobs, 'reservations': reservations,
@@ -394,6 +399,7 @@ def main(argv=None):
     parser.add_argument('--component', default=os.environ.get('ADMISSION_COMPONENT'))
     parser.add_argument('--suite', default=os.environ.get('ADMISSION_SUITE'))
     parser.add_argument('--publication', action='store_true')
+    parser.add_argument('--qualification-fault', action='store_true')
     parser.add_argument('--job')
     parser.add_argument('--group')
     parser.add_argument('--plan', type=Path)
@@ -406,7 +412,9 @@ def main(argv=None):
             return 0
         arguments = dict(mode=args.mode, platform=args.platform or None, component=args.component or None,
                          suite=args.suite or None, repository=args.repository, policy=policy,
-                         publication=args.publication or boolean(os.environ.get('ADMISSION_PUBLICATION', '')))
+                         publication=args.publication or boolean(os.environ.get('ADMISSION_PUBLICATION', '')),
+                         qualification_fault=args.qualification_fault or boolean(
+                             os.environ.get('ADMISSION_QUALIFICATION_FAULT', '')))
         if args.operation == 'guard':
             require(args.job is not None, 'guard requires one exact job ID')
             plan = guard_job(args.job, group=args.group, plan=read_json(args.plan) if args.plan else None, **arguments)

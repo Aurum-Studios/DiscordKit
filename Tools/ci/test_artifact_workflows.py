@@ -24,6 +24,29 @@ def scripts(action):
 
 
 class ArtifactWorkflowTests(unittest.TestCase):
+    def test_workflow_evidence_paths_do_not_contain_literal_yaml_block_markers(self):
+        text = (ROOT / '.github/workflows/native-platform.yml').read_text()
+        blocks = re.findall(r'          paths: \|\n((?:            [^\n]*\n)+)', text)
+        self.assertTrue(blocks)
+        for block in blocks:
+            paths = block.splitlines()
+            self.assertTrue(all(line.strip() and line.strip() != '|' for line in paths))
+
+    def test_qualification_fault_runs_after_real_tests_and_retains_failure_evidence(self):
+        ci = (ROOT / '.github/workflows/ci.yml').read_text()
+        native = (ROOT / '.github/workflows/native-platform.yml').read_text()
+        root = native.split('\n  tests-root:\n', 1)[1].split('\n  tests:\n', 1)[0]
+        marker = 'name: Inject first-attempt diagnostic consumer failure'
+        self.assertEqual(native.count(marker), 1)
+        self.assertLess(root.index('name: Run selected complete suites without rebuilding'), root.index(marker))
+        self.assertIn('if: inputs.qualification-fault', root)
+        self.assertIn('qualification-fault.json', root)
+        self.assertIn('            .build/artifact-index.json\n', root)
+        self.assertIn("if: always() && steps.admission.outcome == 'success'", root)
+        for text in (ci, native):
+            self.assertIn('ADMISSION_QUALIFICATION_FAULT:', text)
+        self.assertEqual(ci.count('qualification-fault: ${{ inputs.qualification-fault || false }}'), 2)
+
     def test_failed_job_rerun_resolves_in_consumer_then_downloads_ids(self):
         """Current consumers resolve their own index rather than using old matrix outputs."""
         with tempfile.TemporaryDirectory(prefix='artifact workflow ') as directory:

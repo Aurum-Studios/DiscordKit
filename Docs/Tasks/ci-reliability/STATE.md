@@ -50,7 +50,7 @@ is claimed. See [BOOTSTRAP.md](BOOTSTRAP.md) for the zero-paid execution sheet.
 | 8 — Verified provisioning | Implemented; local helper/signature acceptance; hosted measurements pending Phase 11 | `db705cb6dade43da579d555461f3f36a13586b48` | [Verified distribution reuse and profiles](phase-8/IMPLEMENTATION.md); [validation](phase-8/validation.json), [review](phase-8/review.json), [upstream pins](phase-8/upstream/SOURCES.json) |
 | 9 — Shared documentation inputs | Implemented; local helper and real synthetic DocC acceptance; hosted proof pending Phase 11 | `b6fe729d61f7355cd8bcfc9ab4dcd93d020f2467` | [Shared conversions and trust contracts](phase-9/IMPLEMENTATION.md); [validation](phase-9/validation.json), [review](phase-9/review.json), [real DocC counts/routes](phase-9/checks/real-docc/results.json) |
 | 10 — Spend admission | Implemented; local acceptance; hosted qualification and operator settings pending | `c5624f8a726880298092269716f49102ff87e636` | [Contracts and execution sheet](phase-10/IMPLEMENTATION.md); [validation](phase-10/validation.json), [review](phase-10/review.json), [operator proposal](phase-10/OPERATOR-BUDGET.md) |
-| 11 — Qualification and rollout | Not started | Pending | Pending exact-final-revision CI |
+| 11 — Qualification and rollout | Local preparation implemented and tested; hosted completion pending authorization | Pending local commit receipt | [Execution sheet](phase-11/IMPLEMENTATION.md), [1,015 passed / six existing skips](phase-11/validation.json), [review](phase-11/review.json); both native platforms, partial rerun and exact-final-revision full CI remain open |
 
 ## Phase 1 handoff
 
@@ -333,3 +333,30 @@ commit `c5624f8a726880298092269716f49102ff87e636` contains all 12 tested inputs 
 The [actual-blob receipt](phase-10/commit-receipt.json) verifies committed objects
 and current bytes. This completion follow-up changes documentation only; tested
 executable/configuration/workflow inputs remain unchanged.
+
+
+## Phase 11 local preparation handoff
+
+Owner Codex `/root` prepared qualification controls on `ci/phase-11-qualification`,
+sibling `DiscordKit-ci-phase11`, based on `d19bb530`. The
+[plan and execution sheet](phase-11/IMPLEMENTATION.md) preserve zero paid work,
+the original four planning edits and all earlier phase checkouts.
+The fixed Linux `root` / `DiscordBitsTests` diagnostic deliberately fails only
+attempt one after real passing tests and validated consumer/coverage receipts.
+Every admission guard seals that selection; root and ordinary consumer evidence
+now retains the full immutable artifact index for later failed-job rerun proof.
+Retained full/partial snapshots use existing v2 producer, executed-leaf and release
+gates, with explicit unauthenticated offline evidence limits.
+
+[Validation](phase-11/validation.json) records 1,015 passing local tests and six
+existing Linux-only skips, all seven workflows passing actionlint, source/example
+checks and pure refused-admission plans. [Independent review](phase-11/review.json)
+passed 65 focused tests and has no open implementation blockers. No native Swift
+compilation, hosted run, push, dispatch, rollout activation, provider-budget change,
+publication or deployment occurred. Plans describe ceilings, not observed spend.
+
+**Phase 11 remains incomplete.** Phase 3 native x64 acceptance, actual hosted
+Linux/macOS round trips and partial rerun, cold/cache/documentation measurements,
+final exact-source full certification, measured cost comparison and required-check
+read-back are open. Hosted work requires operator-selected allowances and verified
+account/charge facts; the prepared repository budget remains a separate unset task.

@@ -40,6 +40,15 @@ Manual full/diagnostic requests fail closed under these settings. Repository
 variables or dispatch fields cannot grant paid execution. Documentation site preparation shares full CI inputs; Pages publication remains
 contained behind full certification and an explicit publication request.
 
+[Phase 11 qualification preparation](Tasks/ci-reliability/phase-11/IMPLEMENTATION.md)
+adds a fixed Linux `root` / `DiscordBitsTests` diagnostic fault after real passing
+tests, immutable selection retention and offline full/partial evidence verification.
+The fault is sealed into spend admission and fails only attempt one; a partial
+rerun must execute a fresh consumer while reusing valid producers. This source
+preparation leaves hosted execution and rollout activation pending authorization.
+Phase 11 completion still requires both native platforms and exact-final-revision
+full certification; local snapshot fixtures cannot establish those results.
+
 A source/policy/workflow job, four balanced Python/browser helper groups and the
 independent human upstream-maintenance freshness check precede native scheduling.
 Helpers use the process supervisor and a shared 300-second group deadline.

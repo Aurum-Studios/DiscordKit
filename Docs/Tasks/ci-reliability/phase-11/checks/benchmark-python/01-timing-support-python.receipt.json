@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "name": "timing-support-python",
+  "stage": "preflight-benchmark-python",
+  "operation": "localHelperCheck",
+  "arguments": [
+    "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "Tools/DiscordBenchmarkSupport/scripts",
+    "-p",
+    "test_*.py"
+  ],
+  "start": "2026-11-12T16:40:02.865085+00:00",
+  "startMonotonic": 359610.180365333,
+  "deadlineMonotonic": 359909.626120625,
+  "executionLimitSeconds": 300,
+  "cleanupAllowanceSeconds": 8.0,
+  "deadlineSource": "aggregate",
+  "paths": {
+    "output": "/Users/carsonrau/Developer/DiscordKit-ci-phase11/Docs/Tasks/ci-reliability/phase-11/checks/benchmark-python/01-timing-support-python.log",
+    "stdout": null,
+    "diagnostics": "/Users/carsonrau/Developer/DiscordKit-ci-phase11/Docs/Tasks/ci-reliability/phase-11/checks/benchmark-python/01-timing-support-python.diagnostics.jsonl",
+    "receipt": "/Users/carsonrau/Developer/DiscordKit-ci-phase11/Docs/Tasks/ci-reliability/phase-11/checks/benchmark-python/01-timing-support-python.receipt.json"
+  },
+  "identity": {
+    "executionID": "5560b648-1683-4fea-b632-1018ac0de389",
+    "supervisorPID": 68526,
+    "host": "Pokemon-GO-Plus",
+    "system": "Darwin",
+    "repository": "/Users/carsonrau/Developer/DiscordKit-ci-phase11"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "timeoutCategory": null,
+  "pid": 68663,
+  "group": 68663,
+  "cleanup": {
+    "status": "group-signalled",
+    "signals": [],
+    "parentReaped": true,
+    "allowanceSeconds": 8.0,
+    "seconds": 0.003,
+    "groupState": "gone",
+    "remainingProcesses": [],
+    "verification": "available",
+    "verificationTruncated": false,
+    "verificationMalformedRows": 0,
+    "boundary": "admitted POSIX process group; escaped sessions cannot be guaranteed"
+  },
+  "outputs": [
+    {
+      "path": "/Users/carsonrau/Developer/DiscordKit-ci-phase11/Docs/Tasks/ci-reliability/phase-11/checks/benchmark-python/01-timing-support-python.log",
+      "retainedBytes": 359,
+      "observedBytes": 359,
+      "truncated": false
+    }
+  ],
+  "diagnosticsTruncated": false,
+  "end": "2026-11-12T16:40:34.851035+00:00",
+  "endMonotonic": 359642.16609775,
+  "elapsedSeconds": 31.986,
+  "lastObservedTest": null,
+  "readerThreads": 0
+}
