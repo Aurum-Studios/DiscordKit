@@ -375,3 +375,9 @@ its same-attempt transport/conversion path remains for Phase 9 integration.
 No remote upload, push, hosted dispatch/rerun, paid job, native compilation/test,
 publication, deployment, runtime or Discord access occurred. Hosted transfer and
 partial-rerun acceptance remains Phase 11; Phase 3 native x64 remains pending.
+
+Implementation commit `d466d50bc153f2799a33e200d574569958905295` contains the tested inputs and all
+23 retained manifest artifacts. The [commit receipt](phase-5/commit-receipt.json)
+compares each input and artifact against actual committed blobs. This receipt
+follow-up changes documentation only; executable/test/workflow/dependency inputs
+remain byte-for-byte identical to the validated implementation.

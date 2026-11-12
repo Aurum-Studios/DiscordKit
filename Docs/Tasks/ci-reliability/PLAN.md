@@ -15,7 +15,7 @@ Phase 2 is complete as local Swift implementation at
 Phase 3 is implemented with local emulated acceptance; native x64 acceptance remains open.
 Phase 4 is complete as local helper implementation at
 `4590c5d76c1024d8eec5132a1be343220577cccf`; see
-[the implementation](phase-4/IMPLEMENTATION.md). Phase 5 is implemented with local
+[the implementation](phase-4/IMPLEMENTATION.md). Phase 5 is implemented at `d466d50bc153f2799a33e200d574569958905295` with local
 helper acceptance; its hosted transfer/rerun proof remains Phase 11 work. See
 [the execution plan and contracts](phase-5/IMPLEMENTATION.md). Phases 6 through 11
 remain proposed.

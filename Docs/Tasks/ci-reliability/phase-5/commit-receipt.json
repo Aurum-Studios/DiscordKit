@@ -1,0 +1,128 @@
+{
+  "base": "b190a963f27fc3910b7226e7d15f386ac97b5498",
+  "branch": "ci/phase-5-transfer",
+  "followupScope": "Documentation and commit receipt only; source, tests, workflows, action definitions and dependency locks remain unchanged.",
+  "implementationCommit": "d466d50bc153f2799a33e200d574569958905295",
+  "implementationManifestSHA256": "4949deb53990ccdc2ee965a2f634b1a49af8dc47fb75777c760c970ac884f6b0",
+  "method": "Read actual implementation Git blobs and compare every recorded input and retained manifest artifact digest.",
+  "status": "passed",
+  "verifiedArtifacts": {
+    "IMPLEMENTATION.md": {
+      "SHA256": "45fd61b4db994588734b668e7710aa52fcb75dde00c1b4d81fd154e1376a71ee",
+      "bytes": 9736
+    },
+    "helpers-initial.diagnostics.jsonl": {
+      "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "helpers-initial.log": {
+      "SHA256": "7235536d2be886a2c9023f7bb603daaf3a5779d6fce3f98f8f655eff4ee3a234",
+      "bytes": 74741
+    },
+    "helpers-initial.receipt.json": {
+      "SHA256": "d7dc54fab04a3c4c3407b3559ad6d00985ab00fa8d857ccd119bbef6ab04bb59",
+      "bytes": 2322
+    },
+    "helpers.diagnostics.jsonl": {
+      "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "helpers.log": {
+      "SHA256": "588ada52fa9c993bd503a3c0838475ada3b39249bbbcbbd7f561025a30b8133b",
+      "bytes": 74135
+    },
+    "helpers.receipt.json": {
+      "SHA256": "747ec79697c41bd22a7a9e1a29b0da234c34c6dea690c84f4567d0c51cf1e3b5",
+      "bytes": 2094
+    },
+    "node-launcher.diagnostics.jsonl": {
+      "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "node-launcher.log": {
+      "SHA256": "b7336a6a7e41be791c50a6b702727fbfe48f18351f590a786db65345017edb7f",
+      "bytes": 57
+    },
+    "node-launcher.receipt.json": {
+      "SHA256": "328e621a79d26a80712d708f25a6fca57e955985680ad24e43f0efcefab4a92c",
+      "bytes": 2019
+    },
+    "node-worker.diagnostics.jsonl": {
+      "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "node-worker.log": {
+      "SHA256": "051df34803b0aa6e60cb2a47ee36fa469ba787c04d9af78eb1c2cf61e21497a4",
+      "bytes": 46
+    },
+    "node-worker.receipt.json": {
+      "SHA256": "1684bf74dc3b2de81297a489803c26cdadd7056affd0185116e2e5c7e36a31ae",
+      "bytes": 1994
+    },
+    "policy.diagnostics.jsonl": {
+      "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "policy.log": {
+      "SHA256": "df7c6707eb46038aea3c372065ff8204bf465e00e3248f4e01359e032e11d029",
+      "bytes": 325
+    },
+    "policy.receipt.json": {
+      "SHA256": "68adbc7f012f03f8c2fed32b021bb8102804818b40bbb752a516617a2a3e5d0f",
+      "bytes": 2031
+    },
+    "review.json": {
+      "SHA256": "66136a88a90ba76ff576529ba8fd58cc03c0b6a00b4374060cedbbffb790ca31",
+      "bytes": 2924
+    },
+    "source-preflight.json": {
+      "SHA256": "a7e2d9f0800cf293b73a2d7f02ed8ea7e5f308949024bc1fa69bf21ea43245b4",
+      "bytes": 3215
+    },
+    "validate.py": {
+      "SHA256": "55f55df97fc809a094263ec66d134659cba59e31e6bfd93a43edbf9e83328949",
+      "bytes": 1233
+    },
+    "validation.json": {
+      "SHA256": "3e9612243c5da92b5e85a35b0cd2e00e46b7fcff933b7bbf3438b654de20da14",
+      "bytes": 10015
+    },
+    "workflows.diagnostics.jsonl": {
+      "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "workflows.log": {
+      "SHA256": "008ce7eee265d79e0f66d0f0bf106f0a0c61fd23d3de7cf66c73b5071c79a627",
+      "bytes": 103
+    },
+    "workflows.receipt.json": {
+      "SHA256": "8f9f00f3480676ba793b2c5146ecc0f3b8b9487e93d65f6173f6f97e430e90e2",
+      "bytes": 2043
+    }
+  },
+  "verifiedInputSHA256": {
+    ".github/actions/artifact-transfer/action.yml": "0c7b2e1ece9794daabb42f5d865d3fe344079862018875e54eade84036e1cbb7",
+    ".github/actions/artifact-transfer/index.mjs": "0f49ec32afe0d4ea5385fa092a2806c24d7af2c26b9a12e37ded6738c9e1462c",
+    ".github/actions/consume-native/action.yml": "d178975d3e8f06be7a9ea14c5a0958cfcc401b9ac5a4c528a166b46ec4b6a6e5",
+    ".github/actions/setup-artifact-sdk/action.yml": "27effdbe43483ca334f4ce278332eac4b2f4c1bbe193fe7a04a81bf5975ac8e4",
+    ".github/actions/upload-evidence/action.yml": "d68b6f569d3b4e1b1afc338c609e894ca3c112860dd5744ffad8b58547140783",
+    ".github/workflows/ci.yml": "cd916fd3889dcc0d79088b68edc88f8604fca49f8632f8d885f2f806c5998fd4",
+    ".github/workflows/documentation.yml": "9a16d25d5feb57653ecb12f4f12c246def5991c3fd8c52d1e8b23994a48fce4b",
+    ".github/workflows/native-platform.yml": "74432fbf327e8a7fa889cd6de19aa27349a4b902041a2b3714ca64fb246f1f54",
+    "Tools/ci/artifact-sdk/.gitignore": "4d56952b0fb13bf8f9b6c13a6d4c34a075bac3af447636a1df4335d7576e2f97",
+    "Tools/ci/artifact-sdk/README.md": "99071b73ed621eccb01d3ed5f202d167b3027b7b48b957f6d649b2de0e572e04",
+    "Tools/ci/artifact-sdk/package-lock.json": "68e8bdedfd42d320964c488a117851c5fc9ed01efdd1313cab0d0dcabcc27b2a",
+    "Tools/ci/artifact-sdk/package.json": "6ba48945dbdca96f6b6540b5c23a5529699ad45c684dfeae267b9b620cc41dcd",
+    "Tools/ci/artifact-sdk/upload.mjs": "2d9c2388c8a8afa76d7f7d322458b42b4063fbbc95f895064171fceb0529932c",
+    "Tools/ci/artifact_index.py": "ac889d695f9c2c27fdc8db6d93e3957b5f89a05718ba0acfcc7419847a4075f6",
+    "Tools/ci/artifact_transfer.py": "a907d526528067b8e6ea34c9a8eda61e9664c880bc4ef58cc78ba45f01c639b8",
+    "Tools/ci/native_jobs.py": "4cd945625a211339d3082d04a131e8b6e2214a3489d002df85ddd80e1a566f7f",
+    "Tools/ci/native_receipts.py": "4444c21bb7b8a6b3dac4bf6b943c97c2d50b18fdd04fa845832606de0413f9c0",
+    "Tools/ci/test_artifact_index.py": "5c0411d39ba09d7bf4b571b5639926bb8a1e4fdf2a5a0a6ab83a53e8d3501b71",
+    "Tools/ci/test_artifact_transfer.py": "15af495fe4473ea4d68fb8b3b2b3f833673bfe54ff0391dc3ecde7ca1b061086",
+    "Tools/ci/test_artifact_workflows.py": "5012095985edea4a48004fa0c57509f329999a512b406599ea722ad9e5bd2766",
+    "Tools/ci/test_native_jobs.py": "1d928e3dc21725c810ee0e139ba968a15fa060da89bcacb8ff87b746a391a1a0",
+    "Tools/ci/test_native_receipts.py": "829f50d63680269935fbcb463959cc3535aa7c7a48fffe924831fd7878c792c0",
+    "Tools/ci/test_scheduling_policy.py": "29ef1f3bf6c4ca94d3b4f568dce18c18d02a1df944f6e177c0a2544d9868679a"
+  }
+}

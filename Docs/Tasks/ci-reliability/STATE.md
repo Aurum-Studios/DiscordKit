@@ -19,6 +19,8 @@ with local macOS ARM64 Swift acceptance.
 Phase 4 is complete at implementation commit
 `4590c5d76c1024d8eec5132a1be343220577cccf` on `ci/phase-4-compatibility`,
 with local Python helper acceptance.
+Phase 5 has local helper acceptance at implementation commit
+`d466d50bc153f2799a33e200d574569958905295` on `ci/phase-5-transfer`; its hosted proof remains Phase 11.
 No hosted qualification, paid execution, external configuration change or publication
 is claimed. See [BOOTSTRAP.md](BOOTSTRAP.md) for the zero-paid execution sheet.
 
@@ -29,7 +31,7 @@ is claimed. See [BOOTSTRAP.md](BOOTSTRAP.md) for the zero-paid execution sheet.
 | 2 — Event-hub accounting | Complete; local macOS Swift acceptance | `4dbb085521f1977dc40ea5b8818edb9d61cd2f9f` | [Red/green, 23 load + 21 runtime tests, four CLI checks](phase-2/validation.json), [independent review](phase-2/review.json), [implementation and limits](phase-2/IMPLEMENTATION.md) |
 | 3 — Linux hang repair | Implemented and locally tested; native x64 acceptance pending | `69a21b325c4eaa6181eb31dcc7e78ab083ac6411` | [Stack-supported peer repair, red/green and whole-package checks](phase-3/IMPLEMENTATION.md); [native gate](phase-3/NATIVE-ACCEPTANCE.md) remains open |
 | 4 — Compatibility receipts | Complete; local helper acceptance | `4590c5d76c1024d8eec5132a1be343220577cccf` | [270 helpers, six existing Linux-only skips](phase-4/validation.json), [review](phase-4/review.json), [v2 contracts and execution sheet](phase-4/IMPLEMENTATION.md) |
-| 5 — Transfer and partial reruns | Implemented; local helper acceptance; hosted proof pending Phase 11 | Pending scoped implementation commit | [Contracts and execution sheet](phase-5/IMPLEMENTATION.md); [314 passed, six existing skips](phase-5/validation.json), [review](phase-5/review.json) |
+| 5 — Transfer and partial reruns | Implemented; local helper acceptance; hosted proof pending Phase 11 | `d466d50bc153f2799a33e200d574569958905295` | [Contracts and execution sheet](phase-5/IMPLEMENTATION.md); [314 passed, six existing skips](phase-5/validation.json), [review](phase-5/review.json) |
 | 6 — Preflight and canaries | Not started | Pending | Pending |
 | 7 — Suite groups and resources | Not started | Pending | Pending coverage/cost comparison |
 | 8 — Verified provisioning | Not started | Pending | Pending cold/cache evidence |
@@ -139,8 +141,11 @@ is checked in a separate stage and again in the latest platform barrier.
 actual pinned SDK localhost success/fault fixtures, actionlint, syntax, policy and
 link/diff checks. [Review](phase-5/review.json) has no remaining blockers. The
 original planning edits and prior phase checkouts are preserved. The scoped
-implementation commit is recorded by the following commit receipt; no remote
-write, hosted run, paid job or native Swift execution occurred.
+implementation commit `d466d50bc153f2799a33e200d574569958905295` contains all 23 verified source/test/
+workflow/dependency inputs and 23 retained manifest artifacts. The
+[commit receipt](phase-5/commit-receipt.json) verifies the actual Git blobs.
+This follow-up changes documentation only; tested inputs remain unchanged. No
+remote write, hosted run, paid job or native Swift execution occurred.
 
 Phase 5 has local implementation acceptance. Its real hosted round trip, partial
 failed-job rerun and complete latest-attempt barrier acceptance remain Phase 11.
