@@ -114,6 +114,116 @@ class ArtifactTransferTests(unittest.TestCase):
             self.assertEqual(result["name"], "compiled-t2")
             self.assertEqual({item["digest"] for item in client.artifacts}, {result["digest"]})
 
+    def test_finalized_upload_waits_for_exact_rest_identity_without_uploading_again(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "payload.zip"
+            path.write_bytes(zip_bytes())
+            digest = "sha256:" + transfer.sha256_file(path)
+            client, attempts = FakeClient(), []
+            artifact = {"id": 42, "name": "compiled-t1", "digest": digest,
+                        "expired": False, "workflow_run": {"id": 10}}
+            with patch.object(client, "list_artifacts", return_value=[]) as listing, \
+                 patch.object(transfer, "upload_worker", return_value={"id": "42", "digest": digest}) as worker, \
+                 patch.object(client, "get_artifact", side_effect=[
+                     transfer.TransferError("GitHub artifact HTTP 404", status=404), artifact]) as readback, \
+                 patch.object(transfer.time, "sleep") as pause:
+                result = transfer.upload_prepared(client, "compiled", path, attempts=attempts)
+            self.assertEqual(result, {"id": "42", "name": "compiled-t1", "digest": digest})
+            listing.assert_called_once()
+            worker.assert_called_once()
+            self.assertEqual([call.args for call in readback.call_args_list], [("42",), ("42",)])
+            pause.assert_called_once_with(2)
+            self.assertEqual([item["result"] for item in attempts], ["failed", "verified"])
+            self.assertEqual(attempts[0]["classification"], "transient")
+
+    def test_finalized_upload_readback_failure_uses_only_existing_attempt_allowance(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "payload.zip"
+            path.write_bytes(zip_bytes())
+            client, attempts = FakeClient(), []
+            with patch.object(transfer, "upload_worker", return_value={"id": "42"}) as worker, \
+                 patch.object(client, "get_artifact", side_effect=
+                     transfer.TransferError("GitHub artifact HTTP 404", status=404)) as readback, \
+                 patch.object(transfer.time, "sleep") as pause, \
+                 self.assertRaisesRegex(transfer.TransferError, "not yet visible"):
+                transfer.upload_prepared(client, "compiled", path, attempts=attempts)
+            worker.assert_called_once()
+            self.assertEqual([call.args for call in readback.call_args_list], [("42",)] * 3)
+            self.assertEqual([call.args for call in pause.call_args_list], [(2,), (4,)])
+            self.assertEqual(len(attempts), transfer.MAX_ATTEMPTS)
+            self.assertTrue(all(item["classification"] == "transient" for item in attempts))
+
+    def test_finalized_upload_auth_failure_is_not_retried(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "payload.zip"
+            path.write_bytes(zip_bytes())
+            client, attempts = FakeClient(), []
+            with patch.object(transfer, "upload_worker", return_value={"id": "42"}) as worker, \
+                 patch.object(client, "get_artifact", side_effect=
+                     transfer.TransferError("GitHub artifact HTTP 403", status=403)) as readback, \
+                 patch.object(transfer.time, "sleep") as pause, \
+                 self.assertRaisesRegex(transfer.TransferError, "HTTP 403"):
+                transfer.upload_prepared(client, "compiled", path, attempts=attempts)
+            worker.assert_called_once()
+            readback.assert_called_once_with("42")
+            pause.assert_not_called()
+            self.assertEqual(len(attempts), 1)
+            self.assertEqual(attempts[0]["classification"], "permanent")
+
+    def test_finalized_upload_readback_backoff_stops_at_transport_deadline(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "payload.zip"
+            path.write_bytes(zip_bytes())
+            client, budget, attempts = FakeClient(), transfer.Budget(), []
+            def expire(_delay):
+                budget.deadline = time.monotonic() - 1
+            with patch.object(transfer, "upload_worker", return_value={"id": "42"}) as worker, \
+                 patch.object(client, "get_artifact", side_effect=
+                     transfer.TransferError("GitHub artifact HTTP 404", status=404)) as readback, \
+                 patch.object(transfer.time, "sleep", side_effect=expire), \
+                 self.assertRaisesRegex(transfer.TransferError, "deadline exhausted"):
+                transfer.upload_prepared(client, "compiled", path, budget=budget, attempts=attempts)
+            worker.assert_called_once()
+            readback.assert_called_once_with("42")
+            self.assertEqual(len(attempts), 2)
+
+    def test_upload_listing_not_found_is_permanent_before_worker_starts(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "payload.zip"
+            path.write_bytes(zip_bytes())
+            client, attempts = FakeClient(), []
+            with patch.object(client, "list_artifacts", side_effect=
+                     transfer.TransferError("GitHub artifact HTTP 404", status=404)) as listing, \
+                 patch.object(transfer, "upload_worker") as worker, \
+                 self.assertRaisesRegex(transfer.TransferError, "HTTP 404"):
+                transfer.upload_prepared(client, "compiled", path, attempts=attempts)
+            listing.assert_called_once()
+            worker.assert_not_called()
+            self.assertEqual(len(attempts), 1)
+            self.assertEqual(attempts[0]["classification"], "permanent")
+
+    def test_finalized_upload_visibility_retry_does_not_relax_immutable_checks(self):
+        changes = ({"id": 43}, {"name": "different-t1"}, {"digest": "sha256:" + "0" * 64},
+                   {"digest": None}, {"expired": True}, {"workflow_run": {"id": 11}})
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "payload.zip"
+            path.write_bytes(zip_bytes())
+            digest = "sha256:" + transfer.sha256_file(path)
+            for changed in changes:
+                client, attempts = FakeClient(), []
+                artifact = {"id": 42, "name": "compiled-t1", "digest": digest,
+                            "expired": False, "workflow_run": {"id": 10}, **changed}
+                with self.subTest(changed=changed), \
+                     patch.object(transfer, "upload_worker", return_value={"id": "42"}) as worker, \
+                     patch.object(client, "get_artifact", side_effect=[
+                         transfer.TransferError("GitHub artifact HTTP 404", status=404), artifact]), \
+                     patch.object(transfer.time, "sleep"), \
+                     self.assertRaisesRegex(transfer.TransferError, "readback mismatch"):
+                    transfer.upload_prepared(client, "compiled", path, attempts=attempts)
+                worker.assert_called_once()
+                self.assertEqual(len(attempts), 2)
+                self.assertEqual(attempts[-1]["classification"], "permanent")
+
     def test_existing_candidate_wrong_digest_is_fatal(self):
         with tempfile.TemporaryDirectory() as temporary:
             path = Path(temporary) / "payload.zip"
@@ -305,6 +415,18 @@ print('nested cleanup passed')
             opener.return_value.open.side_effect = error
             with self.assertRaisesRegex(transfer.TransferError, "HTTP 403") as failure:
                 client.get_run()
+            self.assertNotIn("secret", str(failure.exception))
+            self.assertEqual(opener.return_value.open.call_count, 1)
+
+    def test_general_http_not_found_is_permanent_and_retains_status(self):
+        client = transfer.GitHubArtifactClient("owner/repo", "secret", "10")
+        error = urllib.error.HTTPError("https://api.github.com", 404, "secret", {}, None)
+        with patch("urllib.request.build_opener") as opener:
+            opener.return_value.open.side_effect = error
+            with self.assertRaisesRegex(transfer.TransferError, "HTTP 404") as failure:
+                client.get_artifact("42")
+            self.assertFalse(failure.exception.transient)
+            self.assertEqual(failure.exception.status, 404)
             self.assertNotIn("secret", str(failure.exception))
             self.assertEqual(opener.return_value.open.call_count, 1)
 

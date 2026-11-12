@@ -47,9 +47,10 @@ MAX_ZIP_BYTES = 32 * 1024 * 1024 * 1024
 class TransferError(ValueError):
     """Only an explicitly transient transport failure permits another attempt."""
 
-    def __init__(self, message, *, transient=False):
+    def __init__(self, message, *, transient=False, status=None):
         super().__init__(message)
         self.transient = transient
+        self.status = status
 
 
 def sha256_file(path):
@@ -199,7 +200,8 @@ class GitHubArtifactClient:
                             url, authenticated = location, False
                             continue
                         error.close()
-                        raise TransferError(f"GitHub artifact HTTP {error.code}", transient=error.code in TRANSIENT_STATUS)
+                        raise TransferError(f"GitHub artifact HTTP {error.code}",
+                                            transient=error.code in TRANSIENT_STATUS, status=error.code)
                     with response:
                         if output is not None:
                             size = 0
@@ -445,23 +447,42 @@ def upload_prepared(client, name, path, *, budget=None, attempts=None, retention
         raise TransferError("invalid immutable artifact name or retention")
     budget = budget or Budget()
     digest = "sha256:" + sha256_file(path)
+    finalized = None
     def attempt(number, deadline):
-        candidate = f"{name}-t{number}"
+        nonlocal finalized
         with client.within(budget, deadline):
-            # Also reconciles a timeout after finalization or an interrupted caller.
-            matches = [item for item in client.list_artifacts() if item.get("name") == candidate]
-            if len(matches) > 1:
-                raise TransferError("ambiguous immutable upload candidate")
-            if matches:
-                result = matches[0]
-                if result.get("digest") != digest:
-                    raise TransferError("existing immutable upload candidate digest mismatch")
+            if finalized is not None:
+                # FinalizeArtifact can succeed before the REST metadata becomes
+                # visible. Retry its exact ID, never another upload, within the
+                # same three-attempt and aggregate transport allowance.
+                candidate, result = finalized
+                delay = min(2 ** (number - 1), budget.remaining(deadline))
+                time.sleep(delay)
+                budget.remaining(deadline)
             else:
-                # A failed upload can have finalized remotely. A later attempt uses
-                # a fresh name and unchanged bytes; no candidate is deleted/overwritten.
-                result = upload_worker(candidate, path, digest[7:], retention_days, deadline)
-            artifact = client.get_artifact(result["id"])
-            if (artifact.get("name") != candidate or artifact.get("digest") != digest
+                candidate = f"{name}-t{number}"
+                # Also reconciles a timeout after finalization or an interrupted caller.
+                matches = [item for item in client.list_artifacts() if item.get("name") == candidate]
+                if len(matches) > 1:
+                    raise TransferError("ambiguous immutable upload candidate")
+                if matches:
+                    result = matches[0]
+                    if result.get("digest") != digest:
+                        raise TransferError("existing immutable upload candidate digest mismatch")
+                else:
+                    # A failed upload can have finalized remotely. A later attempt uses
+                    # a fresh name and unchanged bytes; no candidate is deleted/overwritten.
+                    result = upload_worker(candidate, path, digest[7:], retention_days, deadline)
+                    finalized = candidate, result
+            try:
+                artifact = client.get_artifact(result["id"])
+            except TransferError as error:
+                if finalized is not None and error.status == 404:
+                    raise TransferError("finalized artifact metadata is not yet visible (HTTP 404)",
+                                        transient=True, status=404) from None
+                raise
+            if (str(artifact.get("id")) != str(result["id"])
+                    or artifact.get("name") != candidate or artifact.get("digest") != digest
                     or artifact.get("expired") is not False
                     or str(artifact.get("workflow_run", {}).get("id")) != client.run_id):
                 raise TransferError("uploaded artifact identity/digest readback mismatch")

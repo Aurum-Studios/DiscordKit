@@ -39,7 +39,9 @@ November 30, 2026 UTC and records a USD 50 remaining compute allocation, verifie
 runner mappings and included non-compute usage. The repository Actions budget
 has stop usage enabled at USD 50; scheduled timing remains active within that
 provider backstop. [The November allocation and read-back](Tasks/ci-reliability/november-2026/BUDGET.md)
-explain per-run limits, included usage and billing limitations. One replacement full certification attempt with Pages publication is authorized
+explain per-run limits, included usage and billing limitations. Following the bootstrap
+artifact verification failure in run `43266996709`, one repaired full certification
+attempt with Pages publication is authorized
 with a USD 723 source reservation. The monthly provider stop-usage budget remains USD 50
 and can block the run. Automatic scope remains preflight. Repository
 variables or dispatch fields cannot grant paid execution. Documentation site preparation shares full CI inputs; Pages publication remains
@@ -50,7 +52,8 @@ adds a fixed Linux `root` / `DiscordBitsTests` diagnostic fault after real passi
 tests, immutable selection retention and offline full/partial evidence verification.
 The fault is sealed into spend admission and fails only attempt one; a partial
 rerun must execute a fresh consumer while reusing valid producers. The current operator authorization permits one full hosted attempt; successful
-execution and evidence remain pending.
+execution and evidence remain pending. The [November recovery record](Tasks/ci-reliability/november-2026/RECOVERY.md)
+records the artifact metadata visibility fix and compact admission logging.
 Phase 11 completion still requires both native platforms and exact-final-revision
 full certification; local snapshot fixtures cannot establish those results.
 

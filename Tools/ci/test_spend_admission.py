@@ -130,6 +130,56 @@ class SpendAdmissionTests(unittest.TestCase):
                 policy['authorization'].update(window)
                 spend.validate_policy(policy)
 
+    def test_fresh_source_identity_keeps_exact_hashes_without_console_inventory(self):
+        changed = dict(SOURCE, sourceSHA256='c' * 64)
+        sources = iter((SOURCE, changed))
+        def query(_repository):
+            print('binary-filename-inventory-' * 20000, end='')
+            return next(sources)
+        with patch.object(spend.native_jobs, 'source_identity', side_effect=query) as queried, \
+                redirect_stdout(io.StringIO()) as console:
+            first = self.plan(source=None)
+            second = self.guard(source=None)
+        self.assertEqual(console.getvalue(), '')
+        self.assertEqual(queried.call_count, 2)
+        self.assertEqual(first, self.plan(source=SOURCE))
+        self.assertEqual(second, self.guard(source=changed))
+        self.assertNotEqual(first['source']['sourceSHA256'], second['source']['sourceSHA256'])
+
+    def test_source_identity_failure_preserves_actionable_bounded_diagnostics(self):
+        def query(_repository):
+            print('x' * 10000 + '\nfatal: tracked file cannot be read')
+            raise OSError('source identity could not read tracked file')
+        with patch.object(spend.native_jobs, 'source_identity', side_effect=query), \
+                redirect_stdout(io.StringIO()) as console, redirect_stderr(io.StringIO()) as errors:
+            with self.assertRaisesRegex(OSError, 'could not read tracked file'):
+                self.plan(source=None)
+        self.assertEqual(console.getvalue(), '')
+        self.assertIn('fatal: tracked file cannot be read', errors.getvalue())
+        self.assertLess(len(errors.getvalue()), 4200)
+
+    def test_cli_compact_output_preserves_complete_full_publication_plan(self):
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / 'plan.json'
+            with patch.dict(os.environ, {'ADMISSION_PUBLICATION': 'true'}, clear=True), \
+                    patch.object(spend.native_jobs, 'source_identity', return_value=SOURCE), \
+                    patch.object(spend, 'load_policy', return_value=self.policy), \
+                    redirect_stdout(io.StringIO()) as console:
+                expected = spend.make_plan('full', publication=True, source=SOURCE, policy=self.policy)
+                self.assertEqual(spend.main(['plan', '--mode', 'full', '--output', str(output)]), 0)
+            saved = json.loads(output.read_text())
+            printed = json.loads(console.getvalue())
+            self.assertEqual(saved, expected)
+            self.assertEqual(len(saved['jobs']), len(spend.workflow_scope.execution_jobs('full', publication=True)))
+            self.assertEqual(len(saved['reservations']), len(saved['jobs']) * 2)
+            self.assertEqual(printed['planSHA256'], saved['planSHA256'])
+            self.assertEqual(printed['sourceCommit'], SOURCE['commit'])
+            self.assertEqual(printed['totals'], saved['totals'])
+            self.assertTrue(printed['selection']['publication'])
+            self.assertNotIn('jobs', printed)
+            self.assertNotIn('reservations', printed)
+            self.assertLess(len(console.getvalue()), 4096)
+
     def test_exact_workflow_planner_is_the_only_job_source(self):
         result = self.plan('full', publication=True)
         expected = spend.workflow_scope.execution_jobs('full', publication=True)

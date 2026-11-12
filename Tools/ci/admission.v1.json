@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "policyID": "ci-spend-admission-v1",
-  "status": "November 12-30 allocation: USD 50 remaining monthly compute with provider stop usage. Operator authorized replacing the non-publishing full run with one manually monitored full certification and Pages publication attempt, reserved at USD 723; automatic runs remain preflight.",
+  "status": "November 12-30 allocation: USD 50 remaining monthly compute with provider stop usage. Following the bootstrap artifact verification failure in run 43266996709, the operator authorized a repair push and one new full certification with Pages publication, reserved at USD 723; automatic runs remain preflight.",
   "authorization": {
     "enabled": true,
     "repository": "Aurum-Studios/DiscordKit",
@@ -78,11 +78,11 @@
     "maximumPaidAttempts": 1
   },
   "limitations": [
-    "One replacement full certification workflow_dispatch with publish-documentation=true is explicitly authorized with a USD 723 per-workflow ceiling and one attempt. The previous non-publishing dispatch is cancelled. Automatic push/PR scope remains preflight. The provider monthly stop-usage budget remains USD 50 and can block this full run before completion.",
+    "One new full certification workflow_dispatch with publish-documentation=true after the repair push is explicitly authorized with a USD 723 per-workflow ceiling and one attempt. Run 43266996709 failed its bootstrap artifact verification before native execution. Automatic push/PR scope remains preflight and is not suppressed on the repair push. The provider monthly stop-usage budget remains USD 50 and can block this full run before completion.",
     "Every permitted job/attempt reserves its entire outer timeout, including startup, checkout, admission, cold provisioning, bounded command/transfer attempts, diagnostics, cleanup and reports. entryReserveSeconds requires a minimum envelope; checkout/guard have no separate aggregate deadline, so rejected-entry cost reserves the entire outer timeout, never just this minimum.",
     "Disjoint reservations cover this exact source, workflow run, scope and policy maximum attempt only. They cannot be shared across runs, platforms or jobs.",
     "Allowances apply independently to one workflow run. A documentation request and its separately dispatched certification are separate runs; repeated dispatches do not share an experiment-wide ledger or an aggregate cross-run spending cap.",
-    "Attempts beyond maximumRunAttempts fail at entry. No automatic test/build/workflow reruns are authorized. Source reservations do not enforce a count of distinct manual dispatches; the operator authorized exactly one replacement full dispatch and the agent must not launch another.",
+    "Attempts beyond maximumRunAttempts fail at entry. No automatic test/build/workflow reruns are authorized. Source reservations do not enforce a count of distinct manual dispatches; the latest operator request authorizes one new full dispatch after diagnosing and repairing run 43266996709.",
     "Any applicable storage/transfer bound must cover the complete lifetime liability, all retries, cache provisioning and retained outputs. Unknown applicability rejects admission; a zero charge requires dated affirmative evidence.",
     "Repository Actions budget 581114fb-5d5a-4a71-95e0-16773b646082 was created and read back at USD 50 with stop usage and CarsonAurum alerts. It supplies the aggregate provider backstop across runs and scheduled timing; source per-run reservations are not a monthly ledger. Billing reporting/cutoff may lag. Repository budgets recur monthly; source admission expires November 30 and must be reviewed before renewal.",
     "The operator chose USD 50 compute only, no additional paid non-compute allowance or safety reserve, and retained scheduled timing. Included non-compute coverage is an operator assurance supported by current zero-net storage, not an independently proven future byte quota."

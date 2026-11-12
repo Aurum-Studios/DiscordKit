@@ -14,9 +14,11 @@ the provider budget supplies the separate monthly aggregate backstop.
 
 import argparse
 import copy
+from contextlib import redirect_stdout
 from datetime import date, datetime, timezone
 from decimal import Decimal
 import hashlib
+import io
 import json
 import os
 from pathlib import Path
@@ -232,6 +234,24 @@ def money(value):
     return None if value is None else str(value)
 
 
+def current_source_identity(repository):
+    """Recompute exact source bytes without forwarding the binary filename inventory.
+
+    Metadata children remain supervised and their complete stdout is captured by
+    the native helper. Raw base64 filenames are transport data, not a console
+    report. Keep a bounded diagnostic excerpt if the query itself fails.
+    """
+    diagnostics = io.StringIO()
+    try:
+        with redirect_stdout(diagnostics):
+            return native_jobs.source_identity(Path(repository))
+    except Exception:
+        detail = diagnostics.getvalue()
+        if detail:
+            print('Source identity query failed; final diagnostics:\n' + detail[-4096:], file=sys.stderr)
+        raise
+
+
 def make_plan(mode, *, platform=None, component=None, suite=None, repository=ROOT, publication=False,
               qualification_fault=False,
               policy=None, as_of=None, source=None, run_id=None, run_attempt=None, identity=None):
@@ -248,7 +268,7 @@ def make_plan(mode, *, platform=None, component=None, suite=None, repository=ROO
     require(mode in MODES, 'unsupported admission mode')
     as_of = datetime.now(timezone.utc).date() if as_of is None else as_of
     require(type(as_of) is date, 'admission comparison requires a date')
-    source = copy.deepcopy(native_jobs.source_identity(Path(repository)) if source is None else source)
+    source = copy.deepcopy(current_source_identity(repository) if source is None else source)
     validate_source(source)
     identity = execution_identity(repository, run_id=run_id, run_attempt=run_attempt, identity=identity)
     jobs = copy.deepcopy(workflow_scope.execution_jobs(mode, platform=platform or None,
@@ -445,7 +465,12 @@ def main(argv=None):
         if os.environ.get('GITHUB_STEP_SUMMARY'):
             with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as stream:
                 stream.write(summary(plan))
-        print(json.dumps(plan, sort_keys=True))
+        # The complete exact plan is retained above. Console output stays small
+        # even when a full workflow reserves dozens of native jobs and attempts.
+        print(json.dumps({key: plan[key] for key in
+            ('status', 'mode', 'admitted', 'native-enabled', 'runID', 'runAttempt',
+             'selection', 'planSHA256', 'totals', 'reasons')} | {
+                'sourceCommit': plan['source']['commit'], 'output': str(output)}, sort_keys=True))
         return 1 if args.operation == 'guard' and not plan['admitted'] else 0
     except (ValueError, OSError, KeyError, TypeError) as error:
         if args.output:

@@ -93,3 +93,14 @@ These checks do not establish hosted native qualification.
 scope and successful admission of all 82 job guards. The replacement commit skips
 the automatic push workflow; its explicit full dispatch still runs all required
 checks and publication.
+
+## Bootstrap failure and authorized recovery
+
+Run `43266996709` admitted the full publishing plan but failed its initial
+artifact verification before either native platform started. The operator
+requested diagnosis, repair, a new push and a new full certification run.
+[The recovery record](RECOVERY.md) describes the observed finalized artifact,
+bounded metadata verification retry and quieter source admission checks.
+This authorizes one new full dispatch with publication enabled and one attempt;
+all budget amounts, job/minute envelopes and the November expiry remain unchanged.
+The repair push runs automatic preflight normally, as requested by the operator.

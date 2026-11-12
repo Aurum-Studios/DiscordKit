@@ -1,0 +1,105 @@
+{
+  "observedAt": "2026-11-12T17:25:19.655919+00:00",
+  "failedRun": 43266996709,
+  "failedScopeJob": 131354586163,
+  "finalizedArtifact": {
+    "id": 13967056973,
+    "node_id": "MDg6QXJ0aWZhY3QxMzk2NzA1Njk3Mw==",
+    "name": "spend-plan-426fbd57c3e93a94f69509489ce0f6b74a193ea1-43266996709-1-t1",
+    "size_in_bytes": 9475,
+    "url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13967056973",
+    "archive_download_url": "https://api.github.com/repos/Aurum-Studios/DiscordKit/actions/artifacts/13967056973/zip",
+    "expired": false,
+    "digest": "sha256:bd0cb952420f15f6605589ae143338bd265ea584820b73c74f3df43750494cf0",
+    "created_at": "2026-11-12T17:19:19Z",
+    "updated_at": "2026-11-12T17:19:19Z",
+    "expires_at": "2026-11-26T17:19:18Z",
+    "workflow_run": {
+      "id": 43266996709,
+      "repository_id": 1421497969,
+      "head_repository_id": 1421497969,
+      "head_branch": "main",
+      "head_sha": "426fbd57c3e93a94f69509489ce0f6b74a193ea1"
+    }
+  },
+  "validation": {
+    "ciPython": {
+      "discovered": 621,
+      "passed": 615,
+      "skipped": 6,
+      "reasonForSkips": "existing Linux-specific cases on macOS",
+      "result": {
+        "command": "python3 -m unittest discover -s Tools/ci -p test_*.py",
+        "exitCode": 0,
+        "elapsedSeconds": 18.159,
+        "log": ".build/ci-recovery-2026-11-12/ci-python.log"
+      }
+    },
+    "sourcePolicy": "passed: 34 root targets, 12 components",
+    "documentationExamples": "32 snapshots verified",
+    "actionlint": "all seven workflow files passed",
+    "admission": {
+      "identity": "synthetic execution; current checked-in policies and workflow sources",
+      "allJobGuardsAdmitted": 82,
+      "totals": {
+        "runnerUSD": "722.990",
+        "storageUSD": "0",
+        "transferUSD": "0",
+        "safetyUSD": "0.00",
+        "maximumUSD": "722.990",
+        "maximumMinutes": 7805,
+        "maximumJobs": 82,
+        "maximumAttempts": 1,
+        "allowanceUSD": "723.00",
+        "remainingUSD": "0.010",
+        "includedEntryReserveUSD": "722.990"
+      },
+      "policySHA256": "5fd4b3dd0b2c3b7cfed72f56b2ff8ad0bdc0604277a752db4b31e10f188f3cab"
+    }
+  },
+  "budgetReadback": {
+    "id": "581114fb-5d5a-4a71-95e0-16773b646082",
+    "budget_type": "ProductPricing",
+    "budget_product_sku": "actions",
+    "budget_scope": "repository",
+    "budget_amount": 50,
+    "prevent_further_usage": true,
+    "budget_entity_name": "Aurum-Studios/DiscordKit",
+    "budget_alerting": {
+      "will_alert": true,
+      "alert_recipients": [
+        "CarsonAurum"
+      ]
+    },
+    "consumed_amount": 0.0
+  },
+  "inputSHA256": {
+    "Tools/ci/artifact_transfer.py": "0c75b3ba12ecc1991e6f5be6eb72f5affc4d3801153beb993ded138a6a4e62c7",
+    "Tools/ci/test_artifact_transfer.py": "e1b7b44e5435f2d7fa91a9e568ad6464d959fb5c9355b8bb1451a2abe196b053",
+    "Tools/ci/spend_admission.py": "08ab27619845b5dada0ee269c8c3b3fccbe9371cf9b651f808e4624bb618c30d",
+    "Tools/ci/test_spend_admission.py": "e1a7b6f754f90c478a2ae73dba4830d41466b9bb1a9a4b920c69e062b3d33e5f",
+    "Tools/ci/admission.v1.json": "546ac0a9dad914db246b0ec8b211a5176e08deb511d20e2f5141a54355357fd6",
+    ".github/workflows/ci.yml": "825270015a01637eb85cb45ed6bfdc66a43bf5b5174389edc4bf1350dde08257"
+  },
+  "nextRun": {
+    "mode": "full",
+    "publish-documentation": true,
+    "qualification-fault": false,
+    "runAttempt": 1,
+    "automaticPushPreflight": "enabled"
+  },
+  "limitations": [
+    "Local helper validation does not qualify hosted native execution or publication.",
+    "The new source commit and run ID are not known until commit/push/dispatch; no future successful outcome is asserted.",
+    "The USD 50 monthly provider budget can stop the USD 723-reserved workflow."
+  ],
+  "independentReview": {
+    "agent": "cleanup_audit",
+    "blockingFindings": 0,
+    "focusedTests": {
+      "artifactTransfer": 36,
+      "spendAdmission": 22
+    },
+    "reviewed": "Exact-ID retries, shared deadlines, no reupload, strict immutable/auth checks, fresh source identity, complete retained plans."
+  }
+}
