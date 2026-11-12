@@ -394,3 +394,9 @@ documentation deployment remain contained pending Phase 10 admission. No native
 Swift, hosted/paid execution, remote write, publication or live runtime was used.
 Real fresh-runner canary, partial rerun, check context and branch-protection proof
 remain Phase 11; Phase 3 native x64 acceptance stays open.
+
+Implementation commit `666f1371224fbe5bda03ec7b54be14a083bb6b09` retains 787 passing
+Python/browser tests, six existing Linux-only skips, all source/workflow/maintenance
+checks, 16 tested input hashes and 41 retained check artifacts. The
+[actual-blob commit receipt](phase-6/commit-receipt.json) verifies those objects;
+the completion follow-up changes documentation only.
