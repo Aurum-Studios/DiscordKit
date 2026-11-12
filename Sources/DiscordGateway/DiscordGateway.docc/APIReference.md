@@ -58,6 +58,10 @@ Browse the public types and operations provided by DiscordGateway.
 - ``DiscordGateway/GatewaySessionState``
 - ``DiscordGateway/GatewaySignal``
 
+### Gateway Reconnect Budget Policy
+
+- ``DiscordGateway/GatewayReconnectBudgetPolicy``
+
 ### Gateway Requests
 
 - ``DiscordGateway/GatewayRequestFailure``
@@ -67,7 +71,6 @@ Browse the public types and operations provided by DiscordGateway.
 ### Gateway Shard
 
 - ``DiscordGateway/GatewayBot``
-- ``DiscordGateway/GatewayReconnectBudgetPolicy``
 - ``DiscordGateway/GatewayShard``
 - ``DiscordGateway/GatewayShardConfiguration``
 - ``DiscordGateway/GatewayShardSnapshot``
