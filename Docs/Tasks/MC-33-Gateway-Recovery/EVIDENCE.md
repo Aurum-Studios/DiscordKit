@@ -48,3 +48,10 @@ Independent review found one P2 curation defect in the first authored reference 
 Measured task output peaked at approximately 3.97 GiB, including the fallback browser, under the accepted 8-GiB cap; at least approximately 26.46 GiB remained free. No unrelated cache/performance worktree was modified. Task-owned generated output is disposable after retaining compact receipts.
 
 Local macOS/offline results do not qualify Linux, hosted CI, live Discord, deployment or recovery of the historical incident. MiniCarson still must select/adopt this exact accepted dependency and complete its own sequential phases and validation. Local-main integration and final review are pending at this documentation checkpoint.
+
+
+## Accepted review and local-main integration
+
+An independent reviewer accepted exact candidate `686d1a8f6eb1042c128bd889145e1d98fa5114ca` with no open findings. The reviewer independently reconciled all 34 module receipts and 2,707 discovered test results, including 154 Gateway tests, and verified all 1,285 executable/test/build input hashes against the validated candidate. The regenerated reference-page curation finding is closed. Only this evidence record changed after the executable/documentation validation checkpoint; its unsuccessful attempts and qualification limits remain applicable.
+
+On November 11 local / November 12 UTC, 2026, the coordinator fast-forwarded clean local `main` from `9493598b56b68f463f6f51dcaa4b7d93830ec5ca` to the accepted candidate. Fresh branch, ancestry, clean status and index-content checks preceded integration; exact main HEAD and clean status were verified afterward. This final documentation-only receipt records the completed operation. No push, hosted CI, release, deployment or live Discord operation occurred. MiniCarson's dependency adoption and remaining MC-33 phases are separate pending work.
