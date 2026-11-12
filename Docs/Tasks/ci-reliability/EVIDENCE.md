@@ -528,5 +528,8 @@ USD 50/month repository Actions budget, stop usage and 75/90/100 alerts. It rema
 unselected/unconfigured by an operator; no settings mutation or paid authorization
 is claimed. Native x64, hosted partial reruns and exact-final-revision certification
 remain Phase 11 work. No push, dispatch, paid job, native compilation or publication
-occurred. A subsequent documentation receipt will bind the actual implementation
-commit and verified Git blobs; current acceptance binds tested file hashes.
+occurred. Implementation commit `c5624f8a726880298092269716f49102ff87e636` contains all 12 tested input
+blobs and 78 retained manifest artifacts. The
+[actual-blob commit receipt](phase-10/commit-receipt.json) verifies committed objects
+and current bytes. This completion follow-up changes documentation only; all
+tested executable/configuration/workflow inputs remain unchanged.

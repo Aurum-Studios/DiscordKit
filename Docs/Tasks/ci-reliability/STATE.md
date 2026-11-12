@@ -33,7 +33,7 @@ hosted cold/hit compatibility and savings remain Phase 11.
 Phase 9 has local shared-documentation helper and real synthetic DocC acceptance at
 `b6fe729d61f7355cd8bcfc9ab4dcd93d020f2467` on `ci/phase-9-documentation`; hosted proof remains Phase 11.
 Phase 10 has local spend-admission and usage-reporting acceptance on
-`ci/phase-10-spend-admission`; its scoped implementation commit receipt is pending.
+`ci/phase-10-spend-admission` at implementation commit `c5624f8a726880298092269716f49102ff87e636`.
 No hosted qualification, paid execution, external configuration change or publication
 is claimed. See [BOOTSTRAP.md](BOOTSTRAP.md) for the zero-paid execution sheet.
 
@@ -49,7 +49,7 @@ is claimed. See [BOOTSTRAP.md](BOOTSTRAP.md) for the zero-paid execution sheet.
 | 7 — Suite groups and resources | Implemented; local helper acceptance; hosted measurements pending Phase 11 | `4db6c5e6181d790fd1cd304220059397a501467b` | [Grouped suites, leaf coverage and resources](phase-7/IMPLEMENTATION.md); [validation](phase-7/validation.json), [review](phase-7/review.json) |
 | 8 — Verified provisioning | Implemented; local helper/signature acceptance; hosted measurements pending Phase 11 | `db705cb6dade43da579d555461f3f36a13586b48` | [Verified distribution reuse and profiles](phase-8/IMPLEMENTATION.md); [validation](phase-8/validation.json), [review](phase-8/review.json), [upstream pins](phase-8/upstream/SOURCES.json) |
 | 9 — Shared documentation inputs | Implemented; local helper and real synthetic DocC acceptance; hosted proof pending Phase 11 | `b6fe729d61f7355cd8bcfc9ab4dcd93d020f2467` | [Shared conversions and trust contracts](phase-9/IMPLEMENTATION.md); [validation](phase-9/validation.json), [review](phase-9/review.json), [real DocC counts/routes](phase-9/checks/real-docc/results.json) |
-| 10 — Spend admission | Implemented; local acceptance; scoped commit receipt pending | Pending scoped commit | [Contracts and execution sheet](phase-10/IMPLEMENTATION.md); [validation](phase-10/validation.json), [review](phase-10/review.json), [operator proposal](phase-10/OPERATOR-BUDGET.md) |
+| 10 — Spend admission | Implemented; local acceptance; hosted qualification and operator settings pending | `c5624f8a726880298092269716f49102ff87e636` | [Contracts and execution sheet](phase-10/IMPLEMENTATION.md); [validation](phase-10/validation.json), [review](phase-10/review.json), [operator proposal](phase-10/OPERATOR-BUDGET.md) |
 | 11 — Qualification and rollout | Not started | Pending | Pending exact-final-revision CI |
 
 ## Phase 1 handoff
@@ -262,7 +262,7 @@ all tested executable/configuration/workflow/test bytes remain identical.
   is Codex `/root` on `ci/phase-7-suite-groups`, sibling `DiscordKit-ci-phase7`,
   base `e47b506c`; its local sheet retains zero paid execution. Phase 8 and 9
   ownership/local execution sheets are recorded in their implementation documents.
-  Phases 10 and 11 paid experiment sheets remain unassigned/unauthorized.
+  Phase 10 local ownership/sheet is recorded below; Phase 11 paid experiments remain unassigned/unauthorized.
 
 These do not prevent beginning local preparation/helper implementation. Missing
 allowances or execution authorization prevent paid scheduling, not source work.
@@ -329,4 +329,7 @@ Operator selection/authorization/read-back of the proposed repository budget is
 pending. No hosted dispatch, paid job, billing change, native compilation or
 publication occurred. Phase 3 native x64 acceptance and Phase 11 real partial-rerun,
 final hosted qualification and measured savings remain open. The implementation
-commit and actual-blob receipt will be recorded after the scoped commit exists.
+commit `c5624f8a726880298092269716f49102ff87e636` contains all 12 tested inputs and 78 retained manifest artifacts.
+The [actual-blob receipt](phase-10/commit-receipt.json) verifies committed objects
+and current bytes. This completion follow-up changes documentation only; tested
+executable/configuration/workflow inputs remain unchanged.
