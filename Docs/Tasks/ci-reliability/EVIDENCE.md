@@ -163,5 +163,9 @@ and local helper validation are recorded below; later phases are not complete.
   duplicate, source mismatch, timestamp, rounding and unknown-price cases pass.
 - Capture/raw-log hashes verify; regenerated cost JSON is byte-identical; local
   Markdown links and `git diff --check` pass. All four original checkout planning
-  files retain their preflight hashes. Commit identity is recorded in
-  [STATE.md](STATE.md) after the implementation commit is created.
+  files retain their preflight hashes. Implementation commit
+  `5808ce32d867622ff6952d0f2057768a8a257f14` contains the tested executable inputs,
+  retained evidence and initial execution sheet. This documentation-only ledger
+  follow-up records that actual commit; the tested input hashes remain unchanged.
+  Phase 0's exit criteria are satisfied. [STATE.md](STATE.md) leaves all later
+  phases not started, and paid jobs/minutes/attempts and allowances remain zero.

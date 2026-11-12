@@ -7,8 +7,9 @@ https://aurum-studios.com
 
 # CI reliability, cancellation repair, and bounded spending
 
-Status: phased implementation plan. Phase 0 implementation passed local validation
-and awaits its commit receipt; later phases remain proposed. See [STATE.md](STATE.md) for the
+Status: phased implementation plan. Phase 0 is complete as local preparation at
+`5808ce32d867622ff6952d0f2057768a8a257f14`; later phases remain proposed.
+See [STATE.md](STATE.md) for the
 commit-backed completion record and [BOOTSTRAP.md](BOOTSTRAP.md) for execution limits.
 Source inspected: `85eac6f3c1d3b17e53596c49e7438efee366c1b3`.
 Failure snapshot: offline certification run `43146954720`, November 12, 2026 UTC.

@@ -9,14 +9,14 @@ https://aurum-studios.com
 
 Plan: [PLAN.md](PLAN.md). Evidence: [EVIDENCE.md](EVIDENCE.md).
 Starting source: `85eac6f3c1d3b17e53596c49e7438efee366c1b3`.
-Phase 0 implementation passed local validation on `ci/phase-0-baseline`;
-the implementation commit and final ledger receipt are pending.
+Phase 0 is complete at implementation commit
+`5808ce32d867622ff6952d0f2057768a8a257f14` on `ci/phase-0-baseline`.
 No native check, paid execution, external configuration change or publication
 is claimed. See [BOOTSTRAP.md](BOOTSTRAP.md) for the zero-paid execution sheet.
 
 | Phase | Status | Implementation commit | Acceptance evidence |
 | --- | --- | --- | --- |
-| 0 — Baseline and initial limits | Local validation passed; commit receipt pending | Pending | [212 helper tests](baseline/validation.json), [retained capture](baseline/CAPTURE.md), [usage baseline](baseline/COST.md), [zero-paid sheet](BOOTSTRAP.md); hash/link/diff checks passed |
+| 0 — Baseline and initial limits | Complete; local preparation only | `5808ce32d867622ff6952d0f2057768a8a257f14` | [212 helper tests](baseline/validation.json), [retained capture](baseline/CAPTURE.md), [usage baseline](baseline/COST.md), [zero-paid sheet](BOOTSTRAP.md); hash/link/diff checks passed |
 | 1 — Process supervision | Not started | Pending | Pending |
 | 2 — Event-hub accounting | Not started | Pending | Pending red/green regression |
 | 3 — Linux hang repair | Not started | Pending | Cause unresolved |
@@ -30,6 +30,11 @@ is claimed. See [BOOTSTRAP.md](BOOTSTRAP.md) for the zero-paid execution sheet.
 | 11 — Qualification and rollout | Not started | Pending | Pending exact-final-revision CI |
 
 ## Next implementation session after Phase 0
+
+The implementation commit contains the tested policy/accounting inputs and all
+baseline receipts. This ledger follow-up changes documentation only; the tested
+input hashes still match the implementation commit. Its completion does not
+advance any later phase or authorize a native experiment.
 
 1. Re-read identity/dirty/worktree/process state and the Phase 0 baseline receipts.
    Retain the isolated implementation branch and keep intermediate commits local.
