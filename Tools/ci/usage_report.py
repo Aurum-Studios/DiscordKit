@@ -17,6 +17,7 @@ from decimal import Decimal, InvalidOperation, ROUND_CEILING
 import math
 import os
 from pathlib import Path
+import sys
 
 import artifact_transfer
 import native_receipts
@@ -341,7 +342,9 @@ def read_receipts(directory):
         walked += 1
         if walked > MAX_RECEIPTS:
             raise ValueError("receipt directory exceeds traversal limit")
+        # Converted symbol payloads are not receipts; conversion receipts live beside the archives.
         directories[:] = sorted(name for name in directories if name not in PRUNED_DIRECTORIES
+                                and not name.endswith(".doccarchive")
                                 and not (Path(current) / name).is_symlink())
         for name in sorted(filenames):
             if not (name.endswith(".receipt.json") or name == "commands.json" or
@@ -453,6 +456,7 @@ def main(argv=None):
         result = 0
     except (OSError, ValueError, KeyError, TypeError) as error:
         report["error"] = str(error)
+        print("Usage report failed: " + str(error), file=sys.stderr)
     finally:
         artifact_transfer.write_json(args.output, report)
         if os.environ.get("GITHUB_STEP_SUMMARY"):

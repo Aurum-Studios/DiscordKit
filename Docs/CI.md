@@ -590,6 +590,12 @@ unknown. Estimates are neither invoices nor exact provider-enforced dollar caps.
 Checkout occurs before refusal, and the source guard cannot cap arbitrarily many
 separately started rejected jobs or share allowance across workflow run IDs.
 
+Local receipt discovery skips generated `.doccarchive` payloads while retaining
+the adjacent documentation-preparation command receipts. Generated symbol trees
+must not consume the bounded receipt traversal allowance. Real receipt traversal,
+file-count, size, symlink and provenance checks remain enforced. Reporting failures
+print their cause in job logs and retain the failed JSON and step summary.
+
 The [operator checklist](Tasks/ci-reliability/phase-10/OPERATOR-BUDGET.md) retains
 the historical budget preparation steps. The subsequent
 [November allocation and provider read-back](Tasks/ci-reliability/november-2026/BUDGET.md)

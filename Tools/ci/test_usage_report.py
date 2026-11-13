@@ -5,7 +5,7 @@
 
 """Offline usage reconciliation and bounded read-only API fixtures."""
 
-from contextlib import redirect_stdout
+from contextlib import redirect_stderr, redirect_stdout
 from datetime import date
 import io
 import json
@@ -218,19 +218,26 @@ class UsageReportTests(unittest.TestCase):
     def test_cli_failure_still_retains_json_and_summary(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
-            with patch.dict(os.environ, {"GITHUB_STEP_SUMMARY": str(root / "summary.md")}):
+            stdout, stderr = io.StringIO(), io.StringIO()
+            with patch.dict(os.environ, {"GITHUB_STEP_SUMMARY": str(root / "summary.md")}), \
+                    redirect_stdout(stdout), redirect_stderr(stderr):
                 result = usage_report.main(["--plan", str(root / "missing.json"), "--output", str(root / "report.json")])
             self.assertEqual(result, 1)
-            self.assertEqual(json.loads((root / "report.json").read_text())["status"], "failed")
-            self.assertIn("failed", (root / "summary.md").read_text())
+            report = json.loads((root / "report.json").read_text())
+            self.assertEqual(report["status"], "failed")
+            self.assertEqual(stdout.getvalue(), "")
+            self.assertEqual(stderr.getvalue(), "Usage report failed: " + report["error"] + "\n")
+            self.assertIn(report["error"], (root / "summary.md").read_text())
 
     def test_cli_rejects_incomplete_offline_snapshot(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             (root / "plan.json").write_text(json.dumps(self.plan))
             (root / "jobs.json").write_text(json.dumps({"total_count": 2, "jobs": [self.job()]}))
-            self.assertEqual(usage_report.main(["--plan", str(root / "plan.json"), "--output", str(root / "report.json"),
-                                               "--jobs", str(root / "jobs.json")]), 1)
+            with redirect_stderr(io.StringIO()) as stderr:
+                self.assertEqual(usage_report.main(["--plan", str(root / "plan.json"), "--output", str(root / "report.json"),
+                                                   "--jobs", str(root / "jobs.json")]), 1)
+            self.assertEqual(stderr.getvalue(), "Usage report failed: incomplete offline jobs snapshot\n")
 
     def test_receipt_loader_ignores_nonreceipts_and_rejects_symlinks(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -252,6 +259,64 @@ class UsageReportTests(unittest.TestCase):
             receipt = {"status": "passed", "timeoutCategory": None, "identity": {"executionID": "command"}}
             (root / "commands.json").write_text(json.dumps({"commands": [{"execution": receipt}]}))
             self.assertEqual(usage_report.read_receipts(root)[0]["receipt"], receipt)
+
+    def test_receipt_walk_prunes_generated_docc_but_keeps_sibling_preparation_receipts(self):
+        """Generated symbol directories cannot consume the bounded receipt traversal allowance."""
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            documentation = root / "documentation"
+            for module in ("DiscordCore", "DiscordKitLibrary"):
+                data = documentation / (module + ".doccarchive") / "data/documentation"
+                for index in range(10):
+                    symbol = data / str(index)
+                    symbol.mkdir(parents=True)
+                    (symbol / "commands.json").write_text("generated content is not a command receipt")
+            preparation = root / "documentation-preparation"
+            preparation.mkdir()
+            receipt = {"status": "passed", "timeoutCategory": None,
+                       "identity": {"executionID": "convert-docc"}}
+            (preparation / "commands.json").write_text(json.dumps({"commands": [{"execution": receipt}]}))
+            (preparation / "convert-docc.receipt.json").write_text(json.dumps(receipt))
+            with patch.object(usage_report, "MAX_RECEIPTS", 3):
+                rows = usage_report.read_receipts(root)
+            self.assertEqual([row["receipt"] for row in rows], [receipt, receipt])
+            self.assertEqual({row["receiptFile"] for row in rows},
+                             {"documentation-preparation/commands.json",
+                              "documentation-preparation/convert-docc.receipt.json"})
+
+    def test_receipt_walk_still_rejects_oversized_receipt_trees(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            for index in range(3):
+                (root / str(index)).mkdir()
+            with patch.object(usage_report, "MAX_RECEIPTS", 3), \
+                    self.assertRaisesRegex(ValueError, "traversal limit"):
+                usage_report.read_receipts(root)
+            for index in range(4):
+                (root / (str(index) + ".receipt.json")).write_text('{"timeoutCategory":null}')
+            with patch.object(usage_report, "MAX_RECEIPTS", 3), \
+                    self.assertRaisesRegex(ValueError, "file limit"):
+                usage_report.read_receipts(root)
+
+    def test_cli_receipt_traversal_failure_is_logged_and_retained(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / "plan.json").write_text(json.dumps(self.plan))
+            receipts = root / "receipts"
+            (receipts / "one/two").mkdir(parents=True)
+            stdout, stderr = io.StringIO(), io.StringIO()
+            with patch.object(usage_report, "MAX_RECEIPTS", 2), \
+                    patch.dict(os.environ, {"GITHUB_STEP_SUMMARY": str(root / "summary.md")}), \
+                    redirect_stdout(stdout), redirect_stderr(stderr):
+                result = usage_report.main(["--plan", str(root / "plan.json"), "--output", str(root / "report.json"),
+                                            "--receipts", str(receipts)])
+            report = json.loads((root / "report.json").read_text())
+            self.assertEqual(result, 1)
+            self.assertEqual(report["status"], "failed")
+            self.assertEqual(report["error"], "receipt directory exceeds traversal limit")
+            self.assertEqual(stdout.getvalue(), "")
+            self.assertEqual(stderr.getvalue(), "Usage report failed: " + report["error"] + "\n")
+            self.assertIn(report["error"], (root / "summary.md").read_text())
 
     def test_actual_engine_plan_can_be_reported_offline(self):
         import spend_admission
