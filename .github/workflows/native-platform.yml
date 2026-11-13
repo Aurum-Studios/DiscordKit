@@ -1022,7 +1022,8 @@ jobs:
   package:
     name: Export validated platform source
     needs: coverage
-    if: inputs.mode == 'full'
+    # Platform-specific skipped ancestors must not suppress a successful coverage barrier.
+    if: ${{ !cancelled() && inputs.mode == 'full' && needs.coverage.result == 'success' }}
     runs-on:
       group: ${{ inputs.runner-group }}
     timeout-minutes: 35

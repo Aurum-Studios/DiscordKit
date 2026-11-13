@@ -134,6 +134,14 @@ manifest; release discovery requires that successful step too. Scoped runs use
 **Preflight scope passed** or **Diagnostic scope passed**, including failure or
 skip paths, and their scope-specific concurrency groups cannot supersede or
 cancel full certification. Full runs still cancel superseded full runs.
+Source export and documentation consumers explicitly check cancellation and
+require successful direct prerequisite barriers. This avoids GitHub's default
+`success()` check propagating intentionally skipped platform-specific ancestors
+through a successful barrier. See the documented
+[status conditions](https://docs.github.com/en/actions/reference/workflows-and-actions/expressions#status-check-functions)
+and [dependency rules](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#jobsjob_idneeds).
+The final coverage validator still rejects missing or skipped source exports;
+documentation publication retains its explicit request and default-branch gates.
 Real GitHub context, branch-protection and fresh-runner/rerun acceptance remain
 Phase 11 work before rollout.
 

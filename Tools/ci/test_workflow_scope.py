@@ -7,6 +7,7 @@
 
 from contextlib import redirect_stdout, redirect_stderr
 import io
+from itertools import product
 import json
 import os
 import re
@@ -203,6 +204,33 @@ class WorkflowGraphTests(unittest.TestCase):
     def job(self,text,name):
         return re.split(r'\n  [A-Za-z][\w-]*:\n', text.split('\n  '+name+':\n', 1)[1], maxsplit=1)[0]
 
+    def evaluate_job_condition(self, workflow, name, context, *, cancelled, ancestor):
+        """Evaluate authored boolean gates with GitHub's implicit success() default."""
+        block = self.job(workflow, name)
+        condition = re.search(r'(?m)^    if: (.+)$', block)[1]
+        if condition == '>-':
+            condition = ' '.join(line.strip() for line in re.search(
+                r'(?m)^    if: >-\n((?:      [^\n]*\n)+)', block)[1].splitlines())
+        condition = condition.removeprefix('${{').removesuffix('}}').strip()
+        if not re.search(r'\b(?:success|failure|cancelled|always)\s*\(', condition):
+            condition = 'success() && (' + condition + ')'
+        condition = condition.replace('&&', ' and ').replace('||', ' or ')
+        condition = re.sub(r'!(?!=)', ' not ', condition).strip()
+        condition = re.sub(r'\b(?:inputs|needs|github)(?:\.[A-Za-z_][\w-]*)+',
+                           lambda match: 'lookup(' + repr(match[0]) + ')', condition)
+
+        def lookup(path):
+            value = context
+            for key in path.split('.'):
+                value = value[key]
+            return value
+
+        functions = {'lookup': lookup, 'cancelled': lambda: cancelled,
+                     'success': lambda: not cancelled and ancestor == 'success'
+                        and all(row['result'] == 'success' for row in context['needs'].values()),
+                     'always': lambda: True, 'format': lambda template, *args: template.format(*args)}
+        return eval(condition, {'__builtins__': {}}, functions)
+
     def test_independent_platforms_wait_for_shared_checks(self):
         for job in ('native-linux','native-macos'):
             block=self.job(self.ci,job)
@@ -218,7 +246,63 @@ class WorkflowGraphTests(unittest.TestCase):
         self.assertIn('components-json: \'["load"]\'',self.job(self.native,'canary'))
         self.assertIn('--component load --suite load',self.job(self.native,'canary'))
         self.assertIn('needs: coverage',self.job(self.native,'package'))
-        self.assertIn("if: inputs.mode == 'full'",self.job(self.native,'package'))
+
+    def test_source_export_runs_only_after_full_coverage_despite_optional_skipped_ancestors(self):
+        """Evaluate the authored condition, including GitHub's implicit success() rule."""
+        for mode, coverage_status, cancelled, ancestor, publication in product(
+                ('full', 'diagnostic', 'preflight'), ('success', 'failure', 'skipped', 'cancelled'),
+                (False, True), ('success', 'skipped'), (False, True)):
+            with self.subTest(mode=mode, coverage=coverage_status, cancelled=cancelled,
+                              optional_ancestor=ancestor, publication=publication):
+                context = {'inputs': {'mode': mode, 'publication': publication},
+                           'needs': {'coverage': {'result': coverage_status}}}
+                allowed = self.evaluate_job_condition(self.native, 'package', context,
+                                                      cancelled=cancelled, ancestor=ancestor)
+                self.assertEqual(allowed, mode == 'full' and coverage_status == 'success' and not cancelled)
+
+    def test_documentation_site_requires_full_success_with_or_without_publication(self):
+        for mode, scope_result, native_result, cancelled, ancestor, publication in product(
+                ('full', 'diagnostic', 'preflight'), ('success', 'failure', 'skipped', 'cancelled'),
+                ('success', 'failure', 'skipped', 'cancelled'), (False, True),
+                ('success', 'skipped'), (False, True)):
+            with self.subTest(mode=mode, scope=scope_result, native=native_result,
+                              cancelled=cancelled, ancestor=ancestor, publication=publication):
+                context = {'inputs': {'publish-documentation': publication},
+                           'needs': {'scope': {'result': scope_result, 'outputs': {'mode': mode}},
+                                     'native-macos': {'result': native_result}}}
+                allowed = self.evaluate_job_condition(self.ci, 'documentation-site', context,
+                                                      cancelled=cancelled, ancestor=ancestor)
+                self.assertEqual(allowed, mode == 'full' and scope_result == native_result == 'success'
+                                 and not cancelled)
+
+    def test_publication_retains_explicit_authorization_and_successful_direct_needs(self):
+        def context(mode='full', publication=True, event='workflow_dispatch',
+                    repository='Aurum-Studios/DiscordKit', ref='refs/heads/main'):
+            return {'inputs': {'publish-documentation': publication},
+                    'needs': {'scope': {'result': 'success', 'outputs': {'mode': mode}},
+                              'complete': {'result': 'success'}, 'documentation-site': {'result': 'success'}},
+                    'github': {'event_name': event, 'repository': repository, 'ref': ref,
+                               'event': {'repository': {'default_branch': 'main'}}}}
+
+        for mode, publication, event, repository, ref, cancelled, ancestor in product(
+                ('full', 'diagnostic', 'preflight'), (False, True),
+                ('workflow_dispatch', 'push', 'pull_request', 'workflow_call'),
+                ('Aurum-Studios/DiscordKit', 'other/DiscordKit'),
+                ('refs/heads/main', 'refs/heads/other'), (False, True), ('success', 'skipped')):
+            with self.subTest(mode=mode, publication=publication, event=event, repository=repository,
+                              ref=ref, cancelled=cancelled, ancestor=ancestor):
+                allowed = self.evaluate_job_condition(self.ci, 'publish-documentation',
+                    context(mode, publication, event, repository, ref), cancelled=cancelled, ancestor=ancestor)
+                self.assertEqual(allowed, mode == 'full' and publication and not cancelled
+                                 and event in ('workflow_dispatch', 'push')
+                                 and repository == 'Aurum-Studios/DiscordKit' and ref == 'refs/heads/main')
+        for dependency, result in product(('scope', 'complete', 'documentation-site'),
+                                          ('failure', 'skipped', 'cancelled')):
+            with self.subTest(dependency=dependency, result=result):
+                changed = context()
+                changed['needs'][dependency]['result'] = result
+                self.assertFalse(self.evaluate_job_condition(self.ci, 'publish-documentation', changed,
+                                                             cancelled=False, ancestor='skipped'))
 
     def test_component_waves_allow_root_runtime_and_core_audits_before_remaining_builds(self):
         for job in ('tests-root', 'audit', 'public-api'):
@@ -250,7 +334,7 @@ class WorkflowGraphTests(unittest.TestCase):
         self.assertIn('-f mode=full', docs)
         site = self.job(self.ci, 'documentation-site')
         self.assertIn('needs: [scope, native-macos]', site)
-        self.assertIn("if: needs.scope.outputs.mode == 'full'", site)
+        self.assertIn("needs.scope.outputs.mode == 'full'", site)
         self.assertIn('documentation_workflow.py prepare-site', site)
         self.assertNotIn('build_docc.py', site)
         self.assertNotIn('upload-pages-artifact', site)
