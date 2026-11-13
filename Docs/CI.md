@@ -139,6 +139,12 @@ Phase 11 work before rollout.
 
 [The shared setup action](../.github/actions/setup-native/action.yml) installs
 Swift 6.4.1 and Python 3.12 with explicit `build` or `runtime` prerequisites.
+Linux uses Ubuntu's packaged Python 3.12, exposed through dedicated `python` and
+`python3` aliases. Hosted Python setup adds its tool-cache library directory to
+`LD_LIBRARY_PATH`, which can redirect LLDB's Python dependency to an unowned
+library and fail the native ABI ownership check. Native Linux jobs therefore
+skip that setup action; the observer still checks the actual inherited loader
+environment and rejects unowned dependencies, listing up to five offending paths.
 Both profiles retain the full compiler and SwiftPM manifest linker dependencies;
 only compiler/build jobs add the remaining development headers. Artifact and browser
 helpers provision Node 24 where needed. Every caller caps the whole setup step at

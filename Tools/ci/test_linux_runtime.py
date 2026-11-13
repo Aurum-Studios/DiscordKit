@@ -170,8 +170,14 @@ class RuntimeClosureTests(unittest.TestCase):
     def test_package_owner_or_common_crt_gap_fails_closed(self):
         with tempfile.TemporaryDirectory() as directory:
             path = elf(Path(directory) / 'library')
-            with self.assertRaisesRegex(ValueError, 'package owner'):
+            with self.assertRaisesRegex(ValueError, 'package owner') as failure:
                 runtime.package_facts({path}, runtime.Budget(), run=lambda *args, **kw: '')
+            self.assertIn(str(path), str(failure.exception))
+            paths = {elf(Path(directory) / f'library-{index}') for index in range(7)}
+            with self.assertRaises(ValueError) as failure:
+                runtime.package_facts(paths, runtime.Budget(), run=lambda *args, **kw: '')
+            self.assertTrue(str(failure.exception).endswith(
+                ', '.join(sorted(map(str, paths))[:5]) + ' (+2 more)'))
             with self.assertRaisesRegex(ValueError, 'unavailable'):
                 runtime.package_facts(set(), runtime.Budget(), run=lambda *args, **kw: '')
         self.assertEqual(runtime.package_aliases(Path('/usr/lib/x86_64-linux-gnu/libc.so.6')),

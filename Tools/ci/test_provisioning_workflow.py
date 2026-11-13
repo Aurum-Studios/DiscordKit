@@ -25,28 +25,38 @@ def shell_blocks():
 
 class ProvisioningWorkflowTests(unittest.TestCase):
     def execute_profile(self, profile):
-        """Run the real bash bodies using a recording Python shim, never sudo/apt."""
+        """Run the real bash bodies with only python3 usable before apt, never sudo/apt."""
         with tempfile.TemporaryDirectory(prefix='provisioning shell $ ') as temporary:
             directory = Path(temporary)
             commands = directory / 'commands.jsonl'
-            shim = directory / 'python'
+            shim = directory / 'python3'
             shim.write_text('#!' + sys.executable + '\nimport json, os, sys\n'
                             'with open(os.environ["RECORDED_COMMANDS"], "a") as out:\n'
                             '    out.write(json.dumps(sys.argv[1:]) + "\\n")\n')
             shim.chmod(0o755)
-            (directory / 'python3').symlink_to(shim)
+            unavailable = directory / 'python'
+            unavailable.write_text('#!/bin/sh\necho "bare python is unavailable before apt" >&2\nexit 97\n')
+            unavailable.chmod(0o755)
+            path_export = directory / 'path'
             environment = {**os.environ, 'PATH': str(directory) + os.pathsep + os.environ['PATH'],
                            'RECORDED_COMMANDS': str(commands), 'NATIVE_PROFILE': profile,
                            'RUNNER_TEMP': str(directory), 'GITHUB_OUTPUT': str(directory / 'output'),
-                           'GITHUB_ENV': str(directory / 'environment')}
+                           'GITHUB_ENV': str(directory / 'environment'),
+                           'GITHUB_PATH': str(path_export)}
             results = [subprocess.run(['bash', '-e', '-c', block], env=environment,
                                       capture_output=True, text=True, timeout=10)
                        for block in shell_blocks()[:2]]
             rows = [json.loads(line) for line in commands.read_text().splitlines()] if commands.exists() else []
-            return results, rows
+            aliases = directory / 'native-python/bin'
+            exported = path_export.read_text().splitlines() if path_export.exists() else []
+            links = {name: os.readlink(aliases / name) for name in ('python', 'python3')
+                     if (aliases / name).is_symlink()}
+            names = sorted(path.name for path in aliases.iterdir()) if aliases.is_dir() else []
+            return results, rows, {'directory': str(aliases), 'exported': exported,
+                                   'links': links, 'names': names}
 
     def test_prepare_is_one_literal_command_and_apt_shares_its_deadline(self):
-        results, rows = self.execute_profile('build')
+        results, rows, _ = self.execute_profile('build')
         self.assertTrue(all(result.returncode == 0 for result in results), [result.stderr for result in results])
         self.assertEqual(len(rows), 3)
         self.assertEqual(rows[0][:4], ['Tools/ci/native_provisioning.py', 'prepare', '--platform', 'auto'])
@@ -61,11 +71,12 @@ class ProvisioningWorkflowTests(unittest.TestCase):
             self.assertEqual(command[command.index('--') + 1:command.index('--') + 3], ['sudo', 'apt-get'])
 
     def test_runtime_keeps_manifest_compiler_dependencies_and_omits_build_headers(self):
-        results, runtime = self.execute_profile('runtime')
-        _, build = self.execute_profile('build')
+        results, runtime, _ = self.execute_profile('runtime')
+        _, build, _ = self.execute_profile('build')
         self.assertTrue(all(result.returncode == 0 for result in results))
         runtime, build = runtime[-1], build[-1]
-        for dependency in ('libc6-dev', 'libgcc-13-dev', 'libstdc++-13-dev', 'linux-libc-dev', 'libpython3.12t64'):
+        for dependency in ('libc6-dev', 'libgcc-13-dev', 'libstdc++-13-dev', 'linux-libc-dev',
+                           'python3.12', 'libpython3.12t64'):
             self.assertIn(dependency, runtime)
             self.assertIn(dependency, build)
         for dependency in ('clang', 'libcurl4-openssl-dev', 'libxml2-dev', 'libz3-dev', 'pkg-config'):
@@ -73,10 +84,27 @@ class ProvisioningWorkflowTests(unittest.TestCase):
             self.assertIn(dependency, build)
         self.assertNotIn('nodejs', build)
 
+    def test_linux_exports_packaged_python_aliases_without_changing_other_tool_paths(self):
+        """Both real profile bodies bootstrap without python and export only interpreter aliases."""
+        action = ACTION.read_text()
+        self.assertRegex(action, r"uses: actions/setup-python@v6\n      if: runner.os != 'Linux'\n")
+        self.assertNotRegex(action, r'(?m)^\s*(?:export\s+)?LD_LIBRARY_PATH=')
+        for profile in ('build', 'runtime'):
+            with self.subTest(profile=profile):
+                results, _, aliases = self.execute_profile(profile)
+                self.assertTrue(all(result.returncode == 0 for result in results),
+                                [result.stderr for result in results])
+                self.assertEqual(aliases['exported'], [aliases['directory']])
+                self.assertEqual(aliases['links'], {'python': '/usr/bin/python3.12',
+                                                   'python3': '/usr/bin/python3.12'})
+                self.assertEqual(aliases['names'], ['python', 'python3'])
+
     def test_invalid_profile_stops_before_preparation_or_apt(self):
-        results, rows = self.execute_profile('invalid')
+        results, rows, aliases = self.execute_profile('invalid')
         self.assertTrue(all(result.returncode != 0 for result in results))
         self.assertEqual(rows, [])
+        self.assertEqual(aliases['exported'], [])
+        self.assertEqual(aliases['links'], {})
 
     def test_every_native_caller_has_an_explicit_profile_and_ten_minute_cap(self):
         callers = 0

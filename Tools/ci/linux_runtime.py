@@ -252,8 +252,12 @@ def package_facts(paths, budget, *, run=command):
                 if not PACKAGE.fullmatch(package):
                     raise ValueError('invalid runtime package owner')
                 owners[path].add(package)
-        if any(not packages for packages in owners.values()):
-            raise ValueError('native runtime library or tool has no installed package owner')
+        missing = sorted(str(path) for path, packages in owners.items() if not packages)
+        if missing:
+            detail = ', '.join(missing[:5])
+            if len(missing) > 5:
+                detail += f' (+{len(missing) - 5} more)'
+            raise ValueError('native runtime library or tool has no installed package owner: ' + detail)
     selected = sorted(set(CRT_PACKAGES) | {name for packages in owners.values() for name in packages})
     text = run(['dpkg-query', '--show', '--showformat=${binary:Package}\t${Version}\t${db:Status-Status}\n',
                 '--', *selected], budget)
