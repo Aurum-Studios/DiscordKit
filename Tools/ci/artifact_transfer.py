@@ -53,6 +53,15 @@ class TransferError(ValueError):
         self.status = status
 
 
+def network_error(message, error):
+    """Classify transport failures without retaining sensitive exception text."""
+    code = getattr(error, "errno", None)
+    code = code if type(code) is int else None
+    transient = not isinstance(error, ssl.SSLError) and (
+        isinstance(error, (ConnectionError, TimeoutError, socket.timeout)) or code in TRANSIENT_ERRNO)
+    return TransferError(f"{message} ({type(error).__name__}, errno={code})", transient=transient)
+
+
 def sha256_file(path):
     digest = hashlib.sha256()
     with Path(path).open("rb") as stream:
@@ -218,16 +227,11 @@ class GitHubArtifactClient:
                         return data
                 raise TransferError("too many artifact storage redirects")
         except urllib.error.URLError as error:
-            reason = error.reason
-            transient = isinstance(reason, (TimeoutError, socket.timeout)) or getattr(reason, "errno", None) in TRANSIENT_ERRNO
-            if isinstance(reason, ssl.SSLError):
-                transient = False
-            raise TransferError("artifact network transport failed", transient=transient) from None
-        except (TimeoutError, socket.timeout):
-            raise TransferError("artifact network timeout", transient=True) from None
+            raise network_error("artifact network transport failed", error.reason) from None
+        except (TimeoutError, socket.timeout) as error:
+            raise network_error("artifact network timeout", error) from None
         except OSError as error:
-            raise TransferError("artifact network read failed", transient=(
-                not isinstance(error, ssl.SSLError) and error.errno in TRANSIENT_ERRNO)) from None
+            raise network_error("artifact network read failed", error) from None
 
     def _bounded(self, operation, description):
         if self.budget is not None:

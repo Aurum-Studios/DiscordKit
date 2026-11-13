@@ -254,7 +254,7 @@ class DocumentationSelectionTests(unittest.TestCase):
         artifact = {"id": 100, "expired": False,
                     "name": f"documentation-inputs-{'a' * 40}-42-{selected_attempt}-t1", "digest": "sha256:" + "f" * 64,
                     "workflow_run": {"id": 42, "repository_id": 7, "head_repository_id": 7, "head_sha": "a" * 40}}
-        job = {"id": 200, "run_id": 42, "head_sha": "a" * 40, "name": "macOS ARM64 / " + inputs.PRODUCER_JOB_NAME,
+        job = {"id": 200, "run_id": 42, "head_sha": "a" * 40, "name": inputs.PRODUCER_JOB_NAME,
                "status": "completed", "conclusion": "success"}
         client.get_run.return_value = run
         client.get_artifact.return_value = artifact
@@ -279,6 +279,38 @@ class DocumentationSelectionTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "name and producer attempt"):
                 inputs.restore(archive, repository / "edited", source=SOURCE,
                                execution=github_execution("2", "documentation-site"), selection=selection)
+
+    def test_linux_skipped_homonym_does_not_ambiguate_macos_producer(self):
+        client, _, _, job = self.client(selected_attempt="2")
+        linux = {**job, "id": 201, "name": "Linux x64 / Public API and DocC / macOS ARM",
+                 "conclusion": "skipped"}
+        self.assertEqual(job["name"], "macOS ARM64 / Public API and DocC / macOS ARM")
+        client.list_jobs.side_effect = lambda attempt: [linux, job] if attempt == "2" else []
+        self.assertEqual(self.select(client)["producerAttempt"], "2")
+
+    def test_later_linux_skip_does_not_supersede_earlier_macos_success(self):
+        client, _, _, job = self.client()
+        linux = {**job, "id": 201, "name": "Linux x64 / Public API and DocC / macOS ARM",
+                 "conclusion": "skipped"}
+        client.list_jobs.side_effect = lambda attempt: [job, linux] if attempt == "1" else [linux]
+        self.assertEqual(self.select(client)["producerAttempt"], "1")
+
+    def test_only_exact_macos_hierarchy_can_certify_documentation_producer(self):
+        for name in ("Public API and DocC / macOS ARM", "Linux x64 / Public API and DocC / macOS ARM",
+                     "Other / macOS ARM64 / Public API and DocC / macOS ARM"):
+            with self.subTest(name=name):
+                client, _, _, job = self.client()
+                job["name"] = name
+                with self.assertRaisesRegex(ValueError, "missing or superseded"):
+                    self.select(client)
+
+    def test_duplicate_macos_producers_remain_ambiguous_with_linux_skip(self):
+        client, _, _, job = self.client()
+        linux = {**job, "id": 201, "name": "Linux x64 / Public API and DocC / macOS ARM",
+                 "conclusion": "skipped"}
+        client.list_jobs.side_effect = lambda attempt: [linux, job, {**job, "id": 202}]
+        with self.assertRaisesRegex(ValueError, "ambiguous documentation producer"):
+            self.select(client)
 
     def test_newer_failed_cancelled_running_or_successful_replacements_supersede_old_success(self):
         for status, conclusion in (("completed", "failure"), ("completed", "cancelled"),

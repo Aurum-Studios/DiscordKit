@@ -41,7 +41,7 @@ MAX_METADATA_BYTES = 16 * 1024 * 1024
 MAX_FILES = 200000
 MAX_BYTES = 16 * 1024 * 1024 * 1024
 PREPARE_SECONDS = 2400
-PRODUCER_JOB_NAME = "Public API and DocC / macOS ARM"
+PRODUCER_JOB_NAME = "macOS ARM64 / Public API and DocC / macOS ARM"
 METADATA_KEYS = {"formatVersion", "status", "component", "package", "source", "execution",
                  "modules", "files", "payloadSHA256"}
 SOURCE_KEYS = {"commit", "sourceSHA256", "dependencyPinsSHA256"}
@@ -250,8 +250,9 @@ def select_artifact(client, execution, source, artifact_id, expected_digest):
         if (not isinstance(jobs, list) or any(not isinstance(job, dict) or
                 ("run_attempt" in job and str(job["run_attempt"]) != str(attempt)) for job in jobs)):
             raise ValueError("invalid attempt-specific documentation job listing")
-        matches = [job for job in jobs if job.get("name") == PRODUCER_JOB_NAME
-                   or str(job.get("name", "")).endswith(" / " + PRODUCER_JOB_NAME)]
+        # The reusable Linux call also exposes this job name, intentionally
+        # skipped. Only the exact macOS call can produce the sealed inputs.
+        matches = [job for job in jobs if job.get("name") == PRODUCER_JOB_NAME]
         if len(matches) > 1:
             raise ValueError("ambiguous documentation producer job")
         if matches:

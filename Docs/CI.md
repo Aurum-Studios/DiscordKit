@@ -223,7 +223,11 @@ remains Phase 11 work; local helper evidence is recorded in the
 
 [The transfer helper](../Tools/ci/artifact_transfer.py) retries classified transient
 transport errors at most three times, with 120 seconds per attempt and 420 seconds
-per aggregate operation. It uploads unchanged prepared bytes to immutable candidate
+per aggregate operation. Known connection failures, including a remote disconnect
+without an errno, are transient; TLS errors and unclassified OS errors remain
+permanent. Failure diagnostics retain the exception class and numeric errno,
+without exception text that could contain credentials or signed URLs.
+It uploads unchanged prepared bytes to immutable candidate
 names, verifies final API identity/digest and never invokes tests or compilation.
 Builds share one transfer budget for compiled payload plus producer sidecar, then
 retain diagnostics through a separate bounded upload. Evidence failure fails its
@@ -475,7 +479,9 @@ commit, tracked content, dependency pins, workflow/event/run/attempt, component,
 strict conversion report, module inventory and every payload file hash. All three
 inputs are uploaded together through bounded immutable transport. The read-only
 site job authenticates the original successful producer by API and immutable
-artifact ID/digest, verifies safe complete payloads, then merges and transforms
+artifact ID/digest. It selects the exact macOS job hierarchy; the skipped Linux
+job with the same inner name cannot select or supersede a producer. It verifies
+safe complete payloads, then merges and transforms
 those archives without compiling, emitting graphs, curating or converting again.
 An earlier successful same-run conversion may survive a partial rerun after fresh
 selection; a newer failed replacement prevents fallback. Inputs expire after two

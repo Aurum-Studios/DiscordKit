@@ -10,6 +10,7 @@ from contextlib import redirect_stdout
 from datetime import datetime, timedelta, timezone
 import base64
 import hashlib
+import http.client
 import http.server
 import io
 import json
@@ -17,6 +18,7 @@ import os
 from pathlib import Path
 import signal
 import shutil
+import ssl
 import stat
 import subprocess
 import sys
@@ -491,6 +493,61 @@ print('nested cleanup passed')
             response.read.side_effect = [ConnectionResetError(54, "reset"), b'{"id":10}']
             self.assertEqual(client.get_run(), {"id": 10})
             self.assertEqual(opener.return_value.open.call_count, 2)
+
+    def test_connection_errors_without_errno_retry_then_succeed(self):
+        for wrapped in (False, True):
+            for error_type in (http.client.RemoteDisconnected, ConnectionAbortedError, ConnectionRefusedError,
+                               ConnectionResetError, BrokenPipeError):
+                with self.subTest(wrapped=wrapped, error=error_type.__name__):
+                    client = transfer.GitHubArtifactClient("owner/repo", "secret-token", "10")
+                    error = error_type("https://signed.invalid/?token=secret-token")
+                    self.assertIsNone(error.errno)
+                    if wrapped:
+                        error = urllib.error.URLError(error)
+                    with patch("urllib.request.build_opener") as opener:
+                        response = opener.return_value.open.return_value
+                        response.read.return_value = b'{"id":10}'
+                        opener.return_value.open.side_effect = [error, response]
+                        self.assertEqual(client.get_run(), {"id": 10})
+                        self.assertEqual(opener.return_value.open.call_count, 2)
+                    self.assertEqual([item["result"] for item in client.attempts], ["failed", "verified"])
+                    self.assertEqual(client.attempts[0]["classification"], "transient")
+                    self.assertIn(f"{error_type.__name__}, errno=None", client.attempts[0]["error"])
+                    self.assertNotIn("secret-token", json.dumps(client.attempts))
+                    self.assertNotIn("signed.invalid", json.dumps(client.attempts))
+
+    def test_remote_disconnect_exhausts_exactly_three_attempts(self):
+        client = transfer.GitHubArtifactClient("owner/repo", "secret-token", "10")
+        with patch("urllib.request.build_opener") as opener:
+            opener.return_value.open.side_effect = http.client.RemoteDisconnected("secret-token")
+            with self.assertRaisesRegex(transfer.TransferError, "RemoteDisconnected, errno=None") as failure:
+                client.get_run()
+            self.assertEqual(opener.return_value.open.call_count, transfer.MAX_ATTEMPTS)
+        self.assertTrue(failure.exception.transient)
+        self.assertEqual(len(client.attempts), transfer.MAX_ATTEMPTS)
+        self.assertTrue(all(item["classification"] == "transient" for item in client.attempts))
+        self.assertNotIn("secret-token", str(failure.exception))
+
+    def test_ssl_and_unknown_os_errors_remain_permanent_with_safe_diagnostics(self):
+        for wrapped in (False, True):
+            for error in (ssl.SSLError(32, "https://signed.invalid/?token=secret-token"),
+                          OSError(5, "Authorization: Bearer secret-token"),
+                          OSError("secret-token")):
+                with self.subTest(wrapped=wrapped, error=type(error).__name__, errno=error.errno):
+                    client = transfer.GitHubArtifactClient("owner/repo", "secret-token", "10")
+                    raised = urllib.error.URLError(error) if wrapped else error
+                    with patch("urllib.request.build_opener") as opener:
+                        opener.return_value.open.side_effect = raised
+                        with self.assertRaises(transfer.TransferError) as failure:
+                            client.get_run()
+                        self.assertEqual(opener.return_value.open.call_count, 1)
+                    self.assertFalse(failure.exception.transient)
+                    self.assertEqual(len(client.attempts), 1)
+                    self.assertEqual(client.attempts[0]["classification"], "permanent")
+                    self.assertIn(f"{type(error).__name__}, errno={error.errno}", str(failure.exception))
+                    for sensitive in ("secret-token", "signed.invalid", "Authorization", "Bearer"):
+                        self.assertNotIn(sensitive, str(failure.exception))
+                        self.assertNotIn(sensitive, json.dumps(client.attempts))
 
     @unittest.skipUnless(shutil.which("node"), "Node is required for the JavaScript launcher")
     def test_javascript_launcher_passes_runtime_credentials_and_literal_arguments(self):
