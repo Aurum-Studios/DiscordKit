@@ -141,7 +141,8 @@ public struct VoiceGatewaySessionState: Sendable, CustomStringConvertible, Custo
         return result
     }
 
-    /// Selects an implemented current transport mode after injected UDP discovery completes.
+    /// Selects an implemented current transport mode once after injected UDP discovery completes.
+    /// Successful resume preserves this selection and must not send another opcode 1.
     /// - Parameters:
     ///   - address: Nonempty public IP discovered by the UDP owner; at most 255 UTF-8 bytes.
     ///     Syntax/authenticity validation is the injected transport owner's responsibility.
@@ -177,7 +178,8 @@ public struct VoiceGatewaySessionState: Sendable, CustomStringConvertible, Custo
     }
 
     /// Detects an owner's elapsed ACK deadline without reading a real clock or sleeping.
-    /// - Throws: `missedHeartbeatACK` and enters reconnecting when a nonce remains pending;
+    /// - Throws: `missedHeartbeatACK` when a nonce remains pending, applying `connectionLost()`;
+    ///   an incomplete selected handshake closes, while an established session can reconnect.
     ///   returns unchanged when no heartbeat is outstanding. The caller decides retry limits.
     public mutating func heartbeatDeadlineElapsed() throws {
         guard pendingHeartbeatNonce != nil else { return }
@@ -186,11 +188,15 @@ public struct VoiceGatewaySessionState: Sendable, CustomStringConvertible, Custo
     }
 
     /// Suspends media and retains handshake state/sequence for an explicitly resumable socket loss.
+    /// A loss after Select Protocol but before Session Description closes this reducer: the
+    /// incomplete handshake requires a fresh join rather than risking repeated selection.
     /// Repeated loss notifications preserve the original phase. ACK debt and HELLO interval are
-    /// cleared; the next HELLO requests Resume. A closed reducer remains closed. The owner must
+    /// cleared; the next HELLO requests Resume only for an established session. A closed reducer
+    /// remains closed. The owner must
     /// discard this value if the peer invalidated its session or the adapter cannot retain resume.
     public mutating func connectionLost() {
         guard phase != .closed, phase != .reconnecting else { return }
+        guard phase != .awaitingSessionDescription else { close(); return }
         if phase != .resuming { retainedPhase = phase }
         phase = .reconnecting
         pendingHeartbeatNonce = nil; heartbeatIntervalMilliseconds = nil

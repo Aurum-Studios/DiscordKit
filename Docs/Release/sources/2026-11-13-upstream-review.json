@@ -1,0 +1,852 @@
+{
+  "schemaVersion": 1,
+  "verifiedOn": "2026-11-13",
+  "reviewScope": "Complete written-documentation diff from the November 5 semantic review, byte verification of all 22 previously maintained sources, and stable/preview specification diffs from their frozen discovery revision.",
+  "writtenDocumentation": {
+    "repository": "https://github.com/discord/discord-api-docs",
+    "baselineRevision": "da52492ced82d375981c46618cc3e182daada9a2",
+    "revision": "36adecb2e0bbbf500c430147ef4acbe9aa1a389e",
+    "changedPaths": [
+      "developers/topics/opcodes-and-status-codes.mdx",
+      "developers/topics/voice-connections.mdx"
+    ]
+  },
+  "specificationReview": {
+    "schemaVersion": 1,
+    "baselineRevision": "ed014089afa986f2b532ae081c456a85de074d0c",
+    "reviewedRevision": "3a21a01249a763cd47f1dfec3da91c5ba71bb974",
+    "sourceAuthority": "Official discord/discord-api-spec stable and preview JSON; written Discord documentation remains controlling per repository policy.",
+    "conclusion": "No production change is required to retain existing written-contract support boundaries. Record specification-only audio/name/provider/nullability gaps explicitly; this review does not claim full stable/preview parity.",
+    "files": [
+      {
+        "file": "specs/openapi.json",
+        "baselineSHA256": "79e3faff046cd35e432e4cbaacd457c5f4b0e01149c541c010366191e38bc18a",
+        "reviewedSHA256": "ef338088f4c6a73fdb9840acd1ce2bf8f16c1870f4437bfc563418c7e0de7278",
+        "addedPathItems": [
+          "/paths/~1channels~1{channel_id}~1permissions~1member~1{user_id}",
+          "/paths/~1channels~1{channel_id}~1permissions~1role~1{role_id}",
+          "/paths/~1guilds~1{guild_id}~1permissions~1member~1{user_id}",
+          "/paths/~1guilds~1{guild_id}~1permissions~1role~1{role_id}"
+        ],
+        "modifiedPathItems": [
+          "/paths/~1channels~1{channel_id}~1polls~1{message_id}~1answers~1{answer_id}",
+          "/paths/~1guilds~1{guild_id}~1incident-actions",
+          "/paths/~1guilds~1{guild_id}~1messages~1search",
+          "/paths/~1guilds~1{guild_id}~1requests",
+          "/paths/~1guilds~1{guild_id}~1scheduled-events~1{guild_scheduled_event_id}~1exceptions",
+          "/paths/~1guilds~1{guild_id}~1scheduled-events~1{guild_scheduled_event_id}~1exceptions~1{exception_id}",
+          "/paths/~1guilds~1{guild_id}~1scheduled-events~1{guild_scheduled_event_id}~1users",
+          "/paths/~1guilds~1{guild_id}~1scheduled-events~1{guild_scheduled_event_id}~1users~1counts",
+          "/paths/~1guilds~1{guild_id}~1scheduled-events~1{guild_scheduled_event_id}~1{guild_scheduled_event_exception_id}~1users",
+          "/paths/~1invites~1{code}~1target-users~1{user_id}",
+          "/paths/~1lobbies",
+          "/paths/~1lobbies~1{lobby_id}",
+          "/paths/~1lobbies~1{lobby_id}~1messages~1{message_id}~1moderation-metadata",
+          "/paths/~1partner-sdk~1dms~1{user_id_1}~1{user_id_2}~1messages~1{message_id}~1moderation-metadata",
+          "/paths/~1skus~1{sku_id}~1subscriptions",
+          "/paths/~1skus~1{sku_id}~1subscriptions~1{subscription_id}",
+          "/paths/~1users~1@me~1guilds"
+        ],
+        "addedSchemas": [
+          "/components/schemas/ContentScanMetadataResponse",
+          "/components/schemas/MessageEmbedAudioResponse",
+          "/components/schemas/PermissionsResponse",
+          "/components/schemas/RichEmbedAudio"
+        ],
+        "modifiedSchemas": [
+          "/components/schemas/AuditLogActionTypes",
+          "/components/schemas/ConnectedAccountProviders",
+          "/components/schemas/MessageEmbedResponse",
+          "/components/schemas/RichEmbed",
+          "/components/schemas/UnfurledMediaResponse"
+        ],
+        "parameterDescriptionAdditions": 39
+      },
+      {
+        "file": "specs/openapi_preview.json",
+        "baselineSHA256": "271baba37496876fc603f951ceeb2895de6290102d7d10642d69ec869b4283c9",
+        "reviewedSHA256": "2a76798937eb8ed64714337a5a7d8201b0f82ba66c604e3b0224f9e6716aabf1",
+        "addedPathItems": [
+          "/paths/~1channels~1{channel_id}~1permissions~1member~1{user_id}",
+          "/paths/~1channels~1{channel_id}~1permissions~1role~1{role_id}",
+          "/paths/~1guilds~1{guild_id}~1permissions~1member~1{user_id}",
+          "/paths/~1guilds~1{guild_id}~1permissions~1role~1{role_id}"
+        ],
+        "modifiedPathItems": [
+          "/paths/~1channels~1{channel_id}~1polls~1{message_id}~1answers~1{answer_id}",
+          "/paths/~1guilds~1{guild_id}~1incident-actions",
+          "/paths/~1guilds~1{guild_id}~1messages~1search",
+          "/paths/~1guilds~1{guild_id}~1requests",
+          "/paths/~1guilds~1{guild_id}~1scheduled-events~1{guild_scheduled_event_id}~1exceptions",
+          "/paths/~1guilds~1{guild_id}~1scheduled-events~1{guild_scheduled_event_id}~1exceptions~1{exception_id}",
+          "/paths/~1guilds~1{guild_id}~1scheduled-events~1{guild_scheduled_event_id}~1users",
+          "/paths/~1guilds~1{guild_id}~1scheduled-events~1{guild_scheduled_event_id}~1users~1counts",
+          "/paths/~1guilds~1{guild_id}~1scheduled-events~1{guild_scheduled_event_id}~1{guild_scheduled_event_exception_id}~1users",
+          "/paths/~1invites~1{code}~1target-users~1{user_id}",
+          "/paths/~1lobbies",
+          "/paths/~1lobbies~1{lobby_id}",
+          "/paths/~1lobbies~1{lobby_id}~1messages~1{message_id}~1moderation-metadata",
+          "/paths/~1partner-sdk~1dms~1{user_id_1}~1{user_id_2}~1messages~1{message_id}~1moderation-metadata",
+          "/paths/~1skus~1{sku_id}~1subscriptions",
+          "/paths/~1skus~1{sku_id}~1subscriptions~1{subscription_id}",
+          "/paths/~1users~1@me~1guilds"
+        ],
+        "addedSchemas": [
+          "/components/schemas/ContentScanMetadataResponse",
+          "/components/schemas/MessageEmbedAudioResponse",
+          "/components/schemas/PermissionsResponse",
+          "/components/schemas/RichEmbedAudio"
+        ],
+        "modifiedSchemas": [
+          "/components/schemas/AuditLogActionTypes",
+          "/components/schemas/ConnectedAccountProviders",
+          "/components/schemas/MessageEmbedResponse",
+          "/components/schemas/RichEmbed",
+          "/components/schemas/UnfurledMediaResponse"
+        ],
+        "parameterDescriptionAdditions": 39
+      }
+    ],
+    "categories": [
+      {
+        "category": "computed-permissions",
+        "appliesTo": [
+          "stable",
+          "preview"
+        ],
+        "jsonPaths": [
+          "/paths/~1channels~1{channel_id}~1permissions~1member~1{user_id}",
+          "/paths/~1channels~1{channel_id}~1permissions~1role~1{role_id}",
+          "/paths/~1guilds~1{guild_id}~1permissions~1member~1{user_id}",
+          "/paths/~1guilds~1{guild_id}~1permissions~1role~1{role_id}",
+          "/components/schemas/PermissionsResponse"
+        ],
+        "delta": "Four bot-authenticated GET operations and a required string permissions response; channel operations accept optional boolean implicit.",
+        "classification": "already implemented and reviewed on 2026-11-05 from written docs",
+        "productionChangeRequired": false,
+        "evidencePaths": [
+          "Sources/DiscordHTTP/Resources/PermissionEndpoints.swift",
+          "Sources/DiscordModels/ComputedPermissions.swift",
+          "Tests/DiscordHTTPTests/PermissionEndpointTests.swift",
+          "Tests/DiscordModelsTests/ComputedPermissionsTests.swift"
+        ],
+        "affectedRecords": [
+          {
+            "id": "manual.api20261105.GuildEndpoints.memberPermissions",
+            "status": "supported",
+            "sourceID": "current/2026-11-05/developers/resources/guild"
+          },
+          {
+            "id": "manual.api20261105.GuildEndpoints.rolePermissions",
+            "status": "supported",
+            "sourceID": "current/2026-11-05/developers/resources/guild"
+          },
+          {
+            "id": "manual.api20261105.ChannelEndpoints.memberPermissions",
+            "status": "supported",
+            "sourceID": "current/2026-11-05/developers/resources/channel"
+          },
+          {
+            "id": "manual.api20261105.ChannelEndpoints.rolePermissions",
+            "status": "supported",
+            "sourceID": "current/2026-11-05/developers/resources/channel"
+          },
+          {
+            "id": "manual.api20261105.ComputedPermissions",
+            "status": "supported",
+            "sourceID": "current/2026-11-05/developers/resources/guild"
+          }
+        ]
+      },
+      {
+        "category": "audit-position-actions",
+        "appliesTo": [
+          "stable",
+          "preview"
+        ],
+        "jsonPaths": [
+          "/components/schemas/AuditLogActionTypes/oneOf"
+        ],
+        "delta": "New enum alternatives CHANNEL_POSITION_UPDATE=16 and ROLE_POSITION_UPDATE=33.",
+        "classification": "already implemented and reviewed on 2026-11-05 from written docs",
+        "productionChangeRequired": false,
+        "evidencePaths": [
+          "Sources/DiscordModels/AuditLogValues.swift",
+          "Tests/DiscordModelsTests/AuditLogValueTests.swift"
+        ],
+        "affectedRecords": [
+          {
+            "id": "manual.api20261105.AuditLogEvent.positionUpdates",
+            "status": "supported",
+            "sourceID": "current/2026-11-05/developers/resources/audit-log"
+          },
+          {
+            "id": "d-343bb4171ec6c58ff2ad7733",
+            "status": "partial",
+            "sourceID": "spec/openapi.json"
+          },
+          {
+            "id": "d-7a97a913fe1f86363e36bf61",
+            "status": "unsupported",
+            "sourceID": "spec/openapi_preview.json"
+          }
+        ]
+      },
+      {
+        "category": "unfurled-content-scan",
+        "appliesTo": [
+          "stable",
+          "preview"
+        ],
+        "jsonPaths": [
+          "/components/schemas/ContentScanMetadataResponse",
+          "/components/schemas/UnfurledMediaResponse/properties/content_scan_metadata"
+        ],
+        "delta": "Optional nonnull scan metadata containing required integer flags.",
+        "classification": "already implemented and reviewed on 2026-11-05 from written docs",
+        "productionChangeRequired": false,
+        "evidencePaths": [
+          "Sources/DiscordModels/Component.swift",
+          "Tests/DiscordModelsTests/ContentScanTests.swift"
+        ],
+        "affectedRecords": [
+          {
+            "id": "manual.api20261105.UnfurledMediaItem.contentScanning",
+            "status": "supported",
+            "sourceID": "current/2026-11-05/developers/components/reference"
+          },
+          {
+            "id": "d-9c8873247285eccdff16d1ee",
+            "status": "unsupported",
+            "sourceID": "spec/openapi.json"
+          },
+          {
+            "id": "d-d97237fc440ca8f217704f54",
+            "status": "unsupported",
+            "sourceID": "spec/openapi_preview.json"
+          }
+        ]
+      },
+      {
+        "category": "unfurled-response-overlays",
+        "appliesTo": [
+          "stable",
+          "preview"
+        ],
+        "jsonPaths": [
+          "/components/schemas/UnfurledMediaResponse/properties/placeholder",
+          "/components/schemas/UnfurledMediaResponse/properties/placeholder_version",
+          "/components/schemas/UnfurledMediaResponse/properties/flags",
+          "/components/schemas/UnfurledMediaResponse/required"
+        ],
+        "delta": "Adds nullable string placeholder, nullable int32 placeholder_version and integer flags; removes proxy_url from required. content_type nullability is unchanged.",
+        "classification": "proxy_url optionality and nonnull placeholder/version/flags already typed; additional preview nullability remains outside the written-contract support claim",
+        "productionChangeRequired": false,
+        "supportGap": "Current UnfurledMediaItem rejects explicit null placeholder and placeholder_version. Written reference remains controlling; do not claim stable/preview schema parity. Existing partial model and unsupported duplicate spec rows remain.",
+        "evidencePaths": [
+          "Sources/DiscordModels/Component.swift"
+        ],
+        "affectedRecords": [
+          {
+            "id": "manual.5a.model.UnfurledMediaItem",
+            "status": "partial",
+            "sourceID": "developers/components/reference"
+          },
+          {
+            "id": "d-9c8873247285eccdff16d1ee",
+            "status": "unsupported",
+            "sourceID": "spec/openapi.json"
+          },
+          {
+            "id": "d-d97237fc440ca8f217704f54",
+            "status": "unsupported",
+            "sourceID": "spec/openapi_preview.json"
+          }
+        ]
+      },
+      {
+        "category": "embed-audio",
+        "appliesTo": [
+          "stable",
+          "preview"
+        ],
+        "jsonPaths": [
+          "/components/schemas/MessageEmbedAudioResponse",
+          "/components/schemas/RichEmbedAudio",
+          "/components/schemas/MessageEmbedResponse/properties/audio",
+          "/components/schemas/RichEmbed/properties/audio"
+        ],
+        "delta": "Response audio object has optional url, proxy_url, content_type, description strings. Request audio is nullable and has optional nullable url (URI max 2048) and description (max 4096).",
+        "classification": "specification-only additions; existing typed written embed remains partial; exact raw response audio is preserved",
+        "productionChangeRequired": false,
+        "supportGap": "No typed MessageEmbed.audio projection or outgoing audio support. messageRequestEmbeds rejects audio as an unreviewed outgoing field. Keep unsupported spec duplicate boundary and explicitly record this omission.",
+        "evidencePaths": [
+          "Sources/DiscordModels/MessageValues.swift",
+          "Sources/DiscordModels/MessageRequest.swift"
+        ],
+        "affectedRecords": [
+          {
+            "id": "manual.5a.model.MessageEmbed",
+            "status": "partial",
+            "sourceID": "developers/resources/message"
+          },
+          {
+            "id": "d-188ba8468574e765e79cc3ec",
+            "status": "unsupported",
+            "sourceID": "spec/openapi.json"
+          },
+          {
+            "id": "d-c05d2482493b97cdafbfb1b6",
+            "status": "unsupported",
+            "sourceID": "spec/openapi.json"
+          },
+          {
+            "id": "d-4ed86d2e002cfb52d45bbab4",
+            "status": "unsupported",
+            "sourceID": "spec/openapi_preview.json"
+          },
+          {
+            "id": "d-1516f9ab5ddb45789b7c006f",
+            "status": "unsupported",
+            "sourceID": "spec/openapi_preview.json"
+          }
+        ]
+      },
+      {
+        "category": "letterboxd-connection",
+        "appliesTo": [
+          "stable",
+          "preview"
+        ],
+        "jsonPaths": [
+          "/components/schemas/ConnectedAccountProviders/oneOf"
+        ],
+        "delta": "Adds LETTERBOXD provider alternative with exact string letterboxd.",
+        "classification": "specification-only provider addition; supported written service cases unchanged; RawValue retains the new string without a known enum case",
+        "productionChangeRequired": false,
+        "supportGap": "UserConnectionService has no letterboxd case. Do not extend its written-contract supported claim to complete current specification enumeration.",
+        "evidencePaths": [
+          "Sources/DiscordModels/UserValues.swift",
+          "Sources/DiscordModels/UserConnection.swift"
+        ],
+        "affectedRecords": [
+          {
+            "id": "manual.5g.UserConnection",
+            "status": "supported",
+            "sourceID": "developers/resources/user"
+          },
+          {
+            "id": "manual.5g.UserConnectionService",
+            "status": "supported",
+            "sourceID": "developers/resources/user"
+          },
+          {
+            "id": "d-7e895e44669921d6a1615a4d",
+            "status": "unsupported",
+            "sourceID": "spec/openapi.json"
+          },
+          {
+            "id": "d-814c30c66206d5d324e2a0bc",
+            "status": "unsupported",
+            "sourceID": "spec/openapi_preview.json"
+          }
+        ]
+      },
+      {
+        "category": "lobby-name",
+        "appliesTo": [
+          "stable",
+          "preview"
+        ],
+        "jsonPaths": [
+          "/paths/~1lobbies/post/requestBody/content/application~1json/schema/properties/name",
+          "/paths/~1lobbies/put/requestBody/content/application~1json/schema/properties/name",
+          "/paths/~1lobbies~1{lobby_id}/patch/requestBody/content/application~1json/schema/properties/name"
+        ],
+        "delta": "Adds optional nullable name string, minLength 1 and maxLength 100, on create, create/join, modify bodies.",
+        "classification": "specification-only writable addition; written request support unchanged",
+        "productionChangeRequired": false,
+        "supportGap": "CreateLobbyRequest, CreateOrJoinLobbyRequest and ModifyLobbyRequest cannot emit name. Existing supported definitions cover the unchanged written tables; separate spec endpoint/body rows remain unsupported. Explicitly record this deferred field rather than imply complete current spec request support.",
+        "evidencePaths": [
+          "Sources/DiscordModels/LobbyRequest.swift"
+        ],
+        "affectedRecords": [
+          {
+            "id": "manual.5j.CreateLobbyRequest",
+            "status": "supported",
+            "sourceID": "developers/resources/lobby"
+          },
+          {
+            "id": "manual.5j.ModifyLobbyRequest",
+            "status": "supported",
+            "sourceID": "developers/resources/lobby"
+          },
+          {
+            "id": "manual.5j.CreateOrJoinLobbyRequest",
+            "status": "supported",
+            "sourceID": "developers/resources/lobby"
+          },
+          {
+            "id": "d-580a4c14884082a4f0dee177",
+            "status": "unsupported",
+            "sourceID": "spec/openapi.json"
+          },
+          {
+            "id": "d-557b705ef146187d2710d8ca",
+            "status": "unsupported",
+            "sourceID": "spec/openapi.json"
+          },
+          {
+            "id": "d-0c84ea792ebc9bcace2438cf",
+            "status": "unsupported",
+            "sourceID": "spec/openapi.json"
+          },
+          {
+            "id": "d-51ab07b95b5a739e7d91d432",
+            "status": "unsupported",
+            "sourceID": "spec/openapi_preview.json"
+          },
+          {
+            "id": "d-8a44e0f3a025abce84af8e8c",
+            "status": "unsupported",
+            "sourceID": "spec/openapi_preview.json"
+          },
+          {
+            "id": "d-e214c135baeb48cdf2970a19",
+            "status": "unsupported",
+            "sourceID": "spec/openapi_preview.json"
+          }
+        ]
+      },
+      {
+        "category": "search-contents-removal",
+        "appliesTo": [
+          "preview"
+        ],
+        "jsonPaths": [
+          "/paths/~1guilds~1{guild_id}~1messages~1search/get/parameters"
+        ],
+        "delta": "Removes preview-only contents array query; scalar content and slop retain types/bounds and gain descriptions. Stable spec never had contents in the baseline.",
+        "classification": "no behavior change: existing MessageSearchQuery emits content and never emits contents",
+        "productionChangeRequired": false,
+        "evidencePaths": [
+          "Sources/DiscordHTTP/Resources/MessageQuery.swift"
+        ],
+        "affectedRecords": [
+          {
+            "id": "manual.5a.MessageEndpoints.search",
+            "status": "partial",
+            "sourceID": "developers/resources/message"
+          },
+          {
+            "id": "d-839241f12866d6743a82ec49",
+            "status": "unsupported",
+            "sourceID": "spec/openapi.json"
+          },
+          {
+            "id": "d-d43817aea21ce41147a6b57c",
+            "status": "unsupported",
+            "sourceID": "spec/openapi_preview.json"
+          }
+        ]
+      },
+      {
+        "category": "editorial-parameter-docs",
+        "appliesTo": [
+          "stable",
+          "preview"
+        ],
+        "jsonPaths": [
+          "/paths/~1invites~1{code}~1target-users~1{user_id}/parameters",
+          "/paths/~1invites~1{code}~1target-users~1{user_id}/put/parameters",
+          "/paths/~1invites~1{code}~1target-users~1{user_id}/delete/parameters"
+        ],
+        "delta": "Adds parameter descriptions; the affected path items and description counts are listed in files. Invite target-user code/user_id parameters move from path-item inheritance to both PUT/DELETE operations, with same name, location, required flag and schema; only user_id descriptions differ by verb.",
+        "classification": "editorial and equivalent OpenAPI parameter scoping; no wire behavior change",
+        "productionChangeRequired": false,
+        "evidencePaths": []
+      }
+    ]
+  },
+  "sources": [
+    {
+      "path": "developers/change-log.mdx",
+      "url": "https://docs.discord.com/developers/change-log",
+      "revisionURL": "https://github.com/discord/discord-api-docs/blob/36adecb2e0bbbf500c430147ef4acbe9aa1a389e/developers/change-log.mdx",
+      "revision": "36adecb2e0bbbf500c430147ef4acbe9aa1a389e",
+      "verifiedOn": "2026-11-13",
+      "bytes": 312462,
+      "sha256": "558ff24ebbdc68a5f75b766e9d7dcb9d189ad42a368cfac0db6891a9d3dccd37",
+      "changedSincePreviousReview": false,
+      "disposition": "existing_classification_confirmed",
+      "reviewedContracts": [
+        "Byte-identical to the November 5 reviewed source; existing implementation, editorial and native-only classifications are retained."
+      ]
+    },
+    {
+      "path": "developers/components/reference.mdx",
+      "url": "https://docs.discord.com/developers/components/reference",
+      "revisionURL": "https://github.com/discord/discord-api-docs/blob/36adecb2e0bbbf500c430147ef4acbe9aa1a389e/developers/components/reference.mdx",
+      "revision": "36adecb2e0bbbf500c430147ef4acbe9aa1a389e",
+      "verifiedOn": "2026-11-13",
+      "bytes": 144181,
+      "sha256": "193faf3b0c57f4eabcb7a07382af92f2a3de8a13a73daa86ea319ee7511c12df",
+      "changedSincePreviousReview": false,
+      "disposition": "existing_classification_confirmed",
+      "reviewedContracts": [
+        "Byte-identical to the November 5 reviewed source; existing implementation, editorial and native-only classifications are retained."
+      ]
+    },
+    {
+      "path": "developers/discord-social-sdk/development-guides/account-linking-on-web.mdx",
+      "url": "https://docs.discord.com/developers/discord-social-sdk/development-guides/account-linking-on-web",
+      "revisionURL": "https://github.com/discord/discord-api-docs/blob/36adecb2e0bbbf500c430147ef4acbe9aa1a389e/developers/discord-social-sdk/development-guides/account-linking-on-web.mdx",
+      "revision": "36adecb2e0bbbf500c430147ef4acbe9aa1a389e",
+      "verifiedOn": "2026-11-13",
+      "bytes": 11725,
+      "sha256": "b0230c3b360ec6493ab451c2f27133da343937d0b8f9788d85b5ce69faa73bcb",
+      "changedSincePreviousReview": false,
+      "disposition": "existing_classification_confirmed",
+      "reviewedContracts": [
+        "Byte-identical to the November 5 reviewed source; existing implementation, editorial and native-only classifications are retained."
+      ]
+    },
+    {
+      "path": "developers/discord-social-sdk/development-guides/account-linking-with-discord.mdx",
+      "url": "https://docs.discord.com/developers/discord-social-sdk/development-guides/account-linking-with-discord",
+      "revisionURL": "https://github.com/discord/discord-api-docs/blob/36adecb2e0bbbf500c430147ef4acbe9aa1a389e/developers/discord-social-sdk/development-guides/account-linking-with-discord.mdx",
+      "revision": "36adecb2e0bbbf500c430147ef4acbe9aa1a389e",
+      "verifiedOn": "2026-11-13",
+      "bytes": 26806,
+      "sha256": "42210080bccd3c7197f4f2b4c62e3f699441cee9b56e4fae4b112720e7cb2500",
+      "changedSincePreviousReview": false,
+      "disposition": "existing_classification_confirmed",
+      "reviewedContracts": [
+        "Byte-identical to the November 5 reviewed source; existing implementation, editorial and native-only classifications are retained."
+      ]
+    },
+    {
+      "path": "developers/discord-social-sdk/development-guides/managing-game-invites.mdx",
+      "url": "https://docs.discord.com/developers/discord-social-sdk/development-guides/managing-game-invites",
+      "revisionURL": "https://github.com/discord/discord-api-docs/blob/36adecb2e0bbbf500c430147ef4acbe9aa1a389e/developers/discord-social-sdk/development-guides/managing-game-invites.mdx",
+      "revision": "36adecb2e0bbbf500c430147ef4acbe9aa1a389e",
+      "verifiedOn": "2026-11-13",
+      "bytes": 26548,
+      "sha256": "5aa392d4bf895bcf8d693986933f280282471db1d0efff7ae7111ba60fe09eb2",
+      "changedSincePreviousReview": false,
+      "disposition": "existing_classification_confirmed",
+      "reviewedContracts": [
+        "Byte-identical to the November 5 reviewed source; existing implementation, editorial and native-only classifications are retained."
+      ]
+    },
+    {
+      "path": "developers/discord-social-sdk/development-guides/managing-lobbies.mdx",
+      "url": "https://docs.discord.com/developers/discord-social-sdk/development-guides/managing-lobbies",
+      "revisionURL": "https://github.com/discord/discord-api-docs/blob/36adecb2e0bbbf500c430147ef4acbe9aa1a389e/developers/discord-social-sdk/development-guides/managing-lobbies.mdx",
+      "revision": "36adecb2e0bbbf500c430147ef4acbe9aa1a389e",
+      "verifiedOn": "2026-11-13",
+      "bytes": 18527,
+      "sha256": "8487bb0304145ee120f1c7668d544afe55f6d6316b0639c6c946cbe797f234d0",
+      "changedSincePreviousReview": false,
+      "disposition": "existing_classification_confirmed",
+      "reviewedContracts": [
+        "Byte-identical to the November 5 reviewed source; existing implementation, editorial and native-only classifications are retained."
+      ]
+    },
+    {
+      "path": "developers/events/gateway-events.mdx",
+      "url": "https://docs.discord.com/developers/events/gateway-events",
+      "revisionURL": "https://github.com/discord/discord-api-docs/blob/36adecb2e0bbbf500c430147ef4acbe9aa1a389e/developers/events/gateway-events.mdx",
+      "revision": "36adecb2e0bbbf500c430147ef4acbe9aa1a389e",
+      "verifiedOn": "2026-11-13",
+      "bytes": 135811,
+      "sha256": "bca290a9ea7f7f49232a61f8e3ab5c48089cd613396e5d6ec08fd61a6eacc9cd",
+      "changedSincePreviousReview": false,
+      "disposition": "existing_classification_confirmed",
+      "reviewedContracts": [
+        "Byte-identical to the November 5 reviewed source; existing implementation, editorial and native-only classifications are retained."
+      ]
+    },
+    {
+      "path": "developers/events/gateway.mdx",
+      "url": "https://docs.discord.com/developers/events/gateway",
+      "revisionURL": "https://github.com/discord/discord-api-docs/blob/36adecb2e0bbbf500c430147ef4acbe9aa1a389e/developers/events/gateway.mdx",
+      "revision": "36adecb2e0bbbf500c430147ef4acbe9aa1a389e",
+      "verifiedOn": "2026-11-13",
+      "bytes": 52760,
+      "sha256": "6f54f5a3ddfdeb44c9ac32498ccfd9db904652f35b05c7d9f6a36b2802e18592",
+      "changedSincePreviousReview": false,
+      "disposition": "existing_classification_confirmed",
+      "reviewedContracts": [
+        "Byte-identical to the November 5 reviewed source; existing implementation, editorial and native-only classifications are retained."
+      ]
+    },
+    {
+      "path": "developers/events/webhook-events.mdx",
+      "url": "https://docs.discord.com/developers/events/webhook-events",
+      "revisionURL": "https://github.com/discord/discord-api-docs/blob/36adecb2e0bbbf500c430147ef4acbe9aa1a389e/developers/events/webhook-events.mdx",
+      "revision": "36adecb2e0bbbf500c430147ef4acbe9aa1a389e",
+      "verifiedOn": "2026-11-13",
+      "bytes": 32326,
+      "sha256": "cbcc8aaa48aecaade6d6616947514bf1c50bdb97877940181e24837e67206d21",
+      "changedSincePreviousReview": false,
+      "disposition": "existing_classification_confirmed",
+      "reviewedContracts": [
+        "Byte-identical to the November 5 reviewed source; existing implementation, editorial and native-only classifications are retained."
+      ]
+    },
+    {
+      "path": "developers/gateway/getting-started-with-privileged-intent-review.mdx",
+      "url": "https://docs.discord.com/developers/gateway/getting-started-with-privileged-intent-review",
+      "revisionURL": "https://github.com/discord/discord-api-docs/blob/36adecb2e0bbbf500c430147ef4acbe9aa1a389e/developers/gateway/getting-started-with-privileged-intent-review.mdx",
+      "revision": "36adecb2e0bbbf500c430147ef4acbe9aa1a389e",
+      "verifiedOn": "2026-11-13",
+      "bytes": 13547,
+      "sha256": "bbc50e66c4c7eaa277ef44241063483fb2d38bfb86713ce0e42b31bb41dd85e9",
+      "changedSincePreviousReview": false,
+      "disposition": "existing_classification_confirmed",
+      "reviewedContracts": [
+        "Byte-identical to the November 5 reviewed source; existing implementation, editorial and native-only classifications are retained."
+      ]
+    },
+    {
+      "path": "developers/gateway/you-might-not-need-a-privileged-intent.mdx",
+      "url": "https://docs.discord.com/developers/gateway/you-might-not-need-a-privileged-intent",
+      "revisionURL": "https://github.com/discord/discord-api-docs/blob/36adecb2e0bbbf500c430147ef4acbe9aa1a389e/developers/gateway/you-might-not-need-a-privileged-intent.mdx",
+      "revision": "36adecb2e0bbbf500c430147ef4acbe9aa1a389e",
+      "verifiedOn": "2026-11-13",
+      "bytes": 10555,
+      "sha256": "950e8de63033255eead886dee2b97876e4cf0d5d1dd0860d181cd7f8c92827d2",
+      "changedSincePreviousReview": false,
+      "disposition": "existing_classification_confirmed",
+      "reviewedContracts": [
+        "Byte-identical to the November 5 reviewed source; existing implementation, editorial and native-only classifications are retained."
+      ]
+    },
+    {
+      "path": "developers/interactions/application-commands.mdx",
+      "url": "https://docs.discord.com/developers/interactions/application-commands",
+      "revisionURL": "https://github.com/discord/discord-api-docs/blob/36adecb2e0bbbf500c430147ef4acbe9aa1a389e/developers/interactions/application-commands.mdx",
+      "revision": "36adecb2e0bbbf500c430147ef4acbe9aa1a389e",
+      "verifiedOn": "2026-11-13",
+      "bytes": 107733,
+      "sha256": "0edb6e1ab81f4313780d514206510ff1e065578d2f17c1273d16a0fac62edff8",
+      "changedSincePreviousReview": false,
+      "disposition": "existing_classification_confirmed",
+      "reviewedContracts": [
+        "Byte-identical to the November 5 reviewed source; existing implementation, editorial and native-only classifications are retained."
+      ]
+    },
+    {
+      "path": "developers/interactions/receiving-and-responding.mdx",
+      "url": "https://docs.discord.com/developers/interactions/receiving-and-responding",
+      "revisionURL": "https://github.com/discord/discord-api-docs/blob/36adecb2e0bbbf500c430147ef4acbe9aa1a389e/developers/interactions/receiving-and-responding.mdx",
+      "revision": "36adecb2e0bbbf500c430147ef4acbe9aa1a389e",
+      "verifiedOn": "2026-11-13",
+      "bytes": 59589,
+      "sha256": "f9c9efe2d882830ae14649f22ee1e33a156ac789eeba5174ca9fb72d34c99a13",
+      "changedSincePreviousReview": false,
+      "disposition": "existing_classification_confirmed",
+      "reviewedContracts": [
+        "Byte-identical to the November 5 reviewed source; existing implementation, editorial and native-only classifications are retained."
+      ]
+    },
+    {
+      "path": "developers/reference.mdx",
+      "url": "https://docs.discord.com/developers/reference",
+      "revisionURL": "https://github.com/discord/discord-api-docs/blob/36adecb2e0bbbf500c430147ef4acbe9aa1a389e/developers/reference.mdx",
+      "revision": "36adecb2e0bbbf500c430147ef4acbe9aa1a389e",
+      "verifiedOn": "2026-11-13",
+      "bytes": 40118,
+      "sha256": "b0ac645b5e85d1d05fbf07b7e78a25e4e22987560e05e6b0c8d238b6a1e0675d",
+      "changedSincePreviousReview": false,
+      "disposition": "existing_classification_confirmed",
+      "reviewedContracts": [
+        "Byte-identical to the November 5 reviewed source; existing implementation, editorial and native-only classifications are retained."
+      ]
+    },
+    {
+      "path": "developers/resources/audit-log.mdx",
+      "url": "https://docs.discord.com/developers/resources/audit-log",
+      "revisionURL": "https://github.com/discord/discord-api-docs/blob/36adecb2e0bbbf500c430147ef4acbe9aa1a389e/developers/resources/audit-log.mdx",
+      "revision": "36adecb2e0bbbf500c430147ef4acbe9aa1a389e",
+      "verifiedOn": "2026-11-13",
+      "bytes": 42448,
+      "sha256": "4b4c3556ce4e880598c95bd184f181083967f951a8437db0567f0dc4b7ab5fa7",
+      "changedSincePreviousReview": false,
+      "disposition": "existing_classification_confirmed",
+      "reviewedContracts": [
+        "Byte-identical to the November 5 reviewed source; existing implementation, editorial and native-only classifications are retained."
+      ]
+    },
+    {
+      "path": "developers/resources/channel.mdx",
+      "url": "https://docs.discord.com/developers/resources/channel",
+      "revisionURL": "https://github.com/discord/discord-api-docs/blob/36adecb2e0bbbf500c430147ef4acbe9aa1a389e/developers/resources/channel.mdx",
+      "revision": "36adecb2e0bbbf500c430147ef4acbe9aa1a389e",
+      "verifiedOn": "2026-11-13",
+      "bytes": 88726,
+      "sha256": "5f71708ea0de97b63d8ad2f1f62d0275ef97f736f955c5e5aee9a6564514a908",
+      "changedSincePreviousReview": false,
+      "disposition": "existing_classification_confirmed",
+      "reviewedContracts": [
+        "Byte-identical to the November 5 reviewed source; existing implementation, editorial and native-only classifications are retained."
+      ]
+    },
+    {
+      "path": "developers/resources/guild.mdx",
+      "url": "https://docs.discord.com/developers/resources/guild",
+      "revisionURL": "https://github.com/discord/discord-api-docs/blob/36adecb2e0bbbf500c430147ef4acbe9aa1a389e/developers/resources/guild.mdx",
+      "revision": "36adecb2e0bbbf500c430147ef4acbe9aa1a389e",
+      "verifiedOn": "2026-11-13",
+      "bytes": 131645,
+      "sha256": "fbd13144dda0541f0f80a9a286b8c1947b8d7b0a33d0aca45468a86ff4cfaf70",
+      "changedSincePreviousReview": false,
+      "disposition": "existing_classification_confirmed",
+      "reviewedContracts": [
+        "Byte-identical to the November 5 reviewed source; existing implementation, editorial and native-only classifications are retained."
+      ]
+    },
+    {
+      "path": "developers/resources/message.mdx",
+      "url": "https://docs.discord.com/developers/resources/message",
+      "revisionURL": "https://github.com/discord/discord-api-docs/blob/36adecb2e0bbbf500c430147ef4acbe9aa1a389e/developers/resources/message.mdx",
+      "revision": "36adecb2e0bbbf500c430147ef4acbe9aa1a389e",
+      "verifiedOn": "2026-11-13",
+      "bytes": 129413,
+      "sha256": "e4e2f2abb242096896b152e9c9d0d7e8b19e9ff07d4c337f0af580bd2d6d9a71",
+      "changedSincePreviousReview": false,
+      "disposition": "existing_classification_confirmed",
+      "reviewedContracts": [
+        "Byte-identical to the November 5 reviewed source; existing implementation, editorial and native-only classifications are retained."
+      ]
+    },
+    {
+      "path": "developers/resources/user.mdx",
+      "url": "https://docs.discord.com/developers/resources/user",
+      "revisionURL": "https://github.com/discord/discord-api-docs/blob/36adecb2e0bbbf500c430147ef4acbe9aa1a389e/developers/resources/user.mdx",
+      "revision": "36adecb2e0bbbf500c430147ef4acbe9aa1a389e",
+      "verifiedOn": "2026-11-13",
+      "bytes": 30357,
+      "sha256": "13cb7d08e88c573aca182b640d052fea715842b174c0dfa3148b99fb1d59a4c9",
+      "changedSincePreviousReview": false,
+      "disposition": "existing_classification_confirmed",
+      "reviewedContracts": [
+        "Byte-identical to the November 5 reviewed source; existing implementation, editorial and native-only classifications are retained."
+      ]
+    },
+    {
+      "path": "developers/social-layer/game-stats-widgets/overview.mdx",
+      "url": "https://docs.discord.com/developers/social-layer/game-stats-widgets/overview",
+      "revisionURL": "https://github.com/discord/discord-api-docs/blob/36adecb2e0bbbf500c430147ef4acbe9aa1a389e/developers/social-layer/game-stats-widgets/overview.mdx",
+      "revision": "36adecb2e0bbbf500c430147ef4acbe9aa1a389e",
+      "verifiedOn": "2026-11-13",
+      "bytes": 6627,
+      "sha256": "4c8bebea588a0f3e4251b440c7c9a97360cbb784204299e01d71b1969553f2eb",
+      "changedSincePreviousReview": false,
+      "disposition": "existing_classification_confirmed",
+      "reviewedContracts": [
+        "Byte-identical to the November 5 reviewed source; existing implementation, editorial and native-only classifications are retained."
+      ]
+    },
+    {
+      "path": "developers/topics/oauth2.mdx",
+      "url": "https://docs.discord.com/developers/topics/oauth2",
+      "revisionURL": "https://github.com/discord/discord-api-docs/blob/36adecb2e0bbbf500c430147ef4acbe9aa1a389e/developers/topics/oauth2.mdx",
+      "revision": "36adecb2e0bbbf500c430147ef4acbe9aa1a389e",
+      "verifiedOn": "2026-11-13",
+      "bytes": 43320,
+      "sha256": "4019da739dcd4361f9bb95b167b0d268351cd4e34404a81dd54b31b897e7de4b",
+      "changedSincePreviousReview": false,
+      "disposition": "existing_classification_confirmed",
+      "reviewedContracts": [
+        "Byte-identical to the November 5 reviewed source; existing implementation, editorial and native-only classifications are retained."
+      ]
+    },
+    {
+      "path": "developers/topics/permissions.mdx",
+      "url": "https://docs.discord.com/developers/topics/permissions",
+      "revisionURL": "https://github.com/discord/discord-api-docs/blob/36adecb2e0bbbf500c430147ef4acbe9aa1a389e/developers/topics/permissions.mdx",
+      "revision": "36adecb2e0bbbf500c430147ef4acbe9aa1a389e",
+      "verifiedOn": "2026-11-13",
+      "bytes": 36781,
+      "sha256": "0f8b3a3ca850d25793b0eac96e45a5a594e12be5cb46e148fc1647868ae4d1a8",
+      "changedSincePreviousReview": false,
+      "disposition": "existing_classification_confirmed",
+      "reviewedContracts": [
+        "Byte-identical to the November 5 reviewed source; existing implementation, editorial and native-only classifications are retained."
+      ]
+    },
+    {
+      "path": "developers/topics/voice-connections.mdx",
+      "url": "https://docs.discord.com/developers/topics/voice-connections",
+      "revisionURL": "https://github.com/discord/discord-api-docs/blob/36adecb2e0bbbf500c430147ef4acbe9aa1a389e/developers/topics/voice-connections.mdx",
+      "revision": "36adecb2e0bbbf500c430147ef4acbe9aa1a389e",
+      "verifiedOn": "2026-11-13",
+      "bytes": 37246,
+      "sha256": "595192ea375b988d513b66585c066367aa4395476954ca6b5fa89ac89332ed97",
+      "changedSincePreviousReview": true,
+      "disposition": "implemented",
+      "reviewedContracts": [
+        "Select Protocol is sent only once per voice session; successful resume retains its selection. Code 4006 invalidates the session and requires a new Connecting to Voice flow.",
+        "An interrupted handshake after selection and before Session Description now fails closed and requires a fresh main-Gateway join. Established resume and terminal 4006 handling remain unchanged."
+      ],
+      "evidencePaths": [
+        "Sources/DiscordVoice/VoiceStateMachine.swift",
+        "Sources/DiscordVoice/VoiceSession.swift",
+        "Tests/DiscordVoiceTests/VoiceStateMachineTests.swift",
+        "Tests/DiscordVoiceTests/VoiceSessionTests.swift"
+      ]
+    },
+    {
+      "path": "developers/topics/opcodes-and-status-codes.mdx",
+      "url": "https://docs.discord.com/developers/topics/opcodes-and-status-codes",
+      "revisionURL": "https://github.com/discord/discord-api-docs/blob/36adecb2e0bbbf500c430147ef4acbe9aa1a389e/developers/topics/opcodes-and-status-codes.mdx",
+      "revision": "36adecb2e0bbbf500c430147ef4acbe9aa1a389e",
+      "verifiedOn": "2026-11-13",
+      "bytes": 79461,
+      "sha256": "867358c33acc02aa5516cfccf39ca964f3cd48f48db2387ffa8c43ccb9250e1f",
+      "changedSincePreviousReview": true,
+      "disposition": "implemented",
+      "reviewedContracts": [
+        "Select Protocol is sent only once per voice session; successful resume retains its selection. Code 4006 invalidates the session and requires a new Connecting to Voice flow.",
+        "An interrupted handshake after selection and before Session Description now fails closed and requires a fresh main-Gateway join. Established resume and terminal 4006 handling remain unchanged."
+      ],
+      "evidencePaths": [
+        "Sources/DiscordVoice/VoiceStateMachine.swift",
+        "Sources/DiscordVoice/VoiceSession.swift",
+        "Tests/DiscordVoiceTests/VoiceStateMachineTests.swift",
+        "Tests/DiscordVoiceTests/VoiceSessionTests.swift"
+      ]
+    },
+    {
+      "path": "specs/openapi.json",
+      "url": "https://github.com/discord/discord-api-spec/blob/3a21a01249a763cd47f1dfec3da91c5ba71bb974/specs/openapi.json",
+      "revision": "3a21a01249a763cd47f1dfec3da91c5ba71bb974",
+      "verifiedOn": "2026-11-13",
+      "bytes": 1208907,
+      "sha256": "ef338088f4c6a73fdb9840acd1ce2bf8f16c1870f4437bfc563418c7e0de7278",
+      "changedSinceDiscoveryBaseline": true,
+      "disposition": "classified",
+      "reviewedContracts": [
+        "All semantic differences are classified in specificationReview.categories; written contracts take precedence and specification-only support gaps remain explicit."
+      ]
+    },
+    {
+      "path": "specs/openapi_preview.json",
+      "url": "https://github.com/discord/discord-api-spec/blob/3a21a01249a763cd47f1dfec3da91c5ba71bb974/specs/openapi_preview.json",
+      "revision": "3a21a01249a763cd47f1dfec3da91c5ba71bb974",
+      "verifiedOn": "2026-11-13",
+      "bytes": 1209251,
+      "sha256": "2a76798937eb8ed64714337a5a7d8201b0f82ba66c604e3b0224f9e6716aabf1",
+      "changedSinceDiscoveryBaseline": true,
+      "disposition": "classified",
+      "reviewedContracts": [
+        "All semantic differences are classified in specificationReview.categories; written contracts take precedence and specification-only support gaps remain explicit."
+      ]
+    }
+  ],
+  "rawSnapshotCommitted": false,
+  "comparisonLimits": "Exact Git object bytes were acquired and hashed. Discovery pins, unrelated verification dates and historical reviews remain unchanged. This review does not certify full API parity, native SDK availability, live Discord or platform qualification.",
+  "nextReviewDueReason": "Review again before the 2026-11-16 channel-obfuscation effective boundary; future behavior remains inactive on this review date."
+}

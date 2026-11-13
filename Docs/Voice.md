@@ -359,7 +359,12 @@ incoming events with its current join and enforce timeout/cancellation ownership
 `VoiceGatewaySessionState` is a pure protocol reducer, not a running session. It
 uses HELLO's heartbeat interval, exact v8 `seq_ack` values, matching ACK nonces and
 explicit reconnect/resume/close state transitions. Callers schedule deadlines and close
-sockets. Valid DAVE controls for the negotiated version suspend media and are
+sockets. Select Protocol is sent once per voice session; a successful resume
+retains the selected protocol. Losing the socket after selection but before
+Session Description closes the reducer and requires a fresh main-Gateway join.
+Repeated selection can invalidate the server session with close code 4006;
+that code also requires the [Connecting to Voice flow](https://docs.discord.com/developers/topics/voice-connections#connecting-to-voice).
+Valid DAVE controls for the negotiated version suspend media and are
 surfaced to a backend. Different-version transitions, downgrade or malformed
 protocol-version fields close the reducer and require replacement; automatic
 version migration is not implemented. Other DAVE fields and MLS bytes remain

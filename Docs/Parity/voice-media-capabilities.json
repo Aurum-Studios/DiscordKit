@@ -282,9 +282,13 @@
       "evidence": [
         "Tests/DiscordVoiceTests/VoiceGatewayTests.swift",
         "Tests/DiscordVoiceTests/VoiceRendezvousTests.swift",
-        "Tests/DiscordVoiceTests/VoiceStateMachineTests.swift"
+        "Tests/DiscordVoiceTests/VoiceStateMachineTests.swift",
+        "Tests/DiscordVoiceTests/VoiceSessionTests.swift"
       ],
-      "remainingGates": "Voice v8 pure reducer and independently composed supervised manager/session are implemented. Authorized Discord, full-client interoperability, independent review and platform qualification remain open."
+      "remainingGates": "Voice v8 pure reducer and independently composed supervised manager/session are implemented. Authorized Discord, full-client interoperability, independent review and platform qualification remain open.",
+      "verifiedOn": "2026-11-13",
+      "sourceSnapshot": "Docs/Release/sources/2026-11-13-upstream-review.json",
+      "selectionPolicy": "Select Protocol is one-shot per voice session and survives established resume. Loss after selection and before Session Description closes the reducer and requires fresh main-Gateway credentials."
     },
     {
       "id": "rtp-discovery-jitter",

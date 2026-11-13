@@ -290,7 +290,7 @@ struct VoiceStateMachineTests {
         #expect(state.phase == .ready)
     }
 
-    /// Incomplete handshakes reconnect through Identify and reset sequences before a new session.
+    /// Handshakes interrupted before protocol selection reconnect through Identify and reset sequences.
     @Test func incompleteHandshakeCannotResume() throws {
         var state = try VoiceGatewaySessionState(credentials: credentials(), maximumDAVEProtocolVersion: 1)
         state.connectionLost()
@@ -300,6 +300,43 @@ struct VoiceStateMachineTests {
         guard case .send(let second) = try state.receive(hello()) else { Issue.record("Expected Identify"); return }
         #expect(second.opcode == 0 && state.lastSequence == nil && state.selectedMode == nil)
         #expect(throws: VoiceControlFailure.invalidTransition) { try state.receive(frame(9, .null)) }
+    }
+
+    /// Protocol selection is one-shot, including while suspended and after a successful resume.
+    @Test func protocolSelectionCannotRepeatAfterResume() throws {
+        var state = try negotiated(includeDescription: false)
+        let mode = try #require(state.selectedMode)
+        #expect(throws: VoiceControlFailure.invalidTransition) { try state.selectProtocol(address: "203.0.113.1", port: 65_535) }
+        _ = try state.receive(description())
+        #expect(throws: VoiceControlFailure.invalidTransition) { try state.selectProtocol(address: "203.0.113.1", port: 65_535) }
+        try state.authorizeMedia(using: SyntheticVoiceReadiness(expectedVersion: 1, expectedIdentity: credentials().identity))
+        state.connectionLost()
+        guard case .send(let resume) = try state.receive(hello()) else { Issue.record("Expected Resume"); return }
+        #expect(resume.opcode == 7 && state.selectedMode == mode && state.negotiatedDAVEVersion == 1)
+        #expect(try state.receive(frame(9, .null)) == .none)
+        #expect(state.phase == .awaitingE2EE && state.selectedMode == mode)
+        #expect(throws: VoiceControlFailure.invalidTransition) { try state.selectProtocol(address: "203.0.113.1", port: 65_535) }
+        try state.authorizeMedia(using: SyntheticVoiceReadiness(expectedVersion: 1, expectedIdentity: credentials().identity))
+        #expect(state.phase == .ready && state.selectedMode == mode)
+        #expect(throws: VoiceControlFailure.invalidTransition) { try state.selectProtocol(address: "203.0.113.1", port: 65_535) }
+    }
+
+    /// An interrupted selected handshake cannot re-Identify and emit another selection with its credentials.
+    /// - Parameter heartbeatTimeout: Whether loss is detected through missing ACK or direct socket loss.
+    @Test(arguments: [false, true])
+    func interruptedSelectedHandshakeRequiresNewSession(heartbeatTimeout: Bool) throws {
+        var state = try negotiated(includeDescription: false)
+        if heartbeatTimeout {
+            _ = try state.heartbeat(nonce: 1)
+            #expect(throws: VoiceControlFailure.missedHeartbeatACK) { try state.heartbeatDeadlineElapsed() }
+        } else {
+            state.connectionLost()
+        }
+        #expect(state.phase == .closed)
+        state.connectionLost()
+        #expect(throws: VoiceControlFailure.closed) { try state.receive(hello()) }
+        #expect(throws: VoiceControlFailure.invalidTransition) { try state.selectProtocol(address: "203.0.113.1", port: 65_535) }
+        #expect(state.phase == .closed)
     }
 
     /// Every server DAVE opcode suspends media and is surfaced unchanged to the external backend.

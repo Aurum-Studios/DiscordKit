@@ -690,6 +690,8 @@ struct VoiceSessionTests {
         #expect(snapshot.phase == .ready && snapshot.reconnectAttempts == 1)
         let resume = try #require(await second.recorded().0.first)
         #expect(resume.opcode == 7)
+        #expect(await first.recorded().0.filter { $0.opcode == 1 }.count == 1)
+        #expect(await second.recorded().0.allSatisfy { $0.opcode != 1 })
         guard case .json(.object(let body)) = resume.payload else { Issue.record("Expected JSON Resume"); return }
         #expect(body["seq_ack"] == voiceControlNumber(0) && body["session_id"] == .string("synthetic-session"))
         #expect(await first.recorded().2 == 1)
@@ -708,6 +710,29 @@ struct VoiceSessionTests {
         await owner.stop(); try await run.value
         #expect(await udp.lifecycle().closed)
         #expect(clock.base.pendingSleepCount == 0)
+    }
+
+    /// Losing the socket after Select Protocol requires a new join without reselecting or spending retries.
+    @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
+    @Test func interruptedProtocolSelectionRequiresFreshJoin() async throws {
+        let tuple = credentials(), socket = SessionTestSocket(Array(try initialFrames().dropLast()))
+        let connector = SessionTestConnector([socket]), clock = ManualClock()
+        let backend = SessionTestE2EE(tuple.identity), udp = SessionTestDatagram(discovery())
+        let owner = try VoiceSession(credentials: tuple, webSocket: connector,
+            makeDatagram: { _ in udp }, e2ee: backend, clock: clock)
+        let run = Task { try await owner.run() }
+        try await socket.waitForRead(3)
+        #expect(await owner.snapshot().phase == .awaitingSessionDescription)
+        #expect(await socket.recorded().0.map(\.opcode) == [0, 1])
+        await socket.disconnect(code: 4015)
+        await #expect(throws: VoiceSessionFailure.rejoinRequired) { try await run.value }
+        #expect(await connector.recorded().count == 1)
+        #expect(await owner.snapshot().reconnectAttempts == 0)
+        #expect(await owner.snapshot().phase == .closed)
+        #expect(await socket.recorded().0.map(\.opcode) == [0, 1])
+        #expect(await udp.lifecycle().closed)
+        #expect(await backend.recorded().0)
+        #expect(clock.pendingSleepCount == 0)
     }
 
     /// Continuous PCM survives real socket EOF and authenticated key-transition revocation without replay.

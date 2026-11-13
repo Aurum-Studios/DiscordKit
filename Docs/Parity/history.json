@@ -1924,6 +1924,41 @@
       ],
       "details": "changes/2026-11-11-gateway-reconnect-budget.md",
       "remainingGates": "../Tasks/MC-33-Gateway-Recovery/EVIDENCE.md"
+    },
+    {
+      "id": "2026-11-13-upstream-review",
+      "recordedOn": "2026-11-13",
+      "upstreamVersions": {
+        "rest": "10",
+        "gateway": "10",
+        "voice": "8"
+      },
+      "upstreamAnnouncementDate": "unknown",
+      "upstreamEffectiveDate": "unknown",
+      "verifiedOn": "2026-11-13",
+      "localSupportDate": "2026-11-13",
+      "localRelease": "unknown",
+      "localCommit": "unknown",
+      "changeType": "upstream_maintenance_review",
+      "previousBehavior": "The weekly review expired after November 12. A pure Voice reducer interrupted after Select Protocol but before Session Description could re-Identify with the same credentials and permit another selection.",
+      "currentBehavior": "Current written docs and stable/preview specification differences are classified with exact revisions and source hashes. Interrupted selected handshakes require a fresh join; established resume retains protocol selection. Existing specification-only gaps remain explicit.",
+      "affectedSymbols": [
+        "VoiceGatewaySessionState.selectProtocol",
+        "VoiceGatewaySessionState.connectionLost",
+        "VoiceSession.run"
+      ],
+      "affectedPayloads": "Voice v8 Select Protocol, Resume, Session Description and invalid-session close 4006; REST v10 stable/preview schema review only.",
+      "breakingChanges": [
+        "Callers of the pure Voice reducer must replace an interrupted selected handshake with a fresh main-Gateway join instead of reusing the same session credentials."
+      ],
+      "migration": "Handle rejoinRequired by acquiring fresh main-Gateway voice credentials. Keep the selected protocol across a successful established resume. Re-review by November 15 before the November 16 channel-obfuscation boundary.",
+      "sources": [
+        "https://github.com/discord/discord-api-docs/compare/da52492ced82d375981c46618cc3e182daada9a2...36adecb2e0bbbf500c430147ef4acbe9aa1a389e",
+        "https://github.com/discord/discord-api-spec/compare/ed014089afa986f2b532ae081c456a85de074d0c...3a21a01249a763cd47f1dfec3da91c5ba71bb974",
+        "https://docs.discord.com/developers/change-log"
+      ],
+      "details": "changes/2026-11-13-upstream-review.md",
+      "remainingGates": "coverage.md"
     }
   ]
 }

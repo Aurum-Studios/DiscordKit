@@ -1071,6 +1071,33 @@
       "announcementDate": "2026-01-21",
       "effectiveDate": "2026-01-21",
       "resolvedAt": "2026-10-17"
+    },
+    {
+      "id": "2026-11-13-written-specification-boundaries",
+      "status": "policy_resolved",
+      "surface": "REST v10 stable/preview schema overlays",
+      "description": "The specifications add embed audio, lobby request names, Letterboxd provider membership and nullable media placeholders beyond the currently reviewed written contracts.",
+      "evidence": [
+        {
+          "url": "https://github.com/discord/discord-api-spec/blob/3a21a01249a763cd47f1dfec3da91c5ba71bb974/specs/openapi.json",
+          "section": "See specificationReview.categories in the dated review snapshot",
+          "revision": "3a21a01249a763cd47f1dfec3da91c5ba71bb974",
+          "sha256": "ef338088f4c6a73fdb9840acd1ce2bf8f16c1870f4437bfc563418c7e0de7278"
+        },
+        {
+          "url": "https://github.com/discord/discord-api-spec/blob/3a21a01249a763cd47f1dfec3da91c5ba71bb974/specs/openapi_preview.json",
+          "section": "See specificationReview.categories in the dated review snapshot",
+          "revision": "3a21a01249a763cd47f1dfec3da91c5ba71bb974",
+          "sha256": "2a76798937eb8ed64714337a5a7d8201b0f82ba66c604e3b0224f9e6716aabf1"
+        }
+      ],
+      "impact": "Typed embed audio and outgoing audio, lobby names and explicit null media placeholders remain unsupported. Unknown response audio fields and provider strings remain preserved. Duplicate specification rows do not inherit support from written contracts.",
+      "interimPolicy": "Retain written-documentation precedence and existing partial/unsupported classifications. Do not enable outgoing specification-only fields or claim complete stable/preview parity. Exact affected records and JSON pointers are recorded in Docs/Release/sources/2026-11-13-upstream-review.json.",
+      "requiredResolution": "Review official written contracts and add typed implementation with regression evidence before expanding support.",
+      "verifiedAt": "2026-11-13",
+      "announcementDate": "unknown",
+      "effectiveDate": "unknown",
+      "resolvedAt": "2026-11-13"
     }
   ]
 }

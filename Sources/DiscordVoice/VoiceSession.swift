@@ -274,10 +274,13 @@ public actor VoiceSession<C: Clock>: VoiceManagedSession where C.Duration == Dur
                 guard let resumable = connection as? any WebSocketSessionConnection else {
                     throw VoiceSessionFailure.rejoinRequired
                 }
+                // A selected handshake without Session Description needs a fresh join, not a retry.
+                state.connectionLost()
+                guard state.phase != .closed else { throw VoiceSessionFailure.rejoinRequired }
                 guard attempts < configuration.maximumReconnectAttempts else {
                     throw VoiceSessionFailure.retryExhausted
                 }
-                attempts += 1; state.connectionLost()
+                attempts += 1
                 DiscordLog.makeLogger("voice.session").notice("Voice connection resuming", metadata: ["dk.event": "voice.connection.resuming",
                     "dk.attempt": .stringConvertible(attempts)])
                 await resumable.closeForReconnect(); connection = nil

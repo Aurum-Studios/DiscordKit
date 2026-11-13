@@ -58,7 +58,12 @@ negotiated peer and installs the selected RTP-size AEAD key. Initial/resume
 negotiation and each control write have finite deadlines. ACK debt, resume
 sequence acknowledgements and protocol closure have independent ownership.
 Resumable socket replacement preserves transport/DAVE nonce authorities and
-reauthorizes actual E2EE before enabling media. Session-invalidating/authentication/
+reauthorizes actual E2EE before enabling media. The selected protocol is retained;
+Select Protocol is sent only once. Socket loss after selection but before Session
+Description fails with `rejoinRequired` instead of selecting again. Rejoin through
+the main Gateway with fresh credentials. Close code 4006 also requires this fresh
+[Connecting to Voice flow](https://docs.discord.com/developers/topics/voice-connections#connecting-to-voice).
+Session-invalidating/authentication/
 terminal peer codes fail closed and require fresh main-Gateway credentials.
 The finite retry budget never silently becomes an unbounded reconnect storm.
 A protocol or handshake deadline remains the first causal failure when cancelling

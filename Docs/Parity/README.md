@@ -27,6 +27,9 @@ operation counts.
   pinned to documentation revision `da52492ced82d375981c46618cc3e182daada9a2`.
   Each supplemental snapshot retains its own verification date; the catalog's
   baseline date and older source dates remain unchanged.
+  The [November 13 maintenance review](changes/2026-11-13-upstream-review.md)
+  separately records current written/specification comparisons and the one-shot
+  voice protocol-selection correction.
 - [Ambiguities](ambiguities.json) names contradictions, adopted precedence and missing
   contracts. Unresolved schemas or access requirements remain explicit blockers.
 - [History](history.json) and the [change records](changes/) preserve dated support
