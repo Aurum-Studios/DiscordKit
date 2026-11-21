@@ -16,8 +16,7 @@ on:
         type: choice
         options: [preflight, diagnostic, full]
         default: preflight
-      # Historical metadata for job selection and spend tests. Deployment steps were removed.
-  publish-documentation:
+      publish-documentation:
         description: Publish Pages after trusted default-branch full certification
         type: boolean
         default: false
@@ -349,6 +348,7 @@ jobs:
           retention-days: 14
           receipt: ${{ runner.temp }}/spend-usage-transfer.json
 
+  # Historical job metadata has no deployment steps.
   publish-documentation:
     name: Publish GitHub Pages
     needs: [scope, complete, documentation-site]
