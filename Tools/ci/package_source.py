@@ -55,7 +55,7 @@ def native_provenance(native_platform):
     return triple, swift_version, host
 
 
-def package_source(repository, output, native_platform="linux-x64"):
+def package_source(repository, output, native_platform="linux-x64", *, execution=None):
     """Package tracked source only, with compiler/host provenance and a checksum.
 
     A clean checkout ensures that the archived HEAD is the source just built and
@@ -69,6 +69,9 @@ def package_source(repository, output, native_platform="linux-x64"):
     revision = git(repository, "rev-parse", "HEAD").decode().strip()
     if os.environ.get("GITHUB_SHA", revision) != revision:
         raise ValueError("Source packaging checkout differs from the executing GitHub SHA")
+    teamcity = execution is not None and execution["scope"] == "teamcity"
+    if teamcity and execution["revision"] != revision:
+        raise ValueError("Source packaging checkout differs from the assigned TeamCity revision")
     triple, swift_version, host = native_provenance(native_platform)
     output = output.resolve()
     output.mkdir(parents=True, exist_ok=True)
@@ -96,6 +99,11 @@ def package_source(repository, output, native_platform="linux-x64"):
         "runID": os.environ.get("GITHUB_RUN_ID", "local"),
         "runAttempt": os.environ.get("GITHUB_RUN_ATTEMPT", "local"),
     }
+    if teamcity:
+        metadata["schemaVersion"] = 3
+        metadata["ci"] = execution
+        metadata.pop("runID")
+        metadata.pop("runAttempt")
     manifest = output / f"{name}.json"
     manifest.write_text(json.dumps(metadata, indent=2, sort_keys=True) + "\n")
     return archive, checksum, manifest

@@ -85,6 +85,18 @@ class DocumentationInputTests(unittest.TestCase):
     def restore(self, archive, destination, **options):
         return inputs.restore(archive, destination, source=SOURCE, execution=github_execution(job="documentation-site"), **options)
 
+    def test_teamcity_site_restores_conversions_from_its_qualification_only(self):
+        producer = {"scope": "teamcity", "repository": "owner/DiscordKit", "revision": SOURCE["commit"],
+                    "qualificationID": "41", "buildID": "42"}
+        consumer = {**producer, "buildID": "43"}
+        with tempfile.TemporaryDirectory() as temporary:
+            repository = Path(temporary).resolve()
+            archive, _ = sealed_fixture(repository, "root", execution=producer)
+            inputs.restore(archive, repository / "site", source=SOURCE, execution=consumer)
+            with self.assertRaisesRegex(ValueError, "producer"):
+                inputs.restore(archive, repository / "other-site", source=SOURCE,
+                               execution={**consumer, "qualificationID": "99"})
+
     def test_seal_restores_only_individual_archives_and_binds_every_file(self):
         with tempfile.TemporaryDirectory() as temporary:
             repository = Path(temporary).resolve()

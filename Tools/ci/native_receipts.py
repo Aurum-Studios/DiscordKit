@@ -22,6 +22,11 @@ import re
 VERSION = 2
 EXECUTION_KEYS = {"scope", "repository", "repositoryID", "workflowRef", "workflowSHA", "runID",
                   "runAttempt", "jobID", "event", "ref", "headRef", "baseRef"}
+TEAMCITY_EXECUTION_KEYS = {"scope", "repository", "revision", "qualificationID", "buildID"}
+TEAMCITY_EXECUTION_VARIABLES = {"repository": "DISCORDKIT_CI_REPOSITORY",
+                               "revision": "DISCORDKIT_VCS_REVISION",
+                               "qualificationID": "DISCORDKIT_CI_CHAIN_ID",
+                               "buildID": "DISCORDKIT_CI_BUILD_ID"}
 IDENTITY_KEYS = {"commit", "sourceSHA256", "dependencyPinsSHA256", "repository", "platform", "system",
                  "machine", "swiftVersion", "swiftTarget", "buildSystem", "runtime", "buildEnvironment"}
 SHA256 = re.compile(r"[0-9a-f]{64}")
@@ -57,11 +62,18 @@ def read_json(stream):
 
 
 def validate_execution(execution):
-    """Require explicit local scope or complete GitHub workflow/event provenance."""
-    object_keys(execution, EXECUTION_KEYS, "execution identity")
+    """Require a complete identity for the selected build system."""
+    teamcity = isinstance(execution, dict) and execution.get("scope") == "teamcity"
+    object_keys(execution, TEAMCITY_EXECUTION_KEYS if teamcity else EXECUTION_KEYS, "execution identity")
     if any(not isinstance(value, str) or "\0" in value for value in execution.values()):
         raise ValueError("execution identity values must be strings")
-    if execution["scope"] == "local":
+    if teamcity:
+        if (not re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", execution["repository"])
+                or not SHA1.fullmatch(execution["revision"])
+                or any(not re.fullmatch(r"[1-9][0-9]*", execution[key])
+                       for key in ("qualificationID", "buildID"))):
+            raise ValueError("invalid TeamCity build provenance")
+    elif execution["scope"] == "local":
         if (not Path(execution["repository"]).is_absolute()
                 or any(execution[key] != "local" for key in EXECUTION_KEYS
                        - {"scope", "repository", "ref", "headRef", "baseRef"})
@@ -97,13 +109,30 @@ def execution_identity(repository):
                  "event": "GITHUB_EVENT_NAME", "ref": "GITHUB_REF", "headRef": "GITHUB_HEAD_REF",
                  "baseRef": "GITHUB_BASE_REF"}
     hosted = os.environ.get("GITHUB_ACTIONS") == "true" or any(name in os.environ for name in variables.values())
-    if hosted:
+    teamcity = "TEAMCITY_VERSION" in os.environ or any(name in os.environ for name in TEAMCITY_EXECUTION_VARIABLES.values())
+    if teamcity and hosted:
+        raise ValueError("conflicting TeamCity and GitHub execution provenance")
+    if teamcity:
+        execution = {"scope": "teamcity", **{key: os.environ.get(name, "")
+                     for key, name in TEAMCITY_EXECUTION_VARIABLES.items()}}
+    elif hosted:
         execution = {"scope": "github", **{key: os.environ.get(name, "") for key, name in variables.items()}}
     else:
         execution = {key: "local" for key in EXECUTION_KEYS}
         execution.update(scope="local", repository=str(repository.resolve()), ref="", headRef="", baseRef="")
     validate_execution(execution)
     return execution
+
+
+def same_build_chain(producer, consumer):
+    """Match TeamCity's platform qualification or the existing workflow attempt."""
+    if producer["scope"] != consumer["scope"]:
+        return False
+    if producer["scope"] == "teamcity":
+        keys = TEAMCITY_EXECUTION_KEYS - {"buildID"}
+    else:
+        keys = EXECUTION_KEYS - {"jobID"}
+    return all(producer[key] == consumer[key] for key in keys)
 
 
 def utc_now():
@@ -178,7 +207,7 @@ def validate_metadata(metadata, current, execution, component, roots, *, selecti
     if not isinstance(metadata["payloadSHA256"], str) or not SHA256.fullmatch(metadata["payloadSHA256"]):
         raise ValueError("invalid producer payload digest")
     if selection is None:
-        if any(producer["execution"][key] != execution[key] for key in EXECUTION_KEYS - {"jobID"}):
+        if not same_build_chain(producer["execution"], execution):
             raise ValueError("native artifact producer differs from this repository, workflow, event, run or attempt")
     else:
         selected_artifact(selection, execution, metadata, archive_sha256)
@@ -186,6 +215,8 @@ def validate_metadata(metadata, current, execution, component, roots, *, selecti
 
 def selected_artifact(selection, execution, metadata, archive_sha256):
     """Keep resolver checks mandatory for every admission path that accepts an index."""
+    if execution["scope"] == "teamcity":
+        raise ValueError("TeamCity native inputs require a same-chain artifact dependency")
     import artifact_index
     return artifact_index.validate_selection(selection, execution=execution,
         component=metadata["component"], platform=metadata["compatibility"]["identity"]["platform"],
@@ -200,6 +231,9 @@ def consumer_receipt(execution, producer, archive_digest, *, selection=None, met
         raise ValueError("invalid consumer archive digest")
     artifact = {"id": "local:sha256:" + archive_digest, "idSource": "local-content-address",
                 "archiveSHA256": archive_digest}
+    if execution["scope"] == "teamcity" and producer["execution"]["scope"] == "teamcity":
+        artifact.update(id=f'teamcity:build:{producer["execution"]["buildID"]}:sha256:{archive_digest}',
+                        idSource="teamcity-build-and-content-address")
     verified = None
     if selection is not None:
         if metadata is None or digest(metadata["producer"]) != digest(producer):
@@ -212,7 +246,7 @@ def consumer_receipt(execution, producer, archive_digest, *, selection=None, met
                     "consumerExecution": dict(execution), "sourceCommit": selection["sourceCommit"],
                     "platform": selection["platform"], "component": metadata["component"],
                     "producerAttempt": producer["execution"]["runAttempt"]}
-    elif any(producer["execution"][key] != execution[key] for key in EXECUTION_KEYS - {"jobID"}):
+    elif not same_build_chain(producer["execution"], execution):
         raise ValueError("consumer requires verified selection for an earlier producer attempt")
     return {"execution": dict(execution), "selectedProducer": dict(producer["execution"]),
             "selectedProducerReceipt": copy.deepcopy(producer), "artifact": artifact, "selection": verified,

@@ -103,13 +103,13 @@ class PublicationTrustTests(unittest.TestCase):
 
     def test_mocked_github_http_reads_use_only_the_workflow_token_and_exact_run(self):
         calls = []
-        prefix = f"https://api.github.com/repos/{REPOSITORY}/"
+        repository_url = f"https://api.github.com/repos/{REPOSITORY}"
         def read(request, timeout):
             self.assertEqual(request.get_method(), "GET")
             self.assertEqual(request.get_header("Authorization"), "Bearer workflow-test-token")
             self.assertEqual(timeout, 60)
-            self.assertTrue(request.full_url.startswith(prefix))
-            path = request.full_url[len(prefix):]
+            self.assertTrue(request.full_url == repository_url or request.full_url.startswith(f"{repository_url}/"))
+            path = request.full_url[len(repository_url):].removeprefix("/")
             calls.append(path)
             return io.BytesIO(json.dumps(self.api.responses[path]).encode())
         with patch.dict(os.environ, {"GITHUB_REPOSITORY": REPOSITORY, "GH_TOKEN": "workflow-test-token",

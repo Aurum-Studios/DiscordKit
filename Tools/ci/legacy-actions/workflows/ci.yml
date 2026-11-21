@@ -16,7 +16,8 @@ on:
         type: choice
         options: [preflight, diagnostic, full]
         default: preflight
-      publish-documentation:
+      # Historical metadata for job selection and spend tests. Deployment steps were removed.
+  publish-documentation:
         description: Publish Pages after trusted default-branch full certification
         type: boolean
         default: false
@@ -402,17 +403,3 @@ jobs:
                           '--site-archive', '.build/documentation-download/documentation-site.tar.gz',
                           '--site-output', '.build/documentation-publish'], check=True)
           PY
-      - name: Upload GitHub Pages site after full certification and authorization
-        uses: actions/upload-pages-artifact@v5
-        with:
-          name: documentation-pages-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
-          path: .build/documentation-publish
-          retention-days: 7
-          include-hidden-files: true
-      - name: Configure GitHub Pages
-        uses: actions/configure-pages@v6
-      - name: Deploy documentation
-        id: deployment
-        uses: actions/deploy-pages@v5
-        with:
-          artifact_name: documentation-pages-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}

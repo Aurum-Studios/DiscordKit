@@ -15,7 +15,7 @@ import tempfile
 import unittest
 
 ROOT = Path(__file__).resolve().parents[2]
-ACTION = ROOT / '.github/actions/setup-native/action.yml'
+ACTION = ROOT / 'Tools/ci/legacy-actions/actions/setup-native/action.yml'
 
 
 def shell_blocks():
@@ -108,7 +108,7 @@ class ProvisioningWorkflowTests(unittest.TestCase):
 
     def test_every_native_caller_has_an_explicit_profile_and_ten_minute_cap(self):
         callers = 0
-        for workflow in (ROOT / '.github/workflows').glob('*.yml'):
+        for workflow in (ROOT / 'Tools/ci/legacy-actions/workflows').glob('*.yml'):
             text = workflow.read_text()
             for match in re.finditer(r'(?m)^      - uses: \./\.github/actions/setup-native\n((?:        [^\n]*\n)+)', text):
                 callers += 1
@@ -118,7 +118,7 @@ class ProvisioningWorkflowTests(unittest.TestCase):
                              len(re.findall(r'(?m)^      - uses: \./\.github/actions/setup-native$', text)))
             self.assertNotIn('uses: swift-actions/setup-swift', text)
         self.assertGreater(callers, 10)
-        text = (ROOT / '.github/workflows/native-platform.yml').read_text()
+        text = (ROOT / 'Tools/ci/legacy-actions/workflows/native-platform.yml').read_text()
         jobs = dict((match[1], match[2]) for match in re.finditer(
             r'(?ms)^  ([a-z][a-z-]*):\n(.*?)(?=^  [a-z][a-z-]*:\n|\Z)', text))
         for job in ('canary', 'tests-root', 'tests', 'audit', 'package'):
@@ -137,7 +137,7 @@ class ProvisioningWorkflowTests(unittest.TestCase):
         self.assertNotIn('continue-on-error', action)
         self.assertNotIn('skip-verify-signature', action)
         self.assertNotIn('actions/setup-node', action)
-        self.assertIn('actions/setup-node@v6', (ROOT / '.github/actions/setup-artifact-sdk/action.yml').read_text())
+        self.assertIn('actions/setup-node@v6', (ROOT / 'Tools/ci/legacy-actions/actions/setup-artifact-sdk/action.yml').read_text())
 
     def test_provisioning_artifacts_are_unique_across_reusable_platform_calls(self):
         """The two platform calls reuse static job IDs and restart matrix indices."""

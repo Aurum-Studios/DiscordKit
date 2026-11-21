@@ -137,6 +137,28 @@ class DocumentationSiteTests(unittest.TestCase):
                 site.build_site(repository, output, "docc", "/DiscordKit", sealed_inputs=archives)
             self.assertFalse(output.exists())
 
+    def test_archive_export_preserves_the_native_bundle_and_skips_static_hosting(self):
+        """Merging sealed inputs publishes a native bundle without a hosting transform."""
+        with tempfile.TemporaryDirectory() as temporary:
+            repository = Path(temporary).resolve()
+            archives = [sealed_fixture(repository, component)[0] for component in site.documentation_inputs.PACKAGES]
+            commands = []
+            output = repository / site.ARCHIVE
+
+            def merge(command, root):
+                self.fake_toolchain(commands)(command, root)
+                staging = Path(command[command.index("--output-path") + 1])
+                (staging / "metadata.json").write_text('{"bundleIdentifier":"org.discordkit.DiscordKit"}')
+
+            with patch.object(site, "run", side_effect=merge), \
+                    patch.object(site.native_jobs, "source_identity", return_value=SOURCE), \
+                    patch.object(site.documentation_inputs.receipts, "execution_identity", return_value=github_execution(job="documentation-site")):
+                site.build_site(repository, output, "docc", "", sealed_inputs=archives, archive_only=True)
+            self.assertEqual([command[1] for command in commands], ["merge"])
+            self.assertEqual(json.loads((output / "metadata.json").read_text())["bundleIdentifier"],
+                             "org.discordkit.DiscordKit")
+            self.assertFalse((output / ".nojekyll").exists())
+
     def test_all_packages_are_checked_and_individual_archives_share_one_static_site(self):
         """Authoring modules share the library navigator and all deep routes survive."""
         with tempfile.TemporaryDirectory(prefix="documentation test ") as temporary:

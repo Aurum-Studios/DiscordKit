@@ -76,7 +76,7 @@ Actual Swift version, target information and active executable path are observed
 before publishing PATH or the successful provisioning receipt. Cache content
 cannot supply an installed compiler tree or substitute an older prefix match.
 
-[setup-native](../../../../.github/actions/setup-native/action.yml) offers `build`
+[setup-native](../../../../Tools/ci/legacy-actions/actions/setup-native/action.yml) offers `build`
 and `runtime` prerequisite profiles. Both install the complete pinned compiler:
 `swift test --skip-build` may compile SwiftPM manifests. Linux runtime retains
 the CRT/header dependencies `libc6-dev`, `libgcc-13-dev` and `libstdc++-13-dev`;

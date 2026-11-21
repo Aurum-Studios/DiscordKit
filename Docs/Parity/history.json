@@ -1959,6 +1959,41 @@
       ],
       "details": "changes/2026-11-13-upstream-review.md",
       "remainingGates": "coverage.md"
+    },
+    {
+      "id": "2026-11-21-upstream-review",
+      "recordedOn": "2026-11-21",
+      "upstreamVersions": {
+        "rest": "10",
+        "gateway": "10",
+        "voice": "8"
+      },
+      "upstreamAnnouncementDate": "2026-08-12",
+      "upstreamEffectiveDate": "2026-11-16",
+      "verifiedOn": "2026-11-21",
+      "localSupportDate": "unknown",
+      "localRelease": "unknown",
+      "localCommit": "unknown",
+      "changeType": "upstream_maintenance_review",
+      "previousBehavior": "The November 13 maintenance record expired on November 15 and classified HTTP channel omission as future-effective.",
+      "currentBehavior": "The official rollout is confirmed as effective. Gateway identifies obfuscation with channel flag bit 17. Existing HTTP handling preserves Discord's list and treats an omitted row as absent from that response. Current Voice Media Sink Wants is an explicit gap, and the maintained REST and OpenAPI classifications remain in effect.",
+      "affectedSymbols": [
+        "GuildEndpoints.channels",
+        "Channel.isObfuscated",
+        "GatewayCapabilities.channelObfuscation",
+        "PermissionResolver",
+        "VoiceSession"
+      ],
+      "affectedPayloads": "REST v10 guild channel lists, lobby member writes and JSON errors. Gateway v10 channel dispatches. Voice v8 Hello, Speaking and Media Sink Wants.",
+      "breakingChanges": [],
+      "migration": "Stop sending the retired Gateway Identify opt-in for channel obfuscation. Use the server's channel list and keep absence distinct from a deletion event. The Voice supervisor requests v8 with Discord's receive-all default.",
+      "sources": [
+        "https://github.com/discord/discord-api-docs/compare/36adecb2e0bbbf500c430147ef4acbe9aa1a389e...9b737ec51ee8d5076af0565d209a9adf8f590a27",
+        "https://github.com/discord/discord-api-spec/tree/3a21a01249a763cd47f1dfec3da91c5ba71bb974",
+        "https://docs.discord.com/developers/change-log#channel-obfuscation-is-now-live-for-all-bots"
+      ],
+      "details": "changes/2026-11-21-upstream-review.md",
+      "remainingGates": "coverage.md"
     }
   ]
 }

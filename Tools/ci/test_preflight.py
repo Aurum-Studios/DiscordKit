@@ -36,9 +36,10 @@ class PreflightPlanTests(unittest.TestCase):
         browser = self.repository / "Browser/DiscordActivityBridge"
         browser.mkdir(parents=True)
         (browser / "bridge.test.mjs").touch()
-        workflows = self.repository / ".github/workflows"
+        workflows = self.repository / ".teamcity"
         workflows.mkdir(parents=True)
-        (workflows / "ci.yml").touch()
+        (workflows / "settings.kts").touch()
+        (workflows / "pom.xml").touch()
 
     def plan(self, operation, group=None):
         return preflight.plan_commands(operation, self.repository, group=group, policy=self.policy)
@@ -69,23 +70,20 @@ class PreflightPlanTests(unittest.TestCase):
         self.assertFalse(any("curate_docc" in argument or "dump-package" in argument
                              for command in planned for argument in command.arguments))
 
-    def test_browser_and_actionlint_receive_sorted_literal_nonempty_file_inventories(self):
+    def test_browser_and_teamcity_commands_receive_literal_paths(self):
         browser = self.repository / "Browser/DiscordActivityBridge"
         (browser / "a test.test.mjs").touch()
         (browser / "ignore.mjs").touch()
         self.assertEqual(self.plan("group", "browser")[0].arguments,
                          ("node", "--test", "Browser/DiscordActivityBridge/a test.test.mjs",
                           "Browser/DiscordActivityBridge/bridge.test.mjs"))
-        workflows = self.repository / ".github/workflows"
-        (workflows / "a workflow.yaml").touch()
-        (workflows / "ignore.json").touch()
         self.assertEqual(self.plan("workflow")[0].arguments,
-                         ("actionlint", ".github/workflows/a workflow.yaml", ".github/workflows/ci.yml"))
+                         ("mvn", "-B", "-f", ".teamcity/pom.xml", "teamcity-configs:generate"))
 
     def test_missing_python_browser_and_workflow_suites_fail_before_empty_discovery(self):
         for operation, group, pattern in (("group", "tooling-python", "Tools/DiscordKitTools/scripts/test_*.py"),
                                           ("group", "browser", "Browser/DiscordActivityBridge/*.test.mjs"),
-                                          ("workflow", None, ".github/workflows/*.yml")):
+                                          ("workflow", None, ".teamcity/settings.kts")):
             for path in self.repository.glob(pattern):
                 path.unlink()
             with self.subTest(operation=operation, group=group), self.assertRaisesRegex(ValueError, "missing"):

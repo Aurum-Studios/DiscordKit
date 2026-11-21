@@ -89,10 +89,10 @@ class ExecutionPlanTests(unittest.TestCase):
         for event, ref in [('push', 'refs/heads/main'), ('pull_request', 'refs/pull/2/merge'),
                            ('workflow_dispatch', 'refs/heads/feature')]:
             execution.validate_trigger(event, ref, 'main')
-        ci = (ROOT / '.github/workflows/ci.yml').read_text()
+        ci = (ROOT / 'Tools/ci/legacy-actions/workflows/ci.yml').read_text()
         self.assertIn('  push:\n    branches: [main]\n', ci)
         self.assertIn('  pull_request:\n', ci)
-        docs = (ROOT / '.github/workflows/documentation.yml').read_text()
+        docs = (ROOT / 'Tools/ci/legacy-actions/workflows/documentation.yml').read_text()
         self.assertNotIn('  push:', docs)
 
     def test_unknown_runner_and_matrix_expansion_fail_before_startup(self):
@@ -129,7 +129,7 @@ class ExecutionPlanTests(unittest.TestCase):
                     self.assertNotRegex(before, r'uses: (?!actions/checkout@)')
                     self.assertNotIn('needs.scope.outputs.admitted', before)
                     self.assertIn('--group ', block)
-        native = (ROOT / '.github/workflows/native-platform.yml').read_text()
+        native = (ROOT / 'Tools/ci/legacy-actions/workflows/native-platform.yml').read_text()
         self.assertIn("ADMISSION_PLATFORM: ${{ inputs.mode == 'diagnostic' && inputs.platform || '' }}", native)
 
 

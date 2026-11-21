@@ -102,6 +102,28 @@ class NativeReceiptTrustTests(unittest.TestCase):
         self.assertEqual(local["scope"], "local")
         self.assertEqual(local["repository"], str(Path.cwd().resolve()))
 
+    def test_teamcity_artifact_requires_complete_matching_qualification(self):
+        """Different build IDs can share one qualification, but another chain cannot restore it."""
+        environment = {"TEAMCITY_VERSION": "2026.1", "DISCORDKIT_CI_REPOSITORY": "Aurum-Studios/DiscordKit",
+                       "DISCORDKIT_VCS_REVISION": "a" * 40, "DISCORDKIT_CI_CHAIN_ID": "42",
+                       "DISCORDKIT_CI_BUILD_ID": "43"}
+        with patch.dict(os.environ, environment, clear=True):
+            producer = receipts.execution_identity(Path.cwd())
+        self.metadata["producer"]["execution"] = producer
+        consumer = {**producer, "buildID": "44"}
+        self.validate(consumer)
+        restored = receipts.consumer_receipt(consumer, self.metadata["producer"], "e" * 64)
+        self.assertEqual(restored["artifact"]["id"], "teamcity:build:43:sha256:" + "e" * 64)
+        for field, value in (("qualificationID", "45"), ("revision", "b" * 40), ("repository", "other/DiscordKit")):
+            with self.subTest(field=field), self.assertRaises(ValueError):
+                self.validate({**consumer, field: value})
+        with self.assertRaises(ValueError):
+            self.validate(self.producer_execution)
+        for variable in receipts.TEAMCITY_EXECUTION_VARIABLES.values():
+            incomplete = {key: value for key, value in environment.items() if key != variable}
+            with self.subTest(variable=variable), patch.dict(os.environ, incomplete, clear=True), self.assertRaises(ValueError):
+                receipts.execution_identity(Path.cwd())
+
     def test_pull_request_scope_requires_merge_ref_and_both_branch_names(self):
         """Pull-request identity cannot be replaced with a push or a partially specified trust scope."""
         execution = {**self.producer_execution, "event": "pull_request", "ref": "refs/pull/15/merge",

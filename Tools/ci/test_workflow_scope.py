@@ -198,8 +198,8 @@ class WorkflowScopeTests(unittest.TestCase):
 
 class WorkflowGraphTests(unittest.TestCase):
     def setUp(self):
-        self.ci=(ROOT/'.github/workflows/ci.yml').read_text()
-        self.native=(ROOT/'.github/workflows/native-platform.yml').read_text()
+        self.ci=(ROOT/'Tools/ci/legacy-actions/workflows/ci.yml').read_text()
+        self.native=(ROOT/'Tools/ci/legacy-actions/workflows/native-platform.yml').read_text()
 
     def job(self,text,name):
         return re.split(r'\n  [A-Za-z][\w-]*:\n', text.split('\n  '+name+':\n', 1)[1], maxsplit=1)[0]
@@ -324,7 +324,7 @@ class WorkflowGraphTests(unittest.TestCase):
         self.assertNotIn('name: Offline certification passed\n',complete)
 
     def test_documentation_requests_share_full_ci_without_automatic_compilation(self):
-        docs=(ROOT/'.github/workflows/documentation.yml').read_text()
+        docs=(ROOT/'Tools/ci/legacy-actions/workflows/documentation.yml').read_text()
         self.assertIn('  workflow_dispatch:', docs)
         self.assertNotIn('  push:', docs)
         self.assertNotIn('  pull_request:', docs)

@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "template_version": 3,
+  "project": {
+    "name": "DiscordKit",
+    "slug": "discordkit",
+    "description": "A modular, Swift-native library for Discord applications and bots.",
+    "default_branch": "main"
+  },
+  "identity": {
+    "company": {
+      "domain": "aurum-studios.com",
+      "reverse_domain": "com.aurum-studios",
+      "namespace_uuid": "bb04eb20-fd7b-5dd4-b0a4-794220eb8e56"
+    },
+    "kind": "library",
+    "key": "discordkit",
+    "namespace": "com.aurum-studios.libraries.discordkit",
+    "uri": "https://aurum-studios.com/ns/libraries/discordkit",
+    "uuid": "b467fa11-3125-59c2-86af-f22bd630eaf4",
+    "allocation_status": "unverified",
+    "identifiers": {
+      "java_package": "com.aurum_studios.libraries.l_discordkit",
+      "dotnet_namespace": "Com.AurumStudios.Libraries.L_discordkit",
+      "swift_module": "Com_AurumStudios_Libraries_L_discordkit",
+      "php_namespace": "Com\\AurumStudios\\Libraries\\L_discordkit",
+      "c_symbol_prefix": "com_aurum_studios_libraries_l_discordkit_",
+      "cpp_namespace": "com::aurum_studios::libraries::l_discordkit",
+      "maven_group": "com.aurum-studios.libraries.discordkit",
+      "apple_bundle_prefix": "com.aurum-studios.libraries.discordkit",
+      "unity_package_prefix": "com.aurum-studios.libraries.discordkit",
+      "nuget_package_prefix": "com.aurum-studios.libraries.discordkit",
+      "npm_package": "@aurum-studios/libraries.discordkit",
+      "composer_package": "com.aurum-studios/libraries.discordkit",
+      "paper_namespace": "com.aurum-studios.libraries.discordkit",
+      "wordpress_prefix": "com_aurum_studios_libraries_l_discordkit_",
+      "wordpress_slug": "com-aurum-studios-libraries-discordkit",
+      "environment_prefix": "COM_AURUM_STUDIOS_LIBRARIES_L_DISCORDKIT_",
+      "hostname": "discordkit.libraries.aurum-studios.com"
+    }
+  },
+  "tracker": {
+    "mode": "youtrack",
+    "project_key": null,
+    "state_mapping": {}
+  },
+  "knowledge_base": {
+    "enabled": true,
+    "layout": "project",
+    "root_title": "DiscordKit Documentation",
+    "permitted_groups": [],
+    "permitted_users": [],
+    "source_url": "https://github.com/Aurum-Studios/DiscordKit"
+  },
+  "guidance": {
+    "languages": [
+      "swift"
+    ]
+  },
+  "validation": {
+    "commands": [
+      "swift build",
+      "swift test",
+      "python3 -m unittest discover -s Tools/ci",
+      "node --test Browser/DiscordActivityBridge/*.test.mjs",
+      "python3 Tools/ci/documentation_examples.py",
+      "python3 Tools/ci/build_documentation_site.py --archive-only",
+      "python3 Scripts/youtrack_knowledge_base.py verify --root ."
+    ]
+  }
+}

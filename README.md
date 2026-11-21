@@ -49,43 +49,34 @@ The package uses `ApproachableConcurrency` and an explicit nonisolated default.
 Tests use deterministic clocks, injected transports and local peers; ordinary
 tests need no Discord credentials. See the [concurrency policy](Docs/Concurrency.md)
 and [contribution guide](CONTRIBUTING.md) for ownership and validation requirements.
+The [CI guide](Docs/CI.md) describes the TeamCity build chain and its native
+platform coverage.
 
 ## Releases
 
-Maintainers can manually run the [Release workflow](.github/workflows/release.yml)
-to package an exact certified commit and publish a GitHub release with a chosen
+Maintainers can run and approve **Publish GitHub release** in TeamCity to
+package an exact certified commit and publish a GitHub release at a chosen
 `Major.Minor.Build` version, such as `1.2.37`. See the
-[release instructions](Docs/ReleaseTooling.md#manual-github-releases) for inputs,
-source assets and recovery after an interrupted publication.
+[release instructions](Docs/ReleaseTooling.md#manual-github-releases).
 
 ## Documentation
 
-The DocC catalogs include product guides, tutorials, an example cookbook and public
-API references. Browse the [documentation website](https://aurum-studios.github.io/DiscordKit/)
-or start with the [documentation contents](Sources/DiscordKit/DiscordKit.docc/TableOfContents.md)
-or [getting started](Sources/DiscordKit/DiscordKit.docc/GettingStarted.md).
+The [DiscordKit Knowledge Base](https://issues.aurum-studios.com/articles/DISCORDKIT)
+holds project documentation. The Swift DocC catalogs contain product guides,
+tutorials and public API reference. Start with the
+[catalog contents](Sources/DiscordKit/DiscordKit.docc/TableOfContents.md) or
+[getting started](Sources/DiscordKit/DiscordKit.docc/GettingStarted.md).
 
-Build the independent archives and merged library navigator locally:
+TeamCity retains `DiscordKitLibrary.doccarchive.tar.gz` for verified revisions.
+To build the merged runtime, macro and DSL extension archive locally, run:
 
 ```sh
-python3 Tools/ci/emit_symbol_graphs.py --jobs 5
-python3 Tools/ci/curate_docc.py --check
-python3 Tools/ci/documentation_examples.py
-python3 Tools/ci/build_docc.py
+python3 Tools/ci/build_documentation_site.py --archive-only
 ```
 
-Open `.build/documentation/DiscordKitLibrary.doccarchive` in Xcode. The
+Open `.build/DiscordKitLibrary.doccarchive` in Xcode. See the
 [documentation build guide](Sources/DiscordKit/DiscordKit.docc/BuildingDocumentation.md)
-explains validation and hosting.
-
-The independent [Documentation workflow](.github/workflows/documentation.yml)
-builds the website on every push and pull request alongside CI, and publishes
-default-branch commits to GitHub Pages. It includes the runtime, macro and DSL
-extension references in one library navigator. To build the same site locally:
-
-```sh
-python3 Tools/ci/build_documentation_site.py --hosting-base-path /DiscordKit
-```
+for validation and a local static preview.
 
 ## Available products
 

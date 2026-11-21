@@ -18,14 +18,14 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 def scripts(action):
-    text = (ROOT / '.github/actions' / action / 'action.yml').read_text()
+    text = (ROOT / 'Tools/ci/legacy-actions/actions' / action / 'action.yml').read_text()
     return ['\n'.join(line[8:] for line in block.splitlines())
             for block in re.findall(r'      run: \|\n((?:        [^\n]*\n|\n)+)', text)]
 
 
 class ArtifactWorkflowTests(unittest.TestCase):
     def test_workflow_evidence_paths_do_not_contain_literal_yaml_block_markers(self):
-        text = (ROOT / '.github/workflows/native-platform.yml').read_text()
+        text = (ROOT / 'Tools/ci/legacy-actions/workflows/native-platform.yml').read_text()
         blocks = re.findall(r'          paths: \|\n((?:            [^\n]*\n)+)', text)
         self.assertTrue(blocks)
         for block in blocks:
@@ -33,8 +33,8 @@ class ArtifactWorkflowTests(unittest.TestCase):
             self.assertTrue(all(line.strip() and line.strip() != '|' for line in paths))
 
     def test_qualification_fault_runs_after_real_tests_and_retains_failure_evidence(self):
-        ci = (ROOT / '.github/workflows/ci.yml').read_text()
-        native = (ROOT / '.github/workflows/native-platform.yml').read_text()
+        ci = (ROOT / 'Tools/ci/legacy-actions/workflows/ci.yml').read_text()
+        native = (ROOT / 'Tools/ci/legacy-actions/workflows/native-platform.yml').read_text()
         root = native.split('\n  tests-root:\n', 1)[1].split('\n  tests:\n', 1)[0]
         marker = 'name: Inject first-attempt diagnostic consumer failure'
         self.assertEqual(native.count(marker), 1)
@@ -91,10 +91,10 @@ class ArtifactWorkflowTests(unittest.TestCase):
             self.assertEqual(archive.read_bytes(), b'unchanged compiled bytes')
 
     def test_upload_launches_a_javascript_action_for_runtime_credentials(self):
-        text = (ROOT / '.github/actions/upload-evidence/action.yml').read_text()
+        text = (ROOT / 'Tools/ci/legacy-actions/actions/upload-evidence/action.yml').read_text()
         self.assertIn('uses: ./.github/actions/artifact-transfer', text)
         self.assertIn('arguments: ${{ steps.arguments.outputs.arguments }}', text)
-        launcher = (ROOT / '.github/actions/artifact-transfer/action.yml').read_text()
+        launcher = (ROOT / 'Tools/ci/legacy-actions/actions/artifact-transfer/action.yml').read_text()
         self.assertIn('using: node24', launcher)
 
     def test_missing_local_evidence_fails_before_transfer(self):
@@ -105,7 +105,7 @@ class ArtifactWorkflowTests(unittest.TestCase):
                 run.assert_not_called()
 
     def test_workflow_has_complete_index_and_fresh_barrier_without_attempt_downloads(self):
-        text = (ROOT / '.github/workflows/native-platform.yml').read_text()
+        text = (ROOT / 'Tools/ci/legacy-actions/workflows/native-platform.yml').read_text()
         self.assertNotIn('actions/download-artifact', text)
         self.assertNotIn('actions/upload-artifact', text)
         self.assertNotIn('continue-on-error', text)

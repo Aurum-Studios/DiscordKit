@@ -1,0 +1,145 @@
+{
+  "version": 1,
+  "sources": [
+    {
+      "path": "README.md",
+      "section": "guides",
+      "title": "Getting Started"
+    },
+    {
+      "path": "Docs/Setup.md",
+      "section": "guides",
+      "title": "Development Setup"
+    },
+    {
+      "path": "CONTRIBUTING.md",
+      "section": "guides",
+      "title": "Contributing"
+    },
+    {
+      "path": "Docs/Migration.md",
+      "section": "guides",
+      "title": "Migration and Compatibility"
+    },
+    {
+      "path": "Docs/Client.md",
+      "section": "guides",
+      "title": "Discord Client"
+    },
+    {
+      "path": "Docs/Interactions.md",
+      "section": "guides",
+      "title": "Interactions"
+    },
+    {
+      "path": "Docs/MessageBuilders.md",
+      "section": "guides",
+      "title": "Message Builders"
+    },
+    {
+      "path": "Docs/CommandDSL.md",
+      "section": "guides",
+      "title": "Command DSL"
+    },
+    {
+      "path": "Docs/MacroDSL.md",
+      "section": "guides",
+      "title": "Macros and Command Authoring"
+    },
+    {
+      "path": "Docs/OAuth.md",
+      "section": "guides",
+      "title": "OAuth and Install Flows"
+    },
+    {
+      "path": "Docs/WebhooksInteractionsVoice.md",
+      "section": "guides",
+      "title": "Webhooks and Voice Integrations"
+    },
+    {
+      "path": "Docs/Voice.md",
+      "section": "guides",
+      "title": "Voice and Media"
+    },
+    {
+      "path": "Docs/Publishing-Documentation.md",
+      "section": "guides",
+      "title": "Documentation Publication"
+    },
+    {
+      "path": "Docs/Architecture.md",
+      "section": "engineering-reference",
+      "title": "Architecture"
+    },
+    {
+      "path": "Docs/PlatformSupport.md",
+      "section": "engineering-reference",
+      "title": "Platform Support"
+    },
+    {
+      "path": "Docs/Transport.md",
+      "section": "engineering-reference",
+      "title": "Transport Adapters"
+    },
+    {
+      "path": "Docs/HTTP.md",
+      "section": "engineering-reference",
+      "title": "HTTP Client"
+    },
+    {
+      "path": "Docs/Gateway.md",
+      "section": "engineering-reference",
+      "title": "Gateway and Sessions"
+    },
+    {
+      "path": "Docs/GatewayEventModules.md",
+      "section": "engineering-reference",
+      "title": "Gateway Event Modules"
+    },
+    {
+      "path": "Docs/Concurrency.md",
+      "section": "engineering-reference",
+      "title": "Concurrency and Ownership"
+    },
+    {
+      "path": "Docs/Generation.md",
+      "section": "engineering-reference",
+      "title": "Generated Sources"
+    },
+    {
+      "path": "Docs/CI.md",
+      "section": "engineering-reference",
+      "title": "TeamCity and Certification"
+    },
+    {
+      "path": "Docs/TeamCitySetup.md",
+      "section": "engineering-reference",
+      "title": "TeamCity and YouTrack Administration"
+    },
+    {
+      "path": "Docs/ReleaseTooling.md",
+      "section": "engineering-reference",
+      "title": "Release Tooling"
+    },
+    {
+      "path": "Docs/VoiceVerification.md",
+      "section": "engineering-reference",
+      "title": "Voice Verification"
+    },
+    {
+      "path": "Docs/YouTrack/Knowledge-Base.md",
+      "section": "engineering-reference",
+      "title": "Knowledge Base Operations"
+    },
+    {
+      "path": "CHANGELOG.md",
+      "section": "project-history",
+      "title": "Changelog"
+    },
+    {
+      "path": "Docs/Parity/README.md",
+      "section": "project-history",
+      "title": "Upstream Review and Parity History"
+    }
+  ]
+}

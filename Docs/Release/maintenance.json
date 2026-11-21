@@ -1,166 +1,184 @@
 {
   "schemaVersion": 1,
-  "reviewedOn": "2026-11-13",
-  "nextReviewDue": "2026-11-15",
+  "reviewedOn": "2026-11-21",
+  "nextReviewDue": "2026-11-28",
   "unclassifiedEntries": [],
   "historyPath": "Docs/Parity/history.json",
-  "reviewScope": "Complete written-documentation diff from the November 5 semantic review, byte verification of all 22 previously maintained sources, and stable/preview specification diffs from their frozen discovery revision.",
+  "reviewScope": "Classified the complete written-documentation delta from November 13, verified all 29 maintained source files at exact revisions, and confirmed the unchanged stable and preview OpenAPI specifications.",
   "officialSources": [
     {
       "url": "https://docs.discord.com/developers/change-log",
-      "verifiedOn": "2026-11-13",
-      "snapshotPath": "Docs/Release/sources/2026-11-13-upstream-review.json",
-      "sha256": "ee4887663f5e70e9b64a6b818f723acc00a786beaa394136a1f13367ce3782ea"
+      "verifiedOn": "2026-11-21",
+      "snapshotPath": "Docs/Release/sources/2026-11-21-upstream-review.json",
+      "sha256": "0fade70edba2e3f45ecdbcc60d78f606d96c2a192a27dc4943356d556356d1e2"
     },
     {
       "url": "https://docs.discord.com/developers/components/reference",
-      "verifiedOn": "2026-11-13",
-      "snapshotPath": "Docs/Release/sources/2026-11-13-upstream-review.json",
-      "sha256": "ee4887663f5e70e9b64a6b818f723acc00a786beaa394136a1f13367ce3782ea"
+      "verifiedOn": "2026-11-21",
+      "snapshotPath": "Docs/Release/sources/2026-11-21-upstream-review.json",
+      "sha256": "0fade70edba2e3f45ecdbcc60d78f606d96c2a192a27dc4943356d556356d1e2"
+    },
+    {
+      "url": "https://docs.discord.com/developers/discord-social-sdk/core-concepts/platform-compatibility",
+      "verifiedOn": "2026-11-21",
+      "snapshotPath": "Docs/Release/sources/2026-11-21-upstream-review.json",
+      "sha256": "0fade70edba2e3f45ecdbcc60d78f606d96c2a192a27dc4943356d556356d1e2"
+    },
+    {
+      "url": "https://docs.discord.com/developers/discord-social-sdk/core-concepts/release-cadence-and-support",
+      "verifiedOn": "2026-11-21",
+      "snapshotPath": "Docs/Release/sources/2026-11-21-upstream-review.json",
+      "sha256": "0fade70edba2e3f45ecdbcc60d78f606d96c2a192a27dc4943356d556356d1e2"
     },
     {
       "url": "https://docs.discord.com/developers/discord-social-sdk/development-guides/account-linking-on-web",
-      "verifiedOn": "2026-11-13",
-      "snapshotPath": "Docs/Release/sources/2026-11-13-upstream-review.json",
-      "sha256": "ee4887663f5e70e9b64a6b818f723acc00a786beaa394136a1f13367ce3782ea"
+      "verifiedOn": "2026-11-21",
+      "snapshotPath": "Docs/Release/sources/2026-11-21-upstream-review.json",
+      "sha256": "0fade70edba2e3f45ecdbcc60d78f606d96c2a192a27dc4943356d556356d1e2"
     },
     {
       "url": "https://docs.discord.com/developers/discord-social-sdk/development-guides/account-linking-with-discord",
-      "verifiedOn": "2026-11-13",
-      "snapshotPath": "Docs/Release/sources/2026-11-13-upstream-review.json",
-      "sha256": "ee4887663f5e70e9b64a6b818f723acc00a786beaa394136a1f13367ce3782ea"
+      "verifiedOn": "2026-11-21",
+      "snapshotPath": "Docs/Release/sources/2026-11-21-upstream-review.json",
+      "sha256": "0fade70edba2e3f45ecdbcc60d78f606d96c2a192a27dc4943356d556356d1e2"
     },
     {
       "url": "https://docs.discord.com/developers/discord-social-sdk/development-guides/managing-game-invites",
-      "verifiedOn": "2026-11-13",
-      "snapshotPath": "Docs/Release/sources/2026-11-13-upstream-review.json",
-      "sha256": "ee4887663f5e70e9b64a6b818f723acc00a786beaa394136a1f13367ce3782ea"
+      "verifiedOn": "2026-11-21",
+      "snapshotPath": "Docs/Release/sources/2026-11-21-upstream-review.json",
+      "sha256": "0fade70edba2e3f45ecdbcc60d78f606d96c2a192a27dc4943356d556356d1e2"
     },
     {
       "url": "https://docs.discord.com/developers/discord-social-sdk/development-guides/managing-lobbies",
-      "verifiedOn": "2026-11-13",
-      "snapshotPath": "Docs/Release/sources/2026-11-13-upstream-review.json",
-      "sha256": "ee4887663f5e70e9b64a6b818f723acc00a786beaa394136a1f13367ce3782ea"
+      "verifiedOn": "2026-11-21",
+      "snapshotPath": "Docs/Release/sources/2026-11-21-upstream-review.json",
+      "sha256": "0fade70edba2e3f45ecdbcc60d78f606d96c2a192a27dc4943356d556356d1e2"
     },
     {
       "url": "https://docs.discord.com/developers/events/gateway-events",
-      "verifiedOn": "2026-11-13",
-      "snapshotPath": "Docs/Release/sources/2026-11-13-upstream-review.json",
-      "sha256": "ee4887663f5e70e9b64a6b818f723acc00a786beaa394136a1f13367ce3782ea"
+      "verifiedOn": "2026-11-21",
+      "snapshotPath": "Docs/Release/sources/2026-11-21-upstream-review.json",
+      "sha256": "0fade70edba2e3f45ecdbcc60d78f606d96c2a192a27dc4943356d556356d1e2"
     },
     {
       "url": "https://docs.discord.com/developers/events/gateway",
-      "verifiedOn": "2026-11-13",
-      "snapshotPath": "Docs/Release/sources/2026-11-13-upstream-review.json",
-      "sha256": "ee4887663f5e70e9b64a6b818f723acc00a786beaa394136a1f13367ce3782ea"
+      "verifiedOn": "2026-11-21",
+      "snapshotPath": "Docs/Release/sources/2026-11-21-upstream-review.json",
+      "sha256": "0fade70edba2e3f45ecdbcc60d78f606d96c2a192a27dc4943356d556356d1e2"
     },
     {
       "url": "https://docs.discord.com/developers/events/webhook-events",
-      "verifiedOn": "2026-11-13",
-      "snapshotPath": "Docs/Release/sources/2026-11-13-upstream-review.json",
-      "sha256": "ee4887663f5e70e9b64a6b818f723acc00a786beaa394136a1f13367ce3782ea"
+      "verifiedOn": "2026-11-21",
+      "snapshotPath": "Docs/Release/sources/2026-11-21-upstream-review.json",
+      "sha256": "0fade70edba2e3f45ecdbcc60d78f606d96c2a192a27dc4943356d556356d1e2"
     },
     {
       "url": "https://docs.discord.com/developers/gateway/getting-started-with-privileged-intent-review",
-      "verifiedOn": "2026-11-13",
-      "snapshotPath": "Docs/Release/sources/2026-11-13-upstream-review.json",
-      "sha256": "ee4887663f5e70e9b64a6b818f723acc00a786beaa394136a1f13367ce3782ea"
+      "verifiedOn": "2026-11-21",
+      "snapshotPath": "Docs/Release/sources/2026-11-21-upstream-review.json",
+      "sha256": "0fade70edba2e3f45ecdbcc60d78f606d96c2a192a27dc4943356d556356d1e2"
     },
     {
       "url": "https://docs.discord.com/developers/gateway/you-might-not-need-a-privileged-intent",
-      "verifiedOn": "2026-11-13",
-      "snapshotPath": "Docs/Release/sources/2026-11-13-upstream-review.json",
-      "sha256": "ee4887663f5e70e9b64a6b818f723acc00a786beaa394136a1f13367ce3782ea"
+      "verifiedOn": "2026-11-21",
+      "snapshotPath": "Docs/Release/sources/2026-11-21-upstream-review.json",
+      "sha256": "0fade70edba2e3f45ecdbcc60d78f606d96c2a192a27dc4943356d556356d1e2"
     },
     {
       "url": "https://docs.discord.com/developers/interactions/application-commands",
-      "verifiedOn": "2026-11-13",
-      "snapshotPath": "Docs/Release/sources/2026-11-13-upstream-review.json",
-      "sha256": "ee4887663f5e70e9b64a6b818f723acc00a786beaa394136a1f13367ce3782ea"
+      "verifiedOn": "2026-11-21",
+      "snapshotPath": "Docs/Release/sources/2026-11-21-upstream-review.json",
+      "sha256": "0fade70edba2e3f45ecdbcc60d78f606d96c2a192a27dc4943356d556356d1e2"
     },
     {
       "url": "https://docs.discord.com/developers/interactions/receiving-and-responding",
-      "verifiedOn": "2026-11-13",
-      "snapshotPath": "Docs/Release/sources/2026-11-13-upstream-review.json",
-      "sha256": "ee4887663f5e70e9b64a6b818f723acc00a786beaa394136a1f13367ce3782ea"
+      "verifiedOn": "2026-11-21",
+      "snapshotPath": "Docs/Release/sources/2026-11-21-upstream-review.json",
+      "sha256": "0fade70edba2e3f45ecdbcc60d78f606d96c2a192a27dc4943356d556356d1e2"
     },
     {
       "url": "https://docs.discord.com/developers/reference",
-      "verifiedOn": "2026-11-13",
-      "snapshotPath": "Docs/Release/sources/2026-11-13-upstream-review.json",
-      "sha256": "ee4887663f5e70e9b64a6b818f723acc00a786beaa394136a1f13367ce3782ea"
+      "verifiedOn": "2026-11-21",
+      "snapshotPath": "Docs/Release/sources/2026-11-21-upstream-review.json",
+      "sha256": "0fade70edba2e3f45ecdbcc60d78f606d96c2a192a27dc4943356d556356d1e2"
     },
     {
       "url": "https://docs.discord.com/developers/resources/audit-log",
-      "verifiedOn": "2026-11-13",
-      "snapshotPath": "Docs/Release/sources/2026-11-13-upstream-review.json",
-      "sha256": "ee4887663f5e70e9b64a6b818f723acc00a786beaa394136a1f13367ce3782ea"
+      "verifiedOn": "2026-11-21",
+      "snapshotPath": "Docs/Release/sources/2026-11-21-upstream-review.json",
+      "sha256": "0fade70edba2e3f45ecdbcc60d78f606d96c2a192a27dc4943356d556356d1e2"
     },
     {
       "url": "https://docs.discord.com/developers/resources/channel",
-      "verifiedOn": "2026-11-13",
-      "snapshotPath": "Docs/Release/sources/2026-11-13-upstream-review.json",
-      "sha256": "ee4887663f5e70e9b64a6b818f723acc00a786beaa394136a1f13367ce3782ea"
+      "verifiedOn": "2026-11-21",
+      "snapshotPath": "Docs/Release/sources/2026-11-21-upstream-review.json",
+      "sha256": "0fade70edba2e3f45ecdbcc60d78f606d96c2a192a27dc4943356d556356d1e2"
     },
     {
       "url": "https://docs.discord.com/developers/resources/guild",
-      "verifiedOn": "2026-11-13",
-      "snapshotPath": "Docs/Release/sources/2026-11-13-upstream-review.json",
-      "sha256": "ee4887663f5e70e9b64a6b818f723acc00a786beaa394136a1f13367ce3782ea"
+      "verifiedOn": "2026-11-21",
+      "snapshotPath": "Docs/Release/sources/2026-11-21-upstream-review.json",
+      "sha256": "0fade70edba2e3f45ecdbcc60d78f606d96c2a192a27dc4943356d556356d1e2"
+    },
+    {
+      "url": "https://docs.discord.com/developers/resources/lobby",
+      "verifiedOn": "2026-11-21",
+      "snapshotPath": "Docs/Release/sources/2026-11-21-upstream-review.json",
+      "sha256": "0fade70edba2e3f45ecdbcc60d78f606d96c2a192a27dc4943356d556356d1e2"
     },
     {
       "url": "https://docs.discord.com/developers/resources/message",
-      "verifiedOn": "2026-11-13",
-      "snapshotPath": "Docs/Release/sources/2026-11-13-upstream-review.json",
-      "sha256": "ee4887663f5e70e9b64a6b818f723acc00a786beaa394136a1f13367ce3782ea"
+      "verifiedOn": "2026-11-21",
+      "snapshotPath": "Docs/Release/sources/2026-11-21-upstream-review.json",
+      "sha256": "0fade70edba2e3f45ecdbcc60d78f606d96c2a192a27dc4943356d556356d1e2"
     },
     {
       "url": "https://docs.discord.com/developers/resources/user",
-      "verifiedOn": "2026-11-13",
-      "snapshotPath": "Docs/Release/sources/2026-11-13-upstream-review.json",
-      "sha256": "ee4887663f5e70e9b64a6b818f723acc00a786beaa394136a1f13367ce3782ea"
+      "verifiedOn": "2026-11-21",
+      "snapshotPath": "Docs/Release/sources/2026-11-21-upstream-review.json",
+      "sha256": "0fade70edba2e3f45ecdbcc60d78f606d96c2a192a27dc4943356d556356d1e2"
     },
     {
       "url": "https://docs.discord.com/developers/social-layer/game-stats-widgets/overview",
-      "verifiedOn": "2026-11-13",
-      "snapshotPath": "Docs/Release/sources/2026-11-13-upstream-review.json",
-      "sha256": "ee4887663f5e70e9b64a6b818f723acc00a786beaa394136a1f13367ce3782ea"
+      "verifiedOn": "2026-11-21",
+      "snapshotPath": "Docs/Release/sources/2026-11-21-upstream-review.json",
+      "sha256": "0fade70edba2e3f45ecdbcc60d78f606d96c2a192a27dc4943356d556356d1e2"
     },
     {
       "url": "https://docs.discord.com/developers/topics/oauth2",
-      "verifiedOn": "2026-11-13",
-      "snapshotPath": "Docs/Release/sources/2026-11-13-upstream-review.json",
-      "sha256": "ee4887663f5e70e9b64a6b818f723acc00a786beaa394136a1f13367ce3782ea"
-    },
-    {
-      "url": "https://docs.discord.com/developers/topics/permissions",
-      "verifiedOn": "2026-11-13",
-      "snapshotPath": "Docs/Release/sources/2026-11-13-upstream-review.json",
-      "sha256": "ee4887663f5e70e9b64a6b818f723acc00a786beaa394136a1f13367ce3782ea"
-    },
-    {
-      "url": "https://docs.discord.com/developers/topics/voice-connections",
-      "verifiedOn": "2026-11-13",
-      "snapshotPath": "Docs/Release/sources/2026-11-13-upstream-review.json",
-      "sha256": "ee4887663f5e70e9b64a6b818f723acc00a786beaa394136a1f13367ce3782ea"
+      "verifiedOn": "2026-11-21",
+      "snapshotPath": "Docs/Release/sources/2026-11-21-upstream-review.json",
+      "sha256": "0fade70edba2e3f45ecdbcc60d78f606d96c2a192a27dc4943356d556356d1e2"
     },
     {
       "url": "https://docs.discord.com/developers/topics/opcodes-and-status-codes",
-      "verifiedOn": "2026-11-13",
-      "snapshotPath": "Docs/Release/sources/2026-11-13-upstream-review.json",
-      "sha256": "ee4887663f5e70e9b64a6b818f723acc00a786beaa394136a1f13367ce3782ea"
+      "verifiedOn": "2026-11-21",
+      "snapshotPath": "Docs/Release/sources/2026-11-21-upstream-review.json",
+      "sha256": "0fade70edba2e3f45ecdbcc60d78f606d96c2a192a27dc4943356d556356d1e2"
+    },
+    {
+      "url": "https://docs.discord.com/developers/topics/permissions",
+      "verifiedOn": "2026-11-21",
+      "snapshotPath": "Docs/Release/sources/2026-11-21-upstream-review.json",
+      "sha256": "0fade70edba2e3f45ecdbcc60d78f606d96c2a192a27dc4943356d556356d1e2"
+    },
+    {
+      "url": "https://docs.discord.com/developers/topics/voice-connections",
+      "verifiedOn": "2026-11-21",
+      "snapshotPath": "Docs/Release/sources/2026-11-21-upstream-review.json",
+      "sha256": "0fade70edba2e3f45ecdbcc60d78f606d96c2a192a27dc4943356d556356d1e2"
     },
     {
       "url": "https://github.com/discord/discord-api-spec/blob/3a21a01249a763cd47f1dfec3da91c5ba71bb974/specs/openapi.json",
-      "verifiedOn": "2026-11-13",
-      "snapshotPath": "Docs/Release/sources/2026-11-13-upstream-review.json",
-      "sha256": "ee4887663f5e70e9b64a6b818f723acc00a786beaa394136a1f13367ce3782ea"
+      "verifiedOn": "2026-11-21",
+      "snapshotPath": "Docs/Release/sources/2026-11-21-upstream-review.json",
+      "sha256": "0fade70edba2e3f45ecdbcc60d78f606d96c2a192a27dc4943356d556356d1e2"
     },
     {
       "url": "https://github.com/discord/discord-api-spec/blob/3a21a01249a763cd47f1dfec3da91c5ba71bb974/specs/openapi_preview.json",
-      "verifiedOn": "2026-11-13",
-      "snapshotPath": "Docs/Release/sources/2026-11-13-upstream-review.json",
-      "sha256": "ee4887663f5e70e9b64a6b818f723acc00a786beaa394136a1f13367ce3782ea"
+      "verifiedOn": "2026-11-21",
+      "snapshotPath": "Docs/Release/sources/2026-11-21-upstream-review.json",
+      "sha256": "0fade70edba2e3f45ecdbcc60d78f606d96c2a192a27dc4943356d556356d1e2"
     }
   ],
   "transitions": [
@@ -168,14 +186,16 @@
       "id": "channel-obfuscation-http",
       "announcedOn": "2026-08-12",
       "effectiveOn": "2026-11-16",
-      "status": "future_effective",
+      "status": "effective",
       "sourceURLs": [
-        "https://docs.discord.com/developers/change-log#channel-obfuscation-for-users-and-bots"
+        "https://docs.discord.com/developers/change-log#channel-obfuscation-for-users-and-bots",
+        "https://docs.discord.com/developers/change-log#channel-obfuscation-is-now-live-for-all-bots",
+        "https://docs.discord.com/developers/resources/guild#get-guild-channels"
       ],
       "fixturePath": "Tests/Fixtures/Release/channel-obfuscation-2026-11-16.json",
       "fixtureSHA256": "450b6ea902dcf584f232c35cf65ad28af41a77552cad777b5e82388a5fa93e13",
-      "currentBehavior": "Before 2026-11-16 HTTP guild channel lists may include inaccessible channels with metadata; visibility and permission are never inferred. Gateway obfuscation can be opted into independently.",
-      "futureBehavior": "From 2026-11-16 Discord omits channels lacking VIEW_CHANNEL from GET /guilds/{guild.id}/channels; missing rows do not imply deletion. HTTP has no early opt-in.",
+      "currentBehavior": "Before 2026-11-16 the HTTP guild channel list could include inaccessible channels with metadata. Gateway obfuscation had a temporary testing opt-in.",
+      "futureBehavior": "From 2026-11-16 Get Guild Channels omits channels Discord considers non-viewable. An active voice connection makes a channel viewable, and a category is viewable if it has a viewable child. Omission alone provides no deletion evidence.",
       "symbols": [
         "GuildEndpoints.channels",
         "Channel.isObfuscated",
@@ -189,5 +209,5 @@
       ]
     }
   ],
-  "reviewComparisonLimits": "Exact Git revisions and SHA-256 hashes identify reviewed source bytes. Supplemental inventory membership covers selected current contracts; the original discovery inventory and unrelated source verification dates are retained. This review does not certify complete API parity, native SDK availability or live-service/platform qualification."
+  "reviewComparisonLimits": "The snapshot binds reviewed bytes to exact upstream revisions. Source coverage and support classifications retain their declared boundaries. Live Discord, native SDK and hosted TeamCity qualification require separate evidence."
 }

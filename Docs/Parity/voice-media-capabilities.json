@@ -285,9 +285,9 @@
         "Tests/DiscordVoiceTests/VoiceStateMachineTests.swift",
         "Tests/DiscordVoiceTests/VoiceSessionTests.swift"
       ],
-      "remainingGates": "Voice v8 pure reducer and independently composed supervised manager/session are implemented. Authorized Discord, full-client interoperability, independent review and platform qualification remain open.",
-      "verifiedOn": "2026-11-13",
-      "sourceSnapshot": "Docs/Release/sources/2026-11-13-upstream-review.json",
+      "remainingGates": "Voice v8 reducer and supervised sessions handle heartbeat intervals and authenticated Speaking associations. The session requests v8; validation of Hello v and version fallback negotiation remain unsupported. Opcode 15 Media Sink Wants remains outside typed and supervised-session support. Authorized Discord, full-client interoperability, independent review and platform qualification remain open.",
+      "verifiedOn": "2026-11-21",
+      "sourceSnapshot": "Docs/Release/sources/2026-11-21-upstream-review.json",
       "selectionPolicy": "Select Protocol is one-shot per voice session and survives established resume. Loss after selection and before Session Description closes the reducer and requires fresh main-Gateway credentials."
     },
     {

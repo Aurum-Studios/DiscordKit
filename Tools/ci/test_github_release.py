@@ -271,45 +271,29 @@ class ReleaseGateTests(unittest.TestCase):
         self.assertEqual(api.calls[-1][0], "releases?per_page=100&page=2")
         self.assertEqual(api.mutations, [])
 
-    def test_dispatch_uses_default_branch_but_target_may_be_any_commit(self):
-        environment = {"RELEASE_DEFAULT_BRANCH": "main", "GITHUB_REF": "refs/heads/main"}
-        with patch.dict(os.environ, environment):
-            with patch.object(github_release.subprocess, "check_output", return_value="commit\n") as git:
-                github_release.require_default_branch(Path("repo"), REVISION)
-                self.assertEqual(git.call_args.args[0][-3:], ["cat-file", "-t", REVISION])
-            for kind in ("blob\n", "tree\n", "tag\n"):
-                with self.subTest(kind=kind), patch.object(
-                        github_release.subprocess, "check_output", return_value=kind):
-                    with self.assertRaises(ValueError):
-                        github_release.require_default_branch(Path("repo"), REVISION)
-            with patch.object(github_release.subprocess, "check_output", side_effect=
-                              subprocess.CalledProcessError(128, ["git", "cat-file"])):
-                with self.assertRaises(subprocess.CalledProcessError):
-                    github_release.require_default_branch(Path("repo"), REVISION)
-        with patch.dict(os.environ, {**environment, "GITHUB_REF": "refs/heads/feature"}):
-            with patch.object(github_release.subprocess, "check_output") as git:
+    def test_release_source_requires_an_exact_git_commit(self):
+        with patch.object(github_release.subprocess, "check_output", return_value="commit\n") as git:
+            github_release.require_commit(Path("repo"), REVISION)
+            self.assertEqual(git.call_args.args[0][-3:], ["cat-file", "-t", REVISION])
+        for kind in ("blob\n", "tree\n", "tag\n"):
+            with self.subTest(kind=kind), patch.object(
+                    github_release.subprocess, "check_output", return_value=kind):
                 with self.assertRaises(ValueError):
-                    github_release.require_default_branch(Path("repo"), REVISION)
-                git.assert_not_called()
+                    github_release.require_commit(Path("repo"), REVISION)
+        with patch.object(github_release.subprocess, "check_output",
+                          side_effect=subprocess.CalledProcessError(128, ["git", "cat-file"])):
+            with self.assertRaises(subprocess.CalledProcessError):
+                github_release.require_commit(Path("repo"), REVISION)
 
 
-class ReleasePublicationTests(unittest.TestCase):
+class ReleaseAssetTests(unittest.TestCase):
     def setUp(self):
         temporary = tempfile.TemporaryDirectory()
         self.addCleanup(temporary.cleanup)
-        self.repository = Path(temporary.name) / "repository"
-        self.repository.mkdir()
         self.output = Path(temporary.name) / "release assets"
         self.output.mkdir()
-        self.api = FakeAPI()
         self.run = ci_run()
         self.assets = self.write_assets()
-        branch = patch.object(github_release, "require_default_branch")
-        self.branch_check = branch.start()
-        self.addCleanup(branch.stop)
-        environment = patch.dict(os.environ, {"RELEASE_TOKEN": ""})
-        environment.start()
-        self.addCleanup(environment.stop)
 
     def write_assets(self):
         name = f"DiscordKit-{VERSION}-source"
@@ -326,12 +310,6 @@ class ReleasePublicationTests(unittest.TestCase):
             "ciRun": {key: self.run[key] for key in ("id", "run_attempt", "html_url", "head_sha")},
         }))
         return archive, checksum, manifest
-
-    def publish(self, **changes):
-        arguments = {"repository": self.repository, "output": self.output,
-                     "version": VERSION, "revision": REVISION, "api": self.api}
-        arguments.update(changes)
-        github_release.publish(**arguments)
 
     def test_asset_verification_returns_exact_files_and_certification(self):
         assets, evidence = github_release.verify_assets(self.output, VERSION, REVISION)
@@ -352,123 +330,6 @@ class ReleasePublicationTests(unittest.TestCase):
                     manifest.write_text(json.dumps(metadata))
                 with self.assertRaises(ValueError):
                     github_release.verify_assets(self.output, VERSION, REVISION)
-
-    def test_publication_creates_exact_tag_and_release_with_all_assets(self):
-        with patch.object(github_release.subprocess, "run") as command:
-            self.publish(revision=REVISION.upper())
-        self.assertEqual(self.api.mutations, [("git/refs", {"ref": f"refs/tags/v{VERSION}", "sha": REVISION})])
-        self.branch_check.assert_called_once_with(self.repository, REVISION)
-        command.assert_called_once()
-        arguments = command.call_args.args[0]
-        self.assertEqual(arguments[:4], ["gh", "release", "create", f"v{VERSION}"])
-        self.assertEqual(arguments[4:7], list(map(str, self.assets)))
-        self.assertEqual(arguments[arguments.index("--target") + 1], REVISION)
-        self.assertEqual(arguments[arguments.index("--title") + 1], f"DiscordKit {VERSION}")
-        self.assertIn("--verify-tag", arguments)
-        self.assertTrue(command.call_args.kwargs["check"])
-        self.assertEqual(command.call_args.kwargs["env"]["GH_TOKEN"], self.api.token)
-        self.assertIn(self.run["html_url"], (self.output / "release-notes.md").read_text())
-
-    def test_publication_uses_optional_token_for_gh(self):
-        with patch.dict(os.environ, {"RELEASE_TOKEN": "publication-only-token"}):
-            with patch.object(github_release.subprocess, "run") as command:
-                self.publish()
-        self.assertEqual(command.call_args.kwargs["env"]["GH_TOKEN"], "publication-only-token")
-
-    def test_invalid_inputs_never_read_api_or_mutate(self):
-        with patch.object(github_release.subprocess, "run") as command:
-            for changes in ({"version": "1.2.37; bad"}, {"revision": "main"}):
-                with self.subTest(changes=changes), self.assertRaises(ValueError):
-                    self.publish(**changes)
-        self.assertEqual(self.api.calls, [])
-        self.branch_check.assert_not_called()
-        command.assert_not_called()
-
-    def test_missing_or_failed_rerun_certification_never_mutates(self):
-        for response in (RuntimeError("GitHub API GET run failed (HTTP 404)"),
-                         RuntimeError("GitHub API GET run failed (HTTP 403)"),
-                         ci_run(conclusion="failure", run_attempt=3), ci_run(status="in_progress")):
-            with self.subTest(response=response):
-                self.api = FakeAPI()
-                self.api.responses["actions/runs/1234"] = response
-                with patch.object(github_release.subprocess, "run") as command:
-                    with self.assertRaises((RuntimeError, ValueError)):
-                        self.publish()
-                    command.assert_not_called()
-                self.assertEqual(self.api.mutations, [])
-
-    def test_wrong_workflow_or_changed_certification_identity_never_mutates(self):
-        for changes in ({"workflow_id": 99}, {"run_attempt": 3}, {"id": 5678},
-                        {"html_url": "https://github.com/other/run/1234"}, {"head_sha": "0" * 40}):
-            with self.subTest(changes=changes):
-                self.api = FakeAPI()
-                self.api.responses["actions/runs/1234"] = ci_run(**changes)
-                with patch.object(github_release.subprocess, "run") as command:
-                    with self.assertRaises(ValueError):
-                        self.publish()
-                    command.assert_not_called()
-                self.assertEqual(self.api.mutations, [])
-
-    def test_missing_or_nonpassing_final_gate_never_publishes(self):
-        path = "actions/runs/1234/attempts/2/jobs?per_page=100&page=1"
-        for jobs in ([], [ci_gate(conclusion="failure")], [ci_gate(conclusion="skipped")],
-                     [ci_gate(name="Diagnostic scope passed")],
-                     [ci_gate(name="Preflight scope passed")], [ci_gate(steps=[])]):
-            with self.subTest(jobs=jobs):
-                self.api = FakeAPI()
-                self.api.responses[path] = {"jobs": jobs}
-                with patch.object(github_release.subprocess, "run") as command:
-                    with self.assertRaisesRegex(ValueError, "no longer valid"):
-                        self.publish()
-                    command.assert_not_called()
-                self.assertEqual(self.api.mutations, [])
-
-    def test_existing_version_never_tags_or_calls_gh(self):
-        for kind in ("tag", "draft", "release"):
-            with self.subTest(kind=kind):
-                self.api = FakeAPI()
-                if kind == "tag":
-                    self.api.responses[f"git/ref/tags/v{VERSION}"] = {"object": {"sha": REVISION}}
-                else:
-                    self.api.responses["releases?per_page=100&page=1"] = [
-                        {"tag_name": f"v{VERSION}", "draft": kind == "draft"}]
-                with patch.object(github_release.subprocess, "run") as command:
-                    with self.assertRaises(ValueError):
-                        self.publish()
-                    command.assert_not_called()
-                self.assertEqual(self.api.mutations, [])
-
-    def test_tag_verification_failure_stops_before_creating_release(self):
-        for object_value in ({"type": "commit", "sha": "0" * 40}, {"type": "tag", "sha": REVISION}):
-            with self.subTest(object=object_value):
-                self.api = FakeAPI()
-                self.api.created_object = object_value
-                with patch.object(github_release.subprocess, "run") as command:
-                    with self.assertRaises(ValueError):
-                        self.publish()
-                    command.assert_not_called()
-                self.assertEqual(len(self.api.mutations), 1)
-
-    def test_failed_gh_creation_is_not_retried_or_cleaned_up(self):
-        failure = subprocess.CalledProcessError(1, ["gh", "release", "create"])
-        with patch.object(github_release.subprocess, "run", side_effect=failure) as command:
-            with self.assertRaises(subprocess.CalledProcessError):
-                self.publish()
-        command.assert_called_once()
-        self.assertEqual(command.call_args.args[0][1:3], ["release", "create"])
-        self.assertEqual(self.api.mutations, [("git/refs", {"ref": f"refs/tags/v{VERSION}", "sha": REVISION})])
-
-    def test_prepare_missing_or_unreadable_ci_never_packages_or_mutates(self):
-        path = f"actions/workflows/ci.yml/runs?head_sha={REVISION}&per_page=100&page=1"
-        for response in ({"workflow_runs": []}, RuntimeError("GitHub API failed (HTTP 500)")):
-            with self.subTest(response=response):
-                self.api = FakeAPI()
-                self.api.responses[path] = response
-                with patch("package_release.package_release") as package:
-                    with self.assertRaises((ValueError, RuntimeError)):
-                        github_release.prepare(self.repository, self.output, VERSION, REVISION, self.api)
-                    package.assert_not_called()
-                self.assertEqual(self.api.mutations, [])
 
 
 if __name__ == "__main__":

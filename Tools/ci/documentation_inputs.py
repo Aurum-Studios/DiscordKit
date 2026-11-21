@@ -288,9 +288,11 @@ def validate_metadata(metadata, source, execution, selection=None):
         raise ValueError("sealed documentation requires the public-api producer job")
     receipts.validate_execution(execution)
     if selection is None:
-        if any(producer[key] != execution[key] for key in receipts.EXECUTION_KEYS - {"jobID"}):
+        if not receipts.same_build_chain(producer, execution):
             raise ValueError("documentation producer repository/workflow/event/run/attempt differs")
     else:
+        if execution["scope"] == "teamcity":
+            raise ValueError("TeamCity documentation requires a same-chain artifact dependency")
         validate_selection(selection, execution, source)
         artifact_index.same_execution(producer, execution, earlier=True)
         if producer["runAttempt"] != selection["producerAttempt"] or producer["jobID"] != "public-api":

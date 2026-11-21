@@ -17,3 +17,11 @@ DerivedData/
 .swiftpm/configuration/registries.json
 .swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
 .netrc
+
+# Local setup credentials and reproducible TeamCity DSL output.
+.env
+.env.*
+!.env.example
+.secrets/
+/.teamcity/target/
+*.doccarchive/

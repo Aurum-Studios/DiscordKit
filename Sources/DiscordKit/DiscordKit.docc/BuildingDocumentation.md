@@ -21,19 +21,17 @@ The emission helper uses the native SwiftPM build engine and committed dependenc
 
 Open the merged archive in Xcode, or preview the umbrella catalog with the installed DocC command and the appropriate symbol graphs.
 
-### Build the documentation website
+### Build the full library archive
 
-Browse the [hosted documentation](https://aurum-studios.github.io/DiscordKit/). The independent Documentation workflow builds on every push and pull request alongside CI, then publishes successful default-branch builds to GitHub Pages. Pull requests and other branches produce a site artifact without publishing.
+The TeamCity certification chain retains `DiscordKitLibrary.doccarchive.tar.gz`. Extract it and open `DiscordKitLibrary.doccarchive` in Xcode. The macOS documentation job merges same-chain runtime, macro and DSL extension conversions from the macOS public API job, which verifies the source revision, toolchain and checkout path before using the compiled graphs.
 
-The workflow checks the macOS ARM64 platform, compiles the three packages independently with a five-job limit, and restores their sealed artifacts for conversion without recompiling. Artifacts must match the commit, workflow run and attempt, checkout path and toolchain. Python helpers run separately on the small Linux pool; publication requires both helper checks and site conversion to pass. A workflow rerun must use **Re-run all jobs** to produce matching compilation artifacts.
-
-To reproduce the website build locally:
+To build the same bundle locally, run the following command and open `.build/DiscordKitLibrary.doccarchive` in Xcode:
 
 ```sh
-python3 Tools/ci/build_documentation_site.py --jobs 5 --hosting-base-path /DiscordKit
+python3 Tools/ci/build_documentation_site.py --archive-only
 ```
 
-The helper emits public symbol graphs for the root, macro and extension packages with the native emission helper and bounded compiler jobs, validates curation and tutorial snapshots, converts the catalogs with strict diagnostics, and merges all public modules into one navigator. CI uses `--skip-symbol-graphs` after verifying and restoring compiled artifacts; this mode requires valid graphs for every public module. It exports `.build/documentation-site` using DocC's static-hosting transformation, including direct article and symbol routes and a root redirect to the library landing page. The local command generates files; the GitHub workflow handles publication. Use an empty hosting base path to serve at a domain root.
+The local helper emits public symbol graphs with bounded compiler jobs, validates curation and tutorial snapshots, and converts the catalogs with strict diagnostics. For a local static preview, omit `--archive-only` and set `--hosting-base-path ""` to serve `.build/documentation-site` from the root path. The maintained project guides live in the YouTrack Knowledge Base.
 
 ### Documentation layout
 

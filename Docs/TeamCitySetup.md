@@ -1,0 +1,136 @@
+<!-- copyright:begin
+File: Docs/TeamCitySetup.md
+Created by Carson Rau.
+Copyright (c) 2026 Aurum Studios.
+https://aurum-studios.com
+copyright:end -->
+
+# Set up DiscordKit on TeamCity and YouTrack
+
+DiscordKit adopts the portable Kotlin DSL and Air workflow from the private Aurum
+Studios Blank template. TeamCity owns build, test, validation and release jobs.
+YouTrack is the destination for issues and the project Knowledge Base. GitHub
+continues to host the source and release assets.
+
+## GitHub Actions retirement
+
+GitHub Actions was disabled at repository level on November 21, 2026. GitHub
+read-back confirmed that setting and returned no active runs. Keep Actions
+disabled while qualifying TeamCity. Existing required checks, if any, can
+block merging until the verified TeamCity check replaces them.
+[GitHub Actions settings](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository/managing-github-actions-settings-for-a-repository)
+
+## Create the YouTrack project
+
+1. Check the Aurum Studios tracker for an existing DiscordKit project before
+   creating a standard issue-tracking project named **DiscordKit**. Use
+   `DISCORDKIT` as the project key if available and set the intended project
+   lead and team. [Aurum Studios YouTrack](https://issues.aurum-studios.com),
+   [YouTrack project API](https://www.jetbrains.com/help/youtrack/devportal/resource-api-admin-projects.html)
+2. Record the verified project key in `.air/project.json`. Apply Blank's Air
+   fields and board if the project is empty. For REST provisioning, use an
+   account that can see all project issues and articles and manage its fields,
+   bundles and board. Set
+   `YOUTRACK_URL=https://issues.aurum-studios.com` and provide
+   `YOUTRACK_TOKEN` through the trusted environment or secret manager. Use the
+   schema read-back to record actual State field and value IDs. For an existing
+   populated project, map its current State values through read-only discovery.
+   [YouTrack Knowledge Base setup](YouTrack/Knowledge-Base.md)
+3. Verify issue links and Air state transitions with the intended team. Confirm
+   the article audience and source inventory before seeding the project
+   library. [Knowledge Base setup](YouTrack/Knowledge-Base.md)
+
+## Import the TeamCity project
+
+For programmatic provisioning, set `TEAMCITY_URL=https://ci.aurum-studios.com`
+and supply `TEAMCITY_TOKEN` through the trusted environment or secret manager.
+Use an account with access to create the project, manage its VCS root and
+versioned settings, and assign the intended agent pools.
+[TeamCity authentication](https://www.jetbrains.com/help/teamcity/teamcity-cli-authentication.html)
+
+1. Look up **DiscordKit** by external project ID `DiscordKit` and create it if
+   absent. Add a Git VCS root for
+   `https://github.com/Aurum-Studios/DiscordKit.git` with default
+   branch `refs/heads/main` and branch specification `+:refs/heads/main`. Enable
+   full agent-side checkout so historical certified commits are available to the
+   release job. Add trusted review branches to the specification as needed for
+   merge checks. [Aurum Studios TeamCity](https://ci.aurum-studios.com)
+2. When the migration revision is available to TeamCity, enable **Versioned
+   Settings** on the VCS root and import the portable Kotlin DSL from
+   `.teamcity`. Store secure values outside VCS and use approved default-branch
+   settings when running review revisions. Check the import status and generated
+   configurations. [Versioned settings](https://www.jetbrains.com/help/teamcity/storing-project-settings-in-version-control.html)
+3. In the project, use **Actions → Generate token for a secure value** to store
+   a YouTrack permanent token scoped to reading the DiscordKit project. In
+   **Versioned Settings → Context Parameters**, set `youtrack.projectIds` to
+   the verified project key and `youtrack.tokenRef` to the complete generated
+   `credentialsJSON:` reference. Save them together. Verify that a real issue
+   ID in a commit message links to YouTrack from the build's **Changes** tab.
+   [TeamCity YouTrack integration](https://www.jetbrains.com/help/teamcity/youtrack.html)
+
+## Qualify the three build agents
+
+Assign the three agents to pools available to DiscordKit. Verify each build
+configuration's compatible agents, and set capabilities on each agent only
+after verifying its tools.
+
+| Agent capability | Qualification |
+| --- | --- |
+| `aurum.ci.python=true` | Git and Python 3.12 or newer available on the agent |
+| `aurum.ci.node=true` | Node.js 24 and npm available for the browser bridge and helper checks |
+| `aurum.ci.discordkit=true` | Agent meets the DiscordKit toolchain and native build requirements for its platform |
+
+Qualify Ubuntu 24.04 x64 and macOS 26 ARM64 with Swift 6.4.1. Give compatible
+agents the same absolute TeamCity checkout path within each platform so
+transferred SwiftPM products can resolve paths. On a shared host or filesystem,
+use distinct physical work directories for the agents and map them to the
+common checkout path inside each agent's environment. Compare the actual SDK
+and toolchain paths, OS and kernel, and Linux Swift runtime libraries before
+admitting agents that exchange native artifacts. [CI lanes and evidence](CI.md),
+[Agent pools](https://www.jetbrains.com/help/teamcity/configuring-agent-pools.html)
+
+Run the required chain on a known `main` revision. Verify that both platform
+qualifications finish before builds start, that independent jobs run on eligible
+agents, and that the aggregate result covers every required check for the
+selected SHA.
+
+## Enable GitHub release publishing
+
+The release configuration appears after you set its connection and required
+parameters. Use a TeamCity GitHub App connection with **Enable build-scoped
+tokens** selected, following Foilward and Pagebright. Confirm that the App
+installation includes `Aurum-Studios/DiscordKit` and grants the **Contents**
+write permission used to create tags and releases. TeamCity issues a scoped
+installation token for each release build.
+[Build-scoped tokens](https://www.jetbrains.com/help/teamcity/build-scoped-token.html)
+
+| Context parameter | Server value |
+| --- | --- |
+| `github.releaseConnectionId` | TeamCity GitHub App connection ID for DiscordKit |
+| `github.releaseApprover` | TeamCity username authorized to approve publication |
+| `github.releaseAgentName` | Exact TeamCity name of the trusted release agent |
+| `teamcity.certificationTokenRef` | `credentialsJSON:` reference for a TeamCity token that can read DiscordKit certification and artifacts |
+| `github.readTokenRef` | Optional `credentialsJSON:` reference for an authenticated GitHub metadata read during release preparation |
+
+Store the certification token through **Generate token for a secure value** and
+enter its reference in the context parameter. Confirm that a manually queued
+release waits for the named approver and uses the exact certified `main`
+revision. [Release procedure](ReleaseTooling.md)
+
+## Switch GitHub merge checks
+
+Store a GitHub token with commit-status write access in TeamCity and set
+`github.statusTokenRef` to its `credentialsJSON:` reference. For trusted
+GitHub pull-request builds, provide a token with pull-request read access and
+set `github.pullRequests=true`. Verify that TeamCity publishes the aggregate
+result for the expected SHA on GitHub. Replace any obsolete Actions check in
+the repository's active rulesets or branch protection with the observed
+TeamCity check. Verify that a failing or incomplete TeamCity run blocks
+merging. [TeamCity Commit Status Publisher](https://www.jetbrains.com/help/teamcity/commit-status-publisher.html)
+
+## Retain DocC artifacts
+
+The macOS documentation configuration retains
+`DiscordKitLibrary.doccarchive.tar.gz`. Extract the bundle and open the
+`.doccarchive` in Xcode. The chain certificate records the digest and source
+SHA. The future hosting destination is open. [Documentation build](CI.md#documentation)

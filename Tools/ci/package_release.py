@@ -41,8 +41,12 @@ def package_release(repository: Path, output: Path, version: str, revision: str,
         raise ValueError("The selected revision must be an exact full commit SHA")
     if not isinstance(ci_run, dict) or ci_run.get("head_sha") != revision:
         raise ValueError("CI evidence must identify the selected commit")
+    evidence_fields = ("id", "run_attempt", "html_url", "head_sha")
+    if ci_run.get("provider") == "teamcity":
+        evidence_fields = ("provider", "id", "buildTypeId", "vcsRootId",
+                           "branch", "coverageSHA256", "html_url", "head_sha")
     try:
-        ci_evidence = {key: ci_run[key] for key in ("id", "run_attempt", "html_url", "head_sha")}
+        ci_evidence = {key: ci_run[key] for key in evidence_fields}
     except KeyError as error:
         raise ValueError(f"CI evidence is missing {error.args[0]}") from error
 
@@ -71,7 +75,7 @@ def package_release(repository: Path, output: Path, version: str, revision: str,
         staged_checksum = Path(temporary) / checksum.name
         staged_checksum.write_text(f"{digest}  {archive.name}\n")
         metadata = {
-            "schemaVersion": 1,
+            "schemaVersion": 2 if ci_evidence.get("provider") == "teamcity" else 1,
             "format": "swiftpm-source",
             "version": version,
             "tag": f"v{version}",

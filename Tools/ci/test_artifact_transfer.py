@@ -565,7 +565,7 @@ print('nested cleanup passed')
             env = {**os.environ, "GITHUB_WORKSPACE": str(workspace), "CHILD_RESULT": str(result),
                    "ACTIONS_RUNTIME_TOKEN": "test-runtime-token", "PATH": str(directory) + os.pathsep + os.environ["PATH"],
                    "INPUT_ARGUMENTS": json.dumps(["upload", "--name", "literal $(command)"])}
-            completed = subprocess.run([shutil.which("node"), str(workspace / ".github/actions/artifact-transfer/index.mjs")],
+            completed = subprocess.run([shutil.which("node"), str(workspace / "Tools/ci/legacy-actions/actions/artifact-transfer/index.mjs")],
                                        env=env, capture_output=True, timeout=10)
             self.assertEqual(completed.returncode, 17, completed.stderr)
             payload = json.loads(result.read_text())

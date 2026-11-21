@@ -4,7 +4,7 @@
 # Copyright (c) 2026 Aurum Studios.
 # https://aurum-studios.com
 
-"""Run compiler-free source/workflow checks and bounded, shared helper groups.
+"""Run source and TeamCity configuration checks and bounded helper groups.
 
 This gate never evaluates a Swift manifest, resolves packages, builds native
 tools or certifies native coverage. Native documentation/inventory/generation/
@@ -65,11 +65,9 @@ def plan_commands(operation, repository, *, group=None, policy=None):
                 command("documentation-example-snapshots", sys.executable,
                         "Tools/ci/documentation_examples.py", "--repository", repository)]
     if operation == "workflow":
-        workflows = sorted(str(path.relative_to(repository)) for pattern in ("*.yml", "*.yaml")
-                           for path in (repository / ".github/workflows").glob(pattern) if path.is_file())
-        if not workflows:
-            raise ValueError("workflow source files are missing")
-        return [command("actionlint", "actionlint", *workflows)]
+        if not all((repository / ".teamcity" / name).is_file() for name in ("pom.xml", "settings.kts")):
+            raise ValueError("TeamCity settings or Maven descriptor is missing")
+        return [command("teamcity-dsl", "mvn", "-B", "-f", ".teamcity/pom.xml", "teamcity-configs:generate")]
     if group == "browser":
         tests = sorted(str(path.relative_to(repository)) for path in
                        (repository / "Browser/DiscordActivityBridge").glob("*.test.mjs") if path.is_file())

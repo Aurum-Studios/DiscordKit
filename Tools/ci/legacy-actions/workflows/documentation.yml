@@ -35,12 +35,4 @@ jobs:
       - name: Check current-attempt request spend reservation
         id: admission
         run: python3 Tools/ci/spend_admission.py guard --job documentation-request --group ubuntu-24.04 --output .build/spend/guard.json
-      - name: Request the ordinary contained full certification path
-        env:
-          GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
-          SELECTED_REF: ${{ github.ref_name }}
-          PUBLISH_DOCUMENTATION: ${{ inputs.publish }}
-        run: >-
-          timeout 120 gh workflow run ci.yml --ref "$SELECTED_REF"
-          -f mode=full -f publish-documentation="$PUBLISH_DOCUMENTATION"
+      # The historical dispatch was: gh workflow run ci.yml -f mode=full

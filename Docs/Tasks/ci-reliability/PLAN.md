@@ -89,8 +89,8 @@ Phases 1, 2, and 4 can be prepared concurrently after Phase 0. Phase 3 follows
 the supervisor. Provisioning and documentation helper work may proceed in
 parallel after their interfaces are fixed. One owner integrates
 [native_jobs.py](../../../Tools/ci/native_jobs.py),
-[ci.yml](../../../.github/workflows/ci.yml), and
-[native-platform.yml](../../../.github/workflows/native-platform.yml): matrix,
+[ci.yml](../../../Tools/ci/legacy-actions/workflows/ci.yml), and
+[native-platform.yml](../../../Tools/ci/legacy-actions/workflows/native-platform.yml): matrix,
 receipt, and dependency changes must not be edited concurrently by separate
 owners. Keep independently reviewable commits for each phase; record the actual
 commit and validation result before moving its ledger entry to complete.
@@ -309,7 +309,7 @@ with a clear regeneration requirement. No permissive legacy fallback.
 ## Phase 5 — Recover transfers and rerun failed jobs without rebuilding
 
 Files: [native_jobs.py](../../../Tools/ci/native_jobs.py),
-[native-platform.yml](../../../.github/workflows/native-platform.yml),
+[native-platform.yml](../../../Tools/ci/legacy-actions/workflows/native-platform.yml),
 [test_native_jobs.py](../../../Tools/ci/test_native_jobs.py); introduce focused
 artifact index/transfer helpers and tests under Tools/ci as needed.
 
@@ -346,8 +346,8 @@ is reserved for Phase 11; helper mocks alone are insufficient.
 
 ## Phase 6 — Gate expansion with cheap preflight and native canaries
 
-Files: [ci.yml](../../../.github/workflows/ci.yml),
-[native-platform.yml](../../../.github/workflows/native-platform.yml),
+Files: [ci.yml](../../../Tools/ci/legacy-actions/workflows/ci.yml),
+[native-platform.yml](../../../Tools/ci/legacy-actions/workflows/native-platform.yml),
 [native_jobs.py](../../../Tools/ci/native_jobs.py),
 [github_release.py](../../../Tools/ci/github_release.py), and their existing tests.
 
@@ -399,7 +399,7 @@ Both platform groups remain visible.
 ## Phase 7 — Group complete suites and right-size resources
 
 Files: [native_jobs.py](../../../Tools/ci/native_jobs.py),
-[native-platform.yml](../../../.github/workflows/native-platform.yml), and planner tests.
+[native-platform.yml](../../../Tools/ci/legacy-actions/workflows/native-platform.yml), and planner tests.
 
 - Start with four deterministic root-suite groups per platform, one consumer group,
   and separate package groups. Balance by retained duration data; use stable names
@@ -439,7 +439,7 @@ No numerical product-latency qualification is inferred from shared-runner smokes
 
 ## Phase 8 — Reuse verified provisioning
 
-Files: [setup-native action](../../../.github/actions/setup-native/action.yml),
+Files: [setup-native action](../../../Tools/ci/legacy-actions/actions/setup-native/action.yml),
 [platform_probe.py](../../../Tools/ci/platform_probe.py), associated tests/workflows.
 
 Split build/compiler prerequisites, runtime/test-consumer prerequisites, and browser
@@ -462,8 +462,8 @@ measured without exceeding the planned provisioning allowance.
 
 ## Phase 9 — Share documentation compilation and conversion
 
-Files: [documentation.yml](../../../.github/workflows/documentation.yml),
-[native-platform.yml](../../../.github/workflows/native-platform.yml),
+Files: [documentation.yml](../../../Tools/ci/legacy-actions/workflows/documentation.yml),
+[native-platform.yml](../../../Tools/ci/legacy-actions/workflows/native-platform.yml),
 [build_documentation_site.py](../../../Tools/ci/build_documentation_site.py),
 [build_docc.py](../../../Tools/ci/build_docc.py),
 [test_documentation_site.py](../../../Tools/ci/test_documentation_site.py), and
@@ -495,9 +495,9 @@ remains a separately authorized step.
 ## Phase 10 — Admit spending before work is scheduled
 
 Files: shared scheduling-policy/planner helpers from Phase 0,
-[ci.yml](../../../.github/workflows/ci.yml),
-[native-platform.yml](../../../.github/workflows/native-platform.yml),
-[documentation.yml](../../../.github/workflows/documentation.yml), and tests.
+[ci.yml](../../../Tools/ci/legacy-actions/workflows/ci.yml),
+[native-platform.yml](../../../Tools/ci/legacy-actions/workflows/native-platform.yml),
+[documentation.yml](../../../Tools/ci/legacy-actions/workflows/documentation.yml), and tests.
 
 1. Have the exact execution planner produce the cost plan; do not maintain a second
    approximate job list. Include bootstrap/preflight, provisioning, every command,

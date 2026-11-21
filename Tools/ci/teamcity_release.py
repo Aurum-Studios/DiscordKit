@@ -1,0 +1,148 @@
+# File: Tools/ci/teamcity_release.py
+# Created by Carson Rau.
+# Copyright (c) 2026 Aurum Studios.
+# https://aurum-studios.com
+
+"""Use live TeamCity build evidence to admit a DiscordKit release."""
+
+import hashlib
+import json
+import os
+import re
+import subprocess
+from urllib.error import HTTPError
+from urllib.parse import urlencode
+from urllib.request import HTTPRedirectHandler, Request, build_opener
+
+
+TEAMCITY_URL = "https://ci.aurum-studios.com"
+CERTIFICATION_ID = "DiscordKit_Certification"
+BUILD_FIELDS = (
+    "id,buildTypeId,defaultBranch,state,status,personal,failedToStart,canceledInfo,"
+    "revisions(revision(version,vcsBranchName,vcs-root-instance(vcs-root-id)))"
+)
+
+
+class RejectRedirects(HTTPRedirectHandler):
+    """Avoid forwarding a credential to a redirect target."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        return None
+
+
+class TeamCityCertification:
+    """Validate TeamCity state for the publish job and its candidate build."""
+
+    def __init__(self):
+        self.base = os.environ.get("TEAMCITY_URL", TEAMCITY_URL).rstrip("/")
+        if self.base != TEAMCITY_URL:
+            raise ValueError("The release requires ci.aurum-studios.com")
+        self.token = os.environ["TEAMCITY_TOKEN"]
+        if not self.token.strip():
+            raise ValueError("A TeamCity build-results read credential is required")
+        self.root = os.environ["TEAMCITY_VCS_ROOT_ID"]
+        self.branch = os.environ["RELEASE_DEFAULT_BRANCH"]
+        if not re.fullmatch(r"[A-Za-z][A-Za-z0-9_-]*", self.root):
+            raise ValueError("Invalid TeamCity VCS root ID")
+        self.opener = build_opener(RejectRedirects())
+
+    def request(self, path, *, raw=False, **query):
+        url = f"{self.base}/app/rest/{path}"
+        if query:
+            url += f"?{urlencode(query)}"
+        request = Request(url, headers={
+            "Authorization": f"Bearer {self.token}",
+            "Accept": "*/*" if raw else "application/json",
+        })
+        try:
+            with self.opener.open(request, timeout=30) as response:
+                return response.read() if raw else json.load(response)
+        except HTTPError as error:
+            raise RuntimeError(f"TeamCity build evidence request failed (HTTP {error.code})") from None
+
+    def build(self, build_id):
+        if type(build_id) is not int or build_id < 1:
+            raise ValueError("Invalid TeamCity build ID")
+        build = self.request(f"builds/id:{build_id}", fields=BUILD_FIELDS)
+        if build.get("id") != build_id:
+            raise ValueError("TeamCity returned a different build")
+        return build
+
+    def matches_revision(self, build, revision):
+        revisions = (build.get("revisions") or {}).get("revision", [])
+        matching = [
+            item for item in revisions
+            if (item.get("vcs-root-instance") or {}).get("vcs-root-id") == self.root
+        ]
+        return (build.get("defaultBranch") is True
+                and not build.get("personal")
+                and not build.get("canceledInfo")
+                and len(matching) == 1
+                and matching[0].get("version") == revision
+                and matching[0].get("vcsBranchName") == f"refs/heads/{self.branch}")
+
+    def require_current_checkout(self, repository, configuration_id):
+        if os.environ.get("TEAMCITY_DEFAULT_BRANCH") != "true":
+            raise ValueError("Run the release from the repository's default branch")
+        build_id = os.environ["DISCORDKIT_CI_BUILD_ID"]
+        if not re.fullmatch(r"[1-9][0-9]*", build_id):
+            raise ValueError("Invalid current TeamCity build ID")
+        build = self.build(int(build_id))
+        head = subprocess.check_output(
+            ["git", "-C", str(repository), "rev-parse", "HEAD"], text=True).strip()
+        if (build.get("buildTypeId") != configuration_id
+                or build.get("state") != "running" or not self.matches_revision(build, head)):
+            raise ValueError("Release tooling must use the current TeamCity default-branch checkout")
+
+    def evidence(self, build, revision):
+        if (build.get("buildTypeId") != CERTIFICATION_ID
+                or build.get("state") != "finished"
+                or build.get("status") != "SUCCESS"
+                or build.get("failedToStart")
+                or not self.matches_revision(build, revision)):
+            return None
+        build_id = build.get("id")
+        if type(build_id) is not int or build_id < 1:
+            raise ValueError("Invalid TeamCity certification build ID")
+        contents = self.request(f"builds/id:{build_id}/artifacts/content/certification.json", raw=True)
+        receipt = json.loads(contents)
+        prerequisites = receipt.get("prerequisites")
+        doc_digest = receipt.get("documentationArchiveSHA256")
+        if (receipt.get("schemaVersion") != 1 or receipt.get("status") != "passed"
+                or receipt.get("buildId") != str(build_id) or receipt.get("revision") != revision
+                or not isinstance(doc_digest, str) or not re.fullmatch(r"[0-9a-f]{64}", doc_digest)
+                or not isinstance(prerequisites, dict) or not prerequisites
+                or any(not isinstance(item, str) or not re.fullmatch(r"[1-9][0-9]*", item)
+                       or item == str(build_id) for item in prerequisites.values())
+                or len(set(prerequisites.values())) != len(prerequisites)):
+            raise ValueError("TeamCity certification did not produce complete coverage evidence")
+        return {
+            "provider": "teamcity",
+            "id": build_id,
+            "buildTypeId": CERTIFICATION_ID,
+            "vcsRootId": self.root,
+            "branch": self.branch,
+            "coverageSHA256": hashlib.sha256(contents).hexdigest(),
+            "html_url": f"{self.base}/build/{build_id}",
+            "head_sha": revision,
+        }
+
+    def find(self, revision):
+        locator = (f"buildType:(id:{CERTIFICATION_ID}),revision:(version:{revision}),"
+                   "state:finished,status:SUCCESS,branch:(default:true),personal:false")
+        for start in range(0, 1000, 100):
+            builds = self.request("builds", locator=f"{locator},count:100,start:{start}",
+                                  fields=f"build({BUILD_FIELDS}),nextHref")
+            for build in builds.get("build", []):
+                if evidence := self.evidence(build, revision):
+                    return evidence
+            if not builds.get("nextHref"):
+                break
+        raise ValueError("No successful TeamCity Offline certification for this exact default-branch commit")
+
+    def verify(self, evidence, revision):
+        """Recheck the build that was recorded at preparation time."""
+        build = self.build(evidence.get("id"))
+        if self.evidence(build, revision) != evidence:
+            raise ValueError("Recorded TeamCity certification is no longer valid")
+        return evidence

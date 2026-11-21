@@ -19,7 +19,10 @@ NATIVE_JOBS = {'platform', 'plan', 'build', 'canary', 'build-core', 'build-remai
 
 def workflow_jobs(repository, name, expected):
     """Fail on unaccounted jobs or nonliteral outer deadlines rather than guessing."""
-    text = (Path(repository) / '.github/workflows' / name).read_text()
+    repository = Path(repository)
+    archive = repository / 'Tools/ci/legacy-actions/workflows'
+    directory = archive if archive.is_dir() else repository / '.github/workflows'
+    text = (directory / name).read_text()
     sections = re.split(r'^jobs:\n', text, maxsplit=1, flags=re.M)
     if len(sections) != 2:
         raise ValueError(f'missing execution jobs in {name}')

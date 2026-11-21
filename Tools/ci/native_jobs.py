@@ -262,6 +262,9 @@ def source_identity(repository, *, deadline=None, output=None, report=None):
     assigned = os.environ.get("GITHUB_SHA")
     if assigned and assigned != revision:
         raise ValueError("checkout does not match the executing GitHub SHA")
+    assigned_teamcity = os.environ.get("DISCORDKIT_VCS_REVISION")
+    if assigned_teamcity is not None and assigned_teamcity != revision:
+        raise ValueError("checkout does not match the assigned TeamCity revision")
     return {"commit": revision, "sourceSHA256": digest.hexdigest(), "dependencyPinsSHA256": pins}
 
 
@@ -638,7 +641,7 @@ def restore_archive(repository, component, native_platform, archive, output, *, 
     return metadata
 
 
-def compile_component(repository, component, native_platform, jobs, output, archive):
+def compile_component(repository, component, native_platform, jobs, output, archive, *, archive_exclusions=()):
     """Compile and seal inventories within one shared elapsed budget, without retrying."""
     policy = execution_policy()
     admission = native_resources.compiler_admission(jobs,
@@ -685,7 +688,7 @@ def compile_component(repository, component, native_platform, jobs, output, arch
                         "compatibility": original, "producer": receipts.producer_receipt(execution, inventories, started_at),
                         "tests": inventories}
             remaining_seconds(deadline, budget)
-            metadata = create_archive(repository, component, archive, metadata, excluded=(output,))
+            metadata = create_archive(repository, component, archive, metadata, excluded=(output, *archive_exclusions))
             archive_created = True
             remaining_seconds(deadline, budget)
             report.update(archiveSHA256=file_digest(archive), payloadSHA256=metadata["payloadSHA256"])
