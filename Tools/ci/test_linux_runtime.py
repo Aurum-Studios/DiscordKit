@@ -207,6 +207,20 @@ class RuntimeClosureTests(unittest.TestCase):
                 runtime.validate_facts(invalid)
 
 
+    def test_container_identity_retains_required_ubuntu_library_ownership(self):
+        """Accept unowned Swift files in the OCI toolchain while requiring system packages."""
+        with tempfile.TemporaryDirectory() as directory:
+            facts, _ = self.observe(Path(directory))
+        facts['containerImage'] = 'docker.io/library/swift:6.4.1-noble@sha256:' + 'b' * 64
+        facts['toolchainRoot'] = '/usr'
+        facts['nativeTools']['clang']['path'] = '/usr/bin/clang'
+        facts['libraries']['/usr/lib/swift/linux/libswiftCore.so'] = {'sha256': 'a' * 64, 'packages': []}
+        self.assertEqual(runtime.validate_facts(facts), facts)
+        facts['libraries']['/usr/lib/x86_64-linux-gnu/libc.so.6'] = {'sha256': 'a' * 64, 'packages': []}
+        with self.assertRaisesRegex(ValueError, 'file identity or package ownership'):
+            runtime.validate_facts(facts)
+
+
 class CommandBoundsTests(unittest.TestCase):
     def test_nonzero_exit_output_overflow_and_deadline_are_terminal(self):
         with self.assertRaisesRegex(ValueError, 'command failed'):

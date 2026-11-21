@@ -23,10 +23,11 @@ internal const val currentBuildId = "%teamcity.build.id%"
 private const val receiptBuildId = "discordkit.build.id"
 private const val doccArtifact = "DiscordKitLibrary.doccarchive.tar.gz"
 private const val candidateBranches = "+:*\n-:gh-pages\n-:refs/heads/gh-pages"
+private const val linuxSwiftImage = "docker.io/library/swift:6.4.1-noble@sha256:6304481cf2717966b7ba175162e397ea2f2cc3161909f2b2a5cf40036079a0f7"
 
-internal enum class Agent(val os: String, val architecture: String, val lane: String) {
-    Linux("Linux", "amd64|x86_64", "linux-x64"),
-    Mac("Mac", "aarch64|arm64", "macos-arm64"),
+internal enum class Agent(val os: String, val architecture: String) {
+    Linux("Linux", "amd64|x86_64"),
+    Mac("Mac", "aarch64|arm64"),
 }
 
 /** Define one clean, agent-side job using the source root connected by TeamCity. */
@@ -40,6 +41,7 @@ internal fun agentBuild(
     receipt: Boolean = false,
     configure: BuildType.() -> Unit = {},
 ): BuildType = BuildType {
+    val linuxContainer = native && agent == Agent.Linux
     id(buildId)
     name = displayName
     enablePersonalBuilds = false
@@ -53,6 +55,7 @@ internal fun agentBuild(
     requirements {
         contains("teamcity.agent.jvm.os.name", agent.os)
         matches("teamcity.agent.jvm.os.arch", agent.architecture)
+        if (linuxContainer) exists("docker.version")
     }
     params {
         param("env.CI", "true")
@@ -60,6 +63,7 @@ internal fun agentBuild(
         param("env.DISCORDKIT_CI_BUILD_ID", currentBuildId)
         param("env.PYTHONUNBUFFERED", "1")
         param("env.SWIFTNIO_STRICT", "1")
+        if (linuxContainer) param("env.DISCORDKIT_CI_SWIFT_IMAGE", linuxSwiftImage)
     }
     failureConditions { executionTimeoutMin = minutes }
     if (receipt) {
@@ -99,21 +103,34 @@ internal fun agentBuild(
         test -d "${'$'}SDKROOT"
         export SDKROOT
     """.trimIndent() + "\n" else ""
-    val nativeSetup = if (native) macSdk + """
-        python3 Tools/ci/teamcity_toolchain.py --platform ${agent.lane} \
-            --bin-output $output/swift-bin --library-output $output/swift-library-path \
+    val macToolchain = if (native && agent == Agent.Mac) macSdk + """
+        python3 Tools/ci/teamcity_toolchain.py --bin-output $output/swift-bin \
             --evidence $output/evidence/swift-toolchain.json
         swift_bin="${'$'}(cat $output/swift-bin)"
         export PATH="${'$'}swift_bin:${'$'}PATH"
-        swift_library_path="${'$'}(cat $output/swift-library-path)"
-        if [ -n "${'$'}swift_library_path" ]; then
-            export LD_LIBRARY_PATH="${'$'}swift_library_path${'$'}{LD_LIBRARY_PATH:+:${'$'}LD_LIBRARY_PATH}"
+    """.trimIndent() + "\n" else ""
+    val linuxCheckout = if (linuxContainer) """
+        if ! command -v python3 >/dev/null 2>&1; then
+            if [ "${'$'}(id -u)" -ne 0 ]; then
+                echo 'The Swift build container requires Python 3.12' >&2
+                exit 1
+            fi
+            apt-get -q -o Acquire::Retries=2 update
+            DEBIAN_FRONTEND=noninteractive apt-get -q install -y --no-install-recommends python3
         fi
+        config_index="${'$'}{GIT_CONFIG_COUNT:-0}"
+        export "GIT_CONFIG_KEY_${'$'}config_index=safe.directory"
+        export "GIT_CONFIG_VALUE_${'$'}config_index=${'$'}(pwd -P)"
+        export GIT_CONFIG_COUNT="${'$'}((config_index + 1))"
     """.trimIndent() + "\n" else ""
     steps {
         script {
             name = displayName
-            scriptContent = "set -eu\n$pythonSetup$nativeSetup$command" +
+            if (linuxContainer) {
+                dockerImage = linuxSwiftImage
+                dockerRunParameters = "--platform=linux/amd64"
+            }
+            scriptContent = "set -eu\n$linuxCheckout$pythonSetup$macToolchain$command" +
                 if (receipt) "\npython3 Tools/ci/teamcity_gate.py record $buildId" else ""
         }
     }

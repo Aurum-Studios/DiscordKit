@@ -39,6 +39,8 @@ MAX_FACT_BYTES = 120 * 1024
 CRT_PACKAGES = ('libc6-dev', 'libgcc-13-dev', 'libstdc++-13-dev', 'linux-libc-dev')
 SHA256 = re.compile(r'[0-9a-f]{64}')
 PACKAGE = re.compile(r'[a-z0-9][a-z0-9+.-]*(?::[a-z0-9-]+)?')
+SWIFT_IMAGE = re.compile(r'docker\.io/library/swift:6\.4\.1-noble@sha256:[0-9a-f]{64}')
+IMAGE_TOOLCHAIN_DIRECTORIES = ('lib/swift', 'lib/swift_static', 'lib/clang', 'libexec/swift')
 
 
 class Budget:
@@ -154,10 +156,33 @@ def native_elf(path, *, interpreter=False):
         return 'dynamic' if 2 in kinds else 'static'
 
 
-def toolchain_files(root, budget):
+def image_toolchain_file(path):
+    """Find Swift files merged into /usr by the pinned official image."""
+    usr = Path('/usr')
+    if not path.is_relative_to(usr):
+        return False
+    relative = path.relative_to(usr)
+    if any(relative.is_relative_to(name) for name in IMAGE_TOOLCHAIN_DIRECTORIES):
+        return True
+    if relative.parent == Path('bin'):
+        return relative.name.startswith(('swift', 'clang', 'lld', 'llvm-', 'ld.lld', 'sourcekit-',
+                                         'wasm-ld', 'docc', 'plutil'))
+    if relative.parent == Path('lib'):
+        return relative.name.startswith(('libIndexStore', 'libsourcekitd', 'liblldb', 'libLTO', 'libRemarks',
+                                         'libclang', 'libSwift'))
+    return False
+
+
+def toolchain_files(root, budget, *, image=False):
     """Inspect a finite tree, deduplicating aliases without following directory links."""
     files, dynamic, entries = {}, [], 0
+    image_parents = {
+        str(root / 'usr'): ('bin', 'lib', 'libexec'), str(root / 'usr/lib'): ('swift', 'swift_static', 'clang'),
+        str(root / 'usr/libexec'): ('swift',), str(root / 'usr/bin'): (),
+    } if image else {}
     for directory, folders, names in os.walk(root / 'usr', followlinks=False):
+        if directory in image_parents:
+            folders[:] = [name for name in folders if name in image_parents[directory]]
         budget.remaining()
         entries += len(folders) + len(names)
         if entries > MAX_ENTRIES:
@@ -165,7 +190,12 @@ def toolchain_files(root, budget):
         folders.sort()
         for name in sorted(names):
             budget.remaining()
-            path = Path(directory, name).resolve(strict=True)
+            path = Path(directory, name)
+            if image and not image_toolchain_file(path):
+                continue
+            path = path.resolve(strict=True)
+            if image and not image_toolchain_file(path):
+                continue
             if not path.is_relative_to(root):
                 raise ValueError('active Swift tree contains a file outside its installation')
             if path in files or not path.is_file():
@@ -289,9 +319,13 @@ def observe(*, swift=None, budget=None, run=command):
     if executable.parent.name != 'bin' or executable.parent.parent.name != 'usr':
         raise ValueError('active Swift must use a dedicated usr/bin toolchain layout')
     root = executable.parent.parent.parent
-    if root == Path('/'):
+    image = os.environ.get('DISCORDKIT_CI_SWIFT_IMAGE')
+    if image and (not SWIFT_IMAGE.fullmatch(image) or root != Path('/')
+                  or not (Path('/.dockerenv').is_file() or Path('/run/.containerenv').is_file())):
+        raise ValueError('The pinned Swift image requires the official container toolchain layout')
+    if root == Path('/') and not image:
         raise ValueError('active Swift must use a dedicated installation root')
-    files, dynamic = toolchain_files(root, budget)
+    files, dynamic = toolchain_files(root, budget, image=bool(image))
     if executable not in files:
         raise ValueError('active Swift is not a native compiler ELF in its installation')
     tools = {}
@@ -333,8 +367,9 @@ def observe(*, swift=None, budget=None, run=command):
         libraries.update(resolved)
     if len(libraries) > MAX_LIBRARIES:
         raise ValueError('native Swift runtime closure exceeded its finite library limit')
-    external = {path for path in libraries | {Path(row['path']) for row in tools.values()}
-                if not path.is_relative_to(root)}
+    dependency_paths = libraries | {Path(row['path']) for row in tools.values()}
+    external = ({path for path in dependency_paths if path not in files} if image else
+                {path for path in dependency_paths if not path.is_relative_to(root)})
     owners, packages = package_facts(external, budget, run=run)
     library_facts = {}
     for path in sorted(libraries):
@@ -344,11 +379,13 @@ def observe(*, swift=None, budget=None, run=command):
         row['packages'] = owners.get(row['path'], [])
     manifest = {str(path.relative_to(root)): digest for path, digest in files.items()}
     facts = {'schemaVersion': 1, 'architecture': 'x86_64', 'elfClass': 64,
-             'toolchainRoot': str(root), 'toolchainELFCount': len(files),
+             'toolchainRoot': '/usr' if image else str(root), 'toolchainELFCount': len(files),
              'librarySearchPaths': {'inherited': inherited, 'sharedLibraries': search},
              'toolchainELFSHA256': hashlib.sha256(canonical(manifest)).hexdigest(),
              'dependencyGraphSHA256': hashlib.sha256(canonical(graph)).hexdigest(),
              'libraries': library_facts, 'packages': packages, 'nativeTools': tools}
+    if image:
+        facts['containerImage'] = image
     budget.remaining()
     validate_facts(facts)
     return facts
@@ -365,6 +402,11 @@ def validate_facts(facts):
     """Reject partial/legacy/malformed helper output before admitting compatibility."""
     keys = {'schemaVersion', 'architecture', 'elfClass', 'toolchainRoot', 'toolchainELFCount',
             'toolchainELFSHA256', 'dependencyGraphSHA256', 'libraries', 'packages', 'nativeTools', 'librarySearchPaths'}
+    image = facts.get('containerImage') if isinstance(facts, dict) else None
+    if image is not None:
+        keys.add('containerImage')
+        if not isinstance(image, str) or not SWIFT_IMAGE.fullmatch(image) or facts.get('toolchainRoot') != '/usr':
+            raise ValueError('Invalid pinned Swift container identity')
     if (not isinstance(facts, dict) or set(facts) != keys or type(facts['schemaVersion']) is not int
             or facts['schemaVersion'] != 1 or facts['architecture'] != 'x86_64'
             or type(facts['elfClass']) is not int or facts['elfClass'] != 64
@@ -402,7 +444,8 @@ def validate_facts(facts):
                 or not isinstance(row['packages'], list) or any(not isinstance(name, str) for name in row['packages'])
                 or row['packages'] != sorted(set(row['packages']))
                 or any(package not in packages for package in row['packages'])
-                or (not Path(name).is_relative_to(facts['toolchainRoot']) and not row['packages'])):
+                or (not row['packages'] and not (image_toolchain_file(Path(name)) if image else
+                                                Path(name).is_relative_to(facts['toolchainRoot'])))):
             raise ValueError('invalid native Linux ABI file identity or package ownership')
     if len(canonical(facts)) > MAX_FACT_BYTES:
         raise ValueError('native Linux ABI facts exceed their finite schema/output limit')

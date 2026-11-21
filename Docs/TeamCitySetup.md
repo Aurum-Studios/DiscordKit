@@ -76,21 +76,17 @@ installed tools at runtime and report their versions. Provide Git and Python
 3.12 or newer on each agent. The browser bridge and CI helper checks also
 require Node.js 24 and npm on the Linux agent.
 
-Qualify Ubuntu 24.04 x64 and macOS 26 or 27 ARM64 with Swift 6.4.1. Native jobs
-verify the official Swift release's digest and signature on first use, then
-select the exact installed compiler and report its identity in each job. The
-installation belongs to the agent account. Linux extracts under
-`~/.cache/aurum/discordkit/toolchain`. It uses `curl`, `gpg` and `tar` for the
-first Swift installation and the signed Ubuntu archive for the `libncurses6`
-and `libtinfo6` libraries. APT and `dpkg-deb` extract those libraries within the
-Swift installation, and the build records their versions and hashes. macOS
-unpacks the signed Swift toolchain into the same agent-owned cache with
-`pkgutil`. Jobs on
-macOS can fall back to framework Python 3.14 and Xcode-beta when the agent's
-default selections do not satisfy the runtime checks.
+Qualify Ubuntu 24.04 x64 and macOS 26 or 27 ARM64 with Swift 6.4.1. Native Linux
+steps use the [official Swift build image](https://hub.docker.com/_/swift) pinned
+by digest in the TeamCity settings. The Linux agent needs Docker and TeamCity's
+container wrapper maps the existing checkout at the same absolute path.
+Qualification records the image, observed compiler, linker, runtime library
+hashes and Ubuntu package versions. The macOS job verifies the Swift package's
+digest and notarized vendor signature, then unpacks it with `pkgutil` into
+`~/.cache/aurum/discordkit/toolchain`. It can use framework Python 3.14 and
+Xcode-beta when the agent's defaults do not satisfy the runtime checks.
 
-Give compatible
-agents the same absolute TeamCity checkout path within each platform so
+Give compatible agents the same absolute TeamCity checkout path within each platform so
 transferred SwiftPM products can resolve paths. On a shared host or filesystem,
 use distinct physical work directories for the agents and map them to the
 common checkout path inside each agent's environment. Compare the actual SDK
