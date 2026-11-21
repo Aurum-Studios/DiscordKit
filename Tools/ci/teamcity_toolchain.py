@@ -13,11 +13,13 @@ import json
 import os
 from pathlib import Path
 import platform as host
+import plistlib
 import re
 import shutil
 import subprocess
 import tempfile
 import time
+import xml.etree.ElementTree as xml
 
 import native_provisioning as swift
 
@@ -132,7 +134,44 @@ APT::Update::Error-Mode "any";
     return inventory
 
 
-def select(platform, cache, home, evidence):
+def macos_bundle(plan, policy):
+    """Extract one expected Xcode toolchain from the already authenticated installer payload."""
+    name = policy["platforms"]["macos-arm64"]["toolchainDirectory"]
+    expanded = Path(plan["root"]) / "expanded-swift-package"
+    swift.run_command(plan, "expand-macos-toolchain", ["pkgutil", "--expand-full",
+        swift.payload_path(plan, policy), expanded], maximum=300)
+    candidates = []
+    for payload in expanded.rglob("Payload"):
+        if payload.is_symlink() or not payload.is_dir():
+            continue
+        candidates.extend(payload.rglob(name))
+        metadata = payload.with_name("PackageInfo")
+        if (payload / "Info.plist").is_file() and (payload / "usr/bin").is_dir():
+            if metadata.is_symlink() or not metadata.is_file() or metadata.stat().st_size > 512 * 1024:
+                raise ValueError("A direct Swift payload requires regular component package metadata")
+            location = xml.parse(metadata).getroot().get("install-location", "")
+            if Path(location).parts[-3:] == ("Developer", "Toolchains", name):
+                candidates.append(payload)
+    if len(candidates) != 1 or candidates[0].is_symlink() or not candidates[0].is_dir():
+        raise ValueError(f"Expected exactly one regular {name} bundle in the signed macOS package")
+    bundle = candidates[0].resolve(strict=True)
+    if not bundle.is_relative_to(expanded.resolve(strict=True)):
+        raise ValueError("The Swift bundle must be contained within the package payload")
+    description = bundle / "Info.plist"
+    if description.is_symlink() or not description.is_file() or description.stat().st_size > 512 * 1024:
+        raise ValueError("The extracted Swift toolchain has no regular Info.plist")
+    with description.open("rb") as stream:
+        properties = plistlib.load(stream)
+    if not isinstance(properties, dict) or not isinstance(properties.get("CFBundleIdentifier"), str):
+        raise ValueError("The extracted Swift toolchain has no bundle identifier")
+    for executable in ("swift", "swiftc"):
+        compiler = (bundle / "usr/bin" / executable).resolve(strict=True)
+        if not compiler.is_relative_to(bundle) or not compiler.is_file() or not os.access(compiler, os.X_OK):
+            raise ValueError(f"The extracted Swift toolchain has no internal executable {executable}")
+    return bundle
+
+
+def select(platform, cache, evidence):
     """Authenticate the release on a cold install and verify the fixed compiler on every run."""
     policy = swift.load_policy()
     distribution = policy["platforms"][swift.native_platform(platform)]
@@ -143,10 +182,9 @@ def select(platform, cache, home, evidence):
         if release.get("ID") != "ubuntu" or release.get("VERSION_ID") != "24.04":
             raise ValueError("DiscordKit Swift provisioning requires Ubuntu 24.04")
         installation = cache / distribution["archiveRoot"]
-        marker = installation / ".discordkit-distribution.json"
     else:
-        installation = home / "Library/Developer/Toolchains" / distribution["toolchainDirectory"]
-        marker = cache / f"{distribution['toolchainDirectory']}.json"
+        installation = cache / distribution["toolchainDirectory"]
+    marker = installation / ".discordkit-distribution.json"
     binary = installation / "usr/bin"
     expected = {"policySHA256": policy_digest, "distributionSHA256": distribution["distributionSHA256"],
                 "signer": (distribution["signerFingerprints"][0] if is_linux else distribution["signer"]),
@@ -168,8 +206,7 @@ def select(platform, cache, home, evidence):
             cached = installation.is_dir() and installed_receipt == expected
             runtime = None
             if not cached:
-                installing = {**expected, "status": "installing"}
-                if installation.exists() and (is_linux or installed_receipt != installing):
+                if installation.exists():
                     raise ValueError(f"Existing Swift installation has no matching DiscordKit receipt: {installation}")
                 swift.download_distribution(plan, policy)
                 verification = swift.verify_distribution(plan, policy)
@@ -184,14 +221,11 @@ def select(platform, cache, home, evidence):
                     runtime = ubuntu_runtime(plan, candidate / LINUX_RUNTIME)
                     swift.compiler_identity(plan, candidate / "usr/bin", policy,
                                             library_path=library_path(candidate / LINUX_RUNTIME))
-                    swift.write_json(candidate / marker.name, expected)
-                    candidate.rename(installation)
                 else:
-                    swift.write_json(marker, installing)
-                    swift.run_command(plan, "install-macos-toolchain", ["installer", "-pkg",
-                        swift.payload_path(plan, policy), "-target", "CurrentUserHomeDirectory"], maximum=300)
-                    swift.compiler_identity(plan, binary, policy)
-                    swift.write_json(marker, expected)
+                    candidate = macos_bundle(plan, policy)
+                    swift.compiler_identity(plan, candidate / "usr/bin", policy)
+                swift.write_json(candidate / marker.name, expected)
+                candidate.rename(installation)
             if is_linux:
                 if runtime is None:
                     runtime = ubuntu_runtime(plan, installation / LINUX_RUNTIME)
@@ -217,13 +251,13 @@ def main():
     arguments = parser.parse_args()
     home = Path.home().resolve()
     try:
-        binary = select(arguments.platform, home / ".cache/aurum/discordkit/toolchain", home, arguments.evidence)
+        binary = select(arguments.platform, home / ".cache/aurum/discordkit/toolchain", arguments.evidence)
         arguments.bin_output.parent.mkdir(parents=True, exist_ok=True)
         arguments.bin_output.write_text(f"{binary}\n")
         arguments.library_output.parent.mkdir(parents=True, exist_ok=True)
         library = binary.parents[1] / LINUX_RUNTIME if arguments.platform == "linux-x64" else ""
         arguments.library_output.write_text(f"{library}\n")
-    except (OSError, ValueError, KeyError, TypeError, subprocess.SubprocessError) as error:
+    except (OSError, ValueError, KeyError, TypeError, subprocess.SubprocessError, xml.ParseError) as error:
         swift.write_json(arguments.evidence, {"status": "failed", "platform": arguments.platform, "error": str(error)})
         parser.exit(1, f"DiscordKit Swift setup failed: {error}\n")
 

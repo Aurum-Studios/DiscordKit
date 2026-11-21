@@ -84,7 +84,8 @@ installation belongs to the agent account. Linux extracts under
 first Swift installation and the signed Ubuntu archive for the `libncurses6`
 and `libtinfo6` libraries. APT and `dpkg-deb` extract those libraries within the
 Swift installation, and the build records their versions and hashes. macOS
-uses its current-user Swift installer. Jobs on
+unpacks the signed Swift toolchain into the same agent-owned cache with
+`pkgutil`. Jobs on
 macOS can fall back to framework Python 3.14 and Xcode-beta when the agent's
 default selections do not satisfy the runtime checks.
 
