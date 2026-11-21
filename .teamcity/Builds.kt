@@ -53,8 +53,6 @@ internal fun agentBuild(
     requirements {
         contains("teamcity.agent.jvm.os.name", agent.os)
         matches("teamcity.agent.jvm.os.arch", agent.architecture)
-        equals("aurum.ci.python", "true")
-        if (native) equals("aurum.ci.discordkit", "true")
     }
     params {
         param("env.CI", "true")
@@ -71,8 +69,14 @@ internal fun agentBuild(
             param(receiptBuildId, currentBuildId)
         }
     }
+    val pythonSetup = """
+        python3 --version
+        python3 -c 'import sys; raise SystemExit(0 if sys.version_info >= (3, 12) else "DiscordKit CI requires Python 3.12 or newer")'
+    """.trimIndent() + "\n"
     val nativeSetup = if (native && agent == Agent.Mac) """
-        case "${'$'}(sw_vers -productVersion)" in
+        macos_version="${'$'}(sw_vers -productVersion)"
+        echo "macOS ${'$'}macos_version"
+        case "${'$'}macos_version" in
             26.*) ;;
             *) echo 'DiscordKit requires macOS 26 for this lane' >&2; exit 1 ;;
         esac
@@ -83,7 +87,7 @@ internal fun agentBuild(
     steps {
         script {
             name = displayName
-            scriptContent = "set -eu\n$nativeSetup$command" +
+            scriptContent = "set -eu\n$pythonSetup$nativeSetup$command" +
                 if (receipt) "\npython3 Tools/ci/teamcity_gate.py record $buildId" else ""
         }
     }
@@ -212,8 +216,16 @@ private val helpers = listOf("source", "ci-python", "tooling-python", "benchmark
                 "--repository . --record Docs/Release/maintenance.json"
             else -> "python3 Tools/ci/preflight.py group --group $group --output $output/preflight"
         }
-        agentBuild("Check${suffix(group)}", "Check / $group", command, 25, receipt = true) {
-            if (group in listOf("browser", "ci-python")) requirements { equals("aurum.ci.node", "true") }
+        val nodeSetup = if (group in listOf("browser", "ci-python")) """
+            node_version="${'$'}(node --version)"
+            echo "Node.js ${'$'}node_version"
+            case "${'$'}node_version" in
+                v24.*) ;;
+                *) echo 'DiscordKit CI requires Node.js 24' >&2; exit 1 ;;
+            esac
+            npm --version
+        """.trimIndent() + "\n" else ""
+        agentBuild("Check${suffix(group)}", "Check / $group", nodeSetup + command, 25, receipt = true) {
             publishArtifacts = PublishMode.ALWAYS
             artifactRules += "\n+:$output/preflight/** => preflight"
             dependencies { passed(listOf(buildsPassed)) }

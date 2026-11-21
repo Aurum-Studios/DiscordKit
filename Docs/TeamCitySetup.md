@@ -71,14 +71,10 @@ versioned settings, and assign the intended agent pools.
 ## Qualify the three build agents
 
 Assign the three agents to pools available to DiscordKit. Verify each build
-configuration's compatible agents, and set capabilities on each agent only
-after verifying its tools.
-
-| Agent capability | Qualification |
-| --- | --- |
-| `aurum.ci.python=true` | Git and Python 3.12 or newer available on the agent |
-| `aurum.ci.node=true` | Node.js 24 and npm available for the browser bridge and helper checks |
-| `aurum.ci.discordkit=true` | Agent meets the DiscordKit toolchain and native build requirements for its platform |
+configuration's compatible agents by OS and architecture. Jobs check the
+installed tools at runtime and report their versions. Provide Git and Python
+3.12 or newer on each agent. The browser bridge and CI helper checks also
+require Node.js 24 and npm on the Linux agent.
 
 Qualify Ubuntu 24.04 x64 and macOS 26 ARM64 with Swift 6.4.1. Give compatible
 agents the same absolute TeamCity checkout path within each platform so
