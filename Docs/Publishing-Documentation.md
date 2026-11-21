@@ -12,7 +12,7 @@ DocC. The two outputs use their own validation jobs.
 
 | Output | Source | Delivery |
 | --- | --- | --- |
-| DiscordKit Knowledge Base | [Curated Markdown inventory](../.air/youtrack/project-guides.json) | DiscordKit project articles restricted to the verified DiscordKit Team |
+| [DiscordKit Knowledge Base](https://issues.aurum-studios.com/articles/DISCORDKIT-A-1/DiscordKit-Overview) | [Curated Markdown inventory](../.air/youtrack/project-guides.json) | DiscordKit project articles for the DiscordKit Team |
 | DocC documentation | Package symbol graphs and the [DocC catalog](../Sources/DiscordKit/DiscordKit.docc) | Download the archive from the macOS documentation job in the [certification chain](CI.md#documentation) |
 
 The YouTrack library contains Overview, Guides, Engineering Reference, and

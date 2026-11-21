@@ -41,14 +41,14 @@
   },
   "tracker": {
     "mode": "youtrack",
-    "project_key": null,
+    "project_key": "DISCORDKIT",
     "state_mapping": {}
   },
   "knowledge_base": {
     "enabled": true,
     "layout": "project",
     "root_title": "DiscordKit Documentation",
-    "permitted_groups": [],
+    "permitted_groups": ["DiscordKit Team"],
     "permitted_users": [],
     "source_url": "https://github.com/Aurum-Studios/DiscordKit"
   },
