@@ -41,6 +41,7 @@ SHA256 = re.compile(r'[0-9a-f]{64}')
 PACKAGE = re.compile(r'[a-z0-9][a-z0-9+.-]*(?::[a-z0-9-]+)?')
 SWIFT_IMAGE = re.compile(r'docker\.io/library/swift:6\.4\.1-noble@sha256:[0-9a-f]{64}')
 IMAGE_TOOLCHAIN_DIRECTORIES = ('lib/swift', 'lib/swift_static', 'lib/clang', 'libexec/swift')
+AGENT_TOOLCHAIN = Path('/opt/discordkit/swift')
 
 
 class Budget:
@@ -320,12 +321,13 @@ def observe(*, swift=None, budget=None, run=command):
         raise ValueError('active Swift must use a dedicated usr/bin toolchain layout')
     root = executable.parent.parent.parent
     image = os.environ.get('DISCORDKIT_CI_SWIFT_IMAGE')
-    if image and (not SWIFT_IMAGE.fullmatch(image) or root != Path('/')
+    if image and (not SWIFT_IMAGE.fullmatch(image) or root not in (Path('/'), AGENT_TOOLCHAIN)
                   or not (Path('/.dockerenv').is_file() or Path('/run/.containerenv').is_file())):
-        raise ValueError('The pinned Swift image requires the official container toolchain layout')
+        raise ValueError('The pinned Swift image requires an approved container toolchain layout')
     if root == Path('/') and not image:
         raise ValueError('active Swift must use a dedicated installation root')
-    files, dynamic = toolchain_files(root, budget, image=bool(image))
+    merged_layout = root == Path('/')
+    files, dynamic = toolchain_files(root, budget, image=merged_layout)
     if executable not in files:
         raise ValueError('active Swift is not a native compiler ELF in its installation')
     tools = {}
@@ -368,7 +370,7 @@ def observe(*, swift=None, budget=None, run=command):
     if len(libraries) > MAX_LIBRARIES:
         raise ValueError('native Swift runtime closure exceeded its finite library limit')
     dependency_paths = libraries | {Path(row['path']) for row in tools.values()}
-    external = ({path for path in dependency_paths if path not in files} if image else
+    external = ({path for path in dependency_paths if path not in files} if merged_layout else
                 {path for path in dependency_paths if not path.is_relative_to(root)})
     owners, packages = package_facts(external, budget, run=run)
     library_facts = {}
@@ -379,7 +381,7 @@ def observe(*, swift=None, budget=None, run=command):
         row['packages'] = owners.get(row['path'], [])
     manifest = {str(path.relative_to(root)): digest for path, digest in files.items()}
     facts = {'schemaVersion': 1, 'architecture': 'x86_64', 'elfClass': 64,
-             'toolchainRoot': '/usr' if image else str(root), 'toolchainELFCount': len(files),
+             'toolchainRoot': '/usr' if merged_layout else str(root), 'toolchainELFCount': len(files),
              'librarySearchPaths': {'inherited': inherited, 'sharedLibraries': search},
              'toolchainELFSHA256': hashlib.sha256(canonical(manifest)).hexdigest(),
              'dependencyGraphSHA256': hashlib.sha256(canonical(graph)).hexdigest(),
@@ -405,8 +407,10 @@ def validate_facts(facts):
     image = facts.get('containerImage') if isinstance(facts, dict) else None
     if image is not None:
         keys.add('containerImage')
-        if not isinstance(image, str) or not SWIFT_IMAGE.fullmatch(image) or facts.get('toolchainRoot') != '/usr':
+        if (not isinstance(image, str) or not SWIFT_IMAGE.fullmatch(image)
+                or facts.get('toolchainRoot') not in ('/usr', str(AGENT_TOOLCHAIN))):
             raise ValueError('Invalid pinned Swift container identity')
+    merged_layout = image is not None and facts.get('toolchainRoot') == '/usr'
     if (not isinstance(facts, dict) or set(facts) != keys or type(facts['schemaVersion']) is not int
             or facts['schemaVersion'] != 1 or facts['architecture'] != 'x86_64'
             or type(facts['elfClass']) is not int or facts['elfClass'] != 64
@@ -444,7 +448,7 @@ def validate_facts(facts):
                 or not isinstance(row['packages'], list) or any(not isinstance(name, str) for name in row['packages'])
                 or row['packages'] != sorted(set(row['packages']))
                 or any(package not in packages for package in row['packages'])
-                or (not row['packages'] and not (image_toolchain_file(Path(name)) if image else
+                or (not row['packages'] and not (image_toolchain_file(Path(name)) if merged_layout else
                                                 Path(name).is_relative_to(facts['toolchainRoot'])))):
             raise ValueError('invalid native Linux ABI file identity or package ownership')
     if len(canonical(facts)) > MAX_FACT_BYTES:

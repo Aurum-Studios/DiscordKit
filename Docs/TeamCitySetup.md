@@ -77,9 +77,11 @@ installed tools at runtime and report their versions. Provide Git and Python
 require Node.js 24 and npm on the Linux agent.
 
 Qualify Ubuntu 24.04 x64 and macOS 26 or 27 ARM64 with Swift 6.4.1. Native Linux
-steps use the [official Swift build image](https://hub.docker.com/_/swift) pinned
-by digest in the TeamCity settings. The Linux agent needs Docker and TeamCity's
-container wrapper maps the existing checkout at the same absolute path.
+steps run directly on the existing containerized TeamCity agent. Its image
+contains the [official Swift toolchain](https://hub.docker.com/_/swift) pinned
+by digest in the TeamCity settings and reports the matching
+`DISCORDKIT_AGENT_SWIFT_IMAGE` environment value. The DiscordKit native steps
+select `/opt/discordkit/swift/usr/bin` when that dedicated toolchain is present.
 Qualification records the image, observed compiler, linker, runtime library
 hashes and Ubuntu package versions. The macOS job verifies the Swift package's
 digest and notarized vendor signature, then unpacks it with `pkgutil` into

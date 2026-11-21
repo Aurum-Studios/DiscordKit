@@ -41,7 +41,7 @@ internal fun agentBuild(
     receipt: Boolean = false,
     configure: BuildType.() -> Unit = {},
 ): BuildType = BuildType {
-    val linuxContainer = native && agent == Agent.Linux
+    val linuxNative = native && agent == Agent.Linux
     id(buildId)
     name = displayName
     enablePersonalBuilds = false
@@ -55,7 +55,7 @@ internal fun agentBuild(
     requirements {
         contains("teamcity.agent.jvm.os.name", agent.os)
         matches("teamcity.agent.jvm.os.arch", agent.architecture)
-        if (linuxContainer) exists("docker.version")
+        if (linuxNative) equals("env.DISCORDKIT_AGENT_SWIFT_IMAGE", linuxSwiftImage)
     }
     params {
         param("env.CI", "true")
@@ -63,7 +63,7 @@ internal fun agentBuild(
         param("env.DISCORDKIT_CI_BUILD_ID", currentBuildId)
         param("env.PYTHONUNBUFFERED", "1")
         param("env.SWIFTNIO_STRICT", "1")
-        if (linuxContainer) param("env.DISCORDKIT_CI_SWIFT_IMAGE", linuxSwiftImage)
+        if (linuxNative) param("env.DISCORDKIT_CI_SWIFT_IMAGE", linuxSwiftImage)
     }
     failureConditions { executionTimeoutMin = minutes }
     if (receipt) {
@@ -109,28 +109,20 @@ internal fun agentBuild(
         swift_bin="${'$'}(cat $output/swift-bin)"
         export PATH="${'$'}swift_bin:${'$'}PATH"
     """.trimIndent() + "\n" else ""
-    val linuxCheckout = if (linuxContainer) """
-        if ! command -v python3 >/dev/null 2>&1; then
-            if [ "${'$'}(id -u)" -ne 0 ]; then
-                echo 'The Swift build container requires Python 3.12' >&2
-                exit 1
-            fi
-            apt-get -q -o Acquire::Retries=2 update
-            DEBIAN_FRONTEND=noninteractive apt-get -q install -y --no-install-recommends python3
+    val linuxToolchain = if (linuxNative) """
+        if [ "${'$'}{DISCORDKIT_AGENT_SWIFT_IMAGE:-}" != "${'$'}DISCORDKIT_CI_SWIFT_IMAGE" ]; then
+            echo 'The Linux agent image does not provide the pinned DiscordKit Swift release' >&2
+            exit 1
         fi
-        config_index="${'$'}{GIT_CONFIG_COUNT:-0}"
-        export "GIT_CONFIG_KEY_${'$'}config_index=safe.directory"
-        export "GIT_CONFIG_VALUE_${'$'}config_index=${'$'}(pwd -P)"
-        export GIT_CONFIG_COUNT="${'$'}((config_index + 1))"
+        swift_bin=/opt/discordkit/swift/usr/bin
+        if [ -x "${'$'}swift_bin/swift" ]; then
+            export PATH="${'$'}swift_bin:${'$'}PATH"
+        fi
     """.trimIndent() + "\n" else ""
     steps {
         script {
             name = displayName
-            if (linuxContainer) {
-                dockerImage = linuxSwiftImage
-                dockerRunParameters = "--platform=linux/amd64"
-            }
-            scriptContent = "set -eu\n$linuxCheckout$pythonSetup$macToolchain$command" +
+            scriptContent = "set -eu\n$pythonSetup$linuxToolchain$macToolchain$command" +
                 if (receipt) "\npython3 Tools/ci/teamcity_gate.py record $buildId" else ""
         }
     }

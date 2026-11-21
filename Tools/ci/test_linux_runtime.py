@@ -220,6 +220,21 @@ class RuntimeClosureTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'file identity or package ownership'):
             runtime.validate_facts(facts)
 
+    def test_project_scoped_container_toolchain_keeps_ubuntu_libraries_external(self):
+        """The shared agent records the separately scoped Swift installation and its base pin."""
+        with tempfile.TemporaryDirectory() as directory:
+            facts, _ = self.observe(Path(directory))
+        facts['containerImage'] = 'docker.io/library/swift:6.4.1-noble@sha256:' + 'b' * 64
+        facts['toolchainRoot'] = '/opt/discordkit/swift'
+        facts['nativeTools']['clang']['path'] = '/opt/discordkit/swift/usr/bin/clang'
+        facts['libraries']['/opt/discordkit/swift/usr/lib/swift/linux/libswiftCore.so'] = {
+            'sha256': 'a' * 64, 'packages': [],
+        }
+        self.assertEqual(runtime.validate_facts(facts), facts)
+        facts['libraries']['/usr/lib/swift/linux/libswiftCore.so'] = {'sha256': 'a' * 64, 'packages': []}
+        with self.assertRaisesRegex(ValueError, 'file identity or package ownership'):
+            runtime.validate_facts(facts)
+
 
 class CommandBoundsTests(unittest.TestCase):
     def test_nonzero_exit_output_overflow_and_deadline_are_terminal(self):
