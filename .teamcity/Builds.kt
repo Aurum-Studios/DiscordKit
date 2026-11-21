@@ -287,7 +287,7 @@ private val packages = platforms.map { platform ->
 }
 
 private val required = qualifications.values + builds.values.flatMap { it.values } +
-    checks.values.flatMap { it.values } + helpers + packages + DocumentationArchive
+    checks.values.flatMap { it.values } + helpers + packages + DocumentationArchive + KnowledgeBaseValidation
 
 /** Require a passed receipt from each selected job and publish the chain's certification. */
 internal fun certification(statusToken: String, watchPullRequests: Boolean): BuildType {

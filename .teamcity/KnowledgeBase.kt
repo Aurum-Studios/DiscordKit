@@ -15,8 +15,9 @@ internal val KnowledgeBaseValidation = agentBuild(
         "python3 Scripts/youtrack_knowledge_base.py verify --root . --revision %build.vcs.number% " +
         "> $output/knowledge-base/validation.json",
     15,
+    receipt = true,
 ) {
-    artifactRules = "+:$output/knowledge-base/validation.json => knowledge-base"
+    artifactRules += "\n+:$output/knowledge-base/validation.json => knowledge-base"
     triggers {
         vcs {
             branchFilter = defaultBranch
