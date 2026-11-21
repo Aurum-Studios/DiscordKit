@@ -80,8 +80,11 @@ Qualify Ubuntu 24.04 x64 and macOS 26 or 27 ARM64 with Swift 6.4.1. Native jobs
 verify the official Swift release's digest and signature on first use, then
 select the exact installed compiler and report its identity in each job. The
 installation belongs to the agent account. Linux extracts under
-`~/.cache/aurum/discordkit/toolchain` and requires `curl`, `gpg` and `tar` for
-the first installation. macOS uses its current-user Swift installer. Jobs on
+`~/.cache/aurum/discordkit/toolchain`. It uses `curl`, `gpg` and `tar` for the
+first Swift installation and the signed Ubuntu archive for the `libncurses6`
+and `libtinfo6` libraries. APT and `dpkg-deb` extract those libraries within the
+Swift installation, and the build records their versions and hashes. macOS
+uses its current-user Swift installer. Jobs on
 macOS can fall back to framework Python 3.14 and Xcode-beta when the agent's
 default selections do not satisfy the runtime checks.
 

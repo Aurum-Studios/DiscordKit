@@ -145,7 +145,7 @@ def remaining(plan):
     return budget
 
 
-def run_command(plan, name, arguments, *, maximum=300):
+def run_command(plan, name, arguments, *, maximum=300, cwd=REPOSITORY):
     """Use the existing durable supervisor and reserve cleanup inside the allowance."""
     if not re.fullmatch(r"[a-z0-9][a-z0-9-]{0,80}", name):
         raise ValueError("invalid provisioning command name")
@@ -155,7 +155,7 @@ def run_command(plan, name, arguments, *, maximum=300):
     budget = remaining(plan) - CLEANUP_ALLOWANCE_SECONDS
     try:
         execute(Command(name, tuple(map(str, arguments)), min(maximum, budget),
-                        operation="provisioning", stage="setup-native"), REPOSITORY,
+                        operation="provisioning", stage="setup-native"), cwd,
                 evidence / f"{name}.log", stdout_log=stdout, deadline=time.monotonic() + budget)
         remaining(plan)
     except BaseException as error:
@@ -408,13 +408,14 @@ def install_distribution(plan, policy):
     return binary
 
 
-def compiler_identity(plan, binary, policy):
+def compiler_identity(plan, binary, policy, *, library_path=None):
     """Observe the installed compiler before exposing its PATH to consumers."""
     swift = binary / "swift" if binary else Path("swift")
-    version = run_command(plan, "compiler-version", [swift, "--version"], maximum=30)
+    executable = [swift] if library_path is None else ["env", f"LD_LIBRARY_PATH={library_path}", swift]
+    version = run_command(plan, "compiler-version", [*executable, "--version"], maximum=30)
     if not re.search(rf"\bSwift version {re.escape(policy['swiftVersion'])}(?:\s|$)", version):
         raise ValueError("installed compiler does not match the pinned Swift version")
-    info = json.loads(run_command(plan, "compiler-target", [swift, "-print-target-info"], maximum=30))
+    info = json.loads(run_command(plan, "compiler-target", [*executable, "-print-target-info"], maximum=30))
     try:
         triple = info["target"]["triple"]
         expected_architecture, family = {"linux-x64": ("x86_64", "linux"),

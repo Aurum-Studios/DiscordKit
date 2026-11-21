@@ -101,9 +101,14 @@ internal fun agentBuild(
     """.trimIndent() + "\n" else ""
     val nativeSetup = if (native) macSdk + """
         python3 Tools/ci/teamcity_toolchain.py --platform ${agent.lane} \
-            --bin-output $output/swift-bin --evidence $output/evidence/swift-toolchain.json
+            --bin-output $output/swift-bin --library-output $output/swift-library-path \
+            --evidence $output/evidence/swift-toolchain.json
         swift_bin="${'$'}(cat $output/swift-bin)"
         export PATH="${'$'}swift_bin:${'$'}PATH"
+        swift_library_path="${'$'}(cat $output/swift-library-path)"
+        if [ -n "${'$'}swift_library_path" ]; then
+            export LD_LIBRARY_PATH="${'$'}swift_library_path${'$'}{LD_LIBRARY_PATH:+:${'$'}LD_LIBRARY_PATH}"
+        fi
     """.trimIndent() + "\n" else ""
     steps {
         script {
