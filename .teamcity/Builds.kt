@@ -191,10 +191,12 @@ private fun suffix(value: String) = value.split('-').joinToString("") { it.repla
 
 private const val artifactTransport = "python3 Tools/ci/teamcity_artifact_transport.py"
 
-private fun splitArchive(archive: String) = "$artifactTransport split $output/$archive $output/$archive.parts"
-private fun joinArchive(archive: String) = "$artifactTransport join $incoming/$archive.parts $incoming/$archive"
-private fun publishArchive(archive: String) = "+:$output/$archive.parts/* => $archive.parts"
-private fun downloadArchive(archive: String) = "+:$archive.parts/* => $incoming/$archive.parts"
+/** Keep archive extensions out of directory names so TeamCity uploads each part separately. */
+private fun archiveParts(archive: String) = archive.replace('.', '-') + "-parts"
+private fun splitArchive(archive: String) = "$artifactTransport split $output/$archive $output/${archiveParts(archive)}"
+private fun joinArchive(archive: String) = "$artifactTransport join $incoming/${archiveParts(archive)} $incoming/$archive"
+private fun publishArchive(archive: String) = "+:$output/${archiveParts(archive)}/* => ${archiveParts(archive)}"
+private fun downloadArchive(archive: String) = "+:${archiveParts(archive)}/* => $incoming/${archiveParts(archive)}"
 private val documentationInputs = listOf("root", "macros", "extensions").map { "documentation-inputs/$it.tar.gz" }
 
 /** Invoke one platform-specific phase and retain its diagnosis and any declared outputs. */

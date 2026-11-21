@@ -67,7 +67,7 @@ tutorials and public API reference. Start with the
 [catalog contents](Sources/DiscordKit/DiscordKit.docc/TableOfContents.md) or
 [getting started](Sources/DiscordKit/DiscordKit.docc/GettingStarted.md).
 
-TeamCity retains `DiscordKitLibrary.doccarchive.tar.gz` for verified revisions.
+TeamCity retains the [DocC archive parts](Docs/CI.md#documentation) for verified revisions.
 To build the merged runtime, macro and DSL extension archive locally, run:
 
 ```sh

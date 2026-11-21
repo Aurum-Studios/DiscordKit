@@ -41,6 +41,11 @@ matching execution environments. Clean checkouts isolate the mutable job output.
 The default SwiftPM worker budget is two per job and the native helper also
 checks observed host resources before running the bounded commands.
 
+TeamCity uploads each archive part as a separate file. Use artifact directory
+names such as `root-tar-gz-parts` so TeamCity treats the destination as a
+directory and keeps each file separate. The consumer verifies the manifest
+and reconstructs `root.tar.gz` before restoring the native build.
+
 Start **Offline certification** (`DiscordKit_Certification`) to run the full
 chain. It also owns VCS-triggered runs once the project is connected. The final
 job reconciles each required job's receipt against its TeamCity build ID and the
@@ -64,12 +69,13 @@ controlled performance claims have their own qualification evidence.
 The macOS public API job emits and seals DocC conversions for the root, macro and
 extension packages. The **MacDocumentation** configuration merges those
 same-chain inputs and publishes the parts of `DiscordKitLibrary.doccarchive.tar.gz`.
-Download the entire `DiscordKitLibrary.doccarchive.tar.gz.parts` directory and
-reconstruct the archive from a checkout of the same revision:
+Download all files in the `DiscordKitLibrary-doccarchive-tar-gz-parts` artifact
+directory, including `manifest.json`, into a local directory of the same name.
+From a checkout of the same revision, reconstruct and extract the archive.
 
 ```sh
 python3 Tools/ci/teamcity_artifact_transport.py join \
-  DiscordKitLibrary.doccarchive.tar.gz.parts DiscordKitLibrary.doccarchive.tar.gz
+  DiscordKitLibrary-doccarchive-tar-gz-parts DiscordKitLibrary.doccarchive.tar.gz
 tar -xzf DiscordKitLibrary.doccarchive.tar.gz
 ```
 
