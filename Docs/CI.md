@@ -63,10 +63,20 @@ controlled performance claims have their own qualification evidence.
 
 The macOS public API job emits and seals DocC conversions for the root, macro and
 extension packages. The **MacDocumentation** configuration merges those
-same-chain inputs and publishes `DiscordKitLibrary.doccarchive.tar.gz`. Extract
-the bundle and open `DiscordKitLibrary.doccarchive` in Xcode. The aggregate
-certificate records the archive's SHA-256 digest. The future hosting destination
-is open. [DocC artifacts](TeamCitySetup.md#retain-docc-artifacts)
+same-chain inputs and publishes the parts of `DiscordKitLibrary.doccarchive.tar.gz`.
+Download the entire `DiscordKitLibrary.doccarchive.tar.gz.parts` directory and
+reconstruct the archive from a checkout of the same revision:
+
+```sh
+python3 Tools/ci/teamcity_artifact_transport.py join \
+  DiscordKitLibrary.doccarchive.tar.gz.parts DiscordKitLibrary.doccarchive.tar.gz
+tar -xzf DiscordKitLibrary.doccarchive.tar.gz
+```
+
+Open `DiscordKitLibrary.doccarchive` in Xcode. Certification records the
+reconstructed archive's SHA-256 digest. TeamCity transports native build bundles,
+DocC inputs, and the final DocC bundle as files of up to 32 MiB. Consumers verify
+each part and the full archive before using it.
 
 ## Maintenance and timing
 

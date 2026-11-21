@@ -137,7 +137,7 @@ merging. [TeamCity Commit Status Publisher](https://www.jetbrains.com/help/teamc
 
 ## Retain DocC artifacts
 
-The macOS documentation configuration retains
-`DiscordKitLibrary.doccarchive.tar.gz`. Extract the bundle and open the
-`.doccarchive` in Xcode. The chain certificate records the digest and source
-SHA. The future hosting destination is open. [Documentation build](CI.md#documentation)
+The macOS documentation configuration retains the archive parts and a SHA-256
+manifest. Follow the [download and reconstruction steps](CI.md#documentation)
+to open the bundle in Xcode. The chain certificate records the reconstructed
+archive digest and source SHA.

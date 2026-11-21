@@ -189,6 +189,14 @@ private val groups = linkedMapOf(
 /** Convert a reviewed suite or component name into its stable configuration suffix. */
 private fun suffix(value: String) = value.split('-').joinToString("") { it.replaceFirstChar(Char::uppercaseChar) }
 
+private const val artifactTransport = "python3 Tools/ci/teamcity_artifact_transport.py"
+
+private fun splitArchive(archive: String) = "$artifactTransport split $output/$archive $output/$archive.parts"
+private fun joinArchive(archive: String) = "$artifactTransport join $incoming/$archive.parts $incoming/$archive"
+private fun publishArchive(archive: String) = "+:$output/$archive.parts/* => $archive.parts"
+private fun downloadArchive(archive: String) = "+:$archive.parts/* => $incoming/$archive.parts"
+private val documentationInputs = listOf("root", "macros", "extensions").map { "documentation-inputs/$it.tar.gz" }
+
 /** Invoke one platform-specific phase and retain its diagnosis and any declared outputs. */
 private fun nativeBuild(
     platform: NativePlatform,
@@ -197,12 +205,16 @@ private fun nativeBuild(
     minutes: Int,
     qualification: BuildType? = null,
     artifacts: String = "",
+    uploads: List<String> = emptyList(),
+    downloads: List<String> = emptyList(),
     configure: BuildType.() -> Unit = {},
 ) = agentBuild("${platform.id}$lane", "$lane / ${platform.value}",
-    "python3 Tools/ci/teamcity_native.py $command", minutes, platform.agent, native = true, receipt = true) {
+    (downloads.map(::joinArchive) + "python3 Tools/ci/teamcity_native.py $command" + uploads.map(::splitArchive))
+        .joinToString("\n"), minutes, platform.agent, native = true, receipt = true) {
     publishArtifacts = PublishMode.ALWAYS
     artifactRules += "\n+:$output/evidence/** => evidence"
     if (artifacts.isNotEmpty()) artifactRules += "\n$artifacts"
+    uploads.forEach { artifactRules += "\n${publishArchive(it)}" }
     params {
         param("env.DISCORDKIT_CI_CHAIN_ID", qualification?.chainBuildId() ?: currentBuildId)
         param("env.DISCORDKIT_CI_REPOSITORY", repositoryName)
@@ -218,7 +230,7 @@ private val builds = platforms.associateWith { platform ->
     platformComponents.mapValues { (key, component) ->
         val qualification = qualifications.getValue(platform)
         nativeBuild(platform, "Build$key", "build ${platform.value} $component", 150, qualification,
-            if (component == "apple") "" else "+:$output/$component.tar.gz") {
+            uploads = if (component == "apple") emptyList() else listOf("$component.tar.gz")) {
             dependencies { passed(listOf(qualification, platformsPassed)) }
         }
     }
@@ -231,11 +243,12 @@ private val checks = platforms.associateWith { platform ->
     suites.mapValues { (group, dependencies) ->
         val producers = dependencies.associateWith { builds.getValue(platform).getValue(it) }
         nativeBuild(platform, "Test${suffix(group)}", "check ${platform.value} $group", 125, qualification,
-            if (group == "public-api") "+:$output/documentation-inputs/*.tar.gz => documentation-inputs" else "") {
+            uploads = if (group == "public-api") documentationInputs else emptyList(),
+            downloads = dependencies.map { "${components.getValue(it)}.tar.gz" }) {
             dependencies {
                 passed(listOf(qualification, buildsPassed) + producers.values)
                 producers.forEach { (key, producer) ->
-                    sameChainArtifact(producer, "${components.getValue(key)}.tar.gz => $incoming")
+                    sameChainArtifact(producer, downloadArchive("${components.getValue(key)}.tar.gz"))
                 }
             }
         }
@@ -271,10 +284,10 @@ private val testsPassed = barrier("TestsPassed", "Required test and audit jobs p
 private val mac = platforms.single { it.agent == Agent.Mac }
 private val publicApi = checks.getValue(mac).getValue("public-api")
 internal val DocumentationArchive = nativeBuild(mac, "Documentation", "documentation ${mac.value}", 40,
-    qualifications.getValue(mac), "+:$output/$doccArtifact") {
+    qualifications.getValue(mac), uploads = listOf(doccArtifact), downloads = documentationInputs) {
     dependencies {
         passed(listOf(qualifications.getValue(mac), publicApi, testsPassed))
-        sameChainArtifact(publicApi, "documentation-inputs/*.tar.gz => $incoming/documentation-inputs")
+        sameChainArtifact(publicApi, documentationInputs.joinToString("\n", transform = ::downloadArchive))
     }
 }
 
@@ -292,14 +305,15 @@ private val required = qualifications.values + builds.values.flatMap { it.values
 /** Require a passed receipt from each selected job and publish the chain's certification. */
 internal fun certification(statusToken: String, watchPullRequests: Boolean): BuildType {
     val evidence = required.joinToString(" ") { "${it.receiptName()}=${it.chainBuildId()}" }
-    return agentBuild("Certification", "Offline certification", "python3 Tools/ci/teamcity_gate.py certify $evidence", 10) {
+    val command = "${joinArchive(doccArtifact)}\npython3 Tools/ci/teamcity_gate.py certify $evidence"
+    return agentBuild("Certification", "Offline certification", command, 10) {
         artifactRules = "+:$output/certification.json"
         publishArtifacts = PublishMode.SUCCESSFUL
         dependencies {
             passed(required)
             required.forEach { producer ->
                 val stageReceipt = "receipts/${producer.receiptName()}.json => $incoming/receipts"
-                val docc = if (producer == DocumentationArchive) "\n$doccArtifact => $incoming" else ""
+                val docc = if (producer == DocumentationArchive) "\n${downloadArchive(doccArtifact)}" else ""
                 sameChainArtifact(producer, stageReceipt + docc)
             }
         }

@@ -23,7 +23,7 @@ Open the merged archive in Xcode, or preview the umbrella catalog with the insta
 
 ### Build the full library archive
 
-The TeamCity certification chain retains `DiscordKitLibrary.doccarchive.tar.gz`. Extract it and open `DiscordKitLibrary.doccarchive` in Xcode. The macOS documentation job merges same-chain runtime, macro and DSL extension conversions from the macOS public API job, which verifies the source revision, toolchain and checkout path before using the compiled graphs.
+The TeamCity certification chain retains the archive parts. Follow the [download and reconstruction steps](https://github.com/Aurum-Studios/DiscordKit/blob/main/Docs/CI.md#documentation), then open `DiscordKitLibrary.doccarchive` in Xcode. The macOS documentation job merges same-chain runtime, macro and DSL extension conversions from the macOS public API job, which verifies the source revision, toolchain and checkout path before using the compiled graphs.
 
 To build the same bundle locally, run the following command and open `.build/DiscordKitLibrary.doccarchive` in Xcode:
 

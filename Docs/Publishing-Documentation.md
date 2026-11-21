@@ -16,7 +16,7 @@ DocC archive. Offline certification runs both documentation checks.
 | [DiscordKit Knowledge Base](https://issues.aurum-studios.com/articles/DISCORDKIT-A-1/DiscordKit-Overview) | [Curated Markdown inventory](../.air/youtrack/project-guides.json) | DiscordKit project articles for the DiscordKit Team |
 | Public project guides | [GitHub documentation directory](../Docs/) | Browse the Markdown for the selected branch or release tag |
 | GitHub releases | [Release tooling](ReleaseTooling.md) | Find versioned source archives, checksums, and provenance on the [Releases page](https://github.com/Aurum-Studios/DiscordKit/releases) |
-| DocC documentation | Package symbol graphs and the [DocC catalog](../Sources/DiscordKit/DiscordKit.docc) | Download the archive from the macOS documentation job in the [certification chain](CI.md#documentation) |
+| DocC documentation | Package symbol graphs and the [DocC catalog](../Sources/DiscordKit/DiscordKit.docc) | [Download and reconstruct](CI.md#documentation) the archive from the macOS documentation job |
 
 The YouTrack library contains Overview, Guides, Engineering Reference, and
 Project History. Review the intended DiscordKit Team audience when changing
