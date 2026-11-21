@@ -76,7 +76,16 @@ installed tools at runtime and report their versions. Provide Git and Python
 3.12 or newer on each agent. The browser bridge and CI helper checks also
 require Node.js 24 and npm on the Linux agent.
 
-Qualify Ubuntu 24.04 x64 and macOS 26 ARM64 with Swift 6.4.1. Give compatible
+Qualify Ubuntu 24.04 x64 and macOS 26 or 27 ARM64 with Swift 6.4.1. Native jobs
+verify the official Swift release's digest and signature on first use, then
+select the exact installed compiler and report its identity in each job. The
+installation belongs to the agent account. Linux extracts under
+`~/.cache/aurum/discordkit/toolchain` and requires `curl`, `gpg` and `tar` for
+the first installation. macOS uses its current-user Swift installer. Jobs on
+macOS can fall back to framework Python 3.14 and Xcode-beta when the agent's
+default selections do not satisfy the runtime checks.
+
+Give compatible
 agents the same absolute TeamCity checkout path within each platform so
 transferred SwiftPM products can resolve paths. On a shared host or filesystem,
 use distinct physical work directories for the agents and map them to the

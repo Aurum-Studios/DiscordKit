@@ -24,9 +24,9 @@ private const val receiptBuildId = "discordkit.build.id"
 private const val doccArtifact = "DiscordKitLibrary.doccarchive.tar.gz"
 private const val candidateBranches = "+:*\n-:gh-pages\n-:refs/heads/gh-pages"
 
-internal enum class Agent(val os: String, val architecture: String) {
-    Linux("Linux", "amd64|x86_64"),
-    Mac("Mac", "aarch64|arm64"),
+internal enum class Agent(val os: String, val architecture: String, val lane: String) {
+    Linux("Linux", "amd64|x86_64", "linux-x64"),
+    Mac("Mac", "aarch64|arm64", "macos-arm64"),
 }
 
 /** Define one clean, agent-side job using the source root connected by TeamCity. */
@@ -69,20 +69,41 @@ internal fun agentBuild(
             param(receiptBuildId, currentBuildId)
         }
     }
-    val pythonSetup = """
+    val macPython = if (agent == Agent.Mac) """
+        if ! python3 -c 'import sys; sys.exit(sys.version_info < (3, 12))' 2>/dev/null; then
+            mac_python=/Library/Frameworks/Python.framework/Versions/3.14/bin
+            if [ -x "${'$'}mac_python/python3" ]; then
+                export PATH="${'$'}mac_python:${'$'}PATH"
+            fi
+        fi
+    """.trimIndent() + "\n" else ""
+    val pythonSetup = macPython + """
         python3 --version
         python3 -c 'import sys; raise SystemExit(0 if sys.version_info >= (3, 12) else "DiscordKit CI requires Python 3.12 or newer")'
     """.trimIndent() + "\n"
-    val nativeSetup = if (native && agent == Agent.Mac) """
+    val macSdk = if (native && agent == Agent.Mac) """
         macos_version="${'$'}(sw_vers -productVersion)"
         echo "macOS ${'$'}macos_version"
         case "${'$'}macos_version" in
-            26.*) ;;
-            *) echo 'DiscordKit requires macOS 26 for this lane' >&2; exit 1 ;;
+            26.*|27.*) ;;
+            *) echo 'DiscordKit requires macOS 26 or 27 for this lane' >&2; exit 1 ;;
         esac
+        if ! xcodebuild -version >/dev/null 2>&1; then
+            fallback_xcode=/Applications/Xcode-beta.app/Contents/Developer
+            if [ -x "${'$'}fallback_xcode/usr/bin/xcodebuild" ]; then
+                export DEVELOPER_DIR="${'$'}fallback_xcode"
+            fi
+        fi
+        xcodebuild -version
         SDKROOT="${'$'}(xcrun --sdk macosx --show-sdk-path)"
         test -d "${'$'}SDKROOT"
         export SDKROOT
+    """.trimIndent() + "\n" else ""
+    val nativeSetup = if (native) macSdk + """
+        python3 Tools/ci/teamcity_toolchain.py --platform ${agent.lane} \
+            --bin-output $output/swift-bin --evidence $output/evidence/swift-toolchain.json
+        swift_bin="${'$'}(cat $output/swift-bin)"
+        export PATH="${'$'}swift_bin:${'$'}PATH"
     """.trimIndent() + "\n" else ""
     steps {
         script {

@@ -8,7 +8,7 @@ https://aurum-studios.com
 # DiscordKit continuous integration
 
 DiscordKit’s TeamCity chain verifies the same candidate on Ubuntu 24.04 x64
-and macOS 26 ARM64 with Swift 6.4.1. The [versioned settings](../.teamcity/settings.kts)
+and macOS 26 or 27 ARM64 with Swift 6.4.1. The [versioned settings](../.teamcity/settings.kts)
 use the three-agent Aurum Studios fleet. The number of concurrent builds depends
 on agent availability and compatibility. Hosted import and qualification are
 pending. [TeamCity project setup](TeamCitySetup.md)
