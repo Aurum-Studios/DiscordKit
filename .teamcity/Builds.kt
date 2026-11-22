@@ -154,16 +154,6 @@ internal fun Dependencies.sameChainArtifact(producer: BuildType, rules: String) 
     }
 }
 
-/** Use a lightweight composite to fan in a phase without occupying an agent. */
-private fun barrier(buildId: String, displayName: String, prerequisites: Collection<BuildType>) = BuildType {
-    id(buildId)
-    name = displayName
-    type = BuildTypeSettings.Type.COMPOSITE
-    enablePersonalBuilds = false
-    vcs { root(DslContext.settingsRoot); branchFilter = candidateBranches }
-    dependencies { passed(prerequisites) }
-}
-
 private data class NativePlatform(val id: String, val value: String, val agent: Agent)
 
 private val platforms = listOf(
@@ -171,23 +161,28 @@ private val platforms = listOf(
     NativePlatform("Mac", "macos-arm64", Agent.Mac),
 )
 
-private val components = linkedMapOf(
-    "Root" to "root", "Macros" to "macros", "Extensions" to "extensions", "Tooling" to "tooling",
-    "Load" to "load", "Benchmarks" to "benchmarks", "TimingSupport" to "timing-support",
-    "Timing" to "timing", "Foundation" to "foundation", "Media" to "media",
-    "Consumers" to "consumers", "Release" to "release",
+private val compileLanes = linkedMapOf(
+    "BuildCore" to listOf("root", "macros", "extensions"),
+    "BuildPackages" to listOf("tooling", "load", "consumers"),
+    "BuildBenchmarks" to listOf("benchmarks", "timing-support", "timing", "foundation", "media"),
+    "BuildRelease" to listOf("release"),
 )
 
-private val groups = linkedMapOf(
-    "root-01" to listOf("Root"), "root-02" to listOf("Root"), "root-03" to listOf("Root"),
-    "root-04" to listOf("Root"), "load" to listOf("Load"), "authoring" to listOf("Macros", "Extensions"),
-    "tooling" to listOf("Tooling"), "audit" to listOf("Tooling"), "consumers" to listOf("Consumers"),
-    "benchmarks" to listOf("Benchmarks", "TimingSupport", "Timing", "Foundation", "Media"),
-    "fixtures" to emptyList(),
+private val testLanes = linkedMapOf(
+    "TestCore" to listOf("root-01", "root-02", "root-03", "root-04", "authoring", "fixtures"),
+    "TestPackages" to listOf("load", "tooling", "audit", "consumers", "benchmarks"),
 )
-
-/** Convert a reviewed suite or component name into its stable configuration suffix. */
-private fun suffix(value: String) = value.split('-').joinToString("") { it.replaceFirstChar(Char::uppercaseChar) }
+private val testInputs = mapOf(
+    "TestCore" to compileLanes.getValue("BuildCore"),
+    "TestPackages" to compileLanes.getValue("BuildPackages") + compileLanes.getValue("BuildBenchmarks"),
+)
+// Reuse the representative configuration ID for each bundle during the import.
+private val retainedLaneIds = mapOf(
+    "BuildCore" to "BuildRoot",
+    "BuildPackages" to "BuildTooling",
+    "TestCore" to "TestRoot01",
+    "TestPackages" to "TestTooling",
+)
 
 private const val artifactTransport = "python3 Tools/ci/teamcity_artifact_transport.py"
 
@@ -199,19 +194,20 @@ private fun publishArchive(archive: String) = "+:$output/${archiveParts(archive)
 private fun downloadArchive(archive: String) = "+:${archiveParts(archive)}/* => $incoming/${archiveParts(archive)}"
 private val documentationInputs = listOf("root", "macros", "extensions").map { "documentation-inputs/$it.tar.gz" }
 
-/** Invoke one platform-specific phase and retain its diagnosis and any declared outputs. */
+/** Invoke platform-specific phases and retain individual diagnostics and declared outputs. */
 private fun nativeBuild(
     platform: NativePlatform,
     lane: String,
-    command: String,
+    commands: List<String>,
     minutes: Int,
     qualification: BuildType? = null,
     artifacts: String = "",
     uploads: List<String> = emptyList(),
     downloads: List<String> = emptyList(),
     configure: BuildType.() -> Unit = {},
-) = agentBuild("${platform.id}$lane", "$lane / ${platform.value}",
-    (downloads.map(::joinArchive) + "python3 Tools/ci/teamcity_native.py $command" + uploads.map(::splitArchive))
+) = agentBuild(platform.id + retainedLaneIds.getOrDefault(lane, lane), "$lane / ${platform.value}",
+    (downloads.map(::joinArchive) + commands.map { "python3 Tools/ci/teamcity_native.py $it --separate-evidence" } +
+        uploads.map(::splitArchive))
         .joinToString("\n"), minutes, platform.agent, native = true, receipt = true) {
     publishArtifacts = PublishMode.ALWAYS
     artifactRules += "\n+:$output/evidence/** => evidence"
@@ -224,85 +220,82 @@ private fun nativeBuild(
     configure()
 }
 
-private val qualifications = platforms.associateWith { nativeBuild(it, "Qualify", "qualify ${it.value}", 30) }
-private val platformsPassed = barrier("PlatformsPassed", "Required platforms qualified", qualifications.values)
+private val qualifications = platforms.associateWith { nativeBuild(it, "Qualify", listOf("qualify ${it.value}"), 30) }
 
 private val builds = platforms.associateWith { platform ->
-    val platformComponents = if (platform.agent == Agent.Mac) components + ("Apple" to "apple") else components
-    platformComponents.mapValues { (key, component) ->
+    compileLanes.mapValues { (lane, graphs) ->
         val qualification = qualifications.getValue(platform)
-        nativeBuild(platform, "Build$key", "build ${platform.value} $component", 150, qualification,
-            uploads = if (component == "apple") emptyList() else listOf("$component.tar.gz")) {
-            dependencies { passed(listOf(qualification, platformsPassed)) }
+        val components = if (lane == "BuildRelease" && platform.agent == Agent.Mac) graphs + "apple" else graphs
+        nativeBuild(platform, lane, components.map { "build ${platform.value} $it" }, 150 * components.size,
+            qualification, uploads = graphs.map { "$it.tar.gz" }) {
+            dependencies { passed(qualifications.values) }
         }
     }
 }
-private val buildsPassed = barrier("BuildsPassed", "Required build producers passed", builds.values.flatMap { it.values })
 
 private val checks = platforms.associateWith { platform ->
     val qualification = qualifications.getValue(platform)
-    val suites = if (platform.agent == Agent.Mac) groups + ("public-api" to listOf("Root", "Macros", "Extensions")) else groups
-    suites.mapValues { (group, dependencies) ->
-        val producers = dependencies.associateWith { builds.getValue(platform).getValue(it) }
-        nativeBuild(platform, "Test${suffix(group)}", "check ${platform.value} $group", 125, qualification,
-            uploads = if (group == "public-api") documentationInputs else emptyList(),
-            downloads = dependencies.map { "${components.getValue(it)}.tar.gz" }) {
+    testLanes.mapValues { (lane, suites) ->
+        val publicApi = lane == "TestCore" && platform.agent == Agent.Mac
+        val groups = if (publicApi) suites + "public-api" else suites
+        val inputs = testInputs.getValue(lane)
+        val producers = compileLanes.filterValues { graphs -> graphs.any { it in inputs } }
+        nativeBuild(platform, lane, groups.map { "check ${platform.value} $it --clean-inputs" },
+            125 * groups.size, qualification, uploads = if (publicApi) documentationInputs else emptyList(),
+            downloads = inputs.map { "$it.tar.gz" }) {
             dependencies {
-                passed(listOf(qualification, buildsPassed) + producers.values)
-                producers.forEach { (key, producer) ->
-                    sameChainArtifact(producer, downloadArchive("${components.getValue(key)}.tar.gz"))
+                val platformBuilds = builds.getValue(platform)
+                passed(listOf(qualification) + producers.keys.map(platformBuilds::getValue))
+                producers.forEach { (producer, graphs) ->
+                    val rules = graphs.filter { it in inputs }.joinToString("\n") { downloadArchive("$it.tar.gz") }
+                    sameChainArtifact(platformBuilds.getValue(producer), rules)
                 }
             }
         }
     }
 }
 
-private val helpers = listOf("source", "ci-python", "tooling-python", "benchmark-python", "browser", "maintenance")
-    .map { group ->
-        val command = when (group) {
-            "source" -> "python3 Scripts/sync_copyright.py\ngit show --format= --check --first-parent HEAD\n" +
-                "python3 Tools/ci/preflight.py source --output $output/preflight"
-            "maintenance" -> "python3 Tools/DiscordKitTools/scripts/release_check.py maintenance " +
-                "--repository . --record Docs/Release/maintenance.json"
-            else -> "python3 Tools/ci/preflight.py group --group $group --output $output/preflight"
-        }
-        val nodeSetup = if (group in listOf("browser", "ci-python")) """
-            node_version="${'$'}(node --version)"
-            echo "Node.js ${'$'}node_version"
-            case "${'$'}node_version" in
-                v24.*) ;;
-                *) echo 'DiscordKit CI requires Node.js 24' >&2; exit 1 ;;
-            esac
-            npm --version
-        """.trimIndent() + "\n" else ""
-        agentBuild("Check${suffix(group)}", "Check / $group", nodeSetup + command, 25, receipt = true) {
-            publishArtifacts = PublishMode.ALWAYS
-            artifactRules += "\n+:$output/preflight/** => preflight"
-            dependencies { passed(listOf(buildsPassed)) }
-        }
-    }
+private val repositoryChecks = agentBuild("CheckSource", "Repository checks", """
+    node_version="${'$'}(node --version)"
+    echo "Node.js ${'$'}node_version"
+    case "${'$'}node_version" in
+        v24.*) ;;
+        *) echo 'DiscordKit CI requires Node.js 24' >&2; exit 1 ;;
+    esac
+    npm --version
+    python3 Scripts/sync_copyright.py
+    git show --format= --check --first-parent HEAD
+    python3 Tools/ci/preflight.py source --output $output/preflight/source
+    for group in ci-python tooling-python benchmark-python browser; do
+        python3 Tools/ci/preflight.py group --group "${'$'}group" --output "$output/preflight/${'$'}group"
+    done
+    python3 Tools/DiscordKitTools/scripts/release_check.py maintenance --repository . --record Docs/Release/maintenance.json
+""".trimIndent(), 150, receipt = true) {
+    publishArtifacts = PublishMode.ALWAYS
+    artifactRules += "\n+:$output/preflight/** => preflight"
+}
 
-private val testsPassed = barrier("TestsPassed", "Required test and audit jobs passed", helpers + checks.values.flatMap { it.values })
+private val verification = builds.values.flatMap { it.values } + checks.values.flatMap { it.values } + repositoryChecks
 private val mac = platforms.single { it.agent == Agent.Mac }
-private val publicApi = checks.getValue(mac).getValue("public-api")
-internal val DocumentationArchive = nativeBuild(mac, "Documentation", "documentation ${mac.value}", 40,
+private val publicApi = checks.getValue(mac).getValue("TestCore")
+internal val DocumentationArchive = nativeBuild(mac, "Documentation", listOf("documentation ${mac.value}"), 40,
     qualifications.getValue(mac), uploads = listOf(doccArtifact), downloads = documentationInputs) {
     dependencies {
-        passed(listOf(qualifications.getValue(mac), publicApi, testsPassed))
+        passed(listOf(qualifications.getValue(mac)) + verification)
         sameChainArtifact(publicApi, documentationInputs.joinToString("\n", transform = ::downloadArchive))
     }
 }
 
 private val packages = platforms.map { platform ->
     val qualification = qualifications.getValue(platform)
-    nativeBuild(platform, "Source", "package ${platform.value}", 25, qualification,
+    nativeBuild(platform, "Source", listOf("package ${platform.value}"), 25, qualification,
         "+:$output/*.tar.gz\n+:$output/*.tar.gz.sha256\n+:$output/*.json") {
-        dependencies { passed(listOf(qualification, testsPassed)) }
+        dependencies { passed(listOf(qualification) + verification) }
     }
 }
 
-private val required = qualifications.values + builds.values.flatMap { it.values } +
-    checks.values.flatMap { it.values } + helpers + packages + DocumentationArchive + KnowledgeBaseValidation
+internal val VerificationBuilds = qualifications.values + verification + packages + DocumentationArchive
+private val required = VerificationBuilds + KnowledgeBaseValidation
 
 /** Require a passed receipt from each selected job and publish the chain's certification. */
 internal fun certification(statusToken: String, watchPullRequests: Boolean): BuildType {
@@ -345,9 +338,6 @@ internal fun certification(statusToken: String, watchPullRequests: Boolean): Bui
         }
     }
 }
-
-internal val VerificationBuilds = qualifications.values + platformsPassed + builds.values.flatMap { it.values } +
-    buildsPassed + checks.values.flatMap { it.values } + helpers + DocumentationArchive + testsPassed + packages
 
 /** Collect weekly upstream review inputs separately from the human maintenance gate. */
 internal val UpstreamReview = agentBuild("UpstreamReview", "Upstream review evidence", """

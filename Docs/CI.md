@@ -19,10 +19,17 @@ pending. [TeamCity project setup](TeamCitySetup.md)
 | --- | --- | --- |
 | Qualify | Native compiler, linker, runtime, SDKs and reviewed SwiftPM inventory on both platforms | Exact VCS revision assigned |
 | Build | Twelve independent package components per platform, plus Apple SDK compile checks on macOS | Both qualifications pass |
-| Test | Disjoint runtime suites, browser tests, local tooling and compiler fixtures, code and release audits, public API and strict DocC, upstream review freshness | All build producers pass |
+| Test | Disjoint runtime suites, browser tests, local tooling and compiler fixtures, code and release audits, public API and strict DocC, upstream review freshness | Native suites require their matching build producers. Repository checks run independently. |
 | Export and certify | Native SwiftPM source exports, the verified DocC archive and a single aggregate receipt | Every required build, test and export passes for the same revision |
 
-The two native lanes use the existing SwiftPM graphs for the root package,
+Each platform has four build configurations for core, additional packages,
+benchmarks and timing, and release-mode compilation. Two test configurations
+per platform run the core and package suites. A shared repository check runs
+the six source, Python, browser, and maintenance checks. The required chain
+uses 20 configurations. Scheduled upstream review and optional timing use
+six more, with two additional configurations when release publishing is enabled.
+
+The native configurations use the existing SwiftPM graphs for the root package,
 macros, extensions, tooling, load tests, benchmarks, timing support and timing
 products, examples and release-mode builds. The four root groups retain the
 reviewed suite allocation. The other checks consume the graphs they need.
@@ -32,12 +39,16 @@ Apple device and simulator SDK compilation establishes build coverage for the
 configured SDKs. The [native driver](../Tools/ci/teamcity_native.py) retains the
 execution commands and results for each platform.
 
-Snapshot dependencies enforce phase barriers. Artifact dependencies use
+Snapshot dependencies synchronize revisions and gate each native test bundle on
+its build producers. Artifact dependencies use
 **Build from the same chain**. Every consumer verifies the producer archive,
 checked-out revision, toolchain and host compatibility, and qualification
 identity before restoring it. Swift test products encode absolute paths, so
 eligible agents on one platform require the same resolved checkout path and
 matching execution environments. Clean checkouts isolate the mutable job output.
+Between grouped test phases, the native driver clears the selected SwiftPM
+outputs before restoring their verified archives. Each phase keeps its own
+diagnostic directory.
 The default SwiftPM worker budget is two per job and the native helper also
 checks observed host resources before running the bounded commands.
 
@@ -66,7 +77,7 @@ controlled performance claims have their own qualification evidence.
 
 ## Documentation
 
-The macOS public API job emits and seals DocC conversions for the root, macro and
+The macOS core test configuration emits and seals DocC conversions for the root, macro and
 extension packages. The **MacDocumentation** configuration merges those
 same-chain inputs and publishes the parts of `DiscordKitLibrary.doccarchive.tar.gz`.
 Download all files in the `DiscordKitLibrary-doccarchive-tar-gz-parts` artifact

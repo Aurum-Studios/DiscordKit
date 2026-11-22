@@ -96,10 +96,12 @@ and toolchain paths, OS and kernel, and Linux Swift runtime libraries before
 admitting agents that exchange native artifacts. [CI lanes and evidence](CI.md),
 [Agent pools](https://www.jetbrains.com/help/teamcity/configuring-agent-pools.html)
 
-Run the required chain on a known `main` revision. Verify that both platform
-qualifications finish before builds start, that independent jobs run on eligible
-agents, and that the aggregate result covers every required check for the
-selected SHA.
+Run **Offline certification** on a known `main` revision after TeamCity imports
+the settings for that commit. Verify that both platform qualifications finish
+before native compilation starts and that each test bundle uses its matching
+producers. The configuration keeps the core, package, benchmarking, and release
+builds independently retryable on each platform. The aggregate result must cover
+every required check for the selected SHA.
 
 ## Enable GitHub release publishing
 

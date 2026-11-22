@@ -113,6 +113,17 @@ def check(repository, target, group, jobs, inputs, output, evidence):
                                   inputs / f"{component}.tar.gz")
 
 
+def clean_check_outputs(repository, group):
+    """Remove only untracked SwiftPM output that could collide with the next archive restore."""
+    components = API_COMPONENTS if group == "public-api" else (
+        component for component, _ in GROUPS.get(group, ())
+    )
+    roots = sorted({root for component in components for root in native_jobs.build_roots(component)})
+    if roots:
+        subprocess.run(["git", "clean", "-ffdx", "-e", "/.build/teamcity/", "--", *roots],
+                       cwd=repository, check=True)
+
+
 def public_api(repository, target, inputs, output, evidence):
     """Compare all reviewed API baselines and seal strict DocC conversions once."""
     docc = shutil.which("docc") or subprocess.check_output(["xcrun", "--find", "docc"], text=True).strip()
@@ -172,10 +183,14 @@ def main(argv=None):
         phase = phases.add_parser(name)
         phase.add_argument("platform", choices=PLATFORMS)
         phase.add_argument("--repository", type=Path, default=REPOSITORY)
+        phase.add_argument("--separate-evidence", action="store_true",
+                           help="Keep the phase's evidence under a unique directory in a grouped job")
         if name == "build":
             phase.add_argument("component", choices=BUILD_COMPONENTS)
         if name == "check":
             phase.add_argument("group", choices=(*GROUPS, "fixtures", "public-api"))
+            phase.add_argument("--clean-inputs", action="store_true",
+                               help="Clear the selected compiled graphs before restoring the staged archives")
         if name in ("build", "check", "documentation"):
             phase.add_argument("--jobs", type=int, default=2)
     arguments = parser.parse_args(argv)
@@ -187,6 +202,10 @@ def main(argv=None):
         parser.error("--jobs must be positive")
     inputs, output = (repository / TEAMCITY_STATE / name for name in ("in", "out"))
     evidence = output / "evidence"
+    if arguments.separate_evidence:
+        evidence = evidence / arguments.phase
+        if component or group:
+            evidence = evidence / (component or group)
     report = {"status": "running", "phase": arguments.phase, "platform": target,
               "component": component, "group": group, "commands": []}
     try:
@@ -202,6 +221,8 @@ def main(argv=None):
             elif arguments.phase == "build":
                 build(repository, target, component, arguments.jobs, output, evidence)
             elif arguments.phase == "check":
+                if arguments.clean_inputs:
+                    clean_check_outputs(repository, group)
                 check(repository, target, group, arguments.jobs, inputs, output, evidence)
             elif arguments.phase == "documentation":
                 linux_ci.native_preflight(repository, evidence / "host", target)
