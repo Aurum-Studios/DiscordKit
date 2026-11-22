@@ -33,6 +33,9 @@ class LinuxCommandTests(unittest.TestCase):
         browser = self.repository / "Browser/DiscordActivityBridge"
         browser.mkdir(parents=True)
         (browser / "bridge.test.mjs").touch()
+        parity = self.repository / "Docs/Parity"
+        parity.mkdir(parents=True)
+        (parity / "reviewed-v1.json").write_text(json.dumps({"verifiedOn": "2001-02-03"}), encoding="utf-8")
 
     def plan(self, stage):
         """Plan one stage with a distinguishable nondefault compiler job budget."""
@@ -79,6 +82,14 @@ class LinuxCommandTests(unittest.TestCase):
                     self.assertEqual(arguments[executable_index + 1:], ("--offline",))
                 if "--scratch-path" in arguments:
                     self.assertLess(arguments.index("--scratch-path"), executable_index)
+
+    def test_audit_uses_the_committed_review_date_for_snapshot_checks(self):
+        """Keep snapshot checks reproducible while auditing the current documentation source."""
+        runs = {command.name: command.arguments[command.arguments.index("DiscordKitTools") + 1:]
+                for command in self.plan("audit") if command.arguments[:2] == ("swift", "run")}
+        self.assertEqual(runs["documentation"], ("documentation", "audit", "--repository", "."))
+        for name, operation in (("inventory", "validate"), ("generate", "--check"), ("parity", "check")):
+            self.assertEqual(runs[name], (name, operation, "--repository", ".", "--as-of", "2001-02-03"))
 
     def test_root_and_optimized_package_graphs_are_independent_gates(self):
         """A debug build alone cannot satisfy root runtime tests or optimized library/macro builds."""

@@ -73,9 +73,11 @@ documentation. A changed or missing output makes the check fail without repairin
 Unknown schema metadata keys fail rather than silently disappearing during decoding.
 
 Audits default to the current UTC day. Use `--as-of YYYY-MM-DD` to reproduce a
-historical review within its declared freshness window. Passing a historical check
-does not establish current API currency. Update and reverify stale source contracts
-instead of merely extending their allowed age or changing their verification date.
+historical review within its declared freshness window. For its offline snapshot
+checks, TeamCity uses the `verifiedOn` date in the committed reviewed inventory.
+The [upstream maintenance check](ReleaseTooling.md#upstream-review-and-dated-transitions)
+separately verifies the current review deadline. Update and reverify stale source
+contracts when refreshing the reviewed inventory.
 
 After reviewing input changes, regenerate explicitly:
 

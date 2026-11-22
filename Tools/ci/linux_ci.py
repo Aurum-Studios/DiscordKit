@@ -107,9 +107,16 @@ def commands(stage, repository, jobs):
         swift("smoke", "run", "Tools/DiscordDSLBenchmarks", "--configuration", "release",
               "DiscordDSLBenchmarks", "--invocations", "1000", "--output", ".build/dsl-measurements/runtime-smoke.json")
     elif stage == "audit":
-        for operation in (("documentation", "audit"), ("inventory", "validate"),
-                          ("generate", "--check"), ("parity", "check")):
-            swift(operation[0], "run", "Tools/DiscordKitTools", "DiscordKitTools", *operation, "--repository", ".")
+        reviewed_path = repository / "Docs/Parity/reviewed-v1.json"
+        reviewed = json.loads(reviewed_path.read_text(encoding="utf-8"))
+        review_date = reviewed.get("verifiedOn") if isinstance(reviewed, dict) else None
+        if not isinstance(review_date, str) or not review_date:
+            raise ValueError("The reviewed inventory must record a verifiedOn date")
+        swift("documentation", "run", "Tools/DiscordKitTools", "DiscordKitTools",
+              "documentation", "audit", "--repository", ".")
+        for operation in (("inventory", "validate"), ("generate", "--check"), ("parity", "check")):
+            swift(operation[0], "run", "Tools/DiscordKitTools", "DiscordKitTools",
+                  *operation, "--repository", ".", "--as-of", review_date)
         add("social-catalog", python, "Tools/DiscordKitTools/scripts/verify_social_catalog.py")
         script = "Tools/DiscordKitTools/scripts/release_check.py"
         add("graph", python, script, "graph", "--repository", ".")
