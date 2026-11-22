@@ -68,7 +68,8 @@ cleanup
 git clone --quiet --no-checkout -- "$stage/candidate.bundle" "$checkout"
 cd "$checkout"
 [[ "$(git rev-parse --verify HEAD)" == "$revision" ]] || fail 'The Git bundle names a different revision.'
-git -c core.autocrlf=false checkout --quiet --detach "$revision"
+git config core.autocrlf false
+git checkout --quiet --detach "$revision"
 
 teamcity=.build/teamcity
 copy_tree() {

@@ -80,8 +80,9 @@ try {
     if (Test-Path -LiteralPath $staged -PathType Container) {
         # Failed native jobs can still stage diagnostics. The bridge withholds their receipts.
         $output = Join-Path $teamcity 'out'
-        foreach ($file in Get-ChildItem -LiteralPath $staged -Recurse -File -Force) {
-            $destination = Join-Path $output $file.FullName.Substring($staged.Length + 1)
+        foreach ($file in (Get-ChildItem -LiteralPath $staged -Recurse -File -Force)) {
+            $relativePath = $file.FullName.Substring($staged.Length + 1)
+            $destination = Join-Path $output $relativePath
             [System.IO.Directory]::CreateDirectory([System.IO.Path]::GetDirectoryName($destination)) | Out-Null
             [System.IO.File]::Copy($file.FullName, $destination)
         }
