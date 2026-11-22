@@ -41,6 +41,10 @@ API_COMPONENTS = {
     "macros": ("0.15.0", ("api-baseline-macros-0.15.0.json",)),
     "extensions": ("0.15.0", ("api-baseline-extensions-0.15.0.json",)),
 }
+# The Linux agent can admit just one compiler process. Both large graphs were
+# still compiling at the shared 20-minute deadline on that agent.
+LINUX_COMPILE_BUDGETS = {"root": 2460, "release": 7200}
+LINUX_COMPILE_COMMAND_SECONDS = 2400
 
 
 def verify_checkout(repository):
@@ -86,8 +90,11 @@ def build(repository, target, component, jobs, output, evidence):
         execute(repository, evidence, "apple-compile", [sys.executable, "Tools/ci/compile_apple.py",
                 "--repository", repository, "--output", evidence / "apple-compile.json"], 2400)
         return
+    compile_budget = LINUX_COMPILE_BUDGETS.get(component) if target == "linux-x64" else None
     native_jobs.compile_component(repository, component, target, jobs, evidence, output / f"{component}.tar.gz",
-                                  archive_exclusions=(repository / TEAMCITY_STATE,))
+                                  archive_exclusions=(repository / TEAMCITY_STATE,),
+                                  command_timeout=LINUX_COMPILE_COMMAND_SECONDS if compile_budget else None,
+                                  compile_budget_seconds=compile_budget)
 
 
 def check(repository, target, group, jobs, inputs, output, evidence):

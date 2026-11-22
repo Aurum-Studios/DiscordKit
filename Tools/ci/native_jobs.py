@@ -12,6 +12,7 @@ require a verified immutable index. Tests use --skip-build and exact inventories
 """
 
 from contextlib import contextmanager, redirect_stdout, suppress
+from dataclasses import replace
 import argparse
 import base64
 import hashlib
@@ -641,9 +642,12 @@ def restore_archive(repository, component, native_platform, archive, output, *, 
     return metadata
 
 
-def compile_component(repository, component, native_platform, jobs, output, archive, *, archive_exclusions=()):
+def compile_component(repository, component, native_platform, jobs, output, archive, *, archive_exclusions=(),
+                      command_timeout=None, compile_budget_seconds=None):
     """Compile and seal inventories within one shared elapsed budget, without retrying."""
     policy = execution_policy()
+    if compile_budget_seconds is not None:
+        policy["componentCompileSeconds"][component] = compile_budget_seconds
     admission = native_resources.compiler_admission(jobs,
         policy_cap=policy["concurrency"]["compilerJobsPerProcess"])
     jobs = admission["jobs"]
@@ -662,7 +666,10 @@ def compile_component(repository, component, native_platform, jobs, output, arch
             original = compatibility_identity(repository, component, native_platform, deadline=compile_deadline, output=output, report=report)
             execution = receipts.execution_identity(repository)
             report.update(compatibility=original, execution=execution)
-            execute_commands(compile_commands(component, jobs), repository, output, report, deadline=compile_deadline)
+            commands = compile_commands(component, jobs)
+            if command_timeout is not None:
+                commands = [replace(command, timeout=command_timeout) for command in commands]
+            execute_commands(commands, repository, output, report, deadline=compile_deadline)
             if native_platform == "macos-arm64" and component in ("root", "macros", "extensions"):
                 # Symbol emission can compile again and shares the component compilation budget.
                 emitter = linux_ci.Command("public-symbol-graphs", (sys.executable,
