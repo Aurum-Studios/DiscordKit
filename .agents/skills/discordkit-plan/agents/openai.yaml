@@ -1,0 +1,11 @@
+# copyright:begin
+# File: .agents/skills/discordkit-plan/agents/openai.yaml
+# Created by Carson Rau.
+# Copyright (c) 2026 Aurum Studios.
+# https://aurum-studios.com
+# copyright:end
+
+interface:
+  display_name: "discordkit Plan"
+  short_description: "Commit a concrete phased implementation plan"
+  default_prompt: "Use $discordkit-plan. Plan this task and commit its plan-only handoff."

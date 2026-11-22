@@ -1,0 +1,16 @@
+# copyright:begin
+# File: Docs/Languages/swift/gitignore
+# Created by Carson Rau.
+# Copyright (c) 2026 Aurum Studios.
+# https://aurum-studios.com
+# copyright:end
+
+# Swift: reproduced compiler/package output at any component depth.
+# Keep Package.resolved, .swiftpm configuration, projects and shared schemes.
+.build/
+DerivedData/
+*.doccarchive/
+.swiftlint-cache
+
+# Scope any additional dependency checkout/download directories to their actual
+# component. Never ignore a source submodule or all of .swiftpm/.

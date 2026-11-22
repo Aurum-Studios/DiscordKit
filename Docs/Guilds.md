@@ -135,11 +135,15 @@ or route is invented; the member screening state is the available typed contract
 Guild creation deprecation was announced **2025-04-15**, with removal effective
 **2025-07-15**. Gradient role colors were documented **2025-07-02**; legacy `color`
 remains available for compatibility while `colors` is preferred. Role member counts
-were announced **2025-12-09**. Existing channel obfuscation history still applies:
-mandatory Gateway redaction/HTTP guild-channel omission is scheduled for
-**2026-11-16**, and is not claimed already enforced on this verification date.
-Other introduction/effective dates remain unknown. Local support dates and upstream
-chronology are distinct in the [change record](Parity/changes/2026-10-16-guilds.md).
+were announced **2025-12-09**. Discord confirmed mandatory Gateway obfuscation
+and HTTP guild-channel omission on **2026-11-16**. In Get Guild Channels,
+Discord considers a channel viewable if the caller has `VIEW_CHANNEL` or is
+connected to it by voice. A category is viewable if a child is viewable.
+[Guild endpoint](https://docs.discord.com/developers/resources/guild#get-guild-channels) · [Discord rollout](https://docs.discord.com/developers/change-log#channel-obfuscation-is-now-live-for-all-bots)
+
+Other introduction and effective dates remain unknown. The historical record
+tracks local support dates and upstream chronology.
+[Guild change record](Parity/changes/2026-10-16-guilds.md)
 
 ## Request reduction and explicit bulk work
 

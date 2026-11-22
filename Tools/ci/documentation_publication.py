@@ -173,12 +173,18 @@ def verify(api, *, execution, revision, mode, artifact_id, artifact_digest, arti
 
 def extract_site(archive_path, destination):
     """Admit the complete site tar before staging regular files in a fresh tree."""
+    return extract_bundle(archive_path, destination, root="site", required_files=REQUIRED_FILES,
+                          maximum_bytes=MAX_SITE_BYTES, marker=(SITE_MARKER, MARKER_CONTENT))
+
+
+def extract_bundle(archive_path, destination, *, root, required_files, maximum_bytes, marker=None):
+    """Admit a bounded documentation tar with one root and only regular members."""
     archive_path, destination = Path(archive_path), Path(destination).absolute()
     if (not archive_path.is_file() or archive_path.is_symlink()
             or destination.exists() or destination.is_symlink()
             or any(parent.is_symlink() for parent in destination.parents)):
         raise ValueError("publication site archive/output is missing, linked or already exists")
-    required = {"site/" + name for name in REQUIRED_FILES}
+    required = {root + "/" + name for name in required_files}
     members, names, files, size = [], set(), set(), 0
     try:
         with tarfile.open(archive_path, "r:gz") as archive:
@@ -187,7 +193,7 @@ def extract_site(archive_path, destination):
                 path = PurePosixPath(name)
                 if (not name or "\\" in name or "\0" in name or path.is_absolute()
                         or any(part in ("", ".", "..") for part in name.split("/"))
-                        or str(path) != name or path.parts[0] != "site" or name in names
+                        or str(path) != name or path.parts[0] != root or name in names
                         or not (member.isdir() or member.isreg()) or member.sparse is not None
                         or member.size < 0 or member.isdir() and member.size != 0):
                     raise ValueError("unsafe or duplicate website tar member")
@@ -196,14 +202,16 @@ def extract_site(archive_path, destination):
                 if member.isreg():
                     files.add(name)
                     size += member.size
-                if len(members) > MAX_SITE_MEMBERS or size > MAX_SITE_BYTES:
+                if len(members) > MAX_SITE_MEMBERS or size > maximum_bytes:
                     raise ValueError("website tar exceeds its bounded extraction size")
             if (not required.issubset(files)
                     or any(str(parent) in files for name in names for parent in PurePosixPath(name).parents)):
                 raise ValueError("website tar omits required routes/marker or aliases a file as a directory")
-            marker = archive.getmember("site/" + SITE_MARKER)
-            if marker.size != len(MARKER_CONTENT) or archive.extractfile(marker).read() != MARKER_CONTENT:
-                raise ValueError("website tar has an invalid generated-site marker")
+            if marker is not None:
+                marker_name, marker_contents = marker
+                member = archive.getmember(root + "/" + marker_name)
+                if member.size != len(marker_contents) or archive.extractfile(member).read() != marker_contents:
+                    raise ValueError("website tar has an invalid generated-site marker")
             destination.parent.mkdir(parents=True, exist_ok=True)
             with tempfile.TemporaryDirectory(prefix=".publication-site-", dir=destination.parent) as temporary:
                 staged = Path(temporary)
@@ -223,7 +231,7 @@ def extract_site(archive_path, destination):
                                 remaining -= len(chunk)
                 if destination.exists() or destination.is_symlink():
                     raise ValueError("website output appeared during extraction")
-                (staged / "site").rename(destination)
+                (staged / root).rename(destination)
     except (tarfile.TarError, EOFError) as error:
         raise ValueError("invalid website tar archive") from error
     return {"files": len(files), "bytes": size}

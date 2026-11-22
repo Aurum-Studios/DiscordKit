@@ -1,0 +1,11 @@
+# copyright:begin
+# File: .agents/skills/discordkit-review/agents/openai.yaml
+# Created by Carson Rau.
+# Copyright (c) 2026 Aurum Studios.
+# https://aurum-studios.com
+# copyright:end
+
+interface:
+  display_name: "discordkit Review"
+  short_description: "Review an exact candidate independently"
+  default_prompt: "Use $discordkit-review. Independently review this exact candidate and its evidence."

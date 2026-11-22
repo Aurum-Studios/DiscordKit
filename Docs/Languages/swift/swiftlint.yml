@@ -1,0 +1,152 @@
+# copyright:begin
+# File: Docs/Languages/swift/swiftlint.yml
+# Created by Carson Rau.
+# Copyright (c) 2026 Aurum Studios.
+# https://aurum-studios.com
+# copyright:end
+
+# Swift library/application starter. Customize and commit this file in the Swift
+# component root. Pass --config swiftlint.yml explicitly; this name is not the
+# automatically discovered .swiftlint.yml. Tested with SwiftLint 0.65.1.
+# Upstream configuration: https://github.com/realm/SwiftLint#configuration
+#
+# Inspect every resolved rule option (including defaults):
+#   swiftlint rules --config swiftlint.yml --enabled --verbose
+# Run with per-file progress and detailed Xcode-compatible diagnostics:
+#   swiftlint lint --config swiftlint.yml --strict --force-exclude
+# There is no lint --verbose flag. Do not pass --quiet when inspecting results.
+
+# Fail on warnings as well as errors; callers should also pass --strict.
+strict: true
+# Human-readable file:line:column diagnostics that Xcode can navigate.
+# For CI integration, choose a supported reporter deliberately (e.g. json).
+reporter: xcode
+# A wrong working directory or include path must fail rather than pass vacuously.
+allow_zero_lintable_files: false
+# Tool versions are upgraded deliberately; lint should not check for updates.
+check_for_updates: false
+
+# Lint every authored Swift source under the component root, including tests,
+# examples and documentation snippets. An omitted `included` list permits new
+# source directories without further configuration. Add include paths only when
+# scoping a monorepo component; keep commands anchored at this file's directory.
+# Exclude generated/dependency output. Add project-specific generated paths here,
+# not broad authored trees such as Tests or Examples. --force-exclude also honors
+# these exclusions when paths are passed directly on the command line.
+excluded:
+  - .build
+  - .swiftpm
+  - DerivedData
+  - Vendor
+  - Carthage
+  - Pods
+
+# Retain every default rule. Put narrowly justified project exceptions here and
+# document their reason; avoid blanket disables or a baseline hiding new issues.
+disabled_rules: []
+
+# Explicit opt-ins make changes reviewable. Avoid `all`: newly released rules
+# should be evaluated with the pinned SwiftLint/compiler before adoption.
+opt_in_rules:
+  # Prefer clear, efficient collection/sequence operations.
+  - array_init
+  - contains_over_filter_count
+  - contains_over_filter_is_empty
+  - contains_over_first_not_nil
+  - contains_over_range_nil_comparison
+  - empty_collection_literal
+  - empty_count
+  - empty_string
+  - first_where
+  - flatmap_over_map_reduce
+  - joined_default_parameter
+  - last_where
+  # Keep formatting and declarations consistent without a second formatter.
+  - attributes
+  - closure_end_indentation
+  - closure_spacing
+  - collection_alignment
+  - discouraged_object_literal
+  - explicit_init
+  - file_name_no_space
+  - implicit_return
+  - literal_expression_end_indentation
+  - modifier_order
+  - multiline_arguments
+  - multiline_literal_brackets
+  - multiline_parameters
+  - operator_usage_whitespace
+  - prefer_self_type_over_type_of_self
+  - redundant_nil_coalescing
+  - redundant_type_annotation
+  - return_value_from_void_function
+  - self_binding
+  - shorthand_optional_binding
+  - sorted_imports
+  - static_operator
+  - toggle_bool
+  - unneeded_parentheses_in_closure_argument
+  - vertical_whitespace_closing_braces
+  - vertical_whitespace_opening_braces
+  # Surface unsafe unwraps, lifecycle mistakes and isolation annotations.
+  - fatal_error_message
+  - force_unwrapping
+  - implicitly_unwrapped_optional
+  - incompatible_concurrency_annotation
+  - lower_acl_than_parent
+  - overridden_super_call
+  - override_in_extension
+  - prohibited_super_call
+  - unowned_variable_capture
+  # Require documentation beyond the public API. This rule checks presence,
+  # not behavioral completeness, and does not cover every callable form.
+  - missing_docs
+
+# Compiler-backed checks run only via `swiftlint analyze`, not ordinary lint.
+# Capture a clean build log for the actual target and pass --compiler-log-path;
+# record a separate analyzer command if supported. Never claim this ran via lint.
+analyzer_rules:
+  - unused_import
+
+# Include all access levels and inherited/extension/trivial declarations that
+# this rule supports. Manually review accessors, deinitializers, overrides,
+# nested functions, closures and test helpers as well as documentation quality.
+missing_docs:
+  warning:
+    - open
+    - public
+    - package
+    - internal
+    - fileprivate
+    - private
+  excludes_extensions: false
+  excludes_inherited_types: false
+  excludes_trivial_init: false
+  evaluate_effective_access_control_level: true
+
+# Starter thresholds: adjust to the product's actual readability needs rather
+# than suppressing diagnostics. With strict=true, either threshold fails lint;
+# warning/error still distinguishes severity in reports. URLs may exceed width.
+line_length:
+  warning: 120
+  error: 160
+  ignores_urls: true
+function_body_length:
+  warning: 50
+  error: 80
+type_body_length:
+  warning: 300
+  error: 500
+file_length:
+  warning: 500
+  error: 800
+  ignore_comment_only_lines: true
+cyclomatic_complexity:
+  warning: 10
+  error: 20
+
+# For a justified local exception, prefer a single-line directive with a reason:
+#   // The fixture asserts non-nil immediately before this expression.
+#   // swiftlint:disable:next force_unwrapping
+# Keep the reason before the directive so `disable:next` targets the Swift line.
+# Enable additional rules explicitly after reviewing `swiftlint rules` output.

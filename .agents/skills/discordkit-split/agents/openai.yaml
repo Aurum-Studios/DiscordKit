@@ -1,0 +1,11 @@
+# copyright:begin
+# File: .agents/skills/discordkit-split/agents/openai.yaml
+# Created by Carson Rau.
+# Copyright (c) 2026 Aurum Studios.
+# https://aurum-studios.com
+# copyright:end
+
+interface:
+  display_name: "discordkit Split"
+  short_description: "Decompose work into bounded owned slices"
+  default_prompt: "Use $discordkit-split. Propose a dependency and ownership split for this work."

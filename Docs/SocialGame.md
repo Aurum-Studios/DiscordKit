@@ -56,10 +56,14 @@ Metadata updates replace the supplied map; omission preserves it and explicit nu
 clears it where documented. Lobby/member metadata has a 1,000-character combined
 key/value limit. Member additional_name accepts 1–80 characters, with omission
 preserving and null clearing it on writes. Idle timeout is 5–604,800 seconds.
-Create/modify member arrays have at most 25 entries. Bulk update takes 1–25 entries;
-remove_member marks removals and the response contains only successful upserts.
-Unknown users cause a 404; permission/membership-limit failures may silently drop
-upserts. An absent response member never proves removal or successful admission.
+Create and modify requests accept up to 25 submitted members. Bulk update takes
+1–25 entries. Discord enforces the separate 1,000-member lobby capacity and can
+return HTTP 400 and JSON error code 50035 for oversized requests. Typed requests
+reject oversized arrays locally. `remove_member` marks removals, and the bulk
+response contains only successful upserts. Unknown users cause a 404, and
+permission or membership-limit failures may silently drop upserts. An absent
+response member never proves removal or successful admission. [Lobby member
+limits](https://docs.discord.com/developers/resources/lobby#create-lobby-member-limits)
 
 Explicit bounded member workflows split legal requests sequentially, retain input
 correlation and completed progress, and expose silent omissions separately from

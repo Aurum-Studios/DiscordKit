@@ -127,10 +127,10 @@ For flagged Gateway channels, only id/type/position/parent_id remain reliable;
 overwrites contain only an everyone-role VIEW_CHANNEL denial. The model preserves
 these snapshots without treating them as authoritative permission calculations.
 
-The **2026-08-12** announcement sets mandatory Gateway obfuscation and HTTP guild
-channel omission for **2026-11-16**. On the verification date, Gateway testing
-can opt in through a capability or portal toggle; HTTP omission has no early
-opt-in. This distinguishes the future transition from already-enforced behavior.
+Discord enabled Gateway obfuscation and HTTP guild-channel omission for all bots
+on **2026-11-16**. The temporary Gateway Identify bit is retired. The Get Guild
+Channels response omits channels Discord considers non-viewable. An omitted
+channel could reflect a visibility change. [Discord rollout](https://docs.discord.com/developers/change-log#channel-obfuscation-is-now-live-for-all-bots)
 Nullable application IDs were announced **2026-08-05**. Voice status was documented
 **2026-04-20**, with its original introduction date unknown; ephemeral status/start
 time are not Channel fields. Thread-member detail/pagination was announced

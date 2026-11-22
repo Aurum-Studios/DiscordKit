@@ -15,7 +15,8 @@ public enum VoiceControlFailure: Error, Equatable, Sendable {
     case unsupportedEncryption, e2eeRequired, e2eeUnavailable, closed
 }
 
-/// Documented Voice Gateway v8 opcodes, verified 2026-10-17 against Discord's opcode table.
+/// Voice Gateway v8 opcodes recognized by the typed frame catalog.
+/// Unknown numeric opcodes, including Media Sink Wants, remain available in raw frames.
 /// This catalog identifies DAVE envelopes; it does not implement MLS or DAVE cryptography.
 /// https://docs.discord.com/developers/topics/opcodes-and-status-codes#voice
 public enum VoiceGatewayOpcode: UInt8, Sendable, CaseIterable {

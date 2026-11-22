@@ -54,13 +54,11 @@ public enum GuildEndpoints {
     }
 
     /// Lists guild channels, excluding threads and channels Discord omits for visibility policy.
-    /// API v10, reverified 2026-10-18. Discord announced on 2026-08-12 that from
-    /// 2026-11-16 this HTTP response omits channels where the caller lacks VIEW_CHANNEL;
-    /// HTTP has no early opt-in. Before that date, a complete list still does not prove
-    /// permission to view each channel. The server controls the transition; this method
-    /// performs no date-based filtering, hydration or synthetic deletion. A missing row
-    /// cannot distinguish deletion from visibility loss. Gateway obfuscation is separate.
-    /// See https://docs.discord.com/developers/change-log#channel-obfuscation-for-users-and-bots.
+    /// API v10. Discord confirmed HTTP omission for bots on 2026-11-16. Discord
+    /// determines visibility from VIEW_CHANNEL, active voice connections and
+    /// viewable child channels of a category. This method returns the server's
+    /// list in order. A missing row can reflect a visibility change.
+    /// See https://docs.discord.com/developers/change-log#channel-obfuscation-is-now-live-for-all-bots.
     /// - Parameters:
     ///   - guildID: Guild major rate partition; bot or eligible bearer authorization is accepted.
     ///   - readPolicy: Optional scoped reuse; default coalesces without completed caching.

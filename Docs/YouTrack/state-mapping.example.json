@@ -1,0 +1,58 @@
+{
+  "example_only": true,
+  "note": "Example of the mapping shape recorded by automatic setup after schema read-back. These null IDs are unknown; never submit them as tracker updates. Setup does not execute issue transitions.",
+  "tracker": {
+    "mode": "youtrack",
+    "project_key": null,
+    "state_mapping": {
+      "Backlog": {
+        "field_name": "State", "field_id": null,
+        "value_name": "Backlog", "value_id": null
+      },
+      "Planning": {
+        "field_name": "State", "field_id": null,
+        "value_name": "Planning", "value_id": null
+      },
+      "Awaiting Approval": {
+        "field_name": "State", "field_id": null,
+        "value_name": "Awaiting Approval", "value_id": null
+      },
+      "Implementation": {
+        "field_name": "State", "field_id": null,
+        "value_name": "Implementation", "value_id": null
+      },
+      "Testing": {
+        "field_name": "State", "field_id": null,
+        "value_name": "Testing", "value_id": null
+      },
+      "Review": {
+        "field_name": "State", "field_id": null,
+        "value_name": "Review", "value_id": null
+      },
+      "Documentation": {
+        "field_name": "State", "field_id": null,
+        "value_name": "Documentation", "value_id": null
+      },
+      "Ready to Integrate": {
+        "field_name": "State", "field_id": null,
+        "value_name": "Ready to Integrate", "value_id": null
+      },
+      "Integration": {
+        "field_name": "State", "field_id": null,
+        "value_name": "Integration", "value_id": null
+      },
+      "Deployment": {
+        "field_name": "State", "field_id": null,
+        "value_name": "Deployment", "value_id": null
+      },
+      "Verification": {
+        "field_name": "State", "field_id": null,
+        "value_name": "Verification", "value_id": null
+      },
+      "Done": {
+        "field_name": "State", "field_id": null,
+        "value_name": "Done", "value_id": null
+      }
+    }
+  }
+}

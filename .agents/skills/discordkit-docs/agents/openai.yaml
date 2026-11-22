@@ -1,0 +1,11 @@
+# copyright:begin
+# File: .agents/skills/discordkit-docs/agents/openai.yaml
+# Created by Carson Rau.
+# Copyright (c) 2026 Aurum Studios.
+# https://aurum-studios.com
+# copyright:end
+
+interface:
+  display_name: "discordkit Docs"
+  short_description: "Prepare reviewed candidate documentation"
+  default_prompt: "Use $discordkit-docs. Prepare documentation readiness for this candidate."

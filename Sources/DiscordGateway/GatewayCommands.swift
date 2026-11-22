@@ -83,7 +83,8 @@ public struct GatewayCapabilities: OptionSet, Sendable, Hashable {
     /// - Parameter rawValue: Any unsigned combination, including zero and unknown future flags.
     public init(rawValue: UInt64) { self.rawValue = rawValue }
 
-    /// Temporary testing-only opt-in to obfuscated channel metadata; Discord plans to change this opt-in.
+    /// Compatibility value for Discord's retired testing opt-in. Omit this bit in new Identify payloads.
+    /// Discord enabled channel obfuscation for all bots on 2026-11-16.
     public static let channelObfuscation = Self(rawValue: 1 << 15)
 }
 

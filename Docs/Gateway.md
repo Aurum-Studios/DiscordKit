@@ -191,12 +191,12 @@ raw values are still available and no cache merge policy is invented here.
 `GatewayIntents` and `GatewayCapabilities` are distinct bitfields. Privileged member,
 presence and message-content intents still require the documented Developer Portal
 configuration/approval. Setting a bit cannot obtain permission or guarantee delivery.
-The CHANNEL_OBFUSCATION capability (`1 << 15`) is a temporary testing opt-in,
-verified 2026-10-16. The official 2026-08-12 announcement schedules mandatory bot
-obfuscation for **2026-11-16**. Channels may contain redacted names, null/reduced
-metadata and the CHANNEL_OBFUSCATED flag (`1 << 17`); a later Channel Update may
-restore visible data. Preserve these payloads and do not infer current authorization
-from a prior full snapshot. [Official change log](https://docs.discord.com/developers/change-log).
+Discord enabled channel obfuscation for all bots on **2026-11-16** and retired the
+temporary `CHANNEL_OBFUSCATION` Identify bit (`1 << 15`). Omit that bit from new
+Identify payloads. Obfuscated channels carry the `CHANNEL_OBFUSCATED` channel
+flag (`1 << 17`) and can appear in Channel Create, Update, Delete and Guild
+Create. A later Channel Update may restore visible data. A prior full snapshot
+does not establish current authorization. [Discord rollout](https://docs.discord.com/developers/change-log#channel-obfuscation-is-now-live-for-all-bots)
 
 Commands validate documented payload shapes before sending, including the 32-byte
 UTF-8 member nonce, query/user-ID choices, requested presences/intents and finite

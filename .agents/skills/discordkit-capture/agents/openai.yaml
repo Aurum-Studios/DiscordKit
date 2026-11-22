@@ -1,0 +1,11 @@
+# copyright:begin
+# File: .agents/skills/discordkit-capture/agents/openai.yaml
+# Created by Carson Rau.
+# Copyright (c) 2026 Aurum Studios.
+# https://aurum-studios.com
+# copyright:end
+
+interface:
+  display_name: "discordkit Capture"
+  short_description: "Capture observations into actionable work"
+  default_prompt: "Use $discordkit-capture. Capture these project observations into actionable work."

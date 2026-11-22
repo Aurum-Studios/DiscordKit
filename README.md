@@ -62,8 +62,9 @@ package an exact certified commit and publish a GitHub release at a chosen
 ## Documentation
 
 The [DiscordKit Knowledge Base](https://issues.aurum-studios.com/articles/DISCORDKIT-A-1/DiscordKit-Overview)
-holds project documentation for the DiscordKit Team. The Swift DocC catalogs contain product guides,
-tutorials and public API reference. Start with the
+holds project documentation for the DiscordKit Team. The Swift DocC catalogs contain
+product guides, tutorials, an [example cookbook](Sources/DiscordKit/DiscordKit.docc/ExampleCookbook.md)
+and public API reference. Start with the
 [catalog contents](Sources/DiscordKit/DiscordKit.docc/TableOfContents.md) or
 [getting started](Sources/DiscordKit/DiscordKit.docc/GettingStarted.md).
 

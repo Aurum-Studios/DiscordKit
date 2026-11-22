@@ -1,0 +1,28 @@
+<!-- copyright:begin
+File: Docs/Verification.md
+Created by Carson Rau.
+Copyright (c) 2026 Aurum Studios.
+https://aurum-studios.com
+copyright:end -->
+
+# Verification record
+
+## TeamCity and YouTrack migration
+
+The migration uses Aurum Studios Blank at `deded696cb08f13a64c56c13076cbc4ec2778cf4`
+and starts from DiscordKit `8bfc38b5d6956340442cb7e92e66678f25176846`. This record
+covers the uncommitted migration candidate checked on November 21, 2026.
+
+| Area | Evidence | Hosted acceptance |
+| --- | --- | --- |
+| GitHub Actions | GitHub accepted the repository-level disable request. Policy read-back returned `enabled=false`. Follow-up run queries found zero active or queued runs. | Repository shutdown verified. The working-copy workflow removal still awaits source integration. |
+| TeamCity configuration | `mvn -f .teamcity/pom.xml teamcity-configs:generate` passed with Maven 3.9.11, Java 21.0.11 and the Aurum server plugin API. Generated 69 default configurations and 71 with release and integration settings. Both variants had 59 required same-chain receipts. Generated shell syntax passed, and the DocC artifact was present in both variants. | Import authenticated project settings, qualify the three agents and run both lanes. |
+| CI helpers | `python3 -m unittest discover -s Tools/ci` ran 671 tests. 663 passed, 6 skipped, and 2 unchanged process-group tests failed where the macOS sandbox limits process visibility. All 40 focused release tests passed. Source preflight and upstream maintenance checks passed. The next upstream review is due November 28. | Check same-chain artifacts and exact-SHA certification on TeamCity. |
+| Browser and docs | All 38 Node browser tests and 32 DocC example snapshots validated locally. The DocC site remains a certification artifact. | Render and retain the full site in the macOS chain. Its publishing destination is pending. |
+| YouTrack | Air configuration records YouTrack as the tracker. GitHub reported zero open issues. Project key, State mapping and Knowledge Base publication are pending. | Authenticate, discover the project, verify schema and issue links, and confirm the library audience. |
+| Release | The TeamCity workflow prepares exact-SHA assets and uses a named approver and the build-scoped GitHub App credential for publication. | Connect the approved App, verify hosted certification read-back and qualify the deployment. |
+
+TeamCity project discovery and YouTrack administration returned HTTP 401 without
+authenticated access. Native platform execution, release qualification and
+Knowledge Base publication remain pending. [Service setup](TeamCitySetup.md) ·
+[CI coverage](CI.md)

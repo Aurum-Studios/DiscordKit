@@ -35,7 +35,7 @@ block merging until the verified TeamCity check replaces them.
    `YOUTRACK_TOKEN` through the trusted environment or secret manager. Use the
    schema read-back to record actual State field and value IDs. For an existing
    populated project, map its current State values through read-only discovery.
-   [YouTrack Knowledge Base setup](YouTrack/Knowledge-Base.md)
+   [Adopted repository setup](YouTrack/Automatic-Setup.md#configure-an-adopted-repository)
 3. Verify issue links and Air state transitions with the intended team. Confirm
    the article audience and source inventory before seeding the project
    library. [Knowledge Base setup](YouTrack/Knowledge-Base.md)

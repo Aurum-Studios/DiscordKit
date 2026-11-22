@@ -46,6 +46,8 @@ written contract supports them. Unsafe mutations retain indeterminate outcomes
 after ambiguous sends and never silently replay; explicit rejected-429 retries
 remain within the common finite budget. Guild/channel major partitions are
 preserved; opaque invite/template codes never become invented major parameters.
+When Discord returns expired-invite code `50270`, `APIResponseError.code` retains
+it as a numeric value. [Discord JSON error codes](https://docs.discord.com/developers/topics/opcodes-and-status-codes)
 
 ## Invite targets and asynchronous jobs
 

@@ -1,0 +1,74 @@
+{
+  "specification_version": 1,
+  "kind": "configuration-specification-not-native-import",
+  "template_name": "Air Development",
+  "description": "Plan-first development with independent review and evidence-based integration, delivery and acceptance.",
+  "source_project_key": null,
+  "lifecycle_field": {
+    "name": "State",
+    "type": "state[1]",
+    "can_be_empty": false,
+    "default": "Backlog",
+    "states": [
+      {"name": "Backlog", "resolved": false},
+      {"name": "Planning", "resolved": false},
+      {"name": "Awaiting Approval", "resolved": false},
+      {"name": "Implementation", "resolved": false},
+      {"name": "Testing", "resolved": false},
+      {"name": "Review", "resolved": false},
+      {"name": "Documentation", "resolved": false},
+      {"name": "Ready to Integrate", "resolved": false},
+      {"name": "Integration", "resolved": false},
+      {"name": "Deployment", "resolved": false},
+      {"name": "Verification", "resolved": false},
+      {"name": "Done", "resolved": true}
+    ]
+  },
+  "optional_fields": [
+    {
+      "name": "Type",
+      "type": "enum[1]",
+      "can_be_empty": false,
+      "default": "Task",
+      "values": ["Epic", "Feature", "Task", "Bug", "Improvement"]
+    },
+    {
+      "name": "Priority",
+      "type": "enum[1]",
+      "can_be_empty": false,
+      "default": "Normal",
+      "values": ["Show-stopper", "Critical", "Major", "Normal", "Minor"]
+    },
+    {
+      "name": "Assignee",
+      "type": "user[1]",
+      "can_be_empty": true,
+      "default": null,
+      "values_source": "actual-project-team"
+    }
+  ],
+  "optional_board": {
+    "name": "Air Development",
+    "projects": "source-project-only",
+    "view_access": "project-based",
+    "settings_access": "project-based",
+    "columns_field": "State",
+    "columns": [
+      "Backlog", "Planning", "Awaiting Approval", "Implementation", "Testing",
+      "Review", "Documentation", "Ready to Integrate", "Integration",
+      "Deployment", "Verification", "Done"
+    ],
+    "sprints_enabled": false,
+    "swimlanes": null,
+    "estimation_field": null,
+    "wip_limits": null
+  },
+  "time_tracking_enabled": false,
+  "integrations": [],
+  "custom_workflow_code": [],
+  "gate_enforcement": "coordinating-air-stage-with-current-evidence-and-read-back",
+  "task_records": "Docs/Tasks/<TASK-KEY>/<RUN-ID>/PLAN.md, STATE.md, EVIDENCE.md",
+  "issue_body": "Issue-Description.md",
+  "handoff_body": "Stage-Handoff.md",
+  "launch_checklist": "Launch-Checklist.md"
+}

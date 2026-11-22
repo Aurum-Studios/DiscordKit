@@ -31,3 +31,18 @@ records in Git and link to them when a guide needs that context.
 3. Preview and publish the candidate with the authenticated YouTrack
    session. Follow the [Knowledge Base operations guide](YouTrack/Knowledge-Base.md)
    to verify scope, article access and publication receipts.
+
+## Maintain the project library
+
+Place new guides under their subject section and link across sections where
+readers need context. Review source changes for synced articles and reconcile
+manual edits before another sync. Independently maintained articles can be
+edited through an authorized YouTrack session. Check the intended audience
+before importing content or linking to a restricted issue.
+
+The [task publication runner](YouTrack/Knowledge-Base.md#publish-an-approved-task)
+publishes an approved task under Project History and links its article back to
+the issue. Update the same article at authorized checkpoints. Keep the issue's
+status and approval in YouTrack and retain the committed
+[task records](Tasks/README.md) as evidence. After publication, check the links,
+effective access and recorded source revision.

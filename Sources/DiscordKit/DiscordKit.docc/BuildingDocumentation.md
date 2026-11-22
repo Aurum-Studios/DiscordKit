@@ -23,7 +23,7 @@ Open the merged archive in Xcode, or preview the umbrella catalog with the insta
 
 ### Build the full library archive
 
-The TeamCity certification chain retains the archive parts. Follow the [download and reconstruction steps](https://github.com/Aurum-Studios/DiscordKit/blob/main/Docs/CI.md#documentation), then open `DiscordKitLibrary.doccarchive` in Xcode. The macOS documentation job merges same-chain runtime, macro and DSL extension conversions from the macOS public API job, which verifies the source revision, toolchain and checkout path before using the compiled graphs.
+The TeamCity certification chain retains the archive parts. Follow the [download and reconstruction steps](https://github.com/Aurum-Studios/DiscordKit/blob/main/Docs/CI.md#documentation), then open `DiscordKitLibrary.doccarchive` in Xcode. The macOS documentation job merges same-chain runtime, macro and DSL extension conversions from the macOS core test configuration, which verifies the source revision, toolchain and checkout path before using the compiled graphs.
 
 To build the same bundle locally, run the following command and open `.build/DiscordKitLibrary.doccarchive` in Xcode:
 
@@ -31,7 +31,7 @@ To build the same bundle locally, run the following command and open `.build/Dis
 python3 Tools/ci/build_documentation_site.py --archive-only
 ```
 
-The local helper emits public symbol graphs with bounded compiler jobs, validates curation and tutorial snapshots, and converts the catalogs with strict diagnostics. For a local static preview, omit `--archive-only` and set `--hosting-base-path ""` to serve `.build/documentation-site` from the root path. The maintained project guides live in the YouTrack Knowledge Base.
+The local helper emits public symbol graphs with bounded compiler jobs, validates curation and tutorial snapshots, and converts the catalogs with strict diagnostics. The static preview includes direct article and symbol routes and a root redirect to the library landing page. To generate it, omit `--archive-only` and set `--hosting-base-path ""` to serve `.build/documentation-site` from the root path. The maintained project guides live in the YouTrack Knowledge Base.
 
 ### Documentation layout
 
