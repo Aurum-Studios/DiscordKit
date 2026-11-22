@@ -11,7 +11,7 @@ let settings: [SwiftSetting] = [.enableUpcomingFeature("ApproachableConcurrency"
 let package = Package(
     name: "LoggingApp",
     platforms: [.macOS(.v13)],
-    dependencies: [.package(path: "../..")],
+    dependencies: [.package(name: "DiscordKit", path: "../..")],
     targets: [
         .executableTarget(name: "LoggingApp", dependencies: [
             .product(name: "DiscordLogging", package: "DiscordKit"),
