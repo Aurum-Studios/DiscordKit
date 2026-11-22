@@ -84,6 +84,28 @@ if [[ -d "$bridge/$teamcity/in" ]]; then
     copy_tree "$bridge/$teamcity/in" "$teamcity/in"
 fi
 
+if [[ "$build" == CheckSource ]]; then
+    if [[ -x /opt/agent-node/bin/node && -x /opt/agent-node/bin/npm ]]; then
+        export PATH="/opt/agent-node/bin:$PATH"
+    fi
+    if ! node -e 'process.exit(Number(process.platform !== "linux" || process.arch !== "x64" || !process.version.startsWith("v24.")))' 2>/dev/null \
+            || ! command -v npm >/dev/null; then
+        # WSL imports the filesystem without the agent container's environment.
+        node_version=24.22.1
+        node_dist="node-v$node_version-linux-x64.tar.xz"
+        node_install="$checkout/$teamcity/node"
+        archive="$node_install/$node_dist"
+        mkdir -p -- "$node_install"
+        curl --fail --silent --show-error --location --retry 2 --proto '=https' --proto-redir '=https' \
+            --connect-timeout 10 --max-time 90 --output "$archive" \
+            "https://nodejs.org/dist/v$node_version/$node_dist"
+        printf '%s  %s\n' 6c172a9ab6718f7b801fb5a7bd486af2ee5e32758086a04b84fcce2aa77095e6 "$archive" \
+            | sha256sum --check
+        tar -xJf "$archive" --directory "$node_install" --strip-components=1 --no-same-owner
+        export PATH="$node_install/bin:$PATH"
+    fi
+fi
+
 status=0
 /bin/bash --noprofile --norc "$stage/build.sh" || status=$?
 

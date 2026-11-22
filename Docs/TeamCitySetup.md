@@ -99,8 +99,9 @@ admitting agents that exchange native artifacts. [CI lanes and evidence](CI.md),
 The Linux certification jobs can also use `windows.ci.aurum-studios.com`
 through its `AurumCI` WSL2 distribution. The Windows service account must
 be able to launch the distribution and use a full Git checkout. Inside WSL,
-provide the verified Ubuntu 24.04 x64 toolchains, including Swift 6.4.1 at
-`/opt/discordkit/swift/usr/bin`, Python 3.12 or newer and Linux Node.js 24.
+provide the verified Ubuntu 24.04 x64 toolchain, including Swift 6.4.1 at
+`/opt/discordkit/swift/usr/bin` and Python 3.12 or newer. Repository checks use
+Linux Node.js 24 and npm, with a checksum-verified download when needed.
 The bridge stages the exact TeamCity revision and inputs in a clean,
 locked checkout on the distribution's Linux filesystem. After execution it
 transfers the selected artifacts back to the Windows checkout for upload.
