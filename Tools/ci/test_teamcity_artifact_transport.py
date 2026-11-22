@@ -8,6 +8,7 @@
 import hashlib
 import json
 from pathlib import Path
+import tarfile
 import tempfile
 import unittest
 
@@ -97,6 +98,28 @@ class TeamCityArtifactTransportTests(unittest.TestCase):
         self.assertEqual({item.name for item in empty_parts.iterdir()}, {transport.MANIFEST})
         transport.join(empty_parts, self.restored)
         self.assertEqual(self.restored.read_bytes(), b"")
+
+    def test_pack_keeps_diagnostics_above_teamcity_file_limit(self):
+        source = self.root / "evidence"
+        logs = source / "check" / "tooling"
+        logs.mkdir(parents=True)
+        for index in range(1035):
+            (logs / f"{index}.log").write_text(f"diagnostic {index}\n", encoding="utf-8")
+        packed = self.root / "evidence-tar-gz-parts"
+
+        transport.pack(source, packed)
+
+        self.assertEqual({path.name for path in packed.iterdir()}, {transport.MANIFEST, "part-0000"})
+        transport.join(packed, self.restored)
+        with tarfile.open(self.restored) as archive:
+            self.assertEqual(sum(member.isfile() for member in archive), 1035)
+            with archive.extractfile("evidence/check/tooling/1034.log") as log:
+                self.assertEqual(log.read(), b"diagnostic 1034\n")
+
+    def test_pack_skips_absent_evidence(self):
+        destination = self.root / "evidence-tar-gz-parts"
+        transport.pack(self.root / "missing", destination)
+        self.assertFalse(destination.exists())
 
 
 if __name__ == "__main__":

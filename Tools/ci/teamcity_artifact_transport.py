@@ -11,6 +11,7 @@ import json
 import os
 from pathlib import Path
 import re
+import tarfile
 import tempfile
 
 
@@ -54,6 +55,20 @@ def split(source: Path, destination: Path, *, part_size: int = PART_SIZE):
                     "sha256": digest.hexdigest(), "parts": parts}
         (staged / MANIFEST).write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
         staged.rename(destination)
+
+
+def pack(source: Path, destination: Path):
+    """Bundle a diagnostic directory before applying the upload size limit."""
+    if not source.exists():
+        return
+    if not source.is_dir() or source.is_symlink():
+        raise ValueError(f"Expected a diagnostic directory: {source}")
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(dir=destination.parent) as workspace:
+        staged = Path(workspace) / "evidence.tar.gz"
+        with tarfile.open(staged, "w:gz", compresslevel=3) as archive:
+            archive.add(source, arcname=source.name)
+        split(staged, destination)
 
 
 def _manifest(source):
@@ -117,14 +132,14 @@ def join(source: Path, destination: Path):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("operation", choices=("split", "join"))
+    operations = {"split": split, "join": join, "pack": pack}
+    parser.add_argument("operation", choices=operations)
     parser.add_argument("source", type=Path)
     parser.add_argument("destination", type=Path)
     args = parser.parse_args()
-    operation = split if args.operation == "split" else join
     try:
-        operation(args.source, args.destination)
-    except (OSError, ValueError) as error:
+        operations[args.operation](args.source, args.destination)
+    except (OSError, ValueError, tarfile.TarError) as error:
         parser.exit(1, f"TeamCity artifact transport failed: {error}\n")
 
 

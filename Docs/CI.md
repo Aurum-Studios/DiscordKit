@@ -57,6 +57,11 @@ names such as `root-tar-gz-parts` so TeamCity treats the destination as a
 directory and keeps each file separate. The consumer verifies the manifest
 and reconstructs `root.tar.gz` before restoring the native build.
 
+Native jobs also bundle diagnostics into `evidence-tar-gz-parts`, including
+evidence collected before a failed command. Download the directory and use
+the same `join` command with `evidence.tar.gz` as the output, then extract it
+to inspect the logs and reports.
+
 Start **Offline certification** (`DiscordKit_Certification`) to run the full
 chain. It also owns VCS-triggered runs once the project is connected. The final
 job reconciles each required job's receipt against its TeamCity build ID and the

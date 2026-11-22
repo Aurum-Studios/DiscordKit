@@ -16,6 +16,7 @@ internal val KnowledgeBaseValidation = agentBuild(
         "> $output/knowledge-base/validation.json",
     15,
     receipt = true,
+    wsl = true,
 ) {
     artifactRules += "\n+:$output/knowledge-base/validation.json => knowledge-base"
     triggers {

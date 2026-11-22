@@ -96,6 +96,25 @@ and toolchain paths, OS and kernel, and Linux Swift runtime libraries before
 admitting agents that exchange native artifacts. [CI lanes and evidence](CI.md),
 [Agent pools](https://www.jetbrains.com/help/teamcity/configuring-agent-pools.html)
 
+The Linux certification jobs can also use `windows.ci.aurum-studios.com`
+through its `AurumCI` WSL2 distribution. The Windows service account must
+be able to launch the distribution and use a full Git checkout. Inside WSL,
+provide the verified Ubuntu 24.04 x64 toolchains, including Swift 6.4.1 at
+`/opt/discordkit/swift/usr/bin`, Python 3.12 or newer and Linux Node.js 24.
+The bridge stages the exact TeamCity revision and inputs in a clean,
+locked checkout on the distribution's Linux filesystem. After execution it
+transfers the selected artifacts back to the Windows checkout for upload.
+TeamCity keeps each Linux compile-and-test group on one agent so SwiftPM
+paths and the full host compatibility facts match. Independent groups can
+run on different agents.
+
+Confirm compatibility on both agents after importing the DSL. To use a
+different installed distribution, set the versioned settings context parameter
+`ci.windowsWslDistribution`. Set it to an empty value to disable WSL routing,
+or set `ci.windowsWslNative=false` to keep the Swift jobs on native Linux while
+the repository checks, guide validation and certification remain eligible for WSL.
+[Microsoft WSL command reference](https://learn.microsoft.com/en-us/windows/wsl/basic-commands)
+
 Run **Offline certification** on a known `main` revision after TeamCity imports
 the settings for that commit. Verify that both platform qualifications finish
 before native compilation starts and that each test bundle uses its matching

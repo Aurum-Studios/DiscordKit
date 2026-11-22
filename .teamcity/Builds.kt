@@ -24,6 +24,14 @@ private const val receiptBuildId = "discordkit.build.id"
 private const val doccArtifact = "DiscordKitLibrary.doccarchive.tar.gz"
 private const val candidateBranches = "+:*\n-:gh-pages\n-:refs/heads/gh-pages"
 private const val linuxSwiftImage = "docker.io/library/swift:6.4.1-noble@sha256:6304481cf2717966b7ba175162e397ea2f2cc3161909f2b2a5cf40036079a0f7"
+private const val linuxAgent = "linux.ci.aurum-studios.com"
+private const val windowsAgent = "windows.ci.aurum-studios.com"
+private val windowsWslDistribution = DslContext.getParameter("ci.windowsWslDistribution", "AurumCI").also {
+    require(it.isEmpty() || it.matches(Regex("[A-Za-z0-9][A-Za-z0-9_.-]*"))) {
+        "Set ci.windowsWslDistribution to the WSL2 distribution visible to the Windows agent account."
+    }
+}
+private val windowsWslNative = DslContext.getParameter("ci.windowsWslNative", "true") == "true"
 
 internal enum class Agent(val os: String, val architecture: String) {
     Linux("Linux", "amd64|x86_64"),
@@ -39,9 +47,13 @@ internal fun agentBuild(
     agent: Agent = Agent.Linux,
     native: Boolean = false,
     receipt: Boolean = false,
+    bundleEvidence: Boolean = false,
+    wsl: Boolean = false,
     configure: BuildType.() -> Unit = {},
 ): BuildType = BuildType {
     val linuxNative = native && agent == Agent.Linux
+    val useWsl = agent == Agent.Linux && wsl && windowsWslDistribution.isNotEmpty() &&
+        (!linuxNative || windowsWslNative)
     id(buildId)
     name = displayName
     enablePersonalBuilds = false
@@ -53,9 +65,13 @@ internal fun agentBuild(
         if (native) checkoutDir = "discordkit-native"
     }
     requirements {
-        contains("teamcity.agent.jvm.os.name", agent.os)
         matches("teamcity.agent.jvm.os.arch", agent.architecture)
-        if (linuxNative) equals("env.DISCORDKIT_AGENT_SWIFT_IMAGE", linuxSwiftImage)
+        if (useWsl) {
+            matches("teamcity.agent.name", listOf(linuxAgent, windowsAgent).joinToString("|") { Regex.escape(it) })
+        } else {
+            contains("teamcity.agent.jvm.os.name", agent.os)
+            if (linuxNative) equals("env.DISCORDKIT_AGENT_SWIFT_IMAGE", linuxSwiftImage)
+        }
     }
     params {
         param("env.CI", "true")
@@ -119,21 +135,44 @@ internal fun agentBuild(
             export PATH="${'$'}swift_bin:${'$'}PATH"
         fi
     """.trimIndent() + "\n" else ""
+    val packEvidence = "$artifactTransport pack $output/evidence $output/${archiveParts(evidenceArchive)}"
+    val preserveFailedEvidence = if (bundleEvidence) """
+        trap 'status=${'$'}?; $packEvidence || :; exit "${'$'}status"' EXIT
+    """.trimIndent() + "\n" else ""
+    val finishEvidence = if (bundleEvidence) "\ntrap - EXIT\n$packEvidence" else ""
+    fun scriptBody(toolchain: String) =
+        "set -eu\n$pythonSetup$preserveFailedEvidence$toolchain$command$finishEvidence" +
+        if (receipt) "\npython3 Tools/ci/teamcity_gate.py record $buildId" else ""
+    if (useWsl) params {
+        param("env.DISCORDKIT_WSL_SCRIPT", scriptBody(""))
+        param("env.DISCORDKIT_WSL_TEMP", "%system.teamcity.build.tempDir%")
+    }
     steps {
         script {
             name = displayName
-            scriptContent = "set -eu\n$pythonSetup$linuxToolchain$macToolchain$command" +
-                if (receipt) "\npython3 Tools/ci/teamcity_gate.py record $buildId" else ""
+            if (useWsl) conditions { equals("teamcity.agent.name", linuxAgent) }
+            scriptContent = scriptBody(linuxToolchain + macToolchain)
+        }
+        if (useWsl) script {
+            name = "$displayName (Windows WSL)"
+            conditions { equals("teamcity.agent.name", windowsAgent) }
+            scriptContent = "powershell.exe -NoProfile -NonInteractive -ExecutionPolicy RemoteSigned " +
+                "-File Tools\\ci\\teamcity_wsl.ps1 $windowsWslDistribution $buildId"
         }
     }
     configure()
 }
 
 /** Fail closed when any synchronized prerequisite is missing, cancelled or unsuccessful. */
-internal fun Dependencies.passed(upstream: Collection<BuildType>, reuse: ReuseBuilds = ReuseBuilds.NO) {
+internal fun Dependencies.passed(
+    upstream: Collection<BuildType>,
+    reuse: ReuseBuilds = ReuseBuilds.NO,
+    sameAgent: Boolean = false,
+) {
     upstream.distinct().forEach { producer ->
         snapshot(producer) {
             synchronizeRevisions = true
+            runOnSameAgent = sameAgent
             reuseBuilds = reuse
             onDependencyFailure = FailureAction.FAIL_TO_START
             onDependencyCancel = FailureAction.FAIL_TO_START
@@ -185,6 +224,7 @@ private val retainedLaneIds = mapOf(
 )
 
 private const val artifactTransport = "python3 Tools/ci/teamcity_artifact_transport.py"
+private const val evidenceArchive = "evidence.tar.gz"
 
 /** Keep archive extensions out of directory names so TeamCity uploads each part separately. */
 private fun archiveParts(archive: String) = archive.replace('.', '-') + "-parts"
@@ -208,9 +248,9 @@ private fun nativeBuild(
 ) = agentBuild(platform.id + retainedLaneIds.getOrDefault(lane, lane), "$lane / ${platform.value}",
     (downloads.map(::joinArchive) + commands.map { "python3 Tools/ci/teamcity_native.py $it --separate-evidence" } +
         uploads.map(::splitArchive))
-        .joinToString("\n"), minutes, platform.agent, native = true, receipt = true) {
+        .joinToString("\n"), minutes, platform.agent, native = true, receipt = true, bundleEvidence = true, wsl = true) {
     publishArtifacts = PublishMode.ALWAYS
-    artifactRules += "\n+:$output/evidence/** => evidence"
+    artifactRules += "\n${publishArchive(evidenceArchive)}"
     if (artifacts.isNotEmpty()) artifactRules += "\n$artifacts"
     uploads.forEach { artifactRules += "\n${publishArchive(it)}" }
     params {
@@ -245,7 +285,10 @@ private val checks = platforms.associateWith { platform ->
             downloads = inputs.map { "$it.tar.gz" }) {
             dependencies {
                 val platformBuilds = builds.getValue(platform)
-                passed(listOf(qualification) + producers.keys.map(platformBuilds::getValue))
+                passed(listOf(qualification))
+                // SwiftPM products encode the checkout path and carry exact host ABI receipts.
+                passed(producers.keys.map(platformBuilds::getValue),
+                    sameAgent = platform.agent == Agent.Linux && windowsWslNative && windowsWslDistribution.isNotEmpty())
                 producers.forEach { (producer, graphs) ->
                     val rules = graphs.filter { it in inputs }.joinToString("\n") { downloadArchive("$it.tar.gz") }
                     sameChainArtifact(platformBuilds.getValue(producer), rules)
@@ -270,7 +313,7 @@ private val repositoryChecks = agentBuild("CheckSource", "Repository checks", ""
         python3 Tools/ci/preflight.py group --group "${'$'}group" --output "$output/preflight/${'$'}group"
     done
     python3 Tools/DiscordKitTools/scripts/release_check.py maintenance --repository . --record Docs/Release/maintenance.json
-""".trimIndent(), 150, receipt = true) {
+""".trimIndent(), 150, receipt = true, wsl = true) {
     publishArtifacts = PublishMode.ALWAYS
     artifactRules += "\n+:$output/preflight/** => preflight"
 }
@@ -301,7 +344,7 @@ private val required = VerificationBuilds + KnowledgeBaseValidation
 internal fun certification(statusToken: String, watchPullRequests: Boolean): BuildType {
     val evidence = required.joinToString(" ") { "${it.receiptName()}=${it.chainBuildId()}" }
     val command = "${joinArchive(doccArtifact)}\npython3 Tools/ci/teamcity_gate.py certify $evidence"
-    return agentBuild("Certification", "Offline certification", command, 10) {
+    return agentBuild("Certification", "Offline certification", command, 10, wsl = true) {
         artifactRules = "+:$output/certification.json"
         publishArtifacts = PublishMode.SUCCESSFUL
         dependencies {
