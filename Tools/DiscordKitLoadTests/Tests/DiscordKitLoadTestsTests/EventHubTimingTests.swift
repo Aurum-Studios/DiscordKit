@@ -53,8 +53,16 @@ struct EventHubTimingTests {
         var configuration = EventHubTimingConfiguration()
         configuration.scenario = EventHubTimingScenario.waiting.rawValue
         configuration.requests = 2; configuration.subscriptions = 2; configuration.hubs = 2
+        let returned = EventHubTimingTestBarrier()
+        let peerCount = configuration.subscriptions * configuration.hubs - 1
         let report = try await EventHubTimingRunner(onCheckpoint: { point in
-            if point == .waitingReturned(0) { throw CancellationError() }
+            guard case let .waitingReturned(index) = point else { return }
+            if index == 0 {
+                // Cleanup cancels pending pulls. Let the peers finish next() before injecting the failure.
+                try await returned.wait(for: peerCount)
+                throw CancellationError()
+            }
+            await returned.arrive()
         }).run(configuration)
         #expect(report.measuredCopies.consumed == 3)
         #expect(report.measuredCopies.cancelledHandoff == 1)
