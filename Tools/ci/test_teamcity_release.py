@@ -67,6 +67,7 @@ class TeamCityCertificationTests(unittest.TestCase):
         self.ci.request = Mock()
 
     def test_selection_and_publication_revalidation_bind_same_build_revision_and_gate(self):
+        """Bind the receipt and both release phases to the same build through TeamCity."""
         self.ci.request.side_effect = [
             {"build": [build(defaultBranch=False), build()], "nextHref": None},
             coverage(),
@@ -80,8 +81,9 @@ class TeamCityCertificationTests(unittest.TestCase):
         self.assertEqual(evidence["coverageSHA256"], hashlib.sha256(coverage()).hexdigest())
         self.assertIn("revision:(version:", self.ci.request.call_args_list[0].kwargs["locator"])
         self.assertEqual(self.ci.verify(evidence, REVISION), evidence)
-        self.assertEqual(self.ci.request.call_args_list[1].args,
-                         (f"builds/id:{BUILD_ID}/artifacts/content/certification.json",))
+        for call in self.ci.request.call_args_list[1::2]:
+            self.assertEqual(call.args, (f"builds/id:{BUILD_ID}/artifacts/content/certification.json",))
+            self.assertEqual(call.kwargs, {"raw": True, "responseBuilder": "core"})
 
     def test_filtered_builds_cannot_certify_partial_nondefault_unfinished_wrong_root_or_wrong_revision(self):
         runs = [build(defaultBranch=False), build(buildTypeId="DiscordKit_PullRequest"),

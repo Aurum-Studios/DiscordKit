@@ -62,6 +62,12 @@ names such as `root-tar-gz-parts` so TeamCity treats the destination as a
 directory and keeps each file separate. The consumer verifies the manifest
 and reconstructs `root.tar.gz` before restoring the native build.
 
+When R2 storage is enabled for DiscordKit, TeamCity agents can upload published
+artifacts directly to `discordkit-builds`. This can reduce time spent on artifact
+transfer and ease load on the TeamCity server. Swift compilation still follows the
+same build chain, and the time savings depend on upload and download throughput
+and agent cache hits. [R2 artifact storage setup and verification](TeamCitySetup.md#configure-r2-artifact-storage)
+
 Native jobs also bundle diagnostics into `evidence-tar-gz-parts`, including
 evidence collected before a failed command. Download the directory and use
 the same `join` command with `evidence.tar.gz` as the output, then extract it

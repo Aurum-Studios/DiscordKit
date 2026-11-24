@@ -104,7 +104,9 @@ class TeamCityCertification:
         build_id = build.get("id")
         if type(build_id) is not int or build_id < 1:
             raise ValueError("Invalid TeamCity certification build ID")
-        contents = self.request(f"builds/id:{build_id}/artifacts/content/certification.json", raw=True)
+        # Stream the receipt from TeamCity so the bearer-authenticated request stays on its origin.
+        contents = self.request(f"builds/id:{build_id}/artifacts/content/certification.json",
+                                raw=True, responseBuilder="core")
         receipt = json.loads(contents)
         prerequisites = receipt.get("prerequisites")
         doc_digest = receipt.get("documentationArchiveSHA256")

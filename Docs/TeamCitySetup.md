@@ -71,6 +71,46 @@ requires TeamCity 2026.2 or newer. Check the server version before importing.
    ID in a commit message links to YouTrack from the build's **Changes** tab.
    [TeamCity YouTrack integration](https://www.jetbrains.com/help/teamcity/youtrack.html)
 
+## Configure R2 artifact storage
+
+The DiscordKit project publishes new build artifacts to the private Standard R2
+bucket `discordkit-builds` when the storage context is configured. Create an R2
+S3 credential with **Object Read & Write** scoped to that bucket and keep public
+access disabled. [Cloudflare R2 credentials](https://developers.cloudflare.com/r2/api/tokens/)
+
+In **Versioned Settings → Context Parameters**, set the following values together.
+Use **Actions → Generate token for a secure value** in the DiscordKit project
+to store the secret access key and obtain its reference.
+
+| Context parameter | Server value |
+| --- | --- |
+| `artifactStorage.r2AccountId` | Cloudflare account ID, 32 lowercase hexadecimal characters |
+| `artifactStorage.r2AccessKeyId` | Bucket-scoped R2 S3 access key ID, 32 lowercase hexadecimal characters |
+| `artifactStorage.r2SecretRef` | TeamCity `credentialsJSON:` reference to the R2 S3 secret access key |
+
+With all three parameters empty, the DSL leaves storage selection to TeamCity's
+default or inherited settings. Partial or malformed values fail settings
+generation. When all three are configured, the DSL activates
+`DiscordKitPrivateArtifacts` with presigned uploads, path-style addressing and
+post-upload integrity checks. [TeamCity S3-compatible storage](https://www.jetbrains.com/help/teamcity/storing-build-artifacts-in-amazon-s3.html)
+
+1. Verify the expected settings revision imported successfully and confirm in
+   **Artifacts Storage** that `DiscordKitPrivateArtifacts` is active for DiscordKit.
+2. Run **Offline certification** for the imported revision with fresh producer
+   builds. Check that a native compile job publishes its archive parts and
+   manifest to R2 and that a dependent native test restores them from the same
+   producer. Verify the pipeline DocC export and fetch the final
+   `certification.json` through the TeamCity REST artifact endpoint with
+   `responseBuilder=core`, as release preparation does. To measure impact,
+   compare upload and dependency download times for similar artifact sizes and
+   agent placements. Account for any agent cache hits.
+3. Keep prior storage available for older builds and use TeamCity cleanup rules
+   for retention. If new uploads need to return to built-in storage, import a
+   settings revision with `DiscordKitActiveArtifacts` selecting `DefaultStorage`.
+   Keep the R2 registration and its working credentials so retained R2 artifacts
+   remain readable. Verify new publication and representative older downloads.
+   [TeamCity active storage](https://teamcity.jetbrains.com/app/dsl-documentation/projectFeatures/active-storage/index.html)
+
 ## Move an existing project to pipelines
 
 1. Record the current settings revision, the project’s classic configuration

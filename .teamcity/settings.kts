@@ -6,6 +6,8 @@
 // copyright:end
 
 import jetbrains.buildServer.configs.kotlin.*
+import jetbrains.buildServer.configs.kotlin.projectFeatures.activeStorage
+import jetbrains.buildServer.configs.kotlin.projectFeatures.s3CompatibleStorage
 import jetbrains.buildServer.configs.kotlin.projectFeatures.youtrack
 
 version = "2026.2"
@@ -32,7 +34,39 @@ val statusToken = credential("github.statusTokenRef")
 val watchPullRequests = DslContext.getParameter("github.pullRequests", "false") == "true"
 require(!watchPullRequests || statusToken.isNotEmpty()) { "Set github.statusTokenRef before enabling pull request discovery." }
 
+val artifactAccount = DslContext.getParameter("artifactStorage.r2AccountId", "").trim()
+val artifactAccessKeyId = DslContext.getParameter("artifactStorage.r2AccessKeyId", "").trim()
+val artifactSecret = credential("artifactStorage.r2SecretRef")
+val artifactStorageEnabled = listOf(artifactAccount, artifactAccessKeyId, artifactSecret).any { it.isNotEmpty() }
+val artifactStorageId = "DiscordKitPrivateArtifacts"
+val r2Identifier = Regex("[a-f0-9]{32}")
+require(!artifactStorageEnabled || (
+    artifactAccount.matches(r2Identifier) && artifactAccessKeyId.matches(r2Identifier) && artifactSecret.isNotEmpty()
+)) {
+    "Set the R2 account ID, bucket access key ID and TeamCity secure-storage secret reference together."
+}
+
 project {
+    if (artifactStorageEnabled) features {
+        s3CompatibleStorage {
+            id = artifactStorageId
+            storageName = "DiscordKit private artifacts"
+            endpoint = "https://$artifactAccount.r2.cloudflarestorage.com"
+            bucketName = "discordkit-builds"
+            accessKeyID = artifactAccessKeyId
+            accessKey = artifactSecret
+            // Use direct uploads with bounded parts for large native and pipeline artifacts.
+            enablePresignedURLUpload = true
+            forceVirtualHostAddressing = false
+            multipartThreshold = "8MB"
+            multipartChunksize = "16MB"
+            verifyIntegrityAfterUpload = true
+        }
+        activeStorage {
+            id = "DiscordKitActiveArtifacts"
+            activeStorageID = artifactStorageId
+        }
+    }
     if (youTrackIds.isNotEmpty()) features {
         youtrack {
             id = "AurumYouTrack"
