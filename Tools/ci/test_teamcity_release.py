@@ -27,41 +27,10 @@ BUILD_NUMBER = "7"
 VERSION = f"{BASE_VERSION}+{BUILD_NUMBER}"
 TAG = f"v{VERSION}"
 BUILD_ID = 27
-PREPARE_ID = 28
-PUBLISH_ID = 29
 PREPARE_CONFIG = "DiscordKit_PrepareRelease"
 PUBLISH_CONFIG = "DiscordKit_PublishGitHubRelease"
 RELEASE_ID = 41
 REPOSITORY = github_release.GITHUB_REPOSITORY
-
-
-def build(**changes):
-    """Return a successful certification with overrides for REST response tests."""
-    return {
-        "id": BUILD_ID,
-        "number": BUILD_NUMBER,
-        "buildTypeId": teamcity_release.CERTIFICATION_ID,
-        "defaultBranch": True,
-        "state": "finished",
-        "status": "SUCCESS",
-        "revisions": {"revision": [{
-            "vcs-root-instance": {"vcs-root-id": VCS_ROOT},
-            "vcsBranchName": "refs/heads/main",
-            "version": REVISION,
-        }]},
-        **changes,
-    }
-
-
-def release_build(build_id=PREPARE_ID, configuration=PREPARE_CONFIG):
-    """Return the running release job with a newer source checkout and its selected dependency."""
-    dependencies = [{"id": BUILD_ID, "buildTypeId": teamcity_release.CERTIFICATION_ID}]
-    if configuration == PUBLISH_CONFIG:
-        dependencies.append({"id": PREPARE_ID, "buildTypeId": PREPARE_CONFIG})
-    current = build(id=build_id, buildTypeId=configuration, state="running",
-                    **{"snapshot-dependencies": {"build": dependencies}})
-    current["revisions"]["revision"][0]["version"] = OTHER_REVISION
-    return current
 
 
 def coverage(**changes):
@@ -74,102 +43,101 @@ def coverage(**changes):
 
 class TeamCityCertificationTests(unittest.TestCase):
     def setUp(self):
-        """Use a scripted TeamCity client and a pinned checkout revision."""
+        """Stage TeamCity's selected certification inputs with a newer tooling checkout."""
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        self.repository = Path(temporary.name)
+        self.receipt = self.repository / ".build/teamcity/in/certification/certification.json"
+        self.receipt.parent.mkdir(parents=True)
+        self.receipt.write_bytes(coverage())
         environment = patch.dict(os.environ, {
-            "TEAMCITY_URL": teamcity_release.TEAMCITY_URL,
-            "TEAMCITY_TOKEN": "read-results",
             "TEAMCITY_VCS_ROOT_ID": VCS_ROOT,
             "RELEASE_DEFAULT_BRANCH": "main",
+            "TEAMCITY_BUILD_TYPE_ID": PREPARE_CONFIG,
             "TEAMCITY_DEFAULT_BRANCH": "true",
-            "DISCORDKIT_CI_BUILD_ID": str(PREPARE_ID),
-        })
+            "DISCORDKIT_VCS_REVISION": OTHER_REVISION,
+            "TEAMCITY_CERTIFICATION_BUILD_ID": str(BUILD_ID),
+            "TEAMCITY_CERTIFICATION_BUILD_NUMBER": BUILD_NUMBER,
+            "TEAMCITY_CERTIFICATION_DEFAULT_BRANCH": "true",
+            "TEAMCITY_CERTIFICATION_REVISION": REVISION,
+        }, clear=True)
         environment.start()
         self.addCleanup(environment.stop)
-        self.ci = teamcity_release.TeamCityCertification()
-        self.ci.request = Mock()
         checkout = patch.object(teamcity_release.subprocess, "check_output", return_value=f"{OTHER_REVISION}\n")
         checkout.start()
         self.addCleanup(checkout.stop)
 
+    def promoted(self, configuration=PREPARE_CONFIG):
+        """Read the same-chain evidence as the specified release phase."""
+        return teamcity_release.TeamCityCertification().promoted(self.repository, configuration)
+
     def test_selection_and_publication_revalidation_bind_same_build_revision_and_gate(self):
-        """Recheck the exact promoted build in both phases even when the checkout is newer."""
-        self.ci.request.side_effect = [
-            release_build(), build(), coverage(),
-            release_build(PUBLISH_ID, PUBLISH_CONFIG), build(), coverage(),
-        ]
-        evidence = self.ci.promoted(Path("."), PREPARE_CONFIG)
-        self.assertEqual(evidence["provider"], "teamcity")
-        self.assertEqual(evidence["head_sha"], REVISION)
-        self.assertEqual(evidence["id"], BUILD_ID)
-        self.assertEqual(evidence["number"], BUILD_NUMBER)
-        self.assertEqual(evidence["coverageSHA256"], hashlib.sha256(coverage()).hexdigest())
-        with patch.dict(os.environ, {"DISCORDKIT_CI_BUILD_ID": str(PUBLISH_ID)}):
-            self.assertEqual(self.ci.promoted(Path("."), PUBLISH_CONFIG), evidence)
-        receipt_path = f"builds/id:{BUILD_ID}/artifacts/content/certification.json"
-        self.assertEqual([call.args[0] for call in self.ci.request.call_args_list], [
-            f"builds/id:{PREPARE_ID}", f"builds/id:{BUILD_ID}", receipt_path,
-            f"builds/id:{PUBLISH_ID}", f"builds/id:{BUILD_ID}", receipt_path,
-        ])
-        self.assertIn("snapshot-dependencies(build(id,buildTypeId))",
-                      self.ci.request.call_args_list[0].kwargs["fields"])
-        self.assertIn("number", self.ci.request.call_args_list[1].kwargs["fields"].split(","))
-        for call in self.ci.request.call_args_list[2::3]:
-            self.assertEqual(call.kwargs, {"raw": True, "responseBuilder": "core"})
+        """Use the historical dependency and its real build number in both release phases."""
+        evidence = self.promoted()
+        self.assertEqual(evidence, {
+            "provider": "teamcity",
+            "id": BUILD_ID,
+            "number": BUILD_NUMBER,
+            "buildTypeId": teamcity_release.CERTIFICATION_ID,
+            "vcsRootId": VCS_ROOT,
+            "branch": "main",
+            "coverageSHA256": hashlib.sha256(coverage()).hexdigest(),
+            "html_url": f"https://ci.aurum-studios.com/build/{BUILD_ID}",
+            "head_sha": REVISION,
+        })
+        with patch.dict(os.environ, {"TEAMCITY_BUILD_TYPE_ID": PUBLISH_CONFIG}):
+            self.assertEqual(self.promoted(PUBLISH_CONFIG), evidence)
 
-    def test_promoted_dependency_must_identify_one_certification(self):
-        """Reject missing, ambiguous or mismatched certification dependencies without a receipt read."""
-        selected = {"id": BUILD_ID, "buildTypeId": teamcity_release.CERTIFICATION_ID}
-        alternatives = ([], [{"id": BUILD_ID, "buildTypeId": PREPARE_CONFIG}],
-                        [selected, {**selected, "id": BUILD_ID - 1}], [{**selected, "id": 0}])
-        for dependencies in alternatives:
-            with self.subTest(dependencies=dependencies):
-                current = release_build()
-                current["snapshot-dependencies"]["build"] = dependencies
-                self.ci.request.reset_mock()
-                self.ci.request.side_effect = [current]
-                with self.assertRaises(ValueError):
-                    self.ci.promoted(Path("."), PREPARE_CONFIG)
-                self.ci.request.assert_called_once()
-
-    def test_only_successful_default_branch_certification_with_canonical_build_number_is_accepted(self):
-        """Refuse a selected build that does not represent a successful certification of main."""
-        runs = [build(defaultBranch=False), build(buildTypeId="DiscordKit_PullRequest"),
-                build(state="running"), build(status="FAILURE"),
-                build(personal=True), build(failedToStart=True), build(canceledInfo={"text": "Canceled"}),
-                build(number=7), build(number=""), build(number="0"), build(number="7.1"),
-                build(number="07"), build(id=BUILD_ID - 1)]
-        for key, value in (("vcsBranchName", "refs/pull/10/head"), ("version", "abbreviated"),
-                           ("vcs-root-instance", {"vcs-root-id": "Other_Root"})):
-            wrong = build()
-            wrong["revisions"]["revision"][0][key] = value
-            runs.append(wrong)
-        for selected in runs:
-            with self.subTest(selected=selected):
-                self.ci.request.reset_mock()
-                self.ci.request.side_effect = [release_build(), selected]
-                with self.assertRaises(ValueError):
-                    self.ci.promoted(Path("."), PREPARE_CONFIG)
-                self.assertEqual(self.ci.request.call_count, 2)
+    def test_promoted_dependency_requires_canonical_identity_and_default_branch(self):
+        """Reject invalid, absent or unresolved values for TeamCity's selected dependency."""
+        invalid = {
+            "TEAMCITY_CERTIFICATION_BUILD_ID": ("0", "027", "%dep.build.id%"),
+            "TEAMCITY_CERTIFICATION_BUILD_NUMBER": ("0", "07", "7.1"),
+            "TEAMCITY_CERTIFICATION_DEFAULT_BRANCH": ("false", ""),
+            "TEAMCITY_CERTIFICATION_REVISION": ("a" * 39, "A" * 40, "main"),
+        }
+        for name, values in invalid.items():
+            for value in values:
+                with self.subTest(name=name, value=value), patch.dict(os.environ, {name: value}):
+                    with self.assertRaises(ValueError):
+                        self.promoted()
+        with patch.dict(os.environ):
+            del os.environ["TEAMCITY_CERTIFICATION_BUILD_ID"]
+            with self.assertRaises((KeyError, ValueError)):
+                self.promoted()
 
     def test_incomplete_or_mismatched_coverage_is_refused(self):
-        """Require an intact receipt attesting to both the selected build ID and revision."""
-        for receipt in (coverage(status="failed"), coverage(revision=OTHER_REVISION),
-                        coverage(buildId="13"), coverage(prerequisites={})):
+        """Require a complete, matching receipt from the successful selected build."""
+        alternatives = (
+            coverage(schemaVersion=2),
+            coverage(status="failed"),
+            coverage(revision=OTHER_REVISION),
+            coverage(buildId="13"),
+            coverage(documentationArchiveSHA256="invalid"),
+            coverage(prerequisites={}),
+            coverage(prerequisites={"Linux": "23", "Mac": "23"}),
+            coverage(prerequisites={"Linux": str(BUILD_ID)}),
+        )
+        for receipt in alternatives:
             with self.subTest(receipt=receipt):
-                self.ci.request.side_effect = [release_build(), build(), receipt]
+                self.receipt.write_bytes(receipt)
                 with self.assertRaisesRegex(ValueError, "complete coverage evidence"):
-                    self.ci.promoted(Path("."), PREPARE_CONFIG)
+                    self.promoted()
+        self.receipt.unlink()
+        with self.assertRaises(OSError):
+            self.promoted()
 
     def test_current_checkout_requires_actual_release_configuration_and_default_branch(self):
-        """Trust only the active release configuration's own default-branch checkout."""
-        current = release_build()
-        self.ci.request.return_value = current
-        self.assertEqual(self.ci.require_current_checkout(Path("."), PREPARE_CONFIG), current)
-        with self.assertRaisesRegex(ValueError, "current TeamCity default-branch checkout"):
-            self.ci.require_current_checkout(Path("."), PUBLISH_CONFIG)
-        with patch.dict(os.environ, {"TEAMCITY_DEFAULT_BRANCH": "false"}):
-            with self.assertRaisesRegex(ValueError, "Run the release"):
-                self.ci.require_current_checkout(Path("."), PREPARE_CONFIG)
+        """Refuse a release phase when its configuration, branch or checkout differs."""
+        invalid = (
+            {"TEAMCITY_BUILD_TYPE_ID": PUBLISH_CONFIG},
+            {"TEAMCITY_DEFAULT_BRANCH": "false"},
+            {"DISCORDKIT_VCS_REVISION": REVISION},
+        )
+        for changes in invalid:
+            with self.subTest(changes=changes), patch.dict(os.environ, changes):
+                with self.assertRaises(ValueError):
+                    self.promoted()
 
 
 class InMemoryGitHub:

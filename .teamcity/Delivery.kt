@@ -48,19 +48,24 @@ private fun Dependencies.promotedCertification(certification: BuildType) {
         onDependencyFailure = FailureAction.FAIL_TO_START
         onDependencyCancel = FailureAction.FAIL_TO_START
     }
+    sameChainArtifact(certification, "certification.json => $incoming/certification")
 }
 
-/** Authenticate read-only TeamCity evidence independently of the GitHub publication credential. */
-private fun BuildType.releaseEvidence(certificationToken: String) {
+/** Bind the sealed receipt to the exact certification selected by the TeamCity chain. */
+private fun BuildType.releaseEvidence(certification: BuildType) {
     vcs { branchFilter = defaultBranch }
     params {
         param("env.GITHUB_REPOSITORY", repositoryName)
         param("env.RELEASE_DEFAULT_BRANCH", "main")
-        param("env.TEAMCITY_URL", "https://ci.aurum-studios.com")
         param("env.TEAMCITY_VCS_ROOT_ID", DslContext.settingsRootId.value)
+        param("env.TEAMCITY_BUILD_TYPE_ID", "%system.teamcity.buildType.id%")
         param("env.TEAMCITY_DEFAULT_BRANCH", "%teamcity.build.branch.is_default%")
+        param("env.TEAMCITY_CERTIFICATION_BUILD_ID", certification.depParamRefs["env.DISCORDKIT_CI_BUILD_ID"].toString())
+        param("env.TEAMCITY_CERTIFICATION_BUILD_NUMBER", certification.depParamRefs["system.build.number"].toString())
+        param("env.TEAMCITY_CERTIFICATION_DEFAULT_BRANCH",
+            certification.depParamRefs["teamcity.build.branch.is_default"].toString())
+        param("env.TEAMCITY_CERTIFICATION_REVISION", certification.depParamRefs["env.DISCORDKIT_VCS_REVISION"].toString())
         param("env.RELEASE_VERSION", "%release.version%")
-        password("env.TEAMCITY_TOKEN", certificationToken)
     }
 }
 
@@ -68,10 +73,8 @@ private fun BuildType.releaseEvidence(certificationToken: String) {
 internal fun releaseBuilds(
     certification: BuildType,
     publisher: Publisher,
-    certificationToken: String,
     readToken: String,
 ): List<BuildType> {
-    require(certificationToken.isNotEmpty()) { "Set teamcity.certificationTokenRef before enabling GitHub releases." }
     val arguments = "--version \"\$RELEASE_VERSION\""
     val prepare = agentBuild("PrepareRelease", "Prepare GitHub release", """
         python3 -m unittest discover -s Tools/ci -p 'test*release*.py'
@@ -79,7 +82,7 @@ internal fun releaseBuilds(
     """.trimIndent(), 20) {
         artifactRules = "+:$output/release/** => release"
         publishArtifacts = PublishMode.SUCCESSFUL
-        releaseEvidence(certificationToken)
+        releaseEvidence(certification)
         params { param("release.version", "") }
         dependencies { promotedCertification(certification) }
         if (readToken.isNotEmpty()) params { password("env.GH_TOKEN", readToken) }
@@ -87,7 +90,7 @@ internal fun releaseBuilds(
     val publish = agentBuild("PublishGitHubRelease", "Publish GitHub release",
         "python3 Tools/ci/github_release.py publish $arguments --output $incoming/release", 30) {
         publication(publisher)
-        releaseEvidence(certificationToken)
+        releaseEvidence(certification)
         description = "Promote a successful Offline certification build and publish its exact source revision."
         params {
             text("release.version", "", label = "Release version",

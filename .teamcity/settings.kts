@@ -85,8 +85,7 @@ project {
     buildType(periodicTiming(DslContext.getParameter("ci.periodicTiming", "false") == "true"))
     controlledTiming().forEach { buildType(it) }
     releasePublisher()?.let {
-        releaseBuilds(offlineCertification, it, credential("teamcity.certificationTokenRef"),
-            credential("github.readTokenRef"))
+        releaseBuilds(offlineCertification, it, credential("github.readTokenRef"))
             .forEach { buildType(it) }
     }
 }

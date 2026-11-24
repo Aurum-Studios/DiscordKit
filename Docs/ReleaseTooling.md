@@ -38,11 +38,13 @@ below. Macro and extension packages retain independent baselines.
 
 The release uses the current release tooling and reuses the selected
 certification, including an older finished build whose commit is still on the
-default branch. **Prepare GitHub release** validates the selected build's
-`certification.json`, runs the release tool tests, and archives the exact
-certified Git tree. The deployment receives all three assets from that
-preparation build and rechecks the recorded certification and default-branch
-membership before making GitHub writes.
+default branch. TeamCity transfers the selected build's `certification.json`
+as a same-chain artifact and supplies its build metadata through the native
+dependency. **Prepare GitHub release** validates the receipt against that
+metadata, runs the release tool tests, and archives the exact certified Git
+tree. The deployment receives all three assets from that preparation build and
+rechecks the recorded certification and default-branch membership before making
+GitHub writes.
 
 The `v1.2+1` release contains the following files. Asset names spell the build
 suffix as `-build.1` so GitHub preserves the filenames used in the checksum
@@ -60,9 +62,9 @@ and manifest.
   identifies the successful TeamCity build, VCS root, branch, and checksum of
   the certification receipt.
 
-Preparation uses read access. Publication uses a repository-scoped GitHub App
-token on the configured Linux agent. TeamCity stores the GitHub App connection
-and the read-only build evidence credential. [TeamCity setup](TeamCitySetup.md)
+Preparation reads GitHub repository metadata. Publication uses a
+repository-scoped GitHub App token on the configured Linux agent.
+[TeamCity setup](TeamCitySetup.md#enable-github-release-publishing)
 
 Publication runs are serialized. Any existing tag, release, or draft blocks
 reuse of that version. The deployment creates the tag, uploads all three assets

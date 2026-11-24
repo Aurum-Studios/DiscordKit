@@ -99,11 +99,12 @@ post-upload integrity checks. [TeamCity S3-compatible storage](https://www.jetbr
 2. Run **Offline certification** for the imported revision with fresh producer
    builds. Check that a native compile job publishes its archive parts and
    manifest to R2 and that a dependent native test restores them from the same
-   producer. Verify the pipeline DocC export and fetch the final
-   `certification.json` through the TeamCity REST artifact endpoint with
-   `responseBuilder=core`, as release preparation does. To measure impact,
-   compare upload and dependency download times for similar artifact sizes and
-   agent placements. Account for any agent cache hits.
+   producer. Verify the pipeline DocC export and open `certification.json` in
+   the completed build's **Artifacts** tab. During release qualification,
+   confirm that **Prepare GitHub release** downloads that receipt from the
+   promoted build. To measure impact, compare upload and dependency download
+   times for similar artifact sizes and agent placements. Account for any agent
+   cache hits.
 3. Keep prior storage available for older builds and use TeamCity cleanup rules
    for retention. If new uploads need to return to built-in storage, import a
    settings revision with `DiscordKitActiveArtifacts` selecting `DefaultStorage`.
@@ -214,17 +215,21 @@ installation token for each release build.
 | `github.releaseConnectionId` | TeamCity GitHub App connection ID for DiscordKit |
 | `github.releaseApprover` | TeamCity username authorized to approve publication |
 | `github.releaseAgentName` | Exact TeamCity name of the trusted release agent |
-| `teamcity.certificationTokenRef` | `credentialsJSON:` reference for a TeamCity token that can read DiscordKit certification and artifacts |
 | `github.readTokenRef` | Optional `credentialsJSON:` reference for an authenticated GitHub metadata read during release preparation |
 
-Store the certification token through **Generate token for a secure value** and
-enter its reference in the context parameter. After TeamCity imports the current
-release settings, open a finished, successful **Offline certification** build on
-`main` and confirm that **Actions → Promote** lists **Publish GitHub release**.
-Use the current server settings if the promotion dialog offers a settings
-choice. When a release is authorized, confirm that it waits for the named
-approver, reuses the selected certification and appends its displayed build
-number to the entered version. [Release procedure](ReleaseTooling.md#manual-github-releases)
+TeamCity supplies the selected certification's receipt and build metadata
+through its same-chain artifact and snapshot dependencies. To configure
+authenticated GitHub metadata reads, store the optional GitHub read token using
+**Generate token for a secure value** and set `github.readTokenRef` to the
+generated reference.
+
+After TeamCity imports the current release settings, open a finished,
+successful **Offline certification** build on `main` and confirm that
+**Actions → Promote** lists **Publish GitHub release**. Use the current server
+settings if the promotion dialog offers a settings choice. When a release is
+authorized, confirm that it waits for the named approver, reuses the selected
+certification and appends its displayed build number to the entered version.
+[Release procedure](ReleaseTooling.md#manual-github-releases)
 
 ## Switch GitHub merge checks
 
