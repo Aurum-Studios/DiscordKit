@@ -46,6 +46,8 @@ require(!artifactStorageEnabled || (
     "Set the R2 account ID, bucket access key ID and TeamCity secure-storage secret reference together."
 }
 
+val offlineCertification = certification(statusToken, watchPullRequests)
+
 project {
     if (artifactStorageEnabled) features {
         s3CompatibleStorage {
@@ -77,13 +79,14 @@ project {
         }
     }
     VerificationBuilds.forEach { buildType(it) }
-    buildType(certification(statusToken, watchPullRequests))
+    buildType(offlineCertification)
     VerificationPipelines.forEach { pipeline(it) }
     buildType(UpstreamReview)
     buildType(periodicTiming(DslContext.getParameter("ci.periodicTiming", "false") == "true"))
     controlledTiming().forEach { buildType(it) }
     releasePublisher()?.let {
-        releaseBuilds(it, credential("teamcity.certificationTokenRef"), credential("github.readTokenRef"))
+        releaseBuilds(offlineCertification, it, credential("teamcity.certificationTokenRef"),
+            credential("github.readTokenRef"))
             .forEach { buildType(it) }
     }
 }

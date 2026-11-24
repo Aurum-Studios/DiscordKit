@@ -18,21 +18,40 @@ from urllib.error import HTTPError
 from urllib.parse import quote, urlencode
 from urllib.request import Request, build_opener, urlopen
 
-from teamcity_release import RejectRedirects, TeamCityCertification
+from teamcity_release import BUILD_NUMBER_PATTERN, RejectRedirects, TeamCityCertification
 
 
 GITHUB_REPOSITORY = "Aurum-Studios/DiscordKit"
 GITHUB_API = "https://api.github.com"
 GITHUB_UPLOADS = "https://uploads.github.com"
+VERSION_COMPONENT = r"(?:0|[1-9][0-9]*)"
+TWO_COMPONENT_VERSION = rf"{VERSION_COMPONENT}\.{VERSION_COMPONENT}"
+THREE_COMPONENT_VERSION = rf"{TWO_COMPONENT_VERSION}\.{VERSION_COMPONENT}"
+BASE_VERSION_PATTERN = rf"(?:{THREE_COMPONENT_VERSION}|{TWO_COMPONENT_VERSION})"
 
 
 def validate_inputs(version, revision):
-    """Accept canonical Major.Minor.Build numbers and an immutable full SHA."""
-    if not re.fullmatch(r"(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)", version):
-        raise ValueError("Version must be Major.Minor.Build, e.g. 1.2.37, without a v prefix or leading zeroes")
+    """Validate a promoted or legacy packaged version and its immutable full SHA."""
+    if not re.fullmatch(rf"(?:{THREE_COMPONENT_VERSION}|{BASE_VERSION_PATTERN}\+{BUILD_NUMBER_PATTERN})", version):
+        raise ValueError("Expected a promoted version such as 1.2+37 or a legacy version such as 1.2.37")
     if not re.fullmatch(r"[0-9a-fA-F]{40}", revision):
         raise ValueError("Commit must be a full 40-character Git commit SHA")
     return version, revision.lower()
+
+
+def release_version(base, build_number):
+    """Append the selected certification number to a canonical two- or three-part version."""
+    base = base.removeprefix("v")
+    if not re.fullmatch(BASE_VERSION_PATTERN, base):
+        raise ValueError("Enter a release version such as 1.2 or 1.2.3")
+    if not isinstance(build_number, str) or not re.fullmatch(BUILD_NUMBER_PATTERN, build_number):
+        raise ValueError("Invalid TeamCity certification build number")
+    return f"{base}+{build_number}"
+
+
+def release_asset_name(version):
+    """Use GitHub-safe filenames while preserving the build metadata in the tag and manifest."""
+    return f"DiscordKit-{version.replace('+', '-build.')}-source"
 
 
 class GitHubAPI:
@@ -99,12 +118,6 @@ def require_commit(repository, revision):
     kind = subprocess.check_output(["git", "-C", str(repository), "cat-file", "-t", revision], text=True).strip()
     if kind != "commit":
         raise ValueError("Release commit must identify a commit in this repository")
-
-
-def require_teamcity_branch(repository, revision, api, teamcity, configuration):
-    require_commit(repository, revision)
-    teamcity.require_current_checkout(repository, configuration)
-    require_github_default_branch(api, teamcity.branch, revision)
 
 
 def require_github_default_branch(api, branch, revision):
@@ -178,7 +191,7 @@ def successful_ci(api, revision):
 def require_unused_version(api, version):
     """Refuse both existing tags and releases, including unpublished drafts."""
     tag = f"v{version}"
-    if api.request(f"git/ref/tags/{tag}", missing_ok=True) is not None:
+    if api.request(f"git/ref/tags/{quote(tag, safe='')}", missing_ok=True) is not None:
         raise ValueError(f"Tag {tag} already exists; select a new version")
     page = 1
     while True:
@@ -190,14 +203,16 @@ def require_unused_version(api, version):
         page += 1
 
 
-def prepare(repository, output, version, revision, api, teamcity):
+def prepare(repository, output, base_version, api, teamcity):
     """Produce the immutable source assets with read-only GitHub access."""
     from package_release import package_release
 
-    version, revision = validate_inputs(version, revision)
-    require_teamcity_branch(repository, revision, api, teamcity, "DiscordKit_PrepareRelease")
+    run = teamcity.promoted(repository, "DiscordKit_PrepareRelease")
+    version = release_version(base_version, run["number"])
+    revision = run["head_sha"]
+    require_commit(repository, revision)
+    require_github_default_branch(api, teamcity.branch, revision)
     require_unused_version(api, version)
-    run = teamcity.find(revision)
     assets = package_release(repository, output, version, revision, run)
     print(f"Prepared v{version} from {revision}; certification: {run['html_url']}")
     return assets
@@ -205,7 +220,7 @@ def prepare(repository, output, version, revision, api, teamcity):
 
 def verify_assets(output, version, revision):
     """Recheck downloaded bytes and metadata before granting them a release tag."""
-    name = f"DiscordKit-{version}-source"
+    name = release_asset_name(version)
     archive = output / f"{name}.tar.gz"
     checksum = output / f"{name}.tar.gz.sha256"
     manifest = output / f"{name}.json"
@@ -223,17 +238,21 @@ def verify_assets(output, version, revision):
     return (archive, checksum, manifest), evidence
 
 
-def publish(repository, output, version, revision, api, teamcity):
+def publish(repository, output, base_version, api, teamcity):
     """Create a new exact tag and release, never editing or replacing existing ones."""
-    version, revision = validate_inputs(version, revision)
-    require_teamcity_branch(repository, revision, api, teamcity, "DiscordKit_PublishGitHubRelease")
+    run = teamcity.promoted(repository, "DiscordKit_PublishGitHubRelease")
+    version = release_version(base_version, run["number"])
+    revision = run["head_sha"]
+    require_commit(repository, revision)
+    require_github_default_branch(api, teamcity.branch, revision)
     assets, evidence = verify_assets(output, version, revision)
-    teamcity.verify(evidence, revision)
+    if evidence != run:
+        raise ValueError("Recorded TeamCity certification is no longer valid")
     publish_teamcity_release(api, version, revision, assets, evidence)
 
 
 def require_exact_tag(api, tag, revision):
-    ref = api.request(f"git/ref/tags/{tag}")
+    ref = api.request(f"git/ref/tags/{quote(tag, safe='')}")
     if (ref.get("ref") != f"refs/tags/{tag}" or ref["object"].get("type") != "commit"
             or ref["object"].get("sha") != revision):
         raise ValueError("Release tag no longer points to the packaged commit")
@@ -304,23 +323,22 @@ def publish_teamcity_release(api, version, revision, assets, evidence):
         raise ValueError("GitHub returned a different release")
     require_uploaded_assets(api, release_id, expected_assets)
     require_exact_tag(api, tag, revision)
-    print(f"Published https://github.com/{api.repository}/releases/tag/{tag} from {revision}")
+    print(f"Published https://github.com/{api.repository}/releases/tag/{quote(tag, safe='')} from {revision}")
 
 
 def main():
+    """Prepare or publish the selected TeamCity certification using the requested base version."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("stage", choices=("prepare", "publish"))
     parser.add_argument("--repository", type=Path, default=Path("."))
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--version", required=True)
-    parser.add_argument("--commit", required=True)
     arguments = parser.parse_args()
-    validate_inputs(arguments.version, arguments.commit)
     action = prepare if arguments.stage == "prepare" else publish
     teamcity = TeamCityCertification()
     api = GitHubAPI(teamcity=True, allow_anonymous=arguments.stage == "prepare")
     action(arguments.repository.resolve(), arguments.output.resolve(),
-           arguments.version, arguments.commit, api, teamcity)
+           arguments.version, api, teamcity)
 
 
 if __name__ == "__main__":

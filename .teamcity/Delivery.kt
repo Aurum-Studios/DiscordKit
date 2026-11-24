@@ -40,15 +40,13 @@ private fun BuildType.publication(publisher: Publisher) {
     }
 }
 
-/** Pass the requested version and full SHA without inserting user input into shell text. */
-private fun BuildType.releaseInputs() {
-    params {
-        text("release.version", "", label = "Major.Minor.Build", description = "GitHub release version, without v",
-            display = ParameterDisplay.PROMPT, allowEmpty = false)
-        text("release.commit", "", label = "Certified commit SHA", description = "Full 40-character Git commit SHA",
-            display = ParameterDisplay.PROMPT, allowEmpty = false)
-        param("env.RELEASE_VERSION", "%release.version%")
-        param("env.RELEASE_COMMIT", "%release.commit%")
+/** Keep the promoted certification while checking out current release tooling. */
+private fun Dependencies.promotedCertification(certification: BuildType) {
+    snapshot(requireNotNull(certification.id)) {
+        synchronizeRevisions = false
+        reuseBuilds = ReuseBuilds.SUCCESSFUL
+        onDependencyFailure = FailureAction.FAIL_TO_START
+        onDependencyCancel = FailureAction.FAIL_TO_START
     }
 }
 
@@ -61,14 +59,20 @@ private fun BuildType.releaseEvidence(certificationToken: String) {
         param("env.TEAMCITY_URL", "https://ci.aurum-studios.com")
         param("env.TEAMCITY_VCS_ROOT_ID", DslContext.settingsRootId.value)
         param("env.TEAMCITY_DEFAULT_BRANCH", "%teamcity.build.branch.is_default%")
+        param("env.RELEASE_VERSION", "%release.version%")
         password("env.TEAMCITY_TOKEN", certificationToken)
     }
 }
 
 /** Pack the exact certified commit in a read-only build and publish its sealed assets after approval. */
-internal fun releaseBuilds(publisher: Publisher, certificationToken: String, readToken: String): List<BuildType> {
+internal fun releaseBuilds(
+    certification: BuildType,
+    publisher: Publisher,
+    certificationToken: String,
+    readToken: String,
+): List<BuildType> {
     require(certificationToken.isNotEmpty()) { "Set teamcity.certificationTokenRef before enabling GitHub releases." }
-    val arguments = "--version \"\$RELEASE_VERSION\" --commit \"\$RELEASE_COMMIT\""
+    val arguments = "--version \"\$RELEASE_VERSION\""
     val prepare = agentBuild("PrepareRelease", "Prepare GitHub release", """
         python3 -m unittest discover -s Tools/ci -p 'test*release*.py'
         python3 Tools/ci/github_release.py prepare $arguments --output $output/release
@@ -76,19 +80,25 @@ internal fun releaseBuilds(publisher: Publisher, certificationToken: String, rea
         artifactRules = "+:$output/release/** => release"
         publishArtifacts = PublishMode.SUCCESSFUL
         releaseEvidence(certificationToken)
-        releaseInputs()
+        params { param("release.version", "") }
+        dependencies { promotedCertification(certification) }
         if (readToken.isNotEmpty()) params { password("env.GH_TOKEN", readToken) }
     }
     val publish = agentBuild("PublishGitHubRelease", "Publish GitHub release",
         "python3 Tools/ci/github_release.py publish $arguments --output $incoming/release", 30) {
         publication(publisher)
         releaseEvidence(certificationToken)
-        releaseInputs()
+        description = "Promote a successful Offline certification build and publish its exact source revision."
         params {
-            param("reverse.dep.${prepare.id!!.value}.release.version", "%release.version%")
-            param("reverse.dep.${prepare.id!!.value}.release.commit", "%release.commit%")
+            text("release.version", "", label = "Release version",
+                description = "Enter 1.2 or 1.2.3. TeamCity appends the promoted certification number as +build.",
+                display = ParameterDisplay.PROMPT,
+                regex = """v?(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(\.(0|[1-9][0-9]*))?""",
+                validationMessage = "Enter a release version such as 1.2 or 1.2.3.")
+            param("override.dep.${prepare.id!!.value}.release.version", "%release.version%")
         }
         dependencies {
+            promotedCertification(certification)
             passed(listOf(prepare))
             sameChainArtifact(prepare, "release/* => $incoming/release")
         }

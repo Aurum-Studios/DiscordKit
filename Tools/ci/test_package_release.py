@@ -106,6 +106,26 @@ class ReleasePackageTests(unittest.TestCase):
                     if not any(part in (".air", ".build", ".swiftpm") for part in Path(path).parts)}
         self.assertEqual(files, expected)
 
+    def test_promoted_version_preserves_the_certification_number_in_the_manifest(self):
+        """Seal the public number in the provenance and use stable GitHub asset filenames."""
+        version = "1.2+37"
+        evidence = {
+            "provider": "teamcity", "id": 3171, "number": "37", "buildTypeId": "DiscordKit_Certification",
+            "vcsRootId": "DiscordKit_GitHub", "branch": "main", "coverageSHA256": "a" * 64,
+            "html_url": "https://ci.aurum-studios.com/build/3171", "head_sha": self.revision,
+        }
+        with self.assertRaisesRegex(ValueError, "certification build number"):
+            self.package(version=version, ci_run={**evidence, "number": "38"})
+        archive, checksum, manifest = self.package(version=version, ci_run=evidence)
+        self.assertEqual(archive.name, "DiscordKit-1.2-build.37-source.tar.gz")
+        self.assertEqual(checksum.name, archive.name + ".sha256")
+        metadata = json.loads(manifest.read_text())
+        self.assertEqual(metadata["version"], version)
+        self.assertEqual(metadata["tag"], "v1.2+37")
+        self.assertEqual(metadata["ciRun"], evidence)
+        with tarfile.open(archive) as bundle:
+            self.assertIsNotNone(bundle.getmember("DiscordKit-1.2+37/Package.swift"))
+
     def test_archive_bytes_are_reproducible(self):
         """Identical selected trees and versions produce identical compressed bytes."""
         first = self.package()[0].read_bytes()

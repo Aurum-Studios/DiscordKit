@@ -21,40 +21,44 @@ live Discord interoperability or independent cryptographic approval.
 
 ## Manual GitHub releases
 
-In TeamCity, open **DiscordKit > Publish GitHub release**, select **Run**, and
-choose the default branch. Enter both required inputs. The configured approver
-must approve the deployment in TeamCity before it can publish.
+1. In TeamCity, open the finished, successful **Offline certification** build
+   on `main` that you want to release.
+2. Choose **Actions → Promote → Publish GitHub release**. Enter **Release
+   version** as `major.minor` or `major.minor.patch`, with an optional leading
+   `v`. Use nonnegative decimal integers without leading zeroes. TeamCity
+   appends the selected certification's displayed build number as `+build`.
+3. Submit the promotion. The configured approver must approve the deployment
+   in TeamCity before it can publish.
 
-- Enter a canonical `Major.Minor.Build` version, for example `1.2.37`. Each
-  component is a nonnegative decimal integer. Use `0` for zero and omit leading
-  zeroes, the `v` prefix, and prerelease or build metadata.
-- Enter the full 40-character hexadecimal commit SHA to package.
-
-Choose the build number manually and apply the source API compatibility policy
+For example, entering `1.2` on certification build `#1` creates the tag
+`v1.2+1` at that build's commit and the release **DiscordKit 1.2+1**. SwiftPM
+gives releases with the same base and different build metadata equal version
+precedence. Choose the base version using the source API compatibility policy
 below. Macro and extension packages retain independent baselines.
 
-Before dispatch, the target must be on GitHub's current default branch and have
-a finished, successful **Offline certification** build for the exact SHA on the
-DiscordKit default-branch VCS root. The certification build reconciles successful
-verification jobs and publishes `certification.json` for that revision.
-**Prepare GitHub release** validates this evidence, runs the release tool tests,
-and archives the selected Git tree. The deployment receives the three assets
-from the preparation build in its chain and rechecks the recorded certification
-and current default-branch membership before making GitHub writes.
+The release uses the current release tooling and reuses the selected
+certification, including an older finished build whose commit is still on the
+default branch. **Prepare GitHub release** validates the selected build's
+`certification.json`, runs the release tool tests, and archives the exact
+certified Git tree. The deployment receives all three assets from that
+preparation build and rechecks the recorded certification and default-branch
+membership before making GitHub writes.
 
-A successful run creates tag `v1.2.37` at the selected SHA and release
-`DiscordKit 1.2.37` with these assets.
+The `v1.2+1` release contains the following files. Asset names spell the build
+suffix as `-build.1` so GitHub preserves the filenames used in the checksum
+and manifest.
 
-- `DiscordKit-1.2.37-source.tar.gz`, a platform-neutral SwiftPM source archive
-  under one top-level `DiscordKit-1.2.37/` directory. It preserves tracked root
-  and nested package files, manifests, committed dependency pins, documentation,
-  licenses and attribution notices. Local `.air`, `.build` and `.swiftpm` state
-  is excluded. Dependencies are resolved by the consumer from the committed pins;
-  the archive contains no precompiled platform binaries.
+- `DiscordKit-1.2-build.1-source.tar.gz`, a platform-neutral SwiftPM source
+  archive under one top-level directory. It preserves tracked root and nested
+  package files, manifests, committed dependency pins, documentation, licenses
+  and attribution notices. Local `.air`, `.build` and `.swiftpm` state is
+  excluded. Consumers resolve dependencies from the committed pins and compile
+  the source for their platform.
 - A SHA-256 checksum sidecar for the source archive.
 - A JSON manifest recording the version, tag, full revision, archive name and
-  SHA-256. The `ciRun` object identifies the successful TeamCity build, VCS root,
-  branch, and checksum of the certification receipt.
+  SHA-256. The manifest retains `1.2+1` as the version. The `ciRun` object
+  identifies the successful TeamCity build, VCS root, branch, and checksum of
+  the certification receipt.
 
 Preparation uses read access. Publication uses a repository-scoped GitHub App
 token on the configured Linux agent. TeamCity stores the GitHub App connection

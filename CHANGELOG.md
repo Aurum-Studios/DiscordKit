@@ -9,6 +9,12 @@ https://aurum-studios.com
 
 ## Unreleased
 
+### Release automation
+
+- Promote a successful TeamCity **Offline certification** build directly to
+  an approved GitHub release. The release version carries the certification
+  build number, and the tag points to the commit that passed verification.
+
 ### Performance plan phase 7
 
 - Count exact DSL payload bytes without constructing a complete serialized

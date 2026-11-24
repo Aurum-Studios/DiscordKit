@@ -54,10 +54,10 @@ platform coverage.
 
 ## Releases
 
-Maintainers can run and approve **Publish GitHub release** in TeamCity to
-package an exact certified commit and publish a GitHub release at a chosen
-`Major.Minor.Build` version, such as `1.2.37`. See the
-[release instructions](Docs/ReleaseTooling.md#manual-github-releases).
+In TeamCity, promote a successful **Offline certification** build to **Publish
+GitHub release**. Enter a two- or three-component version and TeamCity appends
+the certification build number, for example `1.2+37`. Approval publishes the
+exact certified commit. [Release instructions](Docs/ReleaseTooling.md#manual-github-releases)
 
 ## Documentation
 

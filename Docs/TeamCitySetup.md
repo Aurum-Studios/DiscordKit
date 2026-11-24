@@ -218,9 +218,13 @@ installation token for each release build.
 | `github.readTokenRef` | Optional `credentialsJSON:` reference for an authenticated GitHub metadata read during release preparation |
 
 Store the certification token through **Generate token for a secure value** and
-enter its reference in the context parameter. Confirm that a manually queued
-release waits for the named approver and uses the exact certified `main`
-revision. [Release procedure](ReleaseTooling.md)
+enter its reference in the context parameter. After TeamCity imports the current
+release settings, open a finished, successful **Offline certification** build on
+`main` and confirm that **Actions → Promote** lists **Publish GitHub release**.
+Use the current server settings if the promotion dialog offers a settings
+choice. When a release is authorized, confirm that it waits for the named
+approver, reuses the selected certification and appends its displayed build
+number to the entered version. [Release procedure](ReleaseTooling.md#manual-github-releases)
 
 ## Switch GitHub merge checks
 

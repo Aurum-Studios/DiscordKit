@@ -14,7 +14,7 @@ from pathlib import Path
 import subprocess
 import tempfile
 
-from github_release import validate_inputs
+from github_release import release_asset_name, validate_inputs
 
 
 def git(repository, *arguments):
@@ -45,13 +45,17 @@ def package_release(repository: Path, output: Path, version: str, revision: str,
     if ci_run.get("provider") == "teamcity":
         evidence_fields = ("provider", "id", "buildTypeId", "vcsRootId",
                            "branch", "coverageSHA256", "html_url", "head_sha")
+        if "+" in version:
+            if ci_run.get("number") != version.split("+", 1)[1]:
+                raise ValueError("Release version does not match the TeamCity certification build number")
+            evidence_fields += ("number",)
     try:
         ci_evidence = {key: ci_run[key] for key in evidence_fields}
     except KeyError as error:
         raise ValueError(f"CI evidence is missing {error.args[0]}") from error
 
     output = output.resolve()
-    name = f"DiscordKit-{version}-source"
+    name = release_asset_name(version)
     archive = output / f"{name}.tar.gz"
     checksum = output / f"{name}.tar.gz.sha256"
     manifest = output / f"{name}.json"

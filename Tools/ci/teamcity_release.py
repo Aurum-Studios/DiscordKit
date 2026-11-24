@@ -18,9 +18,11 @@ from urllib.request import HTTPRedirectHandler, Request, build_opener
 TEAMCITY_URL = "https://ci.aurum-studios.com"
 CERTIFICATION_ID = "DiscordKit_Certification"
 BUILD_FIELDS = (
-    "id,buildTypeId,defaultBranch,state,status,personal,failedToStart,canceledInfo,"
-    "revisions(revision(version,vcsBranchName,vcs-root-instance(vcs-root-id)))"
+    "id,number,buildTypeId,defaultBranch,state,status,personal,failedToStart,canceledInfo,"
+    "revisions(revision(version,vcsBranchName,vcs-root-instance(vcs-root-id))),"
+    "snapshot-dependencies(build(id,buildTypeId))"
 )
+BUILD_NUMBER_PATTERN = r"[1-9][0-9]*"
 
 
 class RejectRedirects(HTTPRedirectHandler):
@@ -68,20 +70,25 @@ class TeamCityCertification:
             raise ValueError("TeamCity returned a different build")
         return build
 
-    def matches_revision(self, build, revision):
+    def default_revision(self, build):
+        """Return the exact default-branch commit for the configured root, if eligible."""
         revisions = (build.get("revisions") or {}).get("revision", [])
         matching = [
             item for item in revisions
             if (item.get("vcs-root-instance") or {}).get("vcs-root-id") == self.root
         ]
-        return (build.get("defaultBranch") is True
+        if (build.get("defaultBranch") is True
                 and not build.get("personal")
                 and not build.get("canceledInfo")
                 and len(matching) == 1
-                and matching[0].get("version") == revision
-                and matching[0].get("vcsBranchName") == f"refs/heads/{self.branch}")
+                and matching[0].get("vcsBranchName") == f"refs/heads/{self.branch}"):
+            revision = matching[0].get("version")
+            if isinstance(revision, str) and re.fullmatch(r"[0-9a-f]{40}", revision):
+                return revision
+        return None
 
     def require_current_checkout(self, repository, configuration_id):
+        """Verify the running release job and return its build record and dependencies."""
         if os.environ.get("TEAMCITY_DEFAULT_BRANCH") != "true":
             raise ValueError("Run the release from the repository's default branch")
         build_id = os.environ["DISCORDKIT_CI_BUILD_ID"]
@@ -91,19 +98,24 @@ class TeamCityCertification:
         head = subprocess.check_output(
             ["git", "-C", str(repository), "rev-parse", "HEAD"], text=True).strip()
         if (build.get("buildTypeId") != configuration_id
-                or build.get("state") != "running" or not self.matches_revision(build, head)):
+                or build.get("state") != "running" or self.default_revision(build) != head):
             raise ValueError("Release tooling must use the current TeamCity default-branch checkout")
+        return build
 
     def evidence(self, build, revision):
+        """Return the exact successful build's provenance after validating its sealed receipt."""
         if (build.get("buildTypeId") != CERTIFICATION_ID
                 or build.get("state") != "finished"
                 or build.get("status") != "SUCCESS"
                 or build.get("failedToStart")
-                or not self.matches_revision(build, revision)):
+                or self.default_revision(build) != revision):
             return None
         build_id = build.get("id")
         if type(build_id) is not int or build_id < 1:
             raise ValueError("Invalid TeamCity certification build ID")
+        number = build.get("number")
+        if not isinstance(number, str) or not re.fullmatch(BUILD_NUMBER_PATTERN, number):
+            raise ValueError("Invalid TeamCity certification build number")
         # Stream the receipt from TeamCity so the bearer-authenticated request stays on its origin.
         contents = self.request(f"builds/id:{build_id}/artifacts/content/certification.json",
                                 raw=True, responseBuilder="core")
@@ -121,6 +133,7 @@ class TeamCityCertification:
         return {
             "provider": "teamcity",
             "id": build_id,
+            "number": number,
             "buildTypeId": CERTIFICATION_ID,
             "vcsRootId": self.root,
             "branch": self.branch,
@@ -129,22 +142,15 @@ class TeamCityCertification:
             "head_sha": revision,
         }
 
-    def find(self, revision):
-        locator = (f"buildType:(id:{CERTIFICATION_ID}),revision:(version:{revision}),"
-                   "state:finished,status:SUCCESS,branch:(default:true),personal:false")
-        for start in range(0, 1000, 100):
-            builds = self.request("builds", locator=f"{locator},count:100,start:{start}",
-                                  fields=f"build({BUILD_FIELDS}),nextHref")
-            for build in builds.get("build", []):
-                if evidence := self.evidence(build, revision):
-                    return evidence
-            if not builds.get("nextHref"):
-                break
-        raise ValueError("No successful TeamCity Offline certification for this exact default-branch commit")
-
-    def verify(self, evidence, revision):
-        """Recheck the build that was recorded at preparation time."""
-        build = self.build(evidence.get("id"))
-        if self.evidence(build, revision) != evidence:
-            raise ValueError("Recorded TeamCity certification is no longer valid")
+    def promoted(self, repository, configuration_id):
+        """Read the build selected by TeamCity for this chain and its immutable revision."""
+        current = self.require_current_checkout(repository, configuration_id)
+        dependencies = (current.get("snapshot-dependencies") or {}).get("build", [])
+        selected = [item for item in dependencies if item.get("buildTypeId") == CERTIFICATION_ID]
+        if len(selected) != 1:
+            raise ValueError("Release requires exactly one Offline certification snapshot dependency")
+        build = self.build(selected[0].get("id"))
+        revision = self.default_revision(build)
+        if revision is None or (evidence := self.evidence(build, revision)) is None:
+            raise ValueError("Promote a successful default-branch TeamCity Offline certification build")
         return evidence

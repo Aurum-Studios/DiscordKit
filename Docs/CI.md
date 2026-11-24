@@ -83,9 +83,10 @@ When GitHub status publishing is configured, the same classic configuration
 reports the merge check. [Merge check setup](TeamCitySetup.md#switch-github-merge-checks)
 
 The source export jobs retain a SwiftPM source bundle, a SHA-256 sidecar and
-native provenance for each platform. Run the [release job](ReleaseTooling.md#manual-github-releases)
-from the default branch to publish a versioned source archive for an exact
-certified `main` commit. Release publication is a separate approved deployment.
+native provenance for each platform. From a successful **Offline certification**
+build on `main`, choose **Actions → Promote → Publish GitHub release** to package
+the exact certified commit and append that build's number to the release version.
+Publication requires approval. [Release procedure](ReleaseTooling.md#manual-github-releases)
 
 The required chain covers offline Linux and macOS behavior and the declared
 Apple SDK compile checks. Windows and Android remain outside the full

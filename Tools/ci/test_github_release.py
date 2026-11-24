@@ -81,7 +81,8 @@ class FakeAPI:
 
 class ReleaseGateTests(unittest.TestCase):
     def test_canonical_versions_and_full_revisions(self):
-        for version in ("0.0.0", VERSION, "12.30.987654321"):
+        """Read existing package versions and both promoted tag formats."""
+        for version in ("0.0.0", VERSION, "12.30.987654321", "1.2+37", "1.2.3+37"):
             with self.subTest(version=version):
                 self.assertEqual(github_release.validate_inputs(version, REVISION.upper()),
                                  (version, REVISION))
@@ -98,6 +99,18 @@ class ReleaseGateTests(unittest.TestCase):
         for revision in revisions:
             with self.subTest(revision=revision), self.assertRaises(ValueError):
                 github_release.validate_inputs(VERSION, revision)
+
+    def test_build_number_is_appended_only_to_a_canonical_base_version(self):
+        """Keep both supported widths and reject caller-supplied build metadata."""
+        for base, expected in (("1.2", "1.2+37"), ("v1.2.3", "1.2.3+37")):
+            with self.subTest(base=base):
+                self.assertEqual(github_release.release_version(base, "37"), expected)
+        for base in ("", "1", "1.02", "1.2.3.4", "1.2+9", "1.2.3-beta", "1.2\n"):
+            with self.subTest(base=base), self.assertRaises(ValueError):
+                github_release.release_version(base, "37")
+        for number in ("0", "037", "37.1", "37+8", 37, None):
+            with self.subTest(number=number), self.assertRaises(ValueError):
+                github_release.release_version("1.2", number)
 
     def test_only_completed_exact_repository_push_or_manual_runs_certify(self):
         for event in ("push", "workflow_dispatch"):
