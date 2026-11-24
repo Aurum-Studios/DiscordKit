@@ -11,7 +11,8 @@ param(
     [string] $Distribution,
     [Parameter(Mandatory = $true, Position = 1)]
     [ValidatePattern('\A[A-Za-z][A-Za-z0-9]*\z')]
-    [string] $Build
+    [string] $Build,
+    [switch] $Pipeline
 )
 
 Set-StrictMode -Version Latest
@@ -35,6 +36,13 @@ if ([string]::IsNullOrWhiteSpace($env:DISCORDKIT_WSL_SCRIPT) -or
 
 $checkout = (Get-Item -LiteralPath '.').FullName
 $teamcity = Join-Path $checkout '.build\teamcity'
+if ($Pipeline) {
+    # Pipeline jobs can have an incremental Windows checkout. Retain downloaded inputs.
+    & $git clean -ffdx -- '.build/teamcity/out/pipeline'
+    if ($LASTEXITCODE -ne 0) {
+        throw 'Could not clear the previous Windows pipeline artifacts.'
+    }
+}
 $bridge = Join-Path $teamcity 'wsl-bridge.sh'
 $scratch = Join-Path $env:DISCORDKIT_WSL_TEMP ('discordkit-wsl-' + [guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Path $scratch | Out-Null

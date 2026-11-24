@@ -9,25 +9,29 @@ https://aurum-studios.com
 
 DiscordKit’s TeamCity chain verifies the same candidate on Ubuntu 24.04 x64
 and macOS 26 or 27 ARM64 with Swift 6.4.1. The [versioned settings](../.teamcity/settings.kts)
-use the three-agent Aurum Studios fleet. The number of concurrent builds depends
-on agent availability and compatibility. Hosted import and qualification are
+use Kotlin-defined Pipelines on TeamCity 2026.2 and the three-agent Aurum
+Studios fleet. Actual concurrency depends on agent availability and
+compatibility. Hosted import and qualification of the pipeline topology are
 pending. [TeamCity project setup](TeamCitySetup.md)
 
 ## Certification chain
 
 | Phase | Work | Admission |
 | --- | --- | --- |
-| Qualify | Native compiler, linker, runtime, SDKs and reviewed SwiftPM inventory on both platforms | Exact VCS revision assigned |
-| Build | Twelve independent package components per platform, plus Apple SDK compile checks on macOS | Both qualifications pass |
-| Test | Disjoint runtime suites, browser tests, local tooling and compiler fixtures, code and release audits, public API and strict DocC, upstream review freshness | Native suites require their matching build producers. Repository checks run independently. |
-| Export and certify | Native SwiftPM source exports, the verified DocC archive and a single aggregate receipt | Every required build, test and export passes for the same revision |
+| Qualify | **CandidatePlatforms** qualifies the native compiler, linker, runtime, SDKs and reviewed SwiftPM inventory on both platforms | Exact VCS revision assigned |
+| Build | Classic core, package and benchmark builds plus **ReleaseCompilation**, which checks release-mode builds on both platforms and the Apple SDKs on macOS | Both qualifications pass |
+| Test | Classic core and package suites on each platform, including compiler fixtures and macOS public API and strict DocC conversions | All classic build jobs and both release compilations pass |
+| Repository checks | **RepositoryVerification** runs source, Python, browser and maintenance checks and validates the YouTrack guide inventory | All classic build jobs and both release compilations pass. Runs alongside native tests. |
+| Export | **CandidateExports** packages a SwiftPM source archive on each platform and assembles the macOS DocC archive | All native tests and repository checks pass |
+| Certify | Classic **Offline certification** checks the required job receipts and reconstructs and hashes the DocC archive | All prerequisites and artifacts come from the same candidate chain |
 
-Each platform has four build configurations for core, additional packages,
-benchmarks and timing, and release-mode compilation. Two test configurations
-per platform run the core and package suites. A shared repository check runs
-the six source, Python, browser, and maintenance checks. The required chain
-uses 20 configurations. Scheduled upstream review and optional timing use
-six more, with two additional configurations when release publishing is enabled.
+These four pipelines use four pipeline slots. The project defines 15 classic
+configurations by default, down from 26. Release preparation and approved
+publication add two, for 17 instead of 28. The classic configuration count
+includes six native build configurations, four native test configurations,
+the certification gate, upstream review and three timing configurations.
+TeamCity Professional accounts for pipeline slots separately.
+[TeamCity licensing](https://www.jetbrains.com/help/teamcity/licensing-policy.html)
 
 The native configurations use the existing SwiftPM graphs for the root package,
 macros, extensions, tooling, load tests, benchmarks, timing support and timing
@@ -39,18 +43,19 @@ Apple device and simulator SDK compilation establishes build coverage for the
 configured SDKs. The [native driver](../Tools/ci/teamcity_native.py) retains the
 execution commands and results for each platform.
 
-Snapshot dependencies synchronize revisions and gate each native test bundle on
-its build producers. Artifact dependencies use
-**Build from the same chain**. Every consumer verifies the producer archive,
-checked-out revision, toolchain and host compatibility, and qualification
-identity before restoring it. Swift test products encode absolute paths, so
-eligible agents on one platform require the same resolved checkout path and
-matching execution environments. Clean checkouts isolate the mutable job output.
-Between grouped test phases, the native driver clears the selected SwiftPM
-outputs before restoring their verified archives. Each phase keeps its own
-diagnostic directory.
-The default SwiftPM worker budget is two per job and the native helper also
-checks observed host resources before running the bounded commands.
+Snapshot dependencies synchronize revisions and enforce the phase barriers.
+Artifact dependencies select **Build from the same chain**. Every SwiftPM
+consumer verifies archive contents, revision, toolchain, host compatibility
+and qualification identity before restoring. The native build and test
+configurations that exchange SwiftPM products use a fixed checkout path.
+Classic same-agent dependencies keep Linux producers and their consumers on
+the same native Linux or Windows WSL agent. Independent bundles can use
+separate compatible agents. [TeamCity dependencies](https://www.jetbrains.com/help/teamcity/configuring-dependencies.html)
+
+Between test groups, the native driver clears the selected SwiftPM output
+before restoring its verified archive. Each phase keeps separate diagnostics.
+The default SwiftPM worker budget is two per job. The native helper also checks
+observed host resources before starting bounded commands.
 
 TeamCity uploads each archive part as a separate file. Use artifact directory
 names such as `root-tar-gz-parts` so TeamCity treats the destination as a
@@ -64,11 +69,12 @@ to inspect the logs and reports.
 
 Start **Offline certification** (`DiscordKit_Certification`) to run the full
 chain. It also owns VCS-triggered runs once the project is connected. The final
-job reconciles each required job's receipt against its TeamCity build ID and the
-exact VCS hash. It publishes `certification.json` only when the expected receipts
-and the sealed DocC archive are present. Failed or cancelled prerequisites prevent
-certification. Branch protection should use the aggregate status once the hosted
-publisher has been verified. [Merge check setup](TeamCitySetup.md#switch-github-merge-checks)
+job reconciles each required classic configuration and each required pipeline
+job against its own TeamCity build ID and the exact VCS hash. It publishes
+`certification.json` only after all expected receipts and the sealed DocC
+archive verify. Failed or cancelled prerequisites prevent certification.
+When GitHub status publishing is configured, the same classic configuration
+reports the merge check. [Merge check setup](TeamCitySetup.md#switch-github-merge-checks)
 
 The source export jobs retain a SwiftPM source bundle, a SHA-256 sidecar and
 native provenance for each platform. Run the [release job](ReleaseTooling.md#manual-github-releases)
@@ -82,11 +88,11 @@ controlled performance claims have their own qualification evidence.
 
 ## Documentation
 
-The macOS core test configuration emits and seals DocC conversions for the root, macro and
-extension packages. The **MacDocumentation** configuration merges those
-same-chain inputs and publishes the parts of `DiscordKitLibrary.doccarchive.tar.gz`.
-Download all files in the `DiscordKitLibrary-doccarchive-tar-gz-parts` artifact
-directory, including `manifest.json`, into a local directory of the same name.
+The macOS core test configuration emits and seals DocC conversions for the
+root, macro and extension packages. The macOS documentation job in
+**CandidateExports** merges those same-chain inputs. In the run's artifacts,
+open the documentation job's artifact group and download the entire
+`DiscordKitLibrary-doccarchive-tar-gz-parts` directory, including `manifest.json`.
 From a checkout of the same revision, reconstruct and extract the archive.
 
 ```sh
@@ -108,11 +114,15 @@ can also run manually. A maintainer reviews the evidence and updates the committ
 reports an expired review and keeps the candidate uncertified until the record
 is current. [Upstream review procedure](ReleaseTooling.md#upstream-review-and-dated-transitions)
 
-Start the independent controlled timing job for Linux or macOS to capture a
-frozen pair or evaluate a recorded series against its reviewed policy. The macOS
-stress, soak and integration jobs are also available manually. Set the TeamCity
-context parameter `ci.periodicTiming=true` to schedule those informational jobs
-weekly after sizing agent capacity. They run outside offline certification.
+Start the controlled timing job for Linux or macOS to capture a frozen pair
+or evaluate a recorded series against its reviewed policy. To run periodic
+timing manually, open **Informational timing / macos-arm64**
+(`DiscordKit_TimingStress`) and set `timing.profile` to `all` (default),
+`stress`, `soak` or `integration`. The run retains artifacts under
+`timing/<profile>`. The `all` selection runs the profiles sequentially and
+records a failure if any profile fails. Set `ci.periodicTiming=true` to schedule
+`all` on Sundays at 07:41 in TeamCity's schedule timezone. Timing runs
+independently of Offline certification.
 [Benchmark capture and comparison](../Tools/DiscordBenchmarkSupport/README.md)
 
 ## Local validation and historical evidence
@@ -125,8 +135,8 @@ python3 -m unittest discover -s Tools/ci
 node --test Browser/DiscordActivityBridge/*.test.mjs
 ```
 
-Generate TeamCity configuration XML against the same DSL used by the server.
-Use Java 21 and Maven 3.9 for the local check.
+Generate classic configuration XML and pipeline definitions against the
+TeamCity 2026.2 DSL used by the server. Use Java 21 and Maven 3.9.
 
 ```sh
 mvn -f .teamcity/pom.xml teamcity-configs:generate

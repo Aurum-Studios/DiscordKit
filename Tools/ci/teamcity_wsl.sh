@@ -57,7 +57,11 @@ exec 9>"$state/checkout.lock"
 flock -n 9 || fail 'Another DiscordKit build still owns the WSL checkout.'
 checkout="$state/checkout"
 [[ "$(realpath -m -- "$checkout")" == "$checkout" ]] || fail 'Unsafe WSL checkout path.'
+node_install=
 cleanup() {
+    if [[ -n "$node_install" ]]; then
+        rm -rf -- "$node_install" || printf 'DiscordKit WSL: Could not clean %s\n' "$node_install" >&2
+    fi
     rm -rf -- "$checkout" || printf 'DiscordKit WSL: Could not clean %s\n' "$checkout" >&2
 }
 trap cleanup EXIT
@@ -93,9 +97,8 @@ if [[ "$build" == CheckSource ]]; then
         # WSL imports the filesystem without the agent container's environment.
         node_version=24.22.1
         node_dist="node-v$node_version-linux-x64.tar.xz"
-        node_install="$checkout/$teamcity/node"
+        node_install=$(mktemp -d "$state/node.XXXXXX")
         archive="$node_install/$node_dist"
-        mkdir -p -- "$node_install"
         curl --fail --silent --show-error --location --retry 2 --proto '=https' --proto-redir '=https' \
             --connect-timeout 10 --max-time 90 --output "$archive" \
             "https://nodejs.org/dist/v$node_version/$node_dist"
@@ -116,6 +119,10 @@ stage_artifact() {
 }
 stage_outputs() {
     local path
+    if [[ -d "$out/pipeline" ]]; then
+        stage_artifact pipeline
+        return
+    fi
     case "$build" in
         CheckSource)
             if [[ -d "$out/preflight" ]]; then stage_artifact preflight; fi

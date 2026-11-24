@@ -9,25 +9,39 @@ import jetbrains.buildServer.configs.kotlin.*
 import jetbrains.buildServer.configs.kotlin.triggers.ScheduleTrigger
 import jetbrains.buildServer.configs.kotlin.triggers.schedule
 
-/** Define the informational workloads independently of certification. */
-internal fun periodicTiming(scheduleEnabled: Boolean): List<BuildType> =
-    mapOf("Stress" to 45, "Soak" to 65, "Integration" to 120).map { (profile, minutes) ->
-        agentBuild("Timing$profile", "Informational ${profile.lowercase()} / macos-arm64", """
-            python3 Tools/ci/platform_probe.py --platform macos-arm64 --output $output/platform
-            python3 Tools/ci/timing_jobs.py periodic --profile ${profile.lowercase()} --output $output/timing
-            git diff --exit-code
-        """.trimIndent(), minutes, Agent.Mac, native = true) {
-            vcs { branchFilter = defaultBranch }
-            maxRunningBuilds = 1
-            publishArtifacts = PublishMode.ALWAYS
-            artifactRules = "+:$output/platform/** => platform\n+:$output/timing/** => timing"
-            if (scheduleEnabled) triggers {
-                schedule {
-                    schedulingPolicy = weekly { dayOfWeek = ScheduleTrigger.DAY.Sunday; hour = 7; minute = 41 }
-                    branchFilter = defaultBranch
-                    triggerBuild = always()
-                    withPendingChangesOnly = false
-                }
+/** Run the selected informational profiles sequentially and retain each profile's evidence. */
+internal fun periodicTiming(scheduleEnabled: Boolean): BuildType =
+    agentBuild("TimingStress", "Informational timing / macos-arm64", """
+        case "${'$'}TIMING_PROFILE" in
+            all) set -- stress soak integration ;;
+            stress|soak|integration) set -- "${'$'}TIMING_PROFILE" ;;
+            *) echo 'Select all, stress, soak, or integration' >&2; exit 2 ;;
+        esac
+        python3 Tools/ci/platform_probe.py --platform macos-arm64 --output $output/platform
+        status=0
+        for profile in "${'$'}@"; do
+            if ! python3 Tools/ci/timing_jobs.py periodic --profile "${'$'}profile" --output "$output/timing/${'$'}profile"; then
+                status=1
+            fi
+        done
+        git diff --exit-code
+        exit "${'$'}status"
+    """.trimIndent(), 45 + 65 + 120, Agent.Mac, native = true) {
+        vcs { branchFilter = defaultBranch }
+        maxRunningBuilds = 1
+        publishArtifacts = PublishMode.ALWAYS
+        artifactRules = "+:$output/platform/** => platform\n+:$output/timing/** => timing"
+        params {
+            select("timing.profile", "all", label = "Informational timing profile", display = ParameterDisplay.PROMPT,
+                options = listOf("all", "stress", "soak", "integration"))
+            param("env.TIMING_PROFILE", "%timing.profile%")
+        }
+        if (scheduleEnabled) triggers {
+            schedule {
+                schedulingPolicy = weekly { dayOfWeek = ScheduleTrigger.DAY.Sunday; hour = 7; minute = 41 }
+                branchFilter = defaultBranch
+                triggerBuild = always()
+                withPendingChangesOnly = false
             }
         }
     }

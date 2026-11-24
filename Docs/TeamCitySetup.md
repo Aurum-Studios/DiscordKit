@@ -45,8 +45,10 @@ block merging until the verified TeamCity check replaces them.
 For programmatic provisioning, set `TEAMCITY_URL=https://ci.aurum-studios.com`
 and supply `TEAMCITY_TOKEN` through the trusted environment or secret manager.
 Use an account with access to create the project, manage its VCS root and
-versioned settings, and assign the intended agent pools.
+versioned settings, and assign the intended agent pools. The pipeline topology
+requires TeamCity 2026.2 or newer. Check the server version before importing.
 [TeamCity authentication](https://www.jetbrains.com/help/teamcity/teamcity-cli-authentication.html)
+[Kotlin DSL for pipelines](https://www.jetbrains.com/help/teamcity/pipelines-dsl.html)
 
 1. Look up **DiscordKit** by external project ID `DiscordKit` and create it if
    absent. Add a Git VCS root for
@@ -58,8 +60,9 @@ versioned settings, and assign the intended agent pools.
 2. When the migration revision is available to TeamCity, enable **Versioned
    Settings** on the VCS root and import the portable Kotlin DSL from
    `.teamcity`. Store secure values outside VCS and use approved default-branch
-   settings when running review revisions. Check the import status and generated
-   configurations. [Versioned settings](https://www.jetbrains.com/help/teamcity/storing-project-settings-in-version-control.html)
+   settings when running review revisions. Check the import status against the
+   expected Git commit and inspect the classic configurations and pipelines.
+   [Versioned settings](https://www.jetbrains.com/help/teamcity/storing-project-settings-in-version-control.html)
 3. In the project, use **Actions → Generate token for a secure value** to store
    a YouTrack permanent token scoped to reading the DiscordKit project. In
    **Versioned Settings → Context Parameters**, set `youtrack.projectIds` to
@@ -68,13 +71,44 @@ versioned settings, and assign the intended agent pools.
    ID in a commit message links to YouTrack from the build's **Changes** tab.
    [TeamCity YouTrack integration](https://www.jetbrains.com/help/teamcity/youtrack.html)
 
+## Move an existing project to pipelines
+
+1. Record the current settings revision, the project’s classic configuration
+   IDs, and the GitHub check used by branch protection. Preserve any historical
+   artifacts and job receipts needed from configurations that will be retired.
+   Before import, check **Administration → Licenses** or read
+   `GET /app/rest/server/licensingData` with an authorized account. Record
+   `buildTypesLeft` and `pipelinesLeft` to compare before and after the change.
+   [TeamCity licensing data](https://www.jetbrains.com/help/teamcity/rest/licensingdata.html)
+2. Once the new revision is available, verify **Versioned Settings** reports a
+   successful import of that revision. Check that DiscordKit has four
+   pipelines and 15 classic configurations, or 17 if release publishing is
+   enabled. Check the retired classic IDs and the server license counters.
+   Archived configurations continue to count toward the license limit. TeamCity
+   can remove the history of deleted configurations after its cleanup grace
+   period, so preserve needed evidence before removing a leftover configuration.
+   [TeamCity licensing](https://www.jetbrains.com/help/teamcity/licensing-policy.html)
+   [Deleted configuration cleanup](https://www.jetbrains.com/help/teamcity/copy-move-delete-build-configuration.html)
+3. Run **Offline certification** for the imported commit on `main` and verify the
+   phase and agent placement checks below. Inspect the pipeline job artifact
+   groups, the same-chain artifact sources, and the final `certification.json`.
+   Confirm that every prerequisite points to its exact TeamCity build ID and
+   that the GitHub status still appears on the same commit under the existing
+   check context. Confirm that a failed or cancelled dependency withholds
+   certification. [Certification chain](CI.md#certification-chain)
+4. If the imported topology fails qualification, revert the settings change on
+   the versioned settings branch. Check available classic configuration slots
+   first because the older topology requires more of them. Verify the reverted
+   settings import and run **Offline certification** on the rollback revision.
+   Preserve the failed run and import diagnostics for comparison.
+
 ## Qualify the three build agents
 
-Assign the three agents to pools available to DiscordKit. Verify each build
-configuration's compatible agents by OS and architecture. Jobs check the
-installed tools at runtime and report their versions. Provide Git and Python
-3.12 or newer on each agent. The browser bridge and CI helper checks also
-require Node.js 24 and npm on the Linux agent.
+Assign the three agents to pools available to DiscordKit. Verify compatible
+agents by OS and architecture for classic configurations and pipeline jobs.
+Jobs check the installed tools at runtime and report their versions. Provide
+Git and Python 3.12 or newer on each agent. The browser bridge and CI helper
+checks also require Node.js 24 and npm on the Linux agent.
 
 Qualify Ubuntu 24.04 x64 and macOS 26 or 27 ARM64 with Swift 6.4.1. Native Linux
 steps run directly on the existing containerized TeamCity agent. Its image
@@ -118,10 +152,12 @@ the repository checks, guide validation and certification remain eligible for WS
 
 Run **Offline certification** on a known `main` revision after TeamCity imports
 the settings for that commit. Verify that both platform qualifications finish
-before native compilation starts and that each test bundle uses its matching
-producers. The configuration keeps the core, package, benchmarking, and release
-builds independently retryable on each platform. The aggregate result must cover
-every required check for the selected SHA.
+before native compilation starts. Verify that all classic builds and both
+release compilations finish before native tests and repository verification
+start. Check that native test bundles restore only their matching producers.
+Both source exports and the DocC assembly wait for all native tests and
+repository verification.
+The aggregate result must cover every required check for the selected SHA.
 
 ## Enable GitHub release publishing
 
@@ -159,7 +195,7 @@ merging. [TeamCity Commit Status Publisher](https://www.jetbrains.com/help/teamc
 
 ## Retain DocC artifacts
 
-The macOS documentation configuration retains the archive parts and a SHA-256
-manifest. Follow the [download and reconstruction steps](CI.md#documentation)
-to open the bundle in Xcode. The chain certificate records the reconstructed
-archive digest and source SHA.
+The macOS documentation job in **CandidateExports** retains the archive parts
+and a SHA-256 manifest. Follow the download and reconstruction steps to open
+the bundle in Xcode. The chain certificate records the reconstructed archive
+digest and source SHA. [Download the DocC archive](CI.md#documentation)

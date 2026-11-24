@@ -8,7 +8,7 @@
 import jetbrains.buildServer.configs.kotlin.*
 import jetbrains.buildServer.configs.kotlin.projectFeatures.youtrack
 
-version = "2025.11"
+version = "2026.2"
 
 /** Keep credential values in TeamCity secure storage, outside these versioned settings. */
 fun credential(name: String): String = DslContext.getParameter(name, "").trim().also { reference ->
@@ -44,9 +44,9 @@ project {
     }
     VerificationBuilds.forEach { buildType(it) }
     buildType(certification(statusToken, watchPullRequests))
-    buildType(KnowledgeBaseValidation)
+    VerificationPipelines.forEach { pipeline(it) }
     buildType(UpstreamReview)
-    periodicTiming(DslContext.getParameter("ci.periodicTiming", "false") == "true").forEach { buildType(it) }
+    buildType(periodicTiming(DslContext.getParameter("ci.periodicTiming", "false") == "true"))
     controlledTiming().forEach { buildType(it) }
     releasePublisher()?.let {
         releaseBuilds(it, credential("teamcity.certificationTokenRef"), credential("github.readTokenRef"))

@@ -10,7 +10,9 @@ import jetbrains.buildServer.configs.kotlin.buildFeatures.CommitStatusPublisher
 import jetbrains.buildServer.configs.kotlin.buildFeatures.PullRequests
 import jetbrains.buildServer.configs.kotlin.buildFeatures.commitStatusPublisher
 import jetbrains.buildServer.configs.kotlin.buildFeatures.pullRequests
-import jetbrains.buildServer.configs.kotlin.buildSteps.script
+import jetbrains.buildServer.configs.kotlin.buildSteps.ScriptBuildStep
+import jetbrains.buildServer.configs.kotlin.pipelines.Job
+import jetbrains.buildServer.configs.kotlin.pipelines.Pipeline
 import jetbrains.buildServer.configs.kotlin.triggers.ScheduleTrigger
 import jetbrains.buildServer.configs.kotlin.triggers.schedule
 import jetbrains.buildServer.configs.kotlin.triggers.vcs
@@ -38,33 +40,14 @@ internal enum class Agent(val os: String, val architecture: String) {
     Mac("Mac", "aarch64|arm64"),
 }
 
-/** Define one clean, agent-side job using the source root connected by TeamCity. */
-internal fun agentBuild(
-    buildId: String,
-    displayName: String,
-    command: String,
-    minutes: Int,
-    agent: Agent = Agent.Linux,
-    native: Boolean = false,
-    receipt: Boolean = false,
-    bundleEvidence: Boolean = false,
-    wsl: Boolean = false,
-    configure: BuildType.() -> Unit = {},
-): BuildType = BuildType {
-    val linuxNative = native && agent == Agent.Linux
+/** Configure identical shell prerequisites for classic builds and pipeline jobs. */
+private class AgentExecution(private val agent: Agent, native: Boolean, wsl: Boolean) {
+    private val linuxNative = native && agent == Agent.Linux
     val useWsl = agent == Agent.Linux && wsl && windowsWslDistribution.isNotEmpty() &&
         (!linuxNative || windowsWslNative)
-    id(buildId)
-    name = displayName
-    enablePersonalBuilds = false
-    vcs {
-        root(DslContext.settingsRoot)
-        checkoutMode = CheckoutMode.ON_AGENT
-        cleanCheckout = true
-        branchFilter = candidateBranches
-        if (native) checkoutDir = "discordkit-native"
-    }
-    requirements {
+
+    /** Admit the configured OS/toolchain or the explicit Linux and WSL routes. */
+    fun requireAgent(requirements: Requirements) = with(requirements) {
         matches("teamcity.agent.jvm.os.arch", agent.architecture)
         if (useWsl) {
             matches("teamcity.agent.name", listOf(linuxAgent, windowsAgent).joinToString("|") { Regex.escape(it) })
@@ -73,23 +56,22 @@ internal fun agentBuild(
             if (linuxNative) equals("env.DISCORDKIT_AGENT_SWIFT_IMAGE", linuxSwiftImage)
         }
     }
-    params {
-        param("env.CI", "true")
-        param("env.DISCORDKIT_VCS_REVISION", "%build.vcs.number%")
-        param("env.DISCORDKIT_CI_BUILD_ID", currentBuildId)
-        param("env.PYTHONUNBUFFERED", "1")
-        param("env.SWIFTNIO_STRICT", "1")
-        if (linuxNative) param("env.DISCORDKIT_CI_SWIFT_IMAGE", linuxSwiftImage)
-    }
-    failureConditions { executionTimeoutMin = minutes }
-    if (receipt) {
-        artifactRules = "+:$output/receipts/$buildId.json => receipts"
-        outputParams {
-            exposeAllParameters = false
-            param(receiptBuildId, currentBuildId)
+
+    /** Pass TeamCity identity to the driver and add WSL bridge inputs when needed. */
+    fun parameters(parameters: ParametrizedWithType, wslScript: String) {
+        parameters.param("env.CI", "true")
+        parameters.param("env.DISCORDKIT_VCS_REVISION", "%build.vcs.number%")
+        parameters.param("env.DISCORDKIT_CI_BUILD_ID", currentBuildId)
+        parameters.param("env.PYTHONUNBUFFERED", "1")
+        parameters.param("env.SWIFTNIO_STRICT", "1")
+        if (linuxNative) parameters.param("env.DISCORDKIT_CI_SWIFT_IMAGE", linuxSwiftImage)
+        if (useWsl) {
+            parameters.param("env.DISCORDKIT_WSL_SCRIPT", wslScript)
+            parameters.param("env.DISCORDKIT_WSL_TEMP", "%system.teamcity.build.tempDir%")
         }
     }
-    val macPython = if (agent == Agent.Mac) """
+
+    private val macPython = if (agent == Agent.Mac) """
         if ! python3 -c 'import sys; sys.exit(sys.version_info < (3, 12))' 2>/dev/null; then
             mac_python=/Library/Frameworks/Python.framework/Versions/3.14/bin
             if [ -x "${'$'}mac_python/python3" ]; then
@@ -97,11 +79,11 @@ internal fun agentBuild(
             fi
         fi
     """.trimIndent() + "\n" else ""
-    val pythonSetup = macPython + """
+    private val pythonSetup = macPython + """
         python3 --version
         python3 -c 'import sys; raise SystemExit(0 if sys.version_info >= (3, 12) else "DiscordKit CI requires Python 3.12 or newer")'
     """.trimIndent() + "\n"
-    val macSdk = if (native && agent == Agent.Mac) """
+    private val macSdk = if (native && agent == Agent.Mac) """
         macos_version="${'$'}(sw_vers -productVersion)"
         echo "macOS ${'$'}macos_version"
         case "${'$'}macos_version" in
@@ -119,13 +101,13 @@ internal fun agentBuild(
         test -d "${'$'}SDKROOT"
         export SDKROOT
     """.trimIndent() + "\n" else ""
-    val macToolchain = if (native && agent == Agent.Mac) macSdk + """
+    private val macToolchain = if (native && agent == Agent.Mac) macSdk + """
         python3 Tools/ci/teamcity_toolchain.py --bin-output $output/swift-bin \
             --evidence $output/evidence/swift-toolchain.json
         swift_bin="${'$'}(cat $output/swift-bin)"
         export PATH="${'$'}swift_bin:${'$'}PATH"
     """.trimIndent() + "\n" else ""
-    val linuxToolchain = if (linuxNative) """
+    private val linuxToolchain = if (linuxNative) """
         if [ "${'$'}{DISCORDKIT_AGENT_SWIFT_IMAGE:-}" != "${'$'}DISCORDKIT_CI_SWIFT_IMAGE" ]; then
             echo 'The Linux agent image does not provide the pinned DiscordKit Swift release' >&2
             exit 1
@@ -135,42 +117,142 @@ internal fun agentBuild(
             export PATH="${'$'}swift_bin:${'$'}PATH"
         fi
     """.trimIndent() + "\n" else ""
-    val packEvidence = "$artifactTransport pack $output/evidence $output/${archiveParts(evidenceArchive)}"
-    val preserveFailedEvidence = if (bundleEvidence) """
-        trap 'status=${'$'}?; $packEvidence || :; exit "${'$'}status"' EXIT
-    """.trimIndent() + "\n" else ""
-    val finishEvidence = if (bundleEvidence) "\ntrap - EXIT\n$packEvidence" else ""
-    fun scriptBody(toolchain: String) =
-        "set -eu\n$pythonSetup$preserveFailedEvidence$toolchain$command$finishEvidence" +
-        if (receipt) "\npython3 Tools/ci/teamcity_gate.py record $buildId" else ""
-    if (useWsl) params {
-        param("env.DISCORDKIT_WSL_SCRIPT", scriptBody(""))
-        param("env.DISCORDKIT_WSL_TEMP", "%system.teamcity.build.tempDir%")
+    /** Format a fail-fast script and retain diagnostics when a native command fails. */
+    fun body(command: String, bridge: Boolean, bundleEvidence: Boolean, receipt: String? = null): String {
+        val toolchain = if (bridge) "" else linuxToolchain + macToolchain
+        val pack = "$artifactTransport pack $output/evidence $output/${archiveParts(evidenceArchive)}"
+        val preserve = if (bundleEvidence) "trap 'status=${'$'}?; $pack || :; exit \"${'$'}status\"' EXIT\n" else ""
+        val finish = if (bundleEvidence) "\ntrap - EXIT\n$pack" else ""
+        val record = receipt?.let { "\npython3 Tools/ci/teamcity_gate.py record $it" }.orEmpty()
+        return "set -eu\n$pythonSetup$preserve$toolchain$command$finish$record"
     }
-    steps {
-        script {
+
+    /** Run a pipeline job under a bounded supervisor in the selected agent's Linux or macOS checkout. */
+    fun pipelineBody(job: String, command: String, minutes: Int, bridge: Boolean,
+                     bundleEvidence: Boolean, outputs: List<String>): String {
+        val arguments = outputs.joinToString(" ") { "'$it'" }
+        val script = body(command, bridge, bundleEvidence)
+        val supervisor = """
+            run_pipeline_job() {
+                DISCORDKIT_PIPELINE_SCRIPT=${'$'}(cat)
+                export DISCORDKIT_PIPELINE_SCRIPT
+                python3 Tools/ci/teamcity_pipeline.py $job $minutes $arguments
+            }
+            run_pipeline_job <<'DISCORDKIT_JOB_SCRIPT'
+        """.trimIndent()
+        return "set -eu\n$pythonSetup$supervisor\n$script\nDISCORDKIT_JOB_SCRIPT"
+    }
+
+    /** Invoke the staged Linux command from the Windows agent's PowerShell. */
+    fun windowsCommand(job: String) = "powershell.exe -NoProfile -NonInteractive -ExecutionPolicy RemoteSigned " +
+        "-File Tools\\ci\\teamcity_wsl.ps1 $windowsWslDistribution $job"
+
+    /** Route the platform scripts through the same TeamCity step conditions. */
+    fun steps(job: String, displayName: String, localScript: String): List<ScriptBuildStep> {
+        val local = ScriptBuildStep {
             name = displayName
             if (useWsl) conditions { equals("teamcity.agent.name", linuxAgent) }
-            scriptContent = scriptBody(linuxToolchain + macToolchain)
+            scriptContent = localScript
         }
-        if (useWsl) script {
+        val windows = if (useWsl) ScriptBuildStep {
             name = "$displayName (Windows WSL)"
             conditions { equals("teamcity.agent.name", windowsAgent) }
-            scriptContent = "powershell.exe -NoProfile -NonInteractive -ExecutionPolicy RemoteSigned " +
-                "-File Tools\\ci\\teamcity_wsl.ps1 $windowsWslDistribution $buildId"
+            scriptContent = windowsCommand(job)
+        } else null
+        return listOfNotNull(local, windows)
+    }
+}
+
+/** Define one clean, agent-side job using the source root connected by TeamCity. */
+internal fun agentBuild(
+    buildId: String,
+    displayName: String,
+    command: String,
+    minutes: Int,
+    agent: Agent = Agent.Linux,
+    native: Boolean = false,
+    receipt: Boolean = false,
+    bundleEvidence: Boolean = false,
+    wsl: Boolean = false,
+    configure: BuildType.() -> Unit = {},
+): BuildType = BuildType {
+    val execution = AgentExecution(agent, native, wsl)
+    val receiptName = if (receipt) buildId else null
+    id(buildId)
+    name = displayName
+    enablePersonalBuilds = false
+    vcs {
+        root(DslContext.settingsRoot)
+        checkoutMode = CheckoutMode.ON_AGENT
+        cleanCheckout = true
+        branchFilter = candidateBranches
+        if (native) checkoutDir = "discordkit-native"
+    }
+    requirements { execution.requireAgent(this) }
+    params { execution.parameters(this, execution.body(command, true, bundleEvidence, receiptName)) }
+    failureConditions { executionTimeoutMin = minutes }
+    if (receipt) {
+        artifactRules = "+:$output/receipts/$buildId.json => receipts"
+        outputParams {
+            exposeAllParameters = false
+            param(receiptBuildId, currentBuildId)
         }
     }
+    steps { execution.steps(buildId, displayName, execution.body(command, false, bundleEvidence, receiptName)).forEach(::step) }
     configure()
+}
+
+/** Register a fresh pipeline job with independent, individually published artifacts. */
+private fun Pipeline.agentJob(
+    jobId: String,
+    displayName: String,
+    command: String,
+    minutes: Int,
+    agent: Agent = Agent.Linux,
+    native: Boolean = false,
+    outputs: List<String>,
+    configure: Job.() -> Unit = {},
+) {
+    val execution = AgentExecution(agent, native, wsl = true)
+    val artifacts = if (native) outputs + archiveParts(evidenceArchive) else outputs
+    val localScript = execution.pipelineBody(jobId, command, minutes, false, native, artifacts)
+    job {
+        id(jobId)
+        name = displayName
+        allowReuse = false
+        repositories { repository(DslContext.settingsRoot, checkoutPath = ".") }
+        requirements { execution.requireAgent(this) }
+        params {
+            execution.parameters(this, execution.pipelineBody(jobId, command, minutes, true, native, artifacts))
+            param(receiptBuildId, currentBuildId)
+            if (execution.useWsl) param("env.DISCORDKIT_PIPELINE_LOCAL_SCRIPT", localScript)
+        }
+        steps {
+            step(ScriptBuildStep {
+                name = displayName
+                // TeamCity 2026.2 drops step conditions when serializing pipeline jobs.
+                // CMD skips the leading label. On Linux, exec replaces the shell.
+                scriptContent = if (execution.useWsl) """
+                    :; exec /bin/bash -c "${'$'}DISCORDKIT_PIPELINE_LOCAL_SCRIPT"
+                    @echo off
+                    ${execution.windowsCommand(jobId)} -Pipeline
+                """.trimIndent() else localScript
+            })
+        }
+        outputFiles { pipelineArtifacts("$output/pipeline/**") }
+        configure()
+    }
+    outputParams { param("$receiptBuildId.$jobId", "%job.$jobId.$receiptBuildId%") }
 }
 
 /** Fail closed when any synchronized prerequisite is missing, cancelled or unsuccessful. */
 internal fun Dependencies.passed(
-    upstream: Collection<BuildType>,
+    upstream: Collection<IdOwner>,
     reuse: ReuseBuilds = ReuseBuilds.NO,
     sameAgent: Boolean = false,
 ) {
     upstream.distinct().forEach { producer ->
-        snapshot(producer) {
+        snapshot(requireNotNull(producer.id)) {
             synchronizeRevisions = true
             runOnSameAgent = sameAgent
             reuseBuilds = reuse
@@ -183,11 +265,12 @@ internal fun Dependencies.passed(
 /** Resolve IDs and artifacts only from the prerequisite build in this chain. */
 internal fun BuildType.chainBuildId() = "%dep.${id!!.value}.$receiptBuildId%"
 
-/** Receipt paths use the same short ID assigned by agentBuild. */
-private fun BuildType.receiptName() = id!!.value.removePrefix("${DslContext.projectId.value}_")
+/** Resolve one exact job ID from the selected pipeline instance. */
+private fun Pipeline.chainBuildId(job: String) = "%dep.${id!!.value}.$receiptBuildId.$job%"
 
-internal fun Dependencies.sameChainArtifact(producer: BuildType, rules: String) {
-    artifacts(producer) {
+/** Match individual same-chain files and require them before starting the consumer. */
+internal fun Dependencies.sameChainArtifact(producer: IdOwner, rules: String) {
+    artifacts(requireNotNull(producer.id)) {
         buildRule = sameChain()
         artifactRules = rules
     }
@@ -204,7 +287,6 @@ private val compileLanes = linkedMapOf(
     "BuildCore" to listOf("root", "macros", "extensions"),
     "BuildPackages" to listOf("tooling", "load", "consumers"),
     "BuildBenchmarks" to listOf("benchmarks", "timing-support", "timing", "foundation", "media"),
-    "BuildRelease" to listOf("release"),
 )
 
 private val testLanes = linkedMapOf(
@@ -231,63 +313,105 @@ private fun archiveParts(archive: String) = archive.replace('.', '-') + "-parts"
 private fun splitArchive(archive: String) = "$artifactTransport split $output/$archive $output/${archiveParts(archive)}"
 private fun joinArchive(archive: String) = "$artifactTransport join $incoming/${archiveParts(archive)} $incoming/$archive"
 private fun publishArchive(archive: String) = "+:$output/${archiveParts(archive)}/* => ${archiveParts(archive)}"
-private fun downloadArchive(archive: String) = "+:${archiveParts(archive)}/* => $incoming/${archiveParts(archive)}"
+private fun downloadArchive(archive: String, prefix: String = "") =
+    "+:$prefix${archiveParts(archive)}/* => $incoming/${archiveParts(archive)}"
 private val documentationInputs = listOf("root", "macros", "extensions").map { "documentation-inputs/$it.tar.gz" }
 
-/** Invoke platform-specific phases and retain individual diagnostics and declared outputs. */
-private fun nativeBuild(
+/** Keep phase evidence separate and transport each archive as individually verified parts. */
+private fun nativeCommands(commands: List<String>, uploads: List<String>, downloads: List<String>): String =
+    (downloads.map(::joinArchive) + commands.map { "python3 Tools/ci/teamcity_native.py $it --separate-evidence" } +
+        uploads.map(::splitArchive)).joinToString("\n")
+
+/** Define a pipeline over the same VCS root used by the classic certification chain. */
+private fun candidatePipeline(pipelineId: String, title: String, configure: Pipeline.() -> Unit) = Pipeline {
+    id(pipelineId)
+    name = title
+    repositories { repository(DslContext.settingsRoot) }
+    configure()
+}
+
+/** Run native work that does not exchange path-sensitive compiled SwiftPM products. */
+private fun Pipeline.nativeJob(
     platform: NativePlatform,
     lane: String,
     commands: List<String>,
     minutes: Int,
-    qualification: BuildType? = null,
-    artifacts: String = "",
+    qualification: Pipeline? = null,
     uploads: List<String> = emptyList(),
     downloads: List<String> = emptyList(),
-    configure: BuildType.() -> Unit = {},
-) = agentBuild(platform.id + retainedLaneIds.getOrDefault(lane, lane), "$lane / ${platform.value}",
-    (downloads.map(::joinArchive) + commands.map { "python3 Tools/ci/teamcity_native.py $it --separate-evidence" } +
-        uploads.map(::splitArchive))
-        .joinToString("\n"), minutes, platform.agent, native = true, receipt = true, bundleEvidence = true, wsl = true) {
-    publishArtifacts = PublishMode.ALWAYS
-    artifactRules += "\n${publishArchive(evidenceArchive)}"
-    if (artifacts.isNotEmpty()) artifactRules += "\n$artifacts"
-    uploads.forEach { artifactRules += "\n${publishArchive(it)}" }
+    outputs: List<String> = emptyList(),
+    configure: Job.() -> Unit = {},
+) = agentJob(platform.id + lane, "$lane / ${platform.value}",
+    nativeCommands(commands, uploads, downloads), minutes, platform.agent, native = true,
+    outputs = outputs + uploads.map(::archiveParts)) {
     params {
-        param("env.DISCORDKIT_CI_CHAIN_ID", qualification?.chainBuildId() ?: currentBuildId)
+        param("env.DISCORDKIT_CI_CHAIN_ID", qualification?.chainBuildId(platform.id + "Qualify") ?: currentBuildId)
         param("env.DISCORDKIT_CI_REPOSITORY", repositoryName)
     }
     configure()
 }
 
-private val qualifications = platforms.associateWith { nativeBuild(it, "Qualify", listOf("qualify ${it.value}"), 30) }
+private val qualifications = candidatePipeline("CandidatePlatforms", "DiscordKit platform qualification") {
+    platforms.forEach { nativeJob(it, "Qualify", listOf("qualify ${it.value}"), 30) }
+}
+
+private val releaseCompilation = candidatePipeline("ReleaseCompilation", "DiscordKit release compilation") {
+    dependencies { passed(listOf(qualifications)) }
+    platforms.forEach { platform ->
+        val components = if (platform.agent == Agent.Mac) listOf("release", "apple") else listOf("release")
+        nativeJob(platform, "BuildRelease", components.map { "build ${platform.value} $it" }, 150 * components.size,
+            qualifications, uploads = listOf("release.tar.gz"))
+    }
+}
+
+/** Keep matching build and test jobs on compatible agents with a stable SwiftPM checkout path. */
+private fun nativeBuild(
+    platform: NativePlatform,
+    lane: String,
+    commands: List<String>,
+    minutes: Int,
+    uploads: List<String> = emptyList(),
+    downloads: List<String> = emptyList(),
+    configure: BuildType.() -> Unit = {},
+) = agentBuild(platform.id + retainedLaneIds.getOrDefault(lane, lane), "$lane / ${platform.value}",
+    nativeCommands(commands, uploads, downloads), minutes, platform.agent,
+    native = true, receipt = true, bundleEvidence = true, wsl = true) {
+    publishArtifacts = PublishMode.ALWAYS
+    artifactRules += "\n${publishArchive(evidenceArchive)}"
+    uploads.forEach { artifactRules += "\n${publishArchive(it)}" }
+    params {
+        param("env.DISCORDKIT_CI_CHAIN_ID", qualifications.chainBuildId(platform.id + "Qualify"))
+        param("env.DISCORDKIT_CI_REPOSITORY", repositoryName)
+    }
+    configure()
+}
 
 private val builds = platforms.associateWith { platform ->
     compileLanes.mapValues { (lane, graphs) ->
-        val qualification = qualifications.getValue(platform)
-        val components = if (lane == "BuildRelease" && platform.agent == Agent.Mac) graphs + "apple" else graphs
-        nativeBuild(platform, lane, components.map { "build ${platform.value} $it" }, 150 * components.size,
-            qualification, uploads = graphs.map { "$it.tar.gz" }) {
-            dependencies { passed(qualifications.values) }
+        nativeBuild(platform, lane, graphs.map { "build ${platform.value} $it" }, 150 * graphs.size,
+            uploads = graphs.map { "$it.tar.gz" }) {
+            dependencies { passed(listOf(qualifications)) }
         }
     }
 }
 
+private val compileBuilds = builds.values.flatMap { it.values }
+
 private val checks = platforms.associateWith { platform ->
-    val qualification = qualifications.getValue(platform)
     testLanes.mapValues { (lane, suites) ->
         val publicApi = lane == "TestCore" && platform.agent == Agent.Mac
         val groups = if (publicApi) suites + "public-api" else suites
         val inputs = testInputs.getValue(lane)
         val producers = compileLanes.filterValues { graphs -> graphs.any { it in inputs } }
         nativeBuild(platform, lane, groups.map { "check ${platform.value} $it --clean-inputs" },
-            125 * groups.size, qualification, uploads = if (publicApi) documentationInputs else emptyList(),
+            125 * groups.size, uploads = if (publicApi) documentationInputs else emptyList(),
             downloads = inputs.map { "$it.tar.gz" }) {
             dependencies {
                 val platformBuilds = builds.getValue(platform)
-                passed(listOf(qualification))
+                val artifactBuilds = producers.keys.map(platformBuilds::getValue)
+                passed(listOf(qualifications, releaseCompilation) + (compileBuilds - artifactBuilds.toSet()))
                 // SwiftPM products encode the checkout path and carry exact host ABI receipts.
-                passed(producers.keys.map(platformBuilds::getValue),
+                passed(artifactBuilds,
                     sameAgent = platform.agent == Agent.Linux && windowsWslNative && windowsWslDistribution.isNotEmpty())
                 producers.forEach { (producer, graphs) ->
                     val rules = graphs.filter { it in inputs }.joinToString("\n") { downloadArchive("$it.tar.gz") }
@@ -298,7 +422,7 @@ private val checks = platforms.associateWith { platform ->
     }
 }
 
-private val repositoryChecks = agentBuild("CheckSource", "Repository checks", """
+private val repositoryChecks = """
     node_version="${'$'}(node --version)"
     echo "Node.js ${'$'}node_version"
     case "${'$'}node_version" in
@@ -313,46 +437,65 @@ private val repositoryChecks = agentBuild("CheckSource", "Repository checks", ""
         python3 Tools/ci/preflight.py group --group "${'$'}group" --output "$output/preflight/${'$'}group"
     done
     python3 Tools/DiscordKitTools/scripts/release_check.py maintenance --repository . --record Docs/Release/maintenance.json
-""".trimIndent(), 150, receipt = true, wsl = true) {
-    publishArtifacts = PublishMode.ALWAYS
-    artifactRules += "\n+:$output/preflight/** => preflight"
+""".trimIndent()
+
+private val repositoryVerification = candidatePipeline("RepositoryVerification", "DiscordKit repository verification") {
+    dependencies { passed(listOf(releaseCompilation) + compileBuilds) }
+    agentJob("CheckSource", "Repository checks", repositoryChecks, 150, outputs = listOf("preflight"))
+    agentJob("ValidateYouTrackDocumentation", "Validate YouTrack documentation", """
+        mkdir -p $output/knowledge-base
+        python3 Scripts/youtrack_knowledge_base.py verify --root . --revision "${'$'}DISCORDKIT_VCS_REVISION" > $output/knowledge-base/validation.json
+    """.trimIndent(), 15, outputs = listOf("knowledge-base/validation.json"))
 }
 
-private val verification = builds.values.flatMap { it.values } + checks.values.flatMap { it.values } + repositoryChecks
+private val testBuilds = checks.values.flatMap { it.values }
 private val mac = platforms.single { it.agent == Agent.Mac }
 private val publicApi = checks.getValue(mac).getValue("TestCore")
-internal val DocumentationArchive = nativeBuild(mac, "Documentation", listOf("documentation ${mac.value}"), 40,
-    qualifications.getValue(mac), uploads = listOf(doccArtifact), downloads = documentationInputs) {
-    dependencies {
-        passed(listOf(qualifications.getValue(mac)) + verification)
-        sameChainArtifact(publicApi, documentationInputs.joinToString("\n", transform = ::downloadArchive))
+private const val documentationJob = "MacDocumentation"
+
+private val exports = candidatePipeline("CandidateExports", "DiscordKit candidate exports") {
+    dependencies { passed(listOf(qualifications, repositoryVerification) + testBuilds) }
+    platforms.forEach {
+        nativeJob(it, "Source", listOf("package ${it.value}"), 25, qualifications,
+            outputs = listOf("DiscordKit-*.tar.gz", "DiscordKit-*.tar.gz.sha256", "DiscordKit-*.json"))
+    }
+    nativeJob(mac, "Documentation", listOf("documentation ${mac.value}"), 40, qualifications,
+        uploads = listOf(doccArtifact), downloads = documentationInputs) {
+        download {
+            artifacts(publicApi) {
+                buildRule = sameChain()
+                artifactRules = documentationInputs.joinToString("\n") { downloadArchive(it) }
+                cleanDestination = true
+            }
+        }
     }
 }
 
-private val packages = platforms.map { platform ->
-    val qualification = qualifications.getValue(platform)
-    nativeBuild(platform, "Source", listOf("package ${platform.value}"), 25, qualification,
-        "+:$output/*.tar.gz\n+:$output/*.tar.gz.sha256\n+:$output/*.json") {
-        dependencies { passed(listOf(qualification) + verification) }
-    }
-}
+internal val VerificationBuilds = compileBuilds + testBuilds
+internal val VerificationPipelines = listOf(qualifications, releaseCompilation, repositoryVerification, exports)
 
-internal val VerificationBuilds = qualifications.values + verification + packages + DocumentationArchive
-private val required = VerificationBuilds + KnowledgeBaseValidation
-
-/** Require a passed receipt from each selected job and publish the chain's certification. */
+/** Define the complete set of mandatory receipts and verify each against its original build ID. */
 internal fun certification(statusToken: String, watchPullRequests: Boolean): BuildType {
-    val evidence = required.joinToString(" ") { "${it.receiptName()}=${it.chainBuildId()}" }
+    val buildEvidence = VerificationBuilds.map { build ->
+        build.id!!.value.removePrefix("${DslContext.projectId.value}_") to build.chainBuildId()
+    }
+    val pipelineEvidence = VerificationPipelines.flatMap { pipeline ->
+        pipeline.jobs.map { job -> job.id to pipeline.chainBuildId(job.id) }
+    }
+    val evidence = (buildEvidence + pipelineEvidence).joinToString(" ") { (job, id) -> "$job=$id" }
     val command = "${joinArchive(doccArtifact)}\npython3 Tools/ci/teamcity_gate.py certify $evidence"
     return agentBuild("Certification", "Offline certification", command, 10, wsl = true) {
         artifactRules = "+:$output/certification.json"
         publishArtifacts = PublishMode.SUCCESSFUL
         dependencies {
-            passed(required)
-            required.forEach { producer ->
-                val stageReceipt = "receipts/${producer.receiptName()}.json => $incoming/receipts"
-                val docc = if (producer == DocumentationArchive) "\n${downloadArchive(doccArtifact)}" else ""
-                sameChainArtifact(producer, stageReceipt + docc)
+            passed(VerificationBuilds + VerificationPipelines)
+            VerificationBuilds.zip(buildEvidence).forEach { (producer, evidence) ->
+                sameChainArtifact(producer, "receipts/${evidence.first}.json => $incoming/receipts")
+            }
+            VerificationPipelines.forEach { pipeline ->
+                val rules = pipeline.jobs.map { "${it.id}/receipts/${it.id}.json => $incoming/receipts" }
+                val docc = if (pipeline == exports) listOf(downloadArchive(doccArtifact, "$documentationJob/")) else emptyList()
+                sameChainArtifact(pipeline, (rules + docc).joinToString("\n"))
             }
         }
         triggers {
