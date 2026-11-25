@@ -1075,8 +1075,11 @@ remain required before accepting numerical performance budgets.
 `integration-timing` combines real default-policy ordered REST admission with an
 injected 25 ms provider, a fixed 64-key entity cache and two Gateway hubs sharing
 one bounded authority. One slow subscriber and one draining subscriber receive
-payload bursts while independent control publication/pull continues. Cache expiry,
-cooperative cancellation and bounded CPU arithmetic overlap the same owners.
+payload bursts while independent control publication/pull continues. The cache
+clock advances on the first arrival in each band and on selected later arrivals.
+The first arrival has a waiting worker, so queue overflow cannot suppress every
+expiry after the cache is populated. Cache expiry, cooperative cancellation and
+bounded CPU arithmetic overlap the same owners.
 The workload opens no external sockets and needs no credentials.
 
 Each cycle contains independently scheduled 20/40/160/20 arrivals per second in

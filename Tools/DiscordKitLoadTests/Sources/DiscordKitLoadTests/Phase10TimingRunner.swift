@@ -248,7 +248,9 @@ private actor Phase10Fixture {
     func execute(_ submission: ArrivalSubmission, cycle: Int, band: Int) async -> ArrivalOperationResult {
         let global = UInt64(submission.ordinal) + UInt64(cycle) * 10_000 + UInt64(band) * 1_000
         let key = EntityKey(kind: .user, id: (global &+ seed) % 64 + 1)
-        if global.isMultiple(of: 37) { freshness.advance(by: .seconds(2)) }
+        // Each band starts with idle workers after the previous band drains.
+        // Its first arrival can advance freshness even if overload rejects every periodic trigger.
+        if submission.ordinal == 0 || global.isMultiple(of: 37) { freshness.advance(by: .seconds(2)) }
         if global.isMultiple(of: 13) {
             var value = global &+ seed
             for _ in 0..<4_096 { value = (value &* 6_364_136_223_846_793_005) &+ 1 }

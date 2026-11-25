@@ -7,6 +7,21 @@ copyright:end -->
 
 # Verification record
 
+## Mixed-load cache expiration
+
+On November 24, 2026, the macOS package job for certification 3962 ran
+`completeMixedCycle()` on `5e0a6ae5` and recorded zero cache expirations.
+Overflow can reject the scheduled arrivals that advance the fixture clock.
+Each band now advances the clock on its first arrival, which has a waiting
+worker, and retains the periodic advances during the band.
+[macOS package job 3959](https://ci.aurum-studios.com/buildConfiguration/DiscordKit_MacTestTooling/3959?buildTab=buildLog) ·
+[Mixed-load procedure](../Tools/DiscordKitLoadTests/README.md#performance-phase-10-integration-and-recovery)
+
+Local validation on macOS 27.0.1 ARM64 used Swift 6.4.2 and the resolved
+dependency versions. The four `Phase10TimingTests` passed, followed by all
+161 load-tool package tests. Three additional filtered `completeMixedCycle()`
+runs passed. Hosted certification of the repair is pending.
+
 ## Offline certification DocC retry repair
 
 On November 24, 2026, the certification chain reached the macOS DocC export
