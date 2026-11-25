@@ -97,9 +97,11 @@ controlled performance claims have their own qualification evidence.
 
 The macOS core test configuration emits and seals DocC conversions for the
 root, macro and extension packages. The macOS documentation job in
-**CandidateExports** merges those same-chain inputs. In the run's artifacts,
-open the documentation job's artifact group and download the entire
-`DiscordKitLibrary-doccarchive-tar-gz-parts` directory, including `manifest.json`.
+**CandidateExports** verifies the downloaded parts before replacing any archives
+reconstructed by an earlier run in the same checkout. It then merges the fresh
+archives. In the run's artifacts, download the entire
+`DiscordKitLibrary-doccarchive-tar-gz-parts` directory from the documentation
+job's artifact group, including `manifest.json`.
 From a checkout of the same revision, reconstruct and extract the archive.
 
 ```sh

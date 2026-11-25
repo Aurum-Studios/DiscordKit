@@ -7,6 +7,29 @@ copyright:end -->
 
 # Verification record
 
+## Offline certification DocC retry repair
+
+On November 24, 2026, the certification chain reached the macOS DocC export
+with 21 successful prerequisites. The export stopped when the archive join
+encountered `documentation-inputs/root.tar.gz` left by an earlier run. The
+pipeline preserves incoming artifacts in incremental checkouts. The repair
+allows this job to replace its reconstructed archives after verifying the
+current same-chain parts. [Certification 3933](https://ci.aurum-studios.com/buildConfiguration/DiscordKit_Certification/3933) ·
+[DocC export 3936](https://ci.aurum-studios.com/pipeline/DiscordKit_CandidateExports/3932?job=3936&tab=log)
+
+Local validation on macOS used base `738eb697315921ad31e785485f04fd2285f0974f`.
+The repair passed independent review.
+
+| Check | Result |
+| --- | --- |
+| Maven 3.9.11, Java 21 and TeamCity DSL 2026.2 | `mvn -o -f .teamcity/pom.xml teamcity-configs:generate` passed for the base and the repair. Generated settings differed only in the three DocC joins, and both generated scripts passed Bash syntax validation. |
+| Incremental checkout | The generated base commands reproduced the hosted failure on a second run. The repair joined fresh fixtures for all three inputs on two retries. Corrupt parts withheld the export receipt and preserved the previous complete archive. |
+| Certification receipt fixture | The generated classic gate accepted 19 matching fixture receipts and recorded the verified archive SHA-256. |
+| CI helpers | `python3 -m unittest discover -s Tools/ci` ran 698 tests, with 692 passed and six skipped. |
+
+Hosted qualification of the repair remains pending a new Offline certification
+run on the published revision.
+
 ## TeamCity and YouTrack migration
 
 The migration uses Aurum Studios Blank at `deded696cb08f13a64c56c13076cbc4ec2778cf4`

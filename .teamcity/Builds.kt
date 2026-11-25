@@ -311,15 +311,22 @@ private const val evidenceArchive = "evidence.tar.gz"
 /** Keep archive extensions out of directory names so TeamCity uploads each part separately. */
 private fun archiveParts(archive: String) = archive.replace('.', '-') + "-parts"
 private fun splitArchive(archive: String) = "$artifactTransport split $output/$archive $output/${archiveParts(archive)}"
-private fun joinArchive(archive: String) = "$artifactTransport join $incoming/${archiveParts(archive)} $incoming/$archive"
+/** Verify downloaded parts, replacing a previously joined copy only in incremental pipeline checkouts. */
+private fun joinArchive(archive: String, replace: Boolean = false): String {
+    val option = if (replace) " --replace" else ""
+    return "$artifactTransport join $incoming/${archiveParts(archive)} $incoming/$archive$option"
+}
 private fun publishArchive(archive: String) = "+:$output/${archiveParts(archive)}/* => ${archiveParts(archive)}"
 private fun downloadArchive(archive: String, prefix: String = "") =
     "+:$prefix${archiveParts(archive)}/* => $incoming/${archiveParts(archive)}"
 private val documentationInputs = listOf("root", "macros", "extensions").map { "documentation-inputs/$it.tar.gz" }
 
 /** Keep phase evidence separate and transport each archive as individually verified parts. */
-private fun nativeCommands(commands: List<String>, uploads: List<String>, downloads: List<String>): String =
-    (downloads.map(::joinArchive) + commands.map { "python3 Tools/ci/teamcity_native.py $it --separate-evidence" } +
+private fun nativeCommands(
+    commands: List<String>, uploads: List<String>, downloads: List<String>, replaceDownloads: Boolean = false,
+): String =
+    (downloads.map { joinArchive(it, replaceDownloads) } +
+        commands.map { "python3 Tools/ci/teamcity_native.py $it --separate-evidence" } +
         uploads.map(::splitArchive)).joinToString("\n")
 
 /** Define a pipeline over the same VCS root used by the classic certification chain. */
@@ -330,7 +337,7 @@ private fun candidatePipeline(pipelineId: String, title: String, configure: Pipe
     configure()
 }
 
-/** Run native work that does not exchange path-sensitive compiled SwiftPM products. */
+/** Run native work and reconstruct fresh archives from the downloads in the incremental checkout. */
 private fun Pipeline.nativeJob(
     platform: NativePlatform,
     lane: String,
@@ -342,7 +349,9 @@ private fun Pipeline.nativeJob(
     outputs: List<String> = emptyList(),
     configure: Job.() -> Unit = {},
 ) = agentJob(platform.id + lane, "$lane / ${platform.value}",
-    nativeCommands(commands, uploads, downloads), minutes, platform.agent, native = true,
+    // Pipeline cleanup preserves the incoming tree, including archives reconstructed by a previous job.
+    nativeCommands(commands, uploads, downloads, replaceDownloads = true),
+    minutes, platform.agent, native = true,
     outputs = outputs + uploads.map(::archiveParts)) {
     params {
         param("env.DISCORDKIT_CI_CHAIN_ID", qualification?.chainBuildId(platform.id + "Qualify") ?: currentBuildId)

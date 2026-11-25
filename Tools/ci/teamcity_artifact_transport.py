@@ -100,10 +100,10 @@ def _manifest(source):
     return manifest
 
 
-def join(source: Path, destination: Path):
-    """Verify every transported byte and reconstruct the exact original archive."""
+def join(source: Path, destination: Path, *, replace: bool = False):
+    """Reconstruct the archive and permit replacing an earlier copy after full verification."""
     manifest = _manifest(source)
-    if destination.exists() or destination.is_symlink():
+    if not replace and (destination.exists() or destination.is_symlink()):
         raise FileExistsError(destination)
     destination.parent.mkdir(parents=True, exist_ok=True)
     digest = hashlib.sha256()
@@ -126,19 +126,27 @@ def join(source: Path, destination: Path):
                         raise ValueError(f"TeamCity artifact part failed verification: {path.name}")
         if digest.hexdigest() != manifest["sha256"]:
             raise ValueError("TeamCity artifact archive digest differs from its manifest")
-        # A concurrent join cannot replace an already published archive.
-        os.link(staged, destination)
+        if replace:
+            staged.replace(destination)
+        else:
+            # A concurrent join cannot replace an already published archive.
+            os.link(staged, destination)
 
 
 def main():
+    """Run a transport operation and report validation or filesystem failures."""
     parser = argparse.ArgumentParser(description=__doc__)
     operations = {"split": split, "join": join, "pack": pack}
     parser.add_argument("operation", choices=operations)
     parser.add_argument("source", type=Path)
     parser.add_argument("destination", type=Path)
+    parser.add_argument("--replace", action="store_true", help="Allow join to replace a previously reconstructed archive")
     args = parser.parse_args()
+    if args.replace and args.operation != "join":
+        parser.error("--replace is only valid with join")
+    options = {"replace": True} if args.replace else {}
     try:
-        operations[args.operation](args.source, args.destination)
+        operations[args.operation](args.source, args.destination, **options)
     except (OSError, ValueError, tarfile.TarError) as error:
         parser.exit(1, f"TeamCity artifact transport failed: {error}\n")
 

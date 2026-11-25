@@ -84,12 +84,32 @@ class TeamCityArtifactTransportTests(unittest.TestCase):
         self.assert_rejected("archive digest")
 
     def test_destinations_are_never_overwritten(self):
+        """Keep previous output when a caller uses default transport behavior."""
         with self.assertRaises(FileExistsError):
             transport.split(self.original, self.parts)
         self.restored.write_bytes(b"existing")
         with self.assertRaises(FileExistsError):
             transport.join(self.parts, self.restored)
         self.assertEqual(self.restored.read_bytes(), b"existing")
+
+    def test_incremental_join_replaces_a_previous_archive_only_after_verification(self):
+        """Rebuild from current same-chain parts without publishing bytes from a failed restore."""
+        transport.join(self.parts, self.restored)
+        current = b"current candidate DocC archive"
+        self.original.write_bytes(current)
+        current_parts = self.root / "current-parts"
+        transport.split(self.original, current_parts, part_size=8)
+        part = current_parts / "part-0002"
+        expected = part.read_bytes()
+        part.write_bytes(b"corrupt!")
+
+        with self.assertRaisesRegex(ValueError, "part failed verification"):
+            transport.join(current_parts, self.restored, replace=True)
+        self.assertEqual(self.restored.read_bytes(), self.data)
+
+        part.write_bytes(expected)
+        transport.join(current_parts, self.restored, replace=True)
+        self.assertEqual(self.restored.read_bytes(), current)
 
     def test_empty_archive_round_trips(self):
         self.original.write_bytes(b"")
