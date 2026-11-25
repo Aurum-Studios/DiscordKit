@@ -7,6 +7,24 @@ copyright:end -->
 
 # Verification record
 
+## GitHub release preparation DNS failure
+
+On November 25, 2026, Prepare GitHub release #5 failed on a DNS lookup and the
+publish job failed to start. The Linux agent subsequently resolved both GitHub
+hosts and reached the repository API. Prepare #6 reused Offline certification
+#2 for `e7e8c63b3dcc7881339dfb653fc8ea50a4686d41` and retained the source archive,
+checksum and manifest for `v1.2+2`. Publication remains subject to TeamCity
+approval. [Failed preparation](https://ci.aurum-studios.com/buildConfiguration/DiscordKit_PrepareRelease/4345) ·
+[Successful retry and artifacts](https://ci.aurum-studios.com/buildConfiguration/DiscordKit_PrepareRelease/4412?buildTab=artifacts)
+
+The local patch adds two attempts after a DNS failure on a TeamCity GitHub API
+read. The regression fixtures reproduced the original lookup failure and
+verified recovery, persistent error reporting, proxy handling and a single
+attempt for writes. All 47 focused release tests passed on macOS with Python
+3.14.0. The full CI helper suite ran 701 tests with six skips. The local
+documentation verification reported zero link warnings. The hosted retry used
+the existing release tooling.
+
 ## Mixed-load cache expiration
 
 On November 24, 2026, the macOS package job for certification 3962 ran

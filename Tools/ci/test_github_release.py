@@ -11,11 +11,12 @@ import io
 import json
 import os
 from pathlib import Path
+import socket
 import subprocess
 import tempfile
 import unittest
 from unittest.mock import patch
-from urllib.error import HTTPError
+from urllib.error import HTTPError, URLError
 
 import github_release
 
@@ -253,6 +254,50 @@ class ReleaseGateTests(unittest.TestCase):
         self.addCleanup(missing.close)
         with patch.object(github_release, "urlopen", side_effect=missing):
             self.assertIsNone(api.request("git/ref/tags/v1.2.37", missing_ok=True))
+
+    def test_teamcity_github_read_recovers_from_dns_failure(self):
+        """Recover when a later lookup succeeds for the same repository read."""
+        with patch.dict(os.environ, {"GITHUB_REPOSITORY": github_release.GITHUB_REPOSITORY}, clear=True):
+            api = github_release.GitHubAPI(teamcity=True, allow_anonymous=True)
+        failure = URLError(socket.gaierror(-5, "No address associated with hostname"))
+        responses = iter((failure, failure, io.StringIO('{"id": 1}')))
+
+        def open_through_proxy(request, timeout):
+            """Simulate urllib applying a proxy to each fresh origin request."""
+            self.assertEqual(request.type, "https")
+            self.assertEqual(request.host, "api.github.com")
+            request.set_proxy("proxy.example", "http")
+            response = next(responses)
+            if response is failure:
+                raise response
+            return response
+
+        with (patch.object(api, "open", side_effect=open_through_proxy) as send, patch("time.sleep") as sleep):
+            self.assertEqual(api.request(""), {"id": 1})
+        self.assertEqual(send.call_count, 3)
+        self.assertEqual([call.args for call in sleep.call_args_list], [(1,), (2,)])
+
+    def test_teamcity_github_read_reports_persistent_dns_failure(self):
+        """Fail after three lookups, even when an HTTP 404 would be allowed."""
+        with patch.dict(os.environ, {"GITHUB_REPOSITORY": github_release.GITHUB_REPOSITORY}, clear=True):
+            api = github_release.GitHubAPI(teamcity=True, allow_anonymous=True)
+        failure = URLError(socket.gaierror(socket.EAI_AGAIN, "Temporary failure in name resolution"))
+        with (patch.object(api, "open", side_effect=failure) as send, patch("time.sleep"),
+              self.assertRaisesRegex(RuntimeError, r"GitHub API GET git/ref/tags/.*DNS lookup")):
+            api.request("git/ref/tags/v1.2+2", missing_ok=True)
+        self.assertEqual(send.call_count, 3)
+
+    def test_teamcity_github_mutation_does_not_retry_on_dns_failure(self):
+        """Leave write recovery to the operator even when the resolver reports an error."""
+        with patch.dict(os.environ, {"GITHUB_REPOSITORY": github_release.GITHUB_REPOSITORY,
+                                     "GH_TOKEN": "test"}, clear=True):
+            api = github_release.GitHubAPI(teamcity=True)
+        failure = URLError(socket.gaierror(socket.EAI_AGAIN, "Temporary failure in name resolution"))
+        with (patch.object(api, "open", side_effect=failure) as send, patch("time.sleep") as sleep,
+              self.assertRaisesRegex(RuntimeError, r"GitHub API POST git/refs.*DNS lookup")):
+            api.request("git/refs", {"ref": "refs/tags/v1.2+2", "sha": REVISION})
+        self.assertEqual(send.call_count, 1)
+        sleep.assert_not_called()
 
     def test_optional_publication_token_is_used_only_for_mutations(self):
         captured = []

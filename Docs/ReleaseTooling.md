@@ -64,6 +64,10 @@ and manifest.
 
 Preparation reads GitHub repository metadata. Publication uses a
 repository-scoped GitHub App token on the configured Linux agent.
+GitHub API reads in both TeamCity jobs retry hostname lookup failures after one
+and two seconds. If DNS still fails, check the hostname in the build log from
+the Linux agent. The agent needs to reach `api.github.com` and
+`uploads.github.com` before running the promotion again.
 [TeamCity setup](TeamCitySetup.md#enable-github-release-publishing)
 
 Publication runs are serialized. Any existing tag, release, or draft blocks

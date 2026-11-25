@@ -7,14 +7,17 @@
 """Prepare and publish a manually versioned release from a certified Git commit."""
 
 import argparse
+from copy import deepcopy
 import hashlib
 import json
 import os
 import re
+import socket
 import subprocess
 import sys
+import time
 from pathlib import Path
-from urllib.error import HTTPError
+from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlencode
 from urllib.request import Request, build_opener, urlopen
 
@@ -94,13 +97,29 @@ class GitHubAPI:
         return self.send(request, path, missing_ok=missing_ok)
 
     def send(self, request, path, *, missing_ok=False, timeout=60):
-        try:
-            with (self.open or urlopen)(request, timeout=timeout) as response:
-                return json.load(response)
-        except HTTPError as error:
-            if missing_ok and error.code == 404:
-                return None
-            raise RuntimeError(f"GitHub API {request.get_method()} {path} failed (HTTP {error.code})") from None
+        """Decode the response and give TeamCity reads two retries on DNS errors."""
+        method = request.get_method()
+        attempts = 3 if self.open is not None and method == "GET" else 1
+        endpoint = path or "(repository metadata)"
+        for attempt in range(1, attempts + 1):
+            # The urllib proxy handler can rewrite the request in place.
+            attempt_request = deepcopy(request) if attempts > 1 else request
+            try:
+                with (self.open or urlopen)(attempt_request, timeout=timeout) as response:
+                    return json.load(response)
+            except HTTPError as error:
+                if missing_ok and error.code == 404:
+                    return None
+                raise RuntimeError(f"GitHub API {method} {endpoint} failed (HTTP {error.code})") from None
+            except URLError as error:
+                if self.open is None or not isinstance(error.reason, socket.gaierror):
+                    raise
+                message = (f"GitHub API {method} {endpoint} failed during DNS lookup for "
+                           f"{attempt_request.host}: {error.reason}")
+                if attempt == attempts:
+                    raise RuntimeError(message) from None
+                print(f"{message}. Retrying in {attempt}s.", file=sys.stderr)
+                time.sleep(attempt)
 
     def upload(self, release_id, asset, content_type):
         """Stream a prepared asset to the GitHub release using the write credential."""
